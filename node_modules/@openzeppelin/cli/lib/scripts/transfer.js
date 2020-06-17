@@ -1,0 +1,29 @@
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const TransactionController_1 = __importDefault(require("../models/network/TransactionController"));
+function transfer({ to, value, unit = 'ether', from, txParams = {}, }) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (!to)
+            throw Error('A recipient address must be specified');
+        if (!value)
+            throw Error('An amount to be transferred must be specified');
+        if (from)
+            txParams = Object.assign(Object.assign({}, txParams), { from });
+        const controller = new TransactionController_1.default(txParams);
+        yield controller.transfer(to, value, unit);
+    });
+}
+exports.default = transfer;
+//# sourceMappingURL=transfer.js.map

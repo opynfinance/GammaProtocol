@@ -1,0 +1,62 @@
+{
+  "fileName": "ERC165NotSupported.sol",
+  "contractName": "ERC165NotSupported",
+  "source": "// SPDX-License-Identifier: MIT\n\npragma solidity ^0.6.0;\n\ncontract ERC165NotSupported { }\n",
+  "sourcePath": "contracts/mocks/ERC165/ERC165NotSupported.sol",
+  "sourceMap": "58:31:29:-:0;;;;;;;;;;;;;;;;;;;",
+  "deployedSourceMap": "58:31:29:-:0;;;;;",
+  "abi": [],
+  "ast": {
+    "absolutePath": "contracts/mocks/ERC165/ERC165NotSupported.sol",
+    "exportedSymbols": {
+      "ERC165NotSupported": [
+        3438
+      ]
+    },
+    "id": 3439,
+    "license": "MIT",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 3437,
+        "literals": [
+          "solidity",
+          "^",
+          "0.6",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "33:23:29"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 3438,
+        "linearizedBaseContracts": [
+          3438
+        ],
+        "name": "ERC165NotSupported",
+        "nodeType": "ContractDefinition",
+        "nodes": [],
+        "scope": 3439,
+        "src": "58:31:29"
+      }
+    ],
+    "src": "33:57:29"
+  },
+  "bytecode": "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea26469706673582212200b48ef16c63f260d6fa0af2369d3118c55c635413516e85a1d17cbc7f77ef23a64736f6c63430006090033",
+  "deployedBytecode": "0x6080604052600080fdfea26469706673582212200b48ef16c63f260d6fa0af2369d3118c55c635413516e85a1d17cbc7f77ef23a64736f6c63430006090033",
+  "compiler": {
+    "name": "solc",
+    "version": "0.6.9+commit.3e3065ac.Emscripten.clang",
+    "optimizer": {
+      "enabled": false,
+      "runs": 200
+    },
+    "evmVersion": "petersburg"
+  }
+}

@@ -1,0 +1,1 @@
+The [patch for global this](https://github.com/theturtle32/WebSocket-Node/pull/362) which originally prompted this fork was accepted and published upstream, so this fork is now deprecated. Please update your package to [websocket@1.0.31](https://www.npmjs.com/package/websocket).

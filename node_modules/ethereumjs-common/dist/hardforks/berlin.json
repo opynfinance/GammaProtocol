@@ -1,0 +1,14 @@
+{
+    "name": "berlin",
+    "comment": "",
+    "eip": {
+        "url": "https://eips.ethereum.org/EIPS/eip-2070",
+        "status": "Draft"
+    },
+    "gasConfig": {},
+    "gasPrices": {},
+    "vm": {},
+    "pow": {},
+    "casper": {},
+    "sharding": {}
+}

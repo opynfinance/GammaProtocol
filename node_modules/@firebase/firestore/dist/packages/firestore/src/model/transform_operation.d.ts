@@ -1,0 +1,98 @@
+/**
+ * @license
+ * Copyright 2018 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+import * as api from '../protos/firestore_proto_api';
+import { Timestamp } from '../api/timestamp';
+import { JsonProtoSerializer } from '../remote/serializer';
+/** Represents a transform within a TransformMutation. */
+export interface TransformOperation {
+    /**
+     * Computes the local transform result against the provided `previousValue`,
+     * optionally using the provided localWriteTime.
+     */
+    applyToLocalView(previousValue: api.Value | null, localWriteTime: Timestamp): api.Value;
+    /**
+     * Computes a final transform result after the transform has been acknowledged
+     * by the server, potentially using the server-provided transformResult.
+     */
+    applyToRemoteDocument(previousValue: api.Value | null, transformResult: api.Value | null): api.Value;
+    /**
+     * If this transform operation is not idempotent, returns the base value to
+     * persist for this transform. If a base value is returned, the transform
+     * operation is always applied to this base value, even if document has
+     * already been updated.
+     *
+     * Base values provide consistent behavior for non-idempotent transforms and
+     * allow us to return the same latency-compensated value even if the backend
+     * has already applied the transform operation. The base value is null for
+     * idempotent transforms, as they can be re-played even if the backend has
+     * already applied them.
+     *
+     * @return a base value to store along with the mutation, or null for
+     * idempotent transforms.
+     */
+    computeBaseValue(previousValue: api.Value | null): api.Value | null;
+    isEqual(other: TransformOperation): boolean;
+}
+/** Transforms a value into a server-generated timestamp. */
+export declare class ServerTimestampTransform implements TransformOperation {
+    private constructor();
+    static instance: ServerTimestampTransform;
+    applyToLocalView(previousValue: api.Value | null, localWriteTime: Timestamp): api.Value;
+    applyToRemoteDocument(previousValue: api.Value | null, transformResult: api.Value | null): api.Value;
+    computeBaseValue(previousValue: api.Value | null): api.Value | null;
+    isEqual(other: TransformOperation): boolean;
+}
+/** Transforms an array value via a union operation. */
+export declare class ArrayUnionTransformOperation implements TransformOperation {
+    readonly elements: api.Value[];
+    constructor(elements: api.Value[]);
+    applyToLocalView(previousValue: api.Value | null, localWriteTime: Timestamp): api.Value;
+    applyToRemoteDocument(previousValue: api.Value | null, transformResult: api.Value | null): api.Value;
+    private apply;
+    computeBaseValue(previousValue: api.Value | null): api.Value | null;
+    isEqual(other: TransformOperation): boolean;
+}
+/** Transforms an array value via a remove operation. */
+export declare class ArrayRemoveTransformOperation implements TransformOperation {
+    readonly elements: api.Value[];
+    constructor(elements: api.Value[]);
+    applyToLocalView(previousValue: api.Value | null, localWriteTime: Timestamp): api.Value;
+    applyToRemoteDocument(previousValue: api.Value | null, transformResult: api.Value | null): api.Value;
+    private apply;
+    computeBaseValue(previousValue: api.Value | null): api.Value | null;
+    isEqual(other: TransformOperation): boolean;
+}
+/**
+ * Implements the backend semantics for locally computed NUMERIC_ADD (increment)
+ * transforms. Converts all field values to integers or doubles, but unlike the
+ * backend does not cap integer values at 2^63. Instead, JavaScript number
+ * arithmetic is used and precision loss can occur for values greater than 2^53.
+ */
+export declare class NumericIncrementTransformOperation implements TransformOperation {
+    private readonly serializer;
+    readonly operand: api.Value;
+    constructor(serializer: JsonProtoSerializer, operand: api.Value);
+    applyToLocalView(previousValue: api.Value | null, localWriteTime: Timestamp): api.Value;
+    applyToRemoteDocument(previousValue: api.Value | null, transformResult: api.Value | null): api.Value;
+    /**
+     * Inspects the provided value, returning the provided value if it is already
+     * a NumberValue, otherwise returning a coerced value of 0.
+     */
+    computeBaseValue(previousValue: api.Value | null): api.Value;
+    isEqual(other: TransformOperation): boolean;
+    private asNumber;
+}

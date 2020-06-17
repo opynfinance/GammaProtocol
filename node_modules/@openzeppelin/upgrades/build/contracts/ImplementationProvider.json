@@ -1,0 +1,160 @@
+{
+  "fileName": "ImplementationProvider.sol",
+  "contractName": "ImplementationProvider",
+  "source": "pragma solidity ^0.5.0;\n\n/**\n * @title ImplementationProvider\n * @dev Abstract contract for providing implementation addresses for other contracts by name.\n */\ncontract ImplementationProvider {\n  /**\n   * @dev Abstract function to return the implementation address of a contract.\n   * @param contractName Name of the contract.\n   * @return Implementation address of the contract.\n   */\n  function getImplementation(string memory contractName) public view returns (address);\n}\n\n",
+  "sourcePath": "contracts/application/ImplementationProvider.sol",
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "contractName",
+          "type": "string"
+        }
+      ],
+      "name": "getImplementation",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "ast": {
+    "absolutePath": "contracts/application/ImplementationProvider.sol",
+    "exportedSymbols": {
+      "ImplementationProvider": [
+        452
+      ]
+    },
+    "id": 453,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 444,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:3"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": "@title ImplementationProvider\n@dev Abstract contract for providing implementation addresses for other contracts by name.",
+        "fullyImplemented": false,
+        "id": 452,
+        "linearizedBaseContracts": [
+          452
+        ],
+        "name": "ImplementationProvider",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": null,
+            "documentation": "@dev Abstract function to return the implementation address of a contract.\n@param contractName Name of the contract.\n@return Implementation address of the contract.",
+            "id": 451,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getImplementation",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 447,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 446,
+                  "name": "contractName",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 451,
+                  "src": "415:26:3",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_memory_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 445,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "415:6:3",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "414:28:3"
+            },
+            "returnParameters": {
+              "id": 450,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 449,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 451,
+                  "src": "464:7:3",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 448,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "464:7:3",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "463:9:3"
+            },
+            "scope": 452,
+            "src": "388:85:3",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 453,
+        "src": "160:315:3"
+      }
+    ],
+    "src": "0:477:3"
+  },
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.3+commit.10d17f24.Emscripten.clang",
+    "optimizer": {},
+    "evmVersion": "constantinople"
+  }
+}

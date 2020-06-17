@@ -1,0 +1,492 @@
+{
+  "fileName": "CapperRoleMock.sol",
+  "contractName": "CapperRoleMock",
+  "source": "pragma solidity ^0.5.0;\n\nimport \"../access/roles/CapperRole.sol\";\n\ncontract CapperRoleMock is CapperRole {\n    function removeCapper(address account) public {\n        _removeCapper(account);\n    }\n\n    function onlyCapperMock() public view onlyCapper {\n        // solhint-disable-previous-line no-empty-blocks\n    }\n\n    // Causes a compilation error if super._removeCapper is not internal\n    function _removeCapper(address account) internal {\n        super._removeCapper(account);\n    }\n}\n",
+  "sourcePath": "contracts/mocks/CapperRoleMock.sol",
+  "sourceMap": "67:423:50:-;;;318:24:7;329:12;:10;;;:12;;:::i;:::-;318:10;;;:24;;:::i;:::-;67:423:50;;788:96:0;833:15;867:10;860:17;;788:96;:::o;786:119:7:-;842:21;855:7;842:8;:12;;;;;;:21;;;;:::i;:::-;890:7;878:20;;;;;;;;;;;;786:119;:::o;260:175:6:-;337:18;341:4;347:7;337:3;;;:18;;:::i;:::-;336:19;328:63;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;424:4;401;:11;;:20;413:7;401:20;;;;;;;;;;;;;;;;:27;;;;;;;;;;;;;;;;;;260:175;;:::o;779:200::-;851:4;894:1;875:21;;:7;:21;;;;867:68;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;952:4;:11;;:20;964:7;952:20;;;;;;;;;;;;;;;;;;;;;;;;;945:27;;779:200;;;;:::o;67:423:50:-;;;;;;;",
+  "deployedSourceMap": "67:423:50:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;67:423:50;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;494:107:7;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;494:107:7;;;;;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;111:85:50;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;111:85:50;;;;;;;;;;;;;;;;;;;:::i;:::-;;703:77:7;;;:::i;:::-;;607:90;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;607:90:7;;;;;;;;;;;;;;;;;;;:::i;:::-;;202:113:50;;;:::i;:::-;;494:107:7;550:4;573:21;586:7;573:8;:12;;:21;;;;:::i;:::-;566:28;;494:107;;;:::o;111:85:50:-;167:22;181:7;167:13;:22::i;:::-;111:85;:::o;703:77:7:-;746:27;760:12;:10;:12::i;:::-;746:13;:27::i;:::-;703:77::o;607:90::-;395:22;404:12;:10;:12::i;:::-;395:8;:22::i;:::-;387:83;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;671:19;682:7;671:10;:19::i;:::-;607:90;:::o;202:113:50:-;395:22:7;404:12;:10;:12::i;:::-;395:8;:22::i;:::-;387:83;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;202:113:50:o;779:200:6:-;851:4;894:1;875:21;;:7;:21;;;;867:68;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;952:4;:11;;:20;964:7;952:20;;;;;;;;;;;;;;;;;;;;;;;;;945:27;;779:200;;;;:::o;394:94:50:-;453:28;473:7;453:19;:28::i;:::-;394:94;:::o;788:96:0:-;833:15;867:10;860:17;;788:96;:::o;786:119:7:-;842:21;855:7;842:8;:12;;:21;;;;:::i;:::-;890:7;878:20;;;;;;;;;;;;786:119;:::o;911:127::-;970:24;986:7;970:8;:15;;:24;;;;:::i;:::-;1023:7;1009:22;;;;;;;;;;;;911:127;:::o;260:175:6:-;337:18;341:4;347:7;337:3;:18::i;:::-;336:19;328:63;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;424:4;401;:11;;:20;413:7;401:20;;;;;;;;;;;;;;;;:27;;;;;;;;;;;;;;;;;;260:175;;:::o;510:180::-;589:18;593:4;599:7;589:3;:18::i;:::-;581:64;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;678:5;655:4;:11;;:20;667:7;655:20;;;;;;;;;;;;;;;;:28;;;;;;;;;;;;;;;;;;510:180;;:::o",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "CapperAdded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "CapperRemoved",
+      "type": "event"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "addCapper",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "isCapper",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "onlyCapperMock",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "removeCapper",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "renounceCapper",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "ast": {
+    "absolutePath": "contracts/mocks/CapperRoleMock.sol",
+    "exportedSymbols": {
+      "CapperRoleMock": [
+        5471
+      ]
+    },
+    "id": 5472,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 5439,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:50"
+      },
+      {
+        "absolutePath": "contracts/access/roles/CapperRole.sol",
+        "file": "../access/roles/CapperRole.sol",
+        "id": 5440,
+        "nodeType": "ImportDirective",
+        "scope": 5472,
+        "sourceUnit": 1302,
+        "src": "25:40:50",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 5441,
+              "name": "CapperRole",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 1301,
+              "src": "94:10:50",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_CapperRole_$1301",
+                "typeString": "contract CapperRole"
+              }
+            },
+            "id": 5442,
+            "nodeType": "InheritanceSpecifier",
+            "src": "94:10:50"
+          }
+        ],
+        "contractDependencies": [
+          26,
+          1301
+        ],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 5471,
+        "linearizedBaseContracts": [
+          5471,
+          1301,
+          26
+        ],
+        "name": "CapperRoleMock",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": {
+              "id": 5451,
+              "nodeType": "Block",
+              "src": "157:39:50",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 5448,
+                        "name": "account",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 5444,
+                        "src": "181:7:50",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      ],
+                      "id": 5447,
+                      "name": "_removeCapper",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        5470
+                      ],
+                      "referencedDeclaration": 5470,
+                      "src": "167:13:50",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_address_$returns$__$",
+                        "typeString": "function (address)"
+                      }
+                    },
+                    "id": 5449,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "167:22:50",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 5450,
+                  "nodeType": "ExpressionStatement",
+                  "src": "167:22:50"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 5452,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "removeCapper",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 5445,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 5444,
+                  "name": "account",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5452,
+                  "src": "133:15:50",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 5443,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "133:7:50",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "132:17:50"
+            },
+            "returnParameters": {
+              "id": 5446,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "157:0:50"
+            },
+            "scope": 5471,
+            "src": "111:85:50",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 5457,
+              "nodeType": "Block",
+              "src": "251:64:50",
+              "statements": []
+            },
+            "documentation": null,
+            "id": 5458,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "arguments": null,
+                "id": 5455,
+                "modifierName": {
+                  "argumentTypes": null,
+                  "id": 5454,
+                  "name": "onlyCapper",
+                  "nodeType": "Identifier",
+                  "overloadedDeclarations": [],
+                  "referencedDeclaration": 1234,
+                  "src": "240:10:50",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_modifier$__$",
+                    "typeString": "modifier ()"
+                  }
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "240:10:50"
+              }
+            ],
+            "name": "onlyCapperMock",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 5453,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "225:2:50"
+            },
+            "returnParameters": {
+              "id": 5456,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "251:0:50"
+            },
+            "scope": 5471,
+            "src": "202:113:50",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 5469,
+              "nodeType": "Block",
+              "src": "443:45:50",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 5466,
+                        "name": "account",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 5460,
+                        "src": "473:7:50",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 5463,
+                        "name": "super",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 14090,
+                        "src": "453:5:50",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_super$_CapperRoleMock_$5471",
+                          "typeString": "contract super CapperRoleMock"
+                        }
+                      },
+                      "id": 5465,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "_removeCapper",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 1300,
+                      "src": "453:19:50",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_address_$returns$__$",
+                        "typeString": "function (address)"
+                      }
+                    },
+                    "id": 5467,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "453:28:50",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 5468,
+                  "nodeType": "ExpressionStatement",
+                  "src": "453:28:50"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 5470,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "_removeCapper",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 5461,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 5460,
+                  "name": "account",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5470,
+                  "src": "417:15:50",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 5459,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "417:7:50",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "416:17:50"
+            },
+            "returnParameters": {
+              "id": 5462,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "443:0:50"
+            },
+            "scope": 5471,
+            "src": "394:94:50",
+            "stateMutability": "nonpayable",
+            "superFunction": 1300,
+            "visibility": "internal"
+          }
+        ],
+        "scope": 5472,
+        "src": "67:423:50"
+      }
+    ],
+    "src": "0:491:50"
+  },
+  "bytecode": "0x608060405261002061001561002560201b60201c565b61002d60201b60201c565b61024a565b600033905090565b61004581600061008b60201b61040d1790919060201c565b8073ffffffffffffffffffffffffffffffffffffffff167fa7555c95b69d4f5cc847881feb4ab2883a1921319e34fa2043747b793d65b36e60405160405180910390a250565b61009b828261016c60201b60201c565b1561010e576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252601f8152602001807f526f6c65733a206163636f756e7420616c72656164792068617320726f6c650081525060200191505060405180910390fd5b60018260000160008373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060006101000a81548160ff0219169083151502179055505050565b60008073ffffffffffffffffffffffffffffffffffffffff168273ffffffffffffffffffffffffffffffffffffffff1614156101f3576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260228152602001806108a66022913960400191505060405180910390fd5b8260000160008373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060009054906101000a900460ff16905092915050565b61064d806102596000396000f3fe608060405234801561001057600080fd5b50600436106100575760003560e01c8063395645611461005c5780633f4a6484146100b85780635d5576f8146100fc5780638dfbcf3614610106578063d1e07bcb1461014a575b600080fd5b61009e6004803603602081101561007257600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050610154565b604051808215151515815260200191505060405180910390f35b6100fa600480360360208110156100ce57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050610171565b005b61010461017d565b005b6101486004803603602081101561011c57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff16906020019092919050505061018f565b005b610152610200565b005b600061016a82600061026790919063ffffffff16565b9050919050565b61017a81610345565b50565b61018d610188610351565b610345565b565b61019f61019a610351565b610154565b6101f4576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260308152602001806105e96030913960400191505060405180910390fd5b6101fd81610359565b50565b61021061020b610351565b610154565b610265576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260308152602001806105e96030913960400191505060405180910390fd5b565b60008073ffffffffffffffffffffffffffffffffffffffff168273ffffffffffffffffffffffffffffffffffffffff1614156102ee576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260228152602001806105c76022913960400191505060405180910390fd5b8260000160008373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060009054906101000a900460ff16905092915050565b61034e816103b3565b50565b600033905090565b61036d81600061040d90919063ffffffff16565b8073ffffffffffffffffffffffffffffffffffffffff167fa7555c95b69d4f5cc847881feb4ab2883a1921319e34fa2043747b793d65b36e60405160405180910390a250565b6103c78160006104e890919063ffffffff16565b8073ffffffffffffffffffffffffffffffffffffffff167f427400d279c506df610224b22ecce89b693fc1865864113f21c8d19c1f0c2a3b60405160405180910390a250565b6104178282610267565b1561048a576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252601f8152602001807f526f6c65733a206163636f756e7420616c72656164792068617320726f6c650081525060200191505060405180910390fd5b60018260000160008373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060006101000a81548160ff0219169083151502179055505050565b6104f28282610267565b610547576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260218152602001806105a66021913960400191505060405180910390fd5b60008260000160008373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060006101000a81548160ff021916908315150217905550505056fe526f6c65733a206163636f756e7420646f6573206e6f74206861766520726f6c65526f6c65733a206163636f756e7420697320746865207a65726f2061646472657373436170706572526f6c653a2063616c6c657220646f6573206e6f742068617665207468652043617070657220726f6c65a265627a7a72315820b737eacdae2f19d98f75911ca541b36c6c1ad78dfb538b52c84fba839d4c773064736f6c63430005110032526f6c65733a206163636f756e7420697320746865207a65726f2061646472657373",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100575760003560e01c8063395645611461005c5780633f4a6484146100b85780635d5576f8146100fc5780638dfbcf3614610106578063d1e07bcb1461014a575b600080fd5b61009e6004803603602081101561007257600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050610154565b604051808215151515815260200191505060405180910390f35b6100fa600480360360208110156100ce57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050610171565b005b61010461017d565b005b6101486004803603602081101561011c57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff16906020019092919050505061018f565b005b610152610200565b005b600061016a82600061026790919063ffffffff16565b9050919050565b61017a81610345565b50565b61018d610188610351565b610345565b565b61019f61019a610351565b610154565b6101f4576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260308152602001806105e96030913960400191505060405180910390fd5b6101fd81610359565b50565b61021061020b610351565b610154565b610265576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260308152602001806105e96030913960400191505060405180910390fd5b565b60008073ffffffffffffffffffffffffffffffffffffffff168273ffffffffffffffffffffffffffffffffffffffff1614156102ee576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260228152602001806105c76022913960400191505060405180910390fd5b8260000160008373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060009054906101000a900460ff16905092915050565b61034e816103b3565b50565b600033905090565b61036d81600061040d90919063ffffffff16565b8073ffffffffffffffffffffffffffffffffffffffff167fa7555c95b69d4f5cc847881feb4ab2883a1921319e34fa2043747b793d65b36e60405160405180910390a250565b6103c78160006104e890919063ffffffff16565b8073ffffffffffffffffffffffffffffffffffffffff167f427400d279c506df610224b22ecce89b693fc1865864113f21c8d19c1f0c2a3b60405160405180910390a250565b6104178282610267565b1561048a576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252601f8152602001807f526f6c65733a206163636f756e7420616c72656164792068617320726f6c650081525060200191505060405180910390fd5b60018260000160008373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060006101000a81548160ff0219169083151502179055505050565b6104f28282610267565b610547576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260218152602001806105a66021913960400191505060405180910390fd5b60008260000160008373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060006101000a81548160ff021916908315150217905550505056fe526f6c65733a206163636f756e7420646f6573206e6f74206861766520726f6c65526f6c65733a206163636f756e7420697320746865207a65726f2061646472657373436170706572526f6c653a2063616c6c657220646f6573206e6f742068617665207468652043617070657220726f6c65a265627a7a72315820b737eacdae2f19d98f75911ca541b36c6c1ad78dfb538b52c84fba839d4c773064736f6c63430005110032",
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.17+commit.d19bba13.Emscripten.clang",
+    "optimizer": {
+      "enabled": false,
+      "runs": 200
+    },
+    "evmVersion": "petersburg"
+  }
+}

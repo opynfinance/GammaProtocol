@@ -1,0 +1,585 @@
+{
+  "fileName": "ZosAdminUpgradeabilityProxy.sol",
+  "contractName": "ZosAdminUpgradeabilityProxy",
+  "source": "pragma solidity ^0.5.0;\n\nimport './ZosBaseAdminUpgradeabilityProxy.sol';\n\n/**\n * @title AdminUpgradeabilityProxy\n * @dev Extends from BaseAdminUpgradeabilityProxy with a constructor for \n * initializing the implementation, admin, and init data.\n */\ncontract ZosAdminUpgradeabilityProxy is ZosBaseAdminUpgradeabilityProxy, ZosUpgradeabilityProxy {\n  /**\n   * Contract constructor.\n   * @param _logic address of the initial implementation.\n   * @param _admin Address of the proxy administrator.\n   * @param _data Data to send as msg.data to the implementation to initialize the proxied contract.\n   * It should include the signature and the parameters of the function to be called, as described in\n   * https://solidity.readthedocs.io/en/v0.4.24/abi-spec.html#function-selector-and-argument-encoding.\n   * This parameter is optional, if no data is given the initialization call to proxied contract will be skipped.\n   */\n  constructor(address _logic, address _admin, bytes memory _data) ZosUpgradeabilityProxy(_logic, _data) public payable {\n    assert(ADMIN_SLOT == keccak256(\"org.zeppelinos.proxy.admin\"));\n    _setAdmin(_admin);\n  }\n}\n",
+  "sourcePath": "contracts/mocks/zos/ZosAdminUpgradeabilityProxy.sol",
+  "sourceMap": "249:886:27:-;;;921:212;;;;;;;;;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;921:212:27;;;;;;;;;;;;;;;;;;;;;;;;19:11:-1;14:3;11:20;8:2;;;44:1;41;34:12;8:2;71:11;66:3;62:21;55:28;;123:4;118:3;114:14;159:9;141:16;138:31;135:2;;;182:1;179;172:12;135:2;219:3;213:10;330:9;325:1;311:12;307:20;289:16;285:43;282:58;261:11;247:12;244:29;233:115;230:2;;;361:1;358;351:12;230:2;0:372;;921:212:27;;;;;;1008:6;1016:5;903:48:32;;;;;;;;;;;;;;;;;;;794:66:29;880:19:32;;:71;873:79;;;;;;958:26;977:6;958:18;;;:26;;:::i;:::-;1008:1;993:5;:12;:16;990:104;;;1020:12;1037:6;:19;;1057:5;1037:26;;;;;;;;;;;;;36:153:-1;66:2;61:3;58:11;51:19;36:153;;;182:3;176:10;171:3;164:23;98:2;93:3;89:12;82:19;;123:2;118:3;114:12;107:19;;148:2;143:3;139:12;132:19;;36:153;;;274:1;267:3;263:2;259:12;254:3;250:22;246:30;315:4;311:9;305:3;299:10;295:26;356:4;350:3;344:10;340:21;389:7;380;377:20;372:3;365:33;3:399;;;1037:26:32;;;;;;;;;;;;;;;;;;;;;;;14:1:-1;21;16:31;;;;75:4;69:11;64:16;;144:4;140:9;133:4;115:16;111:27;107:43;104:1;100:51;94:4;87:65;169:16;166:1;159:27;225:16;222:1;215:4;212:1;208:12;193:49;7:242;;16:31;36:4;31:9;;7:242;;1019:44:32;;;1079:7;1071:16;;;;;;;;990:104;;804:294;;1065:39:27;;;;;;;;;;;;;;;;;;;962:66:28;1051:10:27;;:53;1044:61;;;;;;1111:17;1121:6;1111:9;;;:17;;:::i;:::-;921:212;;;249:886;;1544:305:29;1622:57;1661:17;1622:38;;;;;:57;;:::i;:::-;1614:129;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1750:12;794:66;1765:19;;1750:34;;1821:17;1815:4;1808:31;1800:45;;:::o;3344:133:28:-;3396:12;962:66;3411:10;;3396:25;;3458:8;3452:4;3445:22;3437:36;;:::o;924:616:43:-;984:4;1000:12;1499:7;1487:20;1479:28;;1532:1;1525:4;:8;1518:15;;;924:616;;;:::o;249:886:27:-;;;;;;;",
+  "deployedSourceMap": "249:886:27:-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;453:11:39;:9;:11::i;:::-;249:886:27;2206:103:28;;8:9:-1;5:2;;;30:1;27;20:12;5:2;2206:103:28;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;2206:103:28;;;;;;;;;;;;;;;;;;;:::i;:::-;;2826:221;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;2826:221:28;;;;;;;;;;;;;;;;;;;;;21:11:-1;8;5:28;2:2;;;46:1;43;36:12;2:2;2826:221:28;;35:9:-1;28:4;12:14;8:25;5:40;2:2;;;58:1;55;48:12;2:2;2826:221:28;;;;;;100:9:-1;95:1;81:12;77:20;67:8;63:35;60:50;39:11;25:12;22:29;11:107;8:2;;;131:1;128;121:12;8:2;2826:221:28;;;;;;;;;;;;:::i;:::-;;1526:96;;8:9:-1;5:2;;;30:1;27;20:12;5:2;1526:96:28;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;1798:224;;8:9:-1;5:2;;;30:1;27;20:12;5:2;1798:224:28;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;1798:224:28;;;;;;;;;;;;;;;;;;;:::i;:::-;;1384:78;;8:9:-1;5:2;;;30:1;27;20:12;5:2;1384:78:28;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;1952:90:39;1988:15;:13;:15::i;:::-;2009:28;2019:17;:15;:17::i;:::-;2009:9;:28::i;:::-;1952:90::o;2206:103:28:-;1261:8;:6;:8::i;:::-;1247:22;;:10;:22;;;1243:76;;;2275:29;2286:17;2275:10;:29::i;:::-;1243:76;;;1301:11;:9;:11::i;:::-;1243:76;2206:103;:::o;2826:221::-;1261:8;:6;:8::i;:::-;1247:22;;:10;:22;;;1243:76;;;2931:29;2942:17;2931:10;:29::i;:::-;2967:12;2984:17;:30;;3015:4;;2984:36;;;;;30:3:-1;22:6;14;1:33;57:3;49:6;45:16;35:26;;2984:36:28;;;;;;;;;;;;;;;;;;;;14:1:-1;21;16:31;;;;75:4;69:11;64:16;;144:4;140:9;133:4;115:16;111:27;107:43;104:1;100:51;94:4;87:65;169:16;166:1;159:27;225:16;222:1;215:4;212:1;208:12;193:49;7:242;;16:31;36:4;31:9;;7:242;;2966:54:28;;;3034:7;3026:16;;;;;;;;1279:1;1243:76;;;1301:11;:9;:11::i;:::-;1243:76;2826:221;;;:::o;1526:96::-;1578:7;1261:8;:6;:8::i;:::-;1247:22;;:10;:22;;;1243:76;;;1600:17;:15;:17::i;:::-;1593:24;;1243:76;;;1301:11;:9;:11::i;:::-;1243:76;1526:96;:::o;1798:224::-;1261:8;:6;:8::i;:::-;1247:22;;:10;:22;;;1243:76;;;1888:1;1868:22;;:8;:22;;;;1860:89;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1960:32;1973:8;:6;:8::i;:::-;1983;1960:32;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1998:19;2008:8;1998:9;:19::i;:::-;1243:76;;;1301:11;:9;:11::i;:::-;1243:76;1798:224;:::o;1384:78::-;1427:7;1261:8;:6;:8::i;:::-;1247:22;;:10;:22;;;1243:76;;;1449:8;:6;:8::i;:::-;1442:15;;1243:76;;;1301:11;:9;:11::i;:::-;1243:76;1384:78;:::o;3552:157::-;3614:8;:6;:8::i;:::-;3600:22;;:10;:22;;;;3592:85;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;3683:21;:19;:21::i;:::-;3552:157::o;974:156:29:-;1024:12;1044;794:66;1059:19;;1044:34;;1115:4;1109:11;1101:19;;1093:33;;:::o;878:731:39:-;1180:12;1177:1;1174;1161:32;1370:1;1367;1353:12;1350:1;1334:14;1329:3;1316:56;1434:14;1431:1;1428;1413:36;1464:6;1524:1;1519:36;;;;1582:14;1579:1;1572:25;1519:36;1538:14;1535:1;1528:25;3092:136:28;3133:11;3152:12;962:66;3167:10;;3152:25;;3213:4;3207:11;3200:18;;3192:32;;:::o;1265:142:29:-;1327:37;1346:17;1327:18;:37::i;:::-;1384:17;1375:27;;;;;;;;;;;;1265:142;:::o;3344:133:28:-;3396:12;962:66;3411:10;;3396:25;;3458:8;3452:4;3445:22;3437:36;;:::o;1818:39:39:-;:::o;1544:305:29:-;1622:57;1661:17;1622:38;:57::i;:::-;1614:129;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1750:12;794:66;1765:19;;1750:34;;1821:17;1815:4;1808:31;1800:45;;:::o;924:616:43:-;984:4;1000:12;1499:7;1487:20;1479:28;;1532:1;1525:4;:8;1518:15;;;924:616;;;:::o",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "newImplementation",
+          "type": "address"
+        }
+      ],
+      "name": "upgradeTo",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "newImplementation",
+          "type": "address"
+        },
+        {
+          "name": "data",
+          "type": "bytes"
+        }
+      ],
+      "name": "upgradeToAndCall",
+      "outputs": [],
+      "payable": true,
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "implementation",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "newAdmin",
+          "type": "address"
+        }
+      ],
+      "name": "changeAdmin",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "admin",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "name": "_logic",
+          "type": "address"
+        },
+        {
+          "name": "_admin",
+          "type": "address"
+        },
+        {
+          "name": "_data",
+          "type": "bytes"
+        }
+      ],
+      "payable": true,
+      "stateMutability": "payable",
+      "type": "constructor"
+    },
+    {
+      "payable": true,
+      "stateMutability": "payable",
+      "type": "fallback"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "previousAdmin",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "newAdmin",
+          "type": "address"
+        }
+      ],
+      "name": "AdminChanged",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "implementation",
+          "type": "address"
+        }
+      ],
+      "name": "Upgraded",
+      "type": "event"
+    }
+  ],
+  "ast": {
+    "absolutePath": "contracts/mocks/zos/ZosAdminUpgradeabilityProxy.sol",
+    "exportedSymbols": {
+      "ZosAdminUpgradeabilityProxy": [
+        5028
+      ]
+    },
+    "id": 5029,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 4996,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:27"
+      },
+      {
+        "absolutePath": "contracts/mocks/zos/ZosBaseAdminUpgradeabilityProxy.sol",
+        "file": "./ZosBaseAdminUpgradeabilityProxy.sol",
+        "id": 4997,
+        "nodeType": "ImportDirective",
+        "scope": 5029,
+        "sourceUnit": 5185,
+        "src": "25:47:27",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 4998,
+              "name": "ZosBaseAdminUpgradeabilityProxy",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 5184,
+              "src": "289:31:27",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_ZosBaseAdminUpgradeabilityProxy_$5184",
+                "typeString": "contract ZosBaseAdminUpgradeabilityProxy"
+              }
+            },
+            "id": 4999,
+            "nodeType": "InheritanceSpecifier",
+            "src": "289:31:27"
+          },
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 5000,
+              "name": "ZosUpgradeabilityProxy",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 5384,
+              "src": "322:22:27",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_ZosUpgradeabilityProxy_$5384",
+                "typeString": "contract ZosUpgradeabilityProxy"
+              }
+            },
+            "id": 5001,
+            "nodeType": "InheritanceSpecifier",
+            "src": "322:22:27"
+          }
+        ],
+        "contractDependencies": [
+          5184,
+          5242,
+          5384,
+          5896
+        ],
+        "contractKind": "contract",
+        "documentation": "@title AdminUpgradeabilityProxy\n@dev Extends from BaseAdminUpgradeabilityProxy with a constructor for \ninitializing the implementation, admin, and init data.",
+        "fullyImplemented": true,
+        "id": 5028,
+        "linearizedBaseContracts": [
+          5028,
+          5384,
+          5184,
+          5242,
+          5896
+        ],
+        "name": "ZosAdminUpgradeabilityProxy",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": {
+              "id": 5026,
+              "nodeType": "Block",
+              "src": "1038:95:27",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "commonType": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        },
+                        "id": 5019,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "argumentTypes": null,
+                          "id": 5015,
+                          "name": "ADMIN_SLOT",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 5042,
+                          "src": "1051:10:27",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bytes32",
+                            "typeString": "bytes32"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "==",
+                        "rightExpression": {
+                          "argumentTypes": null,
+                          "arguments": [
+                            {
+                              "argumentTypes": null,
+                              "hexValue": "6f72672e7a657070656c696e6f732e70726f78792e61646d696e",
+                              "id": 5017,
+                              "isConstant": false,
+                              "isLValue": false,
+                              "isPure": true,
+                              "kind": "string",
+                              "lValueRequested": false,
+                              "nodeType": "Literal",
+                              "src": "1075:28:27",
+                              "subdenomination": null,
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_stringliteral_10d6a54a4754c8869d6886b5f5d7fbfa5b4522237ea5c60d11bc4e7a1ff9390b",
+                                "typeString": "literal_string \"org.zeppelinos.proxy.admin\""
+                              },
+                              "value": "org.zeppelinos.proxy.admin"
+                            }
+                          ],
+                          "expression": {
+                            "argumentTypes": [
+                              {
+                                "typeIdentifier": "t_stringliteral_10d6a54a4754c8869d6886b5f5d7fbfa5b4522237ea5c60d11bc4e7a1ff9390b",
+                                "typeString": "literal_string \"org.zeppelinos.proxy.admin\""
+                              }
+                            ],
+                            "id": 5016,
+                            "name": "keccak256",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 6457,
+                            "src": "1065:9:27",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_function_keccak256_pure$_t_bytes_memory_ptr_$returns$_t_bytes32_$",
+                              "typeString": "function (bytes memory) pure returns (bytes32)"
+                            }
+                          },
+                          "id": 5018,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "kind": "functionCall",
+                          "lValueRequested": false,
+                          "names": [],
+                          "nodeType": "FunctionCall",
+                          "src": "1065:39:27",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bytes32",
+                            "typeString": "bytes32"
+                          }
+                        },
+                        "src": "1051:53:27",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      ],
+                      "id": 5014,
+                      "name": "assert",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 6452,
+                      "src": "1044:6:27",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_assert_pure$_t_bool_$returns$__$",
+                        "typeString": "function (bool) pure"
+                      }
+                    },
+                    "id": 5020,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1044:61:27",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 5021,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1044:61:27"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 5023,
+                        "name": "_admin",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 5005,
+                        "src": "1121:6:27",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      ],
+                      "id": 5022,
+                      "name": "_setAdmin",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 5165,
+                      "src": "1111:9:27",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_address_$returns$__$",
+                        "typeString": "function (address)"
+                      }
+                    },
+                    "id": 5024,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1111:17:27",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 5025,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1111:17:27"
+                }
+              ]
+            },
+            "documentation": "Contract constructor.\n@param _logic address of the initial implementation.\n@param _admin Address of the proxy administrator.\n@param _data Data to send as msg.data to the implementation to initialize the proxied contract.\nIt should include the signature and the parameters of the function to be called, as described in\nhttps://solidity.readthedocs.io/en/v0.4.24/abi-spec.html#function-selector-and-argument-encoding.\nThis parameter is optional, if no data is given the initialization call to proxied contract will be skipped.",
+            "id": 5027,
+            "implemented": true,
+            "kind": "constructor",
+            "modifiers": [
+              {
+                "arguments": [
+                  {
+                    "argumentTypes": null,
+                    "id": 5010,
+                    "name": "_logic",
+                    "nodeType": "Identifier",
+                    "overloadedDeclarations": [],
+                    "referencedDeclaration": 5003,
+                    "src": "1008:6:27",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  {
+                    "argumentTypes": null,
+                    "id": 5011,
+                    "name": "_data",
+                    "nodeType": "Identifier",
+                    "overloadedDeclarations": [],
+                    "referencedDeclaration": 5007,
+                    "src": "1016:5:27",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_memory_ptr",
+                      "typeString": "bytes memory"
+                    }
+                  }
+                ],
+                "id": 5012,
+                "modifierName": {
+                  "argumentTypes": null,
+                  "id": 5009,
+                  "name": "ZosUpgradeabilityProxy",
+                  "nodeType": "Identifier",
+                  "overloadedDeclarations": [],
+                  "referencedDeclaration": 5384,
+                  "src": "985:22:27",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_type$_t_contract$_ZosUpgradeabilityProxy_$5384_$",
+                    "typeString": "type(contract ZosUpgradeabilityProxy)"
+                  }
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "985:37:27"
+              }
+            ],
+            "name": "",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 5008,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 5003,
+                  "name": "_logic",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5027,
+                  "src": "933:14:27",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 5002,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "933:7:27",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 5005,
+                  "name": "_admin",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5027,
+                  "src": "949:14:27",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 5004,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "949:7:27",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 5007,
+                  "name": "_data",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5027,
+                  "src": "965:18:27",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_memory_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 5006,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "965:5:27",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "932:52:27"
+            },
+            "returnParameters": {
+              "id": 5013,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1038:0:27"
+            },
+            "scope": 5028,
+            "src": "921:212:27",
+            "stateMutability": "payable",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 5029,
+        "src": "249:886:27"
+      }
+    ],
+    "src": "0:1136:27"
+  },
+  "bytecode": "0x6080604052604051610c38380380610c388339810180604052606081101561002657600080fd5b810190808051906020019092919080519060200190929190805164010000000081111561005257600080fd5b8281019050602081018481111561006857600080fd5b815185600182028301116401000000008211171561008557600080fd5b505092919050505082816040518080610bda60239139602301905060405180910390207f7050c9e0f4ca769c69bd3a8ef740bc37934f8e2c036e5a723fd8ee048ed3f8c360001b1415156100d557fe5b6100e48261023060201b60201c565b6000815111156101b45760008273ffffffffffffffffffffffffffffffffffffffff16826040518082805190602001908083835b60208310151561013d5780518252602082019150602081019050602083039250610118565b6001836020036101000a038019825116818451168082178552505050505050905001915050600060405180830381855af49150503d806000811461019d576040519150601f19603f3d011682016040523d82523d6000602084013e6101a2565b606091505b505090508015156101b257600080fd5b505b505060405180807f6f72672e7a657070656c696e6f732e70726f78792e61646d696e000000000000815250601a01905060405180910390207f10d6a54a4754c8869d6886b5f5d7fbfa5b4522237ea5c60d11bc4e7a1ff9390b60001b14151561021957fe5b610228826102c960201b60201c565b50505061030b565b610243816102f860201b6107de1760201c565b151561029a576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252603b815260200180610bfd603b913960400191505060405180910390fd5b60007f7050c9e0f4ca769c69bd3a8ef740bc37934f8e2c036e5a723fd8ee048ed3f8c360001b90508181555050565b60007f10d6a54a4754c8869d6886b5f5d7fbfa5b4522237ea5c60d11bc4e7a1ff9390b60001b90508181555050565b600080823b905060008111915050919050565b6108c08061031a6000396000f3fe60806040526004361061004a5760003560e01c80633659cfe6146100545780634f1ef286146100a55780635c60da1b1461013e5780638f28397014610195578063f851a440146101e6575b61005261023d565b005b34801561006057600080fd5b506100a36004803603602081101561007757600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050610257565b005b61013c600480360360408110156100bb57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190803590602001906401000000008111156100f857600080fd5b82018360208201111561010a57600080fd5b8035906020019184600183028401116401000000008311171561012c57600080fd5b90919293919293905050506102ac565b005b34801561014a57600080fd5b50610153610384565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b3480156101a157600080fd5b506101e4600480360360208110156101b857600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff1690602001909291905050506103dc565b005b3480156101f257600080fd5b506101fb610557565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b6102456105af565b610255610250610647565b610678565b565b61025f61069e565b73ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614156102a05761029b816106cf565b6102a9565b6102a861023d565b5b50565b6102b461069e565b73ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff161415610376576102f0836106cf565b60008373ffffffffffffffffffffffffffffffffffffffff168383604051808383808284378083019250505092505050600060405180830381855af49150503d806000811461035b576040519150601f19603f3d011682016040523d82523d6000602084013e610360565b606091505b5050905080151561037057600080fd5b5061037f565b61037e61023d565b5b505050565b600061038e61069e565b73ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614156103d0576103c9610647565b90506103d9565b6103d861023d565b5b90565b6103e461069e565b73ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff16141561054b57600073ffffffffffffffffffffffffffffffffffffffff168173ffffffffffffffffffffffffffffffffffffffff161415151561049f576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260368152602001806108246036913960400191505060405180910390fd5b7f7e644d79422f17c01e4894b5f4f588d331ebfa28653d42ae832dc59e38c9798f6104c861069e565b82604051808373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020018273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019250505060405180910390a16105468161071e565b610554565b61055361023d565b5b50565b600061056161069e565b73ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614156105a35761059c61069e565b90506105ac565b6105ab61023d565b5b90565b6105b761069e565b73ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff161415151561063d576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260328152602001806107f26032913960400191505060405180910390fd5b61064561074d565b565b6000807f7050c9e0f4ca769c69bd3a8ef740bc37934f8e2c036e5a723fd8ee048ed3f8c360001b9050805491505090565b3660008037600080366000845af43d6000803e8060008114610699573d6000f35b3d6000fd5b6000807f10d6a54a4754c8869d6886b5f5d7fbfa5b4522237ea5c60d11bc4e7a1ff9390b60001b9050805491505090565b6106d88161074f565b8073ffffffffffffffffffffffffffffffffffffffff167fbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b60405160405180910390a250565b60007f10d6a54a4754c8869d6886b5f5d7fbfa5b4522237ea5c60d11bc4e7a1ff9390b60001b90508181555050565b565b610758816107de565b15156107af576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252603b81526020018061085a603b913960400191505060405180910390fd5b60007f7050c9e0f4ca769c69bd3a8ef740bc37934f8e2c036e5a723fd8ee048ed3f8c360001b90508181555050565b600080823b90506000811191505091905056fe43616e6e6f742063616c6c2066616c6c6261636b2066756e6374696f6e2066726f6d207468652070726f78792061646d696e43616e6e6f74206368616e6765207468652061646d696e206f6620612070726f787920746f20746865207a65726f206164647265737343616e6e6f742073657420612070726f787920696d706c656d656e746174696f6e20746f2061206e6f6e2d636f6e74726163742061646472657373a165627a7a7230582045b419737cb398312a083110321311c293ace555c075a72c76f87cc94f43c6da00296f72672e7a657070656c696e6f732e70726f78792e696d706c656d656e746174696f6e43616e6e6f742073657420612070726f787920696d706c656d656e746174696f6e20746f2061206e6f6e2d636f6e74726163742061646472657373",
+  "deployedBytecode": "0x60806040526004361061004a5760003560e01c80633659cfe6146100545780634f1ef286146100a55780635c60da1b1461013e5780638f28397014610195578063f851a440146101e6575b61005261023d565b005b34801561006057600080fd5b506100a36004803603602081101561007757600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050610257565b005b61013c600480360360408110156100bb57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190803590602001906401000000008111156100f857600080fd5b82018360208201111561010a57600080fd5b8035906020019184600183028401116401000000008311171561012c57600080fd5b90919293919293905050506102ac565b005b34801561014a57600080fd5b50610153610384565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b3480156101a157600080fd5b506101e4600480360360208110156101b857600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff1690602001909291905050506103dc565b005b3480156101f257600080fd5b506101fb610557565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b6102456105af565b610255610250610647565b610678565b565b61025f61069e565b73ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614156102a05761029b816106cf565b6102a9565b6102a861023d565b5b50565b6102b461069e565b73ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff161415610376576102f0836106cf565b60008373ffffffffffffffffffffffffffffffffffffffff168383604051808383808284378083019250505092505050600060405180830381855af49150503d806000811461035b576040519150601f19603f3d011682016040523d82523d6000602084013e610360565b606091505b5050905080151561037057600080fd5b5061037f565b61037e61023d565b5b505050565b600061038e61069e565b73ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614156103d0576103c9610647565b90506103d9565b6103d861023d565b5b90565b6103e461069e565b73ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff16141561054b57600073ffffffffffffffffffffffffffffffffffffffff168173ffffffffffffffffffffffffffffffffffffffff161415151561049f576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260368152602001806108246036913960400191505060405180910390fd5b7f7e644d79422f17c01e4894b5f4f588d331ebfa28653d42ae832dc59e38c9798f6104c861069e565b82604051808373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020018273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019250505060405180910390a16105468161071e565b610554565b61055361023d565b5b50565b600061056161069e565b73ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614156105a35761059c61069e565b90506105ac565b6105ab61023d565b5b90565b6105b761069e565b73ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff161415151561063d576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260328152602001806107f26032913960400191505060405180910390fd5b61064561074d565b565b6000807f7050c9e0f4ca769c69bd3a8ef740bc37934f8e2c036e5a723fd8ee048ed3f8c360001b9050805491505090565b3660008037600080366000845af43d6000803e8060008114610699573d6000f35b3d6000fd5b6000807f10d6a54a4754c8869d6886b5f5d7fbfa5b4522237ea5c60d11bc4e7a1ff9390b60001b9050805491505090565b6106d88161074f565b8073ffffffffffffffffffffffffffffffffffffffff167fbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b60405160405180910390a250565b60007f10d6a54a4754c8869d6886b5f5d7fbfa5b4522237ea5c60d11bc4e7a1ff9390b60001b90508181555050565b565b610758816107de565b15156107af576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252603b81526020018061085a603b913960400191505060405180910390fd5b60007f7050c9e0f4ca769c69bd3a8ef740bc37934f8e2c036e5a723fd8ee048ed3f8c360001b90508181555050565b600080823b90506000811191505091905056fe43616e6e6f742063616c6c2066616c6c6261636b2066756e6374696f6e2066726f6d207468652070726f78792061646d696e43616e6e6f74206368616e6765207468652061646d696e206f6620612070726f787920746f20746865207a65726f206164647265737343616e6e6f742073657420612070726f787920696d706c656d656e746174696f6e20746f2061206e6f6e2d636f6e74726163742061646472657373a165627a7a7230582045b419737cb398312a083110321311c293ace555c075a72c76f87cc94f43c6da0029",
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.3+commit.10d17f24.Emscripten.clang",
+    "optimizer": {},
+    "evmVersion": "constantinople"
+  }
+}

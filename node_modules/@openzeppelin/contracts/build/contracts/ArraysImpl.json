@@ -1,0 +1,464 @@
+{
+  "fileName": "ArraysImpl.sol",
+  "contractName": "ArraysImpl",
+  "source": "// SPDX-License-Identifier: MIT\n\npragma solidity ^0.6.0;\n\nimport \"../utils/Arrays.sol\";\n\ncontract ArraysImpl {\n    using Arrays for uint256[];\n\n    uint256[] private _array;\n\n    constructor (uint256[] memory array) public {\n        _array = array;\n    }\n\n    function findUpperBound(uint256 element) external view returns (uint256) {\n        return _array.findUpperBound(element);\n    }\n}\n",
+  "sourcePath": "contracts/mocks/ArraysImpl.sol",
+  "sourceMap": "89:300:22:-:0;;;179:75;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;242:5;233:6;:14;;;;;;;;;;;;:::i;:::-;;179:75;89:300;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;;;:::o;:::-;;;;;;;;;;;;;;;;;;;;;;;;;;;:::o;:::-;;;;;;;",
+  "deployedSourceMap": "89:300:22:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;260:127;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;324:7;350:30;372:7;350:6;:21;;:30;;;;:::i;:::-;343:37;;260:127;;;:::o;582:892:92:-;671:7;710:1;694:5;:12;;;;:17;690:56;;;734:1;727:8;;;;690:56;756:11;770:1;756:15;;781:12;796:5;:12;;;;781:27;;819:414;832:4;826:3;:10;819:414;;;852:11;866:23;879:3;884:4;866:12;:23::i;:::-;852:37;;1119:7;1106:5;1112:3;1106:10;;;;;;;;;;;;;;;;:20;1102:121;;;1153:3;1146:10;;1102:121;;;1207:1;1201:3;:7;1195:13;;1102:121;819:414;;;;1356:1;1350:3;:7;:36;;;;;1379:7;1361:5;1373:1;1367:3;:7;1361:14;;;;;;;;;;;;;;;;:25;1350:36;1346:122;;;1415:1;1409:3;:7;1402:14;;;;;;1346:122;1454:3;1447:10;;;;582:892;;;;;:::o;608:190:17:-;670:7;789:1;784;780;:5;;;;;;776:1;772;:5;;;;;;:13;771:19;;;;;;765:1;761;:5;;;;;;755:1;751;:5;;;;;;750:17;:41;743:48;;608:190;;;;:::o",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "uint256[]",
+          "name": "array",
+          "type": "uint256[]"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "element",
+          "type": "uint256"
+        }
+      ],
+      "name": "findUpperBound",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "ast": {
+    "absolutePath": "contracts/mocks/ArraysImpl.sol",
+    "exportedSymbols": {
+      "ArraysImpl": [
+        3088
+      ]
+    },
+    "id": 3089,
+    "license": "MIT",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 3055,
+        "literals": [
+          "solidity",
+          "^",
+          "0.6",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "33:23:22"
+      },
+      {
+        "absolutePath": "contracts/utils/Arrays.sol",
+        "file": "../utils/Arrays.sol",
+        "id": 3056,
+        "nodeType": "ImportDirective",
+        "scope": 3089,
+        "sourceUnit": 10986,
+        "src": "58:29:22",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 3088,
+        "linearizedBaseContracts": [
+          3088
+        ],
+        "name": "ArraysImpl",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "id": 3060,
+            "libraryName": {
+              "contractScope": null,
+              "id": 3057,
+              "name": "Arrays",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 10985,
+              "src": "121:6:22",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_Arrays_$10985",
+                "typeString": "library Arrays"
+              }
+            },
+            "nodeType": "UsingForDirective",
+            "src": "115:27:22",
+            "typeName": {
+              "baseType": {
+                "id": 3058,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "132:7:22",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "id": 3059,
+              "length": null,
+              "nodeType": "ArrayTypeName",
+              "src": "132:9:22",
+              "typeDescriptions": {
+                "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
+                "typeString": "uint256[]"
+              }
+            }
+          },
+          {
+            "constant": false,
+            "id": 3063,
+            "mutability": "mutable",
+            "name": "_array",
+            "nodeType": "VariableDeclaration",
+            "overrides": null,
+            "scope": 3088,
+            "src": "148:24:22",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_array$_t_uint256_$dyn_storage",
+              "typeString": "uint256[]"
+            },
+            "typeName": {
+              "baseType": {
+                "id": 3061,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "148:7:22",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "id": 3062,
+              "length": null,
+              "nodeType": "ArrayTypeName",
+              "src": "148:9:22",
+              "typeDescriptions": {
+                "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
+                "typeString": "uint256[]"
+              }
+            },
+            "value": null,
+            "visibility": "private"
+          },
+          {
+            "body": {
+              "id": 3073,
+              "nodeType": "Block",
+              "src": "223:31:22",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 3071,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "id": 3069,
+                      "name": "_array",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 3063,
+                      "src": "233:6:22",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_array$_t_uint256_$dyn_storage",
+                        "typeString": "uint256[] storage ref"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 3070,
+                      "name": "array",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 3066,
+                      "src": "242:5:22",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_array$_t_uint256_$dyn_memory_ptr",
+                        "typeString": "uint256[] memory"
+                      }
+                    },
+                    "src": "233:14:22",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_uint256_$dyn_storage",
+                      "typeString": "uint256[] storage ref"
+                    }
+                  },
+                  "id": 3072,
+                  "nodeType": "ExpressionStatement",
+                  "src": "233:14:22"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 3074,
+            "implemented": true,
+            "kind": "constructor",
+            "modifiers": [],
+            "name": "",
+            "nodeType": "FunctionDefinition",
+            "overrides": null,
+            "parameters": {
+              "id": 3067,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3066,
+                  "mutability": "mutable",
+                  "name": "array",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 3074,
+                  "src": "192:22:22",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_uint256_$dyn_memory_ptr",
+                    "typeString": "uint256[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 3064,
+                      "name": "uint256",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "192:7:22",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "id": 3065,
+                    "length": null,
+                    "nodeType": "ArrayTypeName",
+                    "src": "192:9:22",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
+                      "typeString": "uint256[]"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "191:24:22"
+            },
+            "returnParameters": {
+              "id": 3068,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "223:0:22"
+            },
+            "scope": 3088,
+            "src": "179:75:22",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 3086,
+              "nodeType": "Block",
+              "src": "333:54:22",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 3083,
+                        "name": "element",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 3076,
+                        "src": "372:7:22",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 3081,
+                        "name": "_array",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 3063,
+                        "src": "350:6:22",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_array$_t_uint256_$dyn_storage",
+                          "typeString": "uint256[] storage ref"
+                        }
+                      },
+                      "id": 3082,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "findUpperBound",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 10984,
+                      "src": "350:21:22",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_view$_t_array$_t_uint256_$dyn_storage_ptr_$_t_uint256_$returns$_t_uint256_$bound_to$_t_array$_t_uint256_$dyn_storage_ptr_$",
+                        "typeString": "function (uint256[] storage pointer,uint256) view returns (uint256)"
+                      }
+                    },
+                    "id": 3084,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "350:30:22",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "functionReturnParameters": 3080,
+                  "id": 3085,
+                  "nodeType": "Return",
+                  "src": "343:37:22"
+                }
+              ]
+            },
+            "documentation": null,
+            "functionSelector": "33e3a58a",
+            "id": 3087,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "findUpperBound",
+            "nodeType": "FunctionDefinition",
+            "overrides": null,
+            "parameters": {
+              "id": 3077,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3076,
+                  "mutability": "mutable",
+                  "name": "element",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 3087,
+                  "src": "284:15:22",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 3075,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "284:7:22",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "283:17:22"
+            },
+            "returnParameters": {
+              "id": 3080,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3079,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 3087,
+                  "src": "324:7:22",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 3078,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "324:7:22",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "323:9:22"
+            },
+            "scope": 3088,
+            "src": "260:127:22",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 3089,
+        "src": "89:300:22"
+      }
+    ],
+    "src": "33:357:22"
+  },
+  "bytecode": "0x608060405234801561001057600080fd5b506040516103243803806103248339818101604052602081101561003357600080fd5b810190808051604051939291908464010000000082111561005357600080fd5b8382019150602082018581111561006957600080fd5b825186602082028301116401000000008211171561008657600080fd5b8083526020830192505050908051906020019060200280838360005b838110156100bd5780820151818401526020810190506100a2565b5050505090500160405250505080600090805190602001906100e09291906100e7565b5050610159565b828054828255906000526020600020908101928215610123579160200282015b82811115610122578251825591602001919060010190610107565b5b5090506101309190610134565b5090565b61015691905b8082111561015257600081600090555060010161013a565b5090565b90565b6101bc806101686000396000f3fe608060405234801561001057600080fd5b506004361061002b5760003560e01c806333e3a58a14610030575b600080fd5b61005c6004803603602081101561004657600080fd5b8101908080359060200190929190505050610072565b6040518082815260200191505060405180910390f35b600061008882600061008f90919063ffffffff16565b9050919050565b600080838054905014156100a6576000905061013e565b60008090506000848054905090505b808210156100fe5760006100c98383610144565b9050848682815481106100d857fe5b906000526020600020015411156100f1578091506100f8565b6001810192505b506100b5565b60008211801561012657508385600184038154811061011957fe5b9060005260206000200154145b1561013857600182039250505061013e565b81925050505b92915050565b6000600280838161015157fe5b066002858161015c57fe5b06018161016557fe5b046002838161017057fe5b046002858161017b57fe5b04010190509291505056fea2646970667358221220912a229988a24187d287e9919fe641fd66af73d5b2312592065b23e30c10879e64736f6c63430006090033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b506004361061002b5760003560e01c806333e3a58a14610030575b600080fd5b61005c6004803603602081101561004657600080fd5b8101908080359060200190929190505050610072565b6040518082815260200191505060405180910390f35b600061008882600061008f90919063ffffffff16565b9050919050565b600080838054905014156100a6576000905061013e565b60008090506000848054905090505b808210156100fe5760006100c98383610144565b9050848682815481106100d857fe5b906000526020600020015411156100f1578091506100f8565b6001810192505b506100b5565b60008211801561012657508385600184038154811061011957fe5b9060005260206000200154145b1561013857600182039250505061013e565b81925050505b92915050565b6000600280838161015157fe5b066002858161015c57fe5b06018161016557fe5b046002838161017057fe5b046002858161017b57fe5b04010190509291505056fea2646970667358221220912a229988a24187d287e9919fe641fd66af73d5b2312592065b23e30c10879e64736f6c63430006090033",
+  "compiler": {
+    "name": "solc",
+    "version": "0.6.9+commit.3e3065ac.Emscripten.clang",
+    "optimizer": {
+      "enabled": false,
+      "runs": 200
+    },
+    "evmVersion": "petersburg"
+  }
+}
