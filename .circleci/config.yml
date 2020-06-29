@@ -12,11 +12,23 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-        key: dependency-cache-{{ checksum "package.json" }}
-      - node/with-cache:
-          steps:
-            - run: npm install
-            - run: npm test
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: Install packages
+          command: npm install
+      - run:
+          name: Lint Contracts
+          command: npm run lint:sol
+      - run:
+          name: Deploy Contracts
+          command: npm run deploy:development
+      - run:
+          name: Test Contracts
+          command: npm run test
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - node_modules
 workflows:
     build-and-test:
       jobs:
