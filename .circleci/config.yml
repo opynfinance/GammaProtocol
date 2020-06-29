@@ -1,9 +1,10 @@
 version: 2.1
 orbs:
+  coveralls: coveralls/coveralls@1.0.4
   node: circleci/node@1.1.6
 jobs:
   build-and-test:
-    working_directory: ~/optionsprotocol
+    working_directory: ~/gammaprotocol
     docker:
       - image: circleci/node:10.18.0
       - image: trufflesuite/ganache-cli:v6.7.0
