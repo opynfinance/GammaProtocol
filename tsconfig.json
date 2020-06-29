@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+      "strict": true,
+      "noImplicitThis": true,
+      "noImplicitAny": true,
+      "noImplicitReturns": true,
+      "alwaysStrict": true,
+      "typeRoots": [
+        "./node_modules/@types",
+        "./build/types",
+        "./node_modules/truffle-typings"
+      ]
+    },
+    "include": [
+      "test/**/*.ts"
+    ],
+    "exclude": [
+      "node_modules"
+    ]
+  }
