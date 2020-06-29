@@ -48,6 +48,7 @@
     "lint:sol": "solhint 'contracts/**/*.sol'",
     "lint:sol:prettier:fix": "prettier --write \"contracts/**/*.sol\"",
     "migrate": "truffle migrate",
+    "deploy:development": "npm run build && npm run migrate -- --network development",
     "deploy:kovan": "npm run build && npm run migrate -- --network kovan"
   },
   "prettier": {
