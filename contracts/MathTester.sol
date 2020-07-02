@@ -4,7 +4,7 @@
  */
 pragma solidity 0.6.0;
 
-import {SafeMath} from "@openzeppelin/contracts/math/SafeMath.sol";
+import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 
 /**
  * @title SafeUnsignedFloatMath
