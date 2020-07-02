@@ -17,4 +17,5 @@ Security is a top priority for us at Opyn. As an insurance platform, we care mos
 We care about building out a safe and secure DeFi. You can help us further this mission, by letting us know if you find a vulnerability by emailing security@opyn.co.
 
 ## Contribute
+We value good code style. As part of that, reference the [solidity code style guidelines](https://solidity.readthedocs.io/en/latest/style-guide.html)
 A Summary of the contributions guidelines can be found [here](https://paper.dropbox.com/doc/Gamma-Protocol-Eng-Docs--A28C2sK8Aw~GCF0zyPagqqflAg-6uHehHp4XDWjD8JuY1qXi) 
