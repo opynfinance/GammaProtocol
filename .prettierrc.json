@@ -8,7 +8,8 @@
     {
       "files": "contracts/**/*.sol",
       "options": {
-        "tabWidth": 4
+        "tabWidth": 4,
+        "singleQuote": false
       }
     }
   ]
