@@ -23,7 +23,7 @@ contract('Math Tester', accounts => {
   });
 
   describe('Test Addition', () => {
-    it('Test basic addition', async () => {
+    it('Test 2 + 5 = 7', async () => {
       const modResult = await math.add('5', '2');
       console.log(modResult.toString());
     });
