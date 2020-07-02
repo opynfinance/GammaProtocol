@@ -22,7 +22,7 @@
     "prettier-plugin-solidity": "^1.0.0-alpha.35",
     "solhint": "^2.3.0",
     "solhint-plugin-prettier": "0.0.3",
-    "truffle": "5.1.32",
+    "truffle": "^5.1.32",
     "truffle-assertions": "0.9.2",
     "truffle-hdwallet-provider-privkey": "^0.3.0",
     "truffle-typings": "^1.0.8",
@@ -30,15 +30,20 @@
     "typechain": "^1.0.5",
     "typechain-target-truffle": "1.0.2",
     "typescript": "3.7.2",
-    "web3-utils": "1.2.4"
+    "web3-utils": "1.2.4",
+    "coveralls": "^3.0.11",
+    "solidity-coverage": "^0.7.4"
   },
   "files": [
     "build"
   ],
   "scripts": {
+    "migrate": "truffle migrate",
+    "build": "npm run compile:contracts && npm run compile:types",
     "compile:contracts": "truffle compile",
     "compile:types": "typechain --target=truffle --outDir build/types/truffle-types \"build/contracts/*.json\"",
-    "build": "npm run compile:contracts && npm run compile:types",
+    "deploy:development": "npm run build && npm run migrate -- --network development",
+    "deploy:kovan": "npm run build && npm run migrate -- --network kovan",
     "pretest": "npm run build",
     "test": "truffle test",
     "test:kovan": "truffle test --network kovan",
@@ -47,8 +52,7 @@
     "lint:tests:fix": "npm run lint:tests -- --fix",
     "lint:sol": "solhint 'contracts/**/*.sol'",
     "lint:sol:prettier:fix": "prettier --write \"contracts/**/*.sol\"",
-    "migrate": "truffle migrate",
-    "deploy:kovan": "npm run build && npm run migrate -- --network kovan"
+    "coverage": "node_modules/truffle/build/cli.bundled.js run coverage --network coverage --solcoverjs './.solcover.js'"
   },
   "prettier": {
     "singleQuote": true,
@@ -95,7 +99,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/aparnakr/OptionsProtocol.git"
+    "url": "git+https://github.com/opynfinance/GammaProtocol.git"
   },
   "keywords": [
     "options",
@@ -105,9 +109,9 @@
   "author": "Opyn",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/aparnakr/OptionsProtocol/issues"
+    "url": "https://github.com/opynfinance/GammaProtocol/issues"
   },
-  "homepage": "https://github.com/aparnakr/OptionsProtocol#readme",
+  "homepage": "https://github.com/opynfinance/GammaProtocol#readme",
   "dependencies": {
     "@truffle/contract": "^4.2.7",
     "mocha": "^7.2.0",
