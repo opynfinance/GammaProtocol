@@ -1,5 +1,5 @@
-contract('OtokenFactory Tester', accounts => {
-  const creatorAddress = accounts[0]
+contract('OtokenFactory Tester', () => {
+  // const creatorAddress = accounts[0]
 
   before('set up contracts', async () => {
     // Do the setup here

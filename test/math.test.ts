@@ -3,12 +3,12 @@ import {MathTesterInstance} from '../build/types/truffle-types'
 
 const Math = artifacts.require('MathTester.sol')
 
-const truffleAssert = require('truffle-assertions')
+// const truffleAssert = require('truffle-assertions')
 
-const {BN, time, expectEvent, expectRevert, balance} = require('@openzeppelin/test-helpers')
+// const {BN, time, expectEvent, expectRevert, balance} = require('@openzeppelin/test-helpers')
 
-contract('Math Tester', accounts => {
-  const creatorAddress = accounts[0]
+contract('Math Tester', () => {
+  // const creatorAddress = accounts[0]
 
   let math: MathTesterInstance
 
@@ -19,7 +19,7 @@ contract('Math Tester', accounts => {
   describe('Test Addition', () => {
     it('Test 2 + 5 = 7', async () => {
       const modResult = await math.add('5', '2')
-      console.log(modResult.toString())
+      expect(modResult.toNumber()).to.be.equal(7)
     })
   })
 })
