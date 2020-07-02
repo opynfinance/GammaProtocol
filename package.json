@@ -44,8 +44,6 @@
     "compile:types": "typechain --target=truffle --outDir build/types/truffle-types \"build/contracts/*.json\"",
     "deploy:development": "npm run build && npm run migrate -- --network development",
     "deploy:kovan": "npm run build && npm run migrate -- --network kovan",
-    "pretest": "npm run build",
-    "test:kovan": "truffle test --network kovan",
     "lint:contracts": "solhint 'contracts/**/*.sol'",
     "lint:tests": "eslint 'test/**/*.ts'",
     "lint:tests:fix": "npm run lint:tests -- --fix",
