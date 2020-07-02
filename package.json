@@ -44,11 +44,7 @@
     "compile:types": "typechain --target=truffle --outDir build/types/truffle-types \"build/contracts/*.json\"",
     "deploy:development": "npm run build && npm run migrate -- --network development",
     "deploy:kovan": "npm run build && npm run migrate -- --network kovan",
-    "compile:contracts": "truffle compile",
-    "compile:types": "typechain --target=truffle --outDir build/types/truffle-types \"build/contracts/*.json\"",
-    "build": "npm run compile:contracts && npm run compile:types",
     "pretest": "npm run build",
-    "test": "truffle test",
     "test:kovan": "truffle test --network kovan",
     "lint:contracts": "solhint 'contracts/**/*.sol'",
     "lint:tests": "eslint 'test/**/*.ts'",
@@ -57,34 +53,6 @@
     "lint:sol:prettier:fix": "prettier --write \"contracts/**/*.sol\"",
     "test": "truffle test",
     "coverage": "node_modules/truffle/build/cli.bundled.js run coverage --network coverage --solcoverjs './.solcover.js'"
-  },
-  "prettier": {
-    "singleQuote": true,
-    "overrides": [
-      {
-        "files": "*.sol",
-        "options": {
-          "singleQuote": false
-        }
-      }
-    ]
-  },
-  "eslintConfig": {
-    "parser": "@typescript-eslint/parser",
-    "extends": [
-      "plugin:@typescript-eslint/recommended",
-      "plugin:prettier/recommended"
-    ],
-    "env": {
-      "es6": true
-    },
-    "parserOptions": {
-      "ecmaVersion": 2018,
-      "sourceType": "module"
-    },
-    "rules": {
-      "@typescript-eslint/no-var-requires": "off"
-    }
   },
   "husky": {
     "hooks": {
