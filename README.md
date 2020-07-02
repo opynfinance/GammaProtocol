@@ -4,7 +4,7 @@ A Decentralized Options Protocol built on Ethereum
 The Gamma Protocol is a Decentralized Options Protocol. It supports capital efficient put and call options. 
 
 - [Formal Spec](https://docs.google.com/document/d/1YpYYbIR4oKXua_6V5pw5X3XbCx05nBjpm_BaEiz7Vsg/edit?userstoinvite=sellamihaythem96@gmail.com&ts=5ef4a75b&actionButton=1#heading=h.l1p9gbp0fgoh)
-- [Summary of V2] (https://www.dropbox.com/scl/fi/e2d04a06lp97ayuq3p6tk/v2-Margin-Summary.paper?dl=0&rlkey=k6jjfy6dfcyqa8jr18zf99faz) 
+- [Summary of V2](https://www.dropbox.com/scl/fi/e2d04a06lp97ayuq3p6tk/v2-Margin-Summary.paper?dl=0&rlkey=k6jjfy6dfcyqa8jr18zf99faz) 
 
 
 ## Installation
