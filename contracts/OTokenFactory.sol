@@ -23,9 +23,12 @@ contract OtokenFactory is Spawner {
     function createOtoken(
         address _strikeAsset,
         address _underlyingAsset,
-        uint256 _strikePrice
+        address _collateralAsset,
+        uint256 _strikePrice,
+        uint256 _expiry,
+        bool _isPut
     ) external returns (address newOtoken) {
-        bytes32 id = _getOptionId(_strikeAsset, _underlyingAsset, _strikePrice);
+        bytes32 id = _getOptionId(_strikeAsset, _underlyingAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
         require(_tokenAddresses[id] == address(0), "OptionFactory: Option created");
 
         /**
@@ -36,7 +39,10 @@ contract OtokenFactory is Spawner {
             logic.init.selector,
             _strikeAsset,
             _underlyingAsset,
-            _strikePrice
+            _collateralAsset,
+            _strikePrice,
+            _expiry,
+            _isPut
         );
 
         newOtoken = _spawn(address(logic), initializationCalldata);
@@ -57,9 +63,12 @@ contract OtokenFactory is Spawner {
     function getOtoken(
         address _strikeAsset,
         address _underlyingAsset,
-        uint256 _strikePrice
+        address _collateralAsset,
+        uint256 _strikePrice,
+        uint256 _expiry,
+        bool _isPut
     ) public view returns (address otoken) {
-        bytes32 id = _getOptionId(_strikeAsset, _underlyingAsset, _strikePrice);
+        bytes32 id = _getOptionId(_strikeAsset, _underlyingAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
         return _tokenAddresses[id];
     }
 
@@ -69,24 +78,35 @@ contract OtokenFactory is Spawner {
     function getTargetOtokenAddress(
         address _strikeAsset,
         address _underlyingAsset,
-        uint256 _strikePrice
-    ) external view returns (address nextAddress) {
-        bytes32 id = _getOptionId(_strikeAsset, _underlyingAsset, _strikePrice);
+        address _collateralAsset,
+        uint256 _strikePrice,
+        uint256 _expiry,
+        bool _isPut
+    ) external view returns (address targetAddress) {
+        bytes32 id = _getOptionId(_strikeAsset, _underlyingAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
         require(_tokenAddresses[id] == address(0), "OptionFactory: Option created");
         bytes memory initializationCalldata = abi.encodeWithSelector(
             logic.init.selector,
             _strikeAsset,
             _underlyingAsset,
-            _strikePrice
+            _collateralAsset,
+            _strikePrice,
+            _expiry,
+            _isPut
         );
-        nextAddress = _computeNextAddress(address(logic), initializationCalldata);
+        targetAddress = _computeNextAddress(address(logic), initializationCalldata);
     }
 
     function _getOptionId(
         address _strikeAsset,
         address _underlyingAsset,
-        uint256 _strikePrice
+        address _collateralAsset,
+        uint256 _strikePrice,
+        uint256 _expiry,
+        bool _isPut
     ) internal pure returns (bytes32 id) {
-        id = keccak256(abi.encodePacked(_strikeAsset, _underlyingAsset, _strikePrice));
+        id = keccak256(
+            abi.encodePacked(_strikeAsset, _underlyingAsset, _collateralAsset, _strikePrice, _expiry, _isPut)
+        );
     }
 }
