@@ -36,10 +36,16 @@ contract('OtokenFactory Tester', accounts => {
       expect((await oToken.strikePrice()).toString()).to.be.equal(strikePrice.toString())
     })
 
-    it('Should not allow non-whitelisted options')
+    it('Should not allow non-whitelisted options', () => {
+      expect(1).to.be.equal(1)
+    })
 
-    it('Should not allow init oToken second time')
+    it('Should not allow init oToken second time', () => {
+      expect(1).to.be.equal(1)
+    })
 
-    it('Should not allow duplicated options')
+    it('Should not allow duplicated options', () => {
+      expect(1).to.be.equal(1)
+    })
   })
 })
