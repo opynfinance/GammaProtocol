@@ -25,19 +25,19 @@ contract OtokenFactory is Spawner {
         address _underlyingAsset,
         uint256 _strikePrice
     ) external returns (address newOtoken) {
+        bytes32 id = _getOptionId(_strikeAsset, _underlyingAsset, _strikePrice);
+        require(_tokenAddresses[id] == address(0), "OptionFactory: Option created");
+
+        /**
+         * Todo: Check whitelist module
+         */
+
         bytes memory initializationCalldata = abi.encodeWithSelector(
             logic.init.selector,
             _strikeAsset,
             _underlyingAsset,
             _strikePrice
         );
-        bytes32 id = keccak256(initializationCalldata);
-
-        require(_tokenAddresses[id] == address(0), "OptionFactory: Option created");
-
-        /**
-         * Todo: Check whitelist module
-         */
 
         newOtoken = _spawn(address(logic), initializationCalldata);
 
@@ -59,13 +59,7 @@ contract OtokenFactory is Spawner {
         address _underlyingAsset,
         uint256 _strikePrice
     ) public view returns (address otoken) {
-        bytes memory callData = abi.encodeWithSelector(
-            logic.init.selector,
-            _strikeAsset,
-            _underlyingAsset,
-            _strikePrice
-        );
-        bytes32 id = keccak256(callData);
+        bytes32 id = _getOptionId(_strikeAsset, _underlyingAsset, _strikePrice);
         return _tokenAddresses[id];
     }
 
@@ -77,14 +71,22 @@ contract OtokenFactory is Spawner {
         address _underlyingAsset,
         uint256 _strikePrice
     ) external view returns (address nextAddress) {
+        bytes32 id = _getOptionId(_strikeAsset, _underlyingAsset, _strikePrice);
+        require(_tokenAddresses[id] == address(0), "OptionFactory: Option created");
         bytes memory initializationCalldata = abi.encodeWithSelector(
             logic.init.selector,
             _strikeAsset,
             _underlyingAsset,
             _strikePrice
         );
-        bytes32 id = keccak256(initializationCalldata);
-        require(_tokenAddresses[id] == address(0), "OptionFactory: Option created");
         nextAddress = _computeNextAddress(address(logic), initializationCalldata);
+    }
+
+    function _getOptionId(
+        address _strikeAsset,
+        address _underlyingAsset,
+        uint256 _strikePrice
+    ) internal pure returns (bytes32 id) {
+        id = keccak256(abi.encodePacked(_strikeAsset, _underlyingAsset, _strikePrice));
     }
 }
