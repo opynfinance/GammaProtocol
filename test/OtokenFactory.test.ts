@@ -6,7 +6,7 @@ const OToken = artifacts.require('OToken.sol')
 const OTokenFactory = artifacts.require('OTokenFactory.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
-contract('OtokenFactory Tester', accounts => {
+contract('OTokenFactory', accounts => {
   let oToken: OTokenInstance
   let oTokenFactory: OTokenFactoryInstance
   let oToken1Addr: string
