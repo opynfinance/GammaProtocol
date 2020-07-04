@@ -47,7 +47,7 @@
     "lint:contracts": "solhint 'contracts/**/*.sol'",
     "lint:tests": "eslint 'test/**/*.ts'",
     "lint:tests:fix": "npm run lint:tests -- --fix",
-    "lint:sol": "solhint 'contracts/**/*.sol'",
+    "lint:sol": "solhint -f table contracts/**/*.sol",
     "lint:sol:prettier:fix": "prettier --write \"contracts/**/*.sol\"",
     "test": "truffle test",
     "coverage": "node_modules/truffle/build/cli.bundled.js run coverage --network coverage --solcoverjs './.solcover.js'"
@@ -59,7 +59,7 @@
   },
   "lint-staged": {
     "**/*.sol": [
-      "prettier --write",
+      "prettier --write \"contracts/**/*.sol\"",
       "git add"
     ],
     "test/**": [
