@@ -6,6 +6,9 @@ import "./Otoken.sol";
 contract OtokenFactory is Spawner {
     Otoken public logic;
 
+    address[] public otokens;
+    uint256 public otokensCreated;
+
     mapping(address => bool) public isOtoken;
 
     mapping(bytes32 => address) private _tokenAddresses;
@@ -47,7 +50,9 @@ contract OtokenFactory is Spawner {
 
         newOtoken = _spawn(address(logic), initializationCalldata);
 
-        // add new token to mapping
+        // record new otoken
+        otokensCreated += 1;
+        otokens.push(newOtoken);
         _tokenAddresses[id] = newOtoken;
         isOtoken[newOtoken] = true;
         /**
@@ -58,7 +63,7 @@ contract OtokenFactory is Spawner {
     }
 
     /**
-     * @dev return the otoken address if the otoken with same paramter has been deployed.
+     * @dev get the otoken address with the set of paramters.
      */
     function getOtoken(
         address _strikeAsset,
@@ -73,7 +78,7 @@ contract OtokenFactory is Spawner {
     }
 
     /**
-     * @dev return the address of undeployed otoken
+     * @dev get the address of undeployed otoken.
      */
     function getTargetOtokenAddress(
         address _strikeAsset,
@@ -97,6 +102,9 @@ contract OtokenFactory is Spawner {
         targetAddress = _computeNextAddress(address(logic), initializationCalldata);
     }
 
+    /**
+     * @dev internal function to hash paramters and get option id.
+     */
     function _getOptionId(
         address _strikeAsset,
         address _underlyingAsset,
