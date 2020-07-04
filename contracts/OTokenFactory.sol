@@ -67,7 +67,7 @@ contract OtokenFactory is Spawner {
         uint256 _strikePrice,
         uint256 _expiry,
         bool _isPut
-    ) public view returns (address otoken) {
+    ) external view returns (address otoken) {
         bytes32 id = _getOptionId(_strikeAsset, _underlyingAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
         return _tokenAddresses[id];
     }
