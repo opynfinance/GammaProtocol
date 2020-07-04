@@ -1,6 +1,6 @@
 pragma solidity =0.6.0;
 
-contract OToken {
+contract Otoken {
     address public strikeAsset;
     address public underlyingAsset;
     uint256 public strikePrice;

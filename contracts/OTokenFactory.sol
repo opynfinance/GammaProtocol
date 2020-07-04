@@ -1,17 +1,17 @@
 pragma solidity =0.6.0;
 
 import "./lib/Spawner.sol";
-import "./OToken.sol";
+import "./Otoken.sol";
 
 contract OtokenFactory is Spawner {
-    OToken public logic;
+    Otoken public logic;
 
     mapping(address => bool) public isOtoken;
 
     mapping(bytes32 => address) private _tokenAddresses;
 
-    constructor(OToken _oTokenImpl) public {
-        logic = _oTokenImpl;
+    constructor(Otoken _otokenImpl) public {
+        logic = _otokenImpl;
     }
 
     event OtokenCreated(address tokenAddress, address creator, address strike, address underlying, uint256 strikePrice);
@@ -35,23 +35,30 @@ contract OtokenFactory is Spawner {
 
         require(_tokenAddresses[id] == address(0), "OptionFactory: Option created");
 
+        /**
+         * Todo: Check whitelist module
+         */
+
         newOtoken = _spawn(address(logic), initializationCalldata);
 
         // add new token to mapping
         _tokenAddresses[id] = newOtoken;
         isOtoken[newOtoken] = true;
+        /**
+         * Todo: register to whitelist module
+         */
 
         emit OtokenCreated(newOtoken, msg.sender, _strikeAsset, _underlyingAsset, _strikePrice);
     }
 
     /**
-     * @dev return the oToken address if the oToken with same paramter has been deployed.
+     * @dev return the otoken address if the otoken with same paramter has been deployed.
      */
     function getOtoken(
         address _strikeAsset,
         address _underlyingAsset,
         uint256 _strikePrice
-    ) public view returns (address oToken) {
+    ) public view returns (address otoken) {
         bytes memory callData = abi.encodeWithSelector(
             logic.init.selector,
             _strikeAsset,
@@ -63,7 +70,7 @@ contract OtokenFactory is Spawner {
     }
 
     /**
-     * @dev return the address of undeployed oToken
+     * @dev return the address of undeployed otoken
      */
     function getTargetOtokenAddress(
         address _strikeAsset,
