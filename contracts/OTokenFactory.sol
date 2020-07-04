@@ -3,10 +3,10 @@ pragma solidity =0.6.0;
 import "./lib/Spawner.sol";
 import "./OToken.sol";
 
-contract OTokenFactory is Spawner {
+contract OtokenFactory is Spawner {
     OToken public logic;
 
-    mapping(address => bool) public isOToken;
+    mapping(address => bool) public isOtoken;
 
     mapping(bytes32 => address) private _tokenAddresses;
 
@@ -14,13 +14,17 @@ contract OTokenFactory is Spawner {
         logic = _oTokenImpl;
     }
 
-    event OTokenCreated(address tokenAddress, address creator, address strike, address underlying, uint256 strikePrice);
+    event OtokenCreated(address tokenAddress, address creator, address strike, address underlying, uint256 strikePrice);
 
-    function createOToken(
+    /**
+     * @dev create a new Otoken
+     * The address of the newly deployed token can be predicted by calling getTargetOtokenAddress
+     */
+    function createOtoken(
         address _strikeAsset,
         address _underlyingAsset,
         uint256 _strikePrice
-    ) external returns (address newOToken) {
+    ) external returns (address newOtoken) {
         bytes memory initializationCalldata = abi.encodeWithSelector(
             logic.init.selector,
             _strikeAsset,
@@ -31,19 +35,19 @@ contract OTokenFactory is Spawner {
 
         require(_tokenAddresses[id] == address(0), "OptionFactory: Option created");
 
-        newOToken = _spawn(address(logic), initializationCalldata);
+        newOtoken = _spawn(address(logic), initializationCalldata);
 
         // add new token to mapping
-        _tokenAddresses[id] = newOToken;
-        isOToken[newOToken] = true;
+        _tokenAddresses[id] = newOtoken;
+        isOtoken[newOtoken] = true;
 
-        emit OTokenCreated(newOToken, msg.sender, _strikeAsset, _underlyingAsset, _strikePrice);
+        emit OtokenCreated(newOtoken, msg.sender, _strikeAsset, _underlyingAsset, _strikePrice);
     }
 
     /**
      * @dev return the oToken address if the oToken with same paramter has been deployed.
      */
-    function getOToken(
+    function getOtoken(
         address _strikeAsset,
         address _underlyingAsset,
         uint256 _strikePrice
@@ -59,9 +63,9 @@ contract OTokenFactory is Spawner {
     }
 
     /**
-     * @dev return the address of
+     * @dev return the address of undeployed oToken
      */
-    function getTargetOTokenAddress(
+    function getTargetOtokenAddress(
         address _strikeAsset,
         address _underlyingAsset,
         uint256 _strikePrice
