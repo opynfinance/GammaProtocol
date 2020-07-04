@@ -69,7 +69,7 @@ contract Spawner {
     }
 
     /**
-     * @notice Internal view function for finding the address of the next standard
+     * @notice Internal view function for finding the address of the standard
      * eip-1167 minimal proxy created using `CREATE2` with a given logic contract
      * and initialization calldata payload.
      * @param logicContract address The address of the logic contract.
@@ -79,7 +79,7 @@ contract Spawner {
      * @return target The address of the next spawned minimal proxy contract with the
      * given parameters.
      */
-    function _computeNextAddress(address logicContract, bytes memory initializationCalldata)
+    function _computeAddress(address logicContract, bytes memory initializationCalldata)
         internal
         view
         returns (address target)

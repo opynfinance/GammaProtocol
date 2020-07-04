@@ -99,7 +99,7 @@ contract OtokenFactory is Spawner {
             _expiry,
             _isPut
         );
-        targetAddress = _computeNextAddress(address(logic), initializationCalldata);
+        targetAddress = _computeAddress(address(logic), initializationCalldata);
     }
 
     /**
