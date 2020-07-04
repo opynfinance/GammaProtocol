@@ -27,7 +27,7 @@ contract OTokenFactory is Spawner {
         emit OTokenCreated(newOToken, msg.sender, _strikeAsset, _underlyingAsset, _strikePrice);
     }
 
-    function getUndeployedOTokenAddress(
+    function getTargetTokenAddress(
         address _strikeAsset,
         address _underlyingAsset,
         uint256 _strikePrice
