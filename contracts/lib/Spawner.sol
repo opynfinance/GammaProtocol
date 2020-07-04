@@ -6,34 +6,31 @@ pragma solidity ^0.6.0;
  * @notice This contract provides creation code that is used by Spawner in order
  * to initialize and deploy eip-1167 minimal proxies for a given logic contract.
  */
-// contract Spawn {
-//   constructor(
-//     address logicContract,
-//     bytes memory initializationCalldata
-//   ) public payable {
-//     // delegatecall into the logic contract to perform initialization.
-//     (bool ok, ) = logicContract.delegatecall(initializationCalldata);
-//     if (!ok) {
-//       // pass along failure message from delegatecall and revert.
-//       assembly {
-//         returndatacopy(0, 0, returndatasize)
-//         revert(0, returndatasize)
-//       }
-//     }
+contract Spawn {
+    constructor(address logicContract, bytes memory initializationCalldata) public payable {
+        // delegatecall into the logic contract to perform initialization.
+        (bool ok, ) = logicContract.delegatecall(initializationCalldata);
+        if (!ok) {
+            // pass along failure message from delegatecall and revert.
+            assembly {
+                returndatacopy(0, 0, returndatasize())
+                revert(0, returndatasize())
+            }
+        }
 
-//     // place eip-1167 runtime code in memory.
-//     bytes memory runtimeCode = abi.encodePacked(
-//       bytes10(0x363d3d373d3d3d363d73),
-//       logicContract,
-//       bytes15(0x5af43d82803e903d91602b57fd5bf3)
-//     );
+        // place eip-1167 runtime code in memory.
+        bytes memory runtimeCode = abi.encodePacked(
+            bytes10(0x363d3d373d3d3d363d73),
+            logicContract,
+            bytes15(0x5af43d82803e903d91602b57fd5bf3)
+        );
 
-//     // return eip-1167 code to write it to spawned contract runtime.
-//     assembly {
-//       return(add(0x20, runtimeCode), 45) // eip-1167 runtime code, length
-//     }
-//   }
-// }
+        // return eip-1167 code to write it to spawned contract runtime.
+        assembly {
+            return(add(0x20, runtimeCode), 45) // eip-1167 runtime code, length
+        }
+    }
+}
 
 /**
  * @title SpawnCompact
@@ -50,8 +47,8 @@ contract SpawnCompact {
         if (!ok) {
             // pass along failure message from delegatecall and revert.
             assembly {
-                returndatacopy(0, 0, returndatasize)
-                revert(0, returndatasize)
+                returndatacopy(0, 0, returndatasize())
+                revert(0, returndatasize())
             }
         }
 
@@ -252,15 +249,15 @@ contract Spawner {
             let encoded_size := mload(initCode) // load the init code's length.
             spawnedContract := create(
                 // call `CREATE` with 3 arguments.
-                callvalue, // forward any supplied endowment.
+                callvalue(), // forward any supplied endowment.
                 encoded_data, // pass in initialization code.
                 encoded_size // pass in init code's length.
             )
 
             // pass along failure message from failed contract deployment and revert.
             if iszero(spawnedContract) {
-                returndatacopy(0, 0, returndatasize)
-                revert(0, returndatasize)
+                returndatacopy(0, 0, returndatasize())
+                revert(0, returndatasize())
             }
         }
     }
@@ -282,7 +279,7 @@ contract Spawner {
             let encoded_size := mload(initCode) // load the init code's length.
             spawnedContract := create2(
                 // call `CREATE2` w/ 4 arguments.
-                callvalue, // forward any supplied endowment.
+                callvalue(), // forward any supplied endowment.
                 encoded_data, // pass in initialization code.
                 encoded_size, // pass in init code's length.
                 salt // pass in the salt value.
@@ -290,8 +287,8 @@ contract Spawner {
 
             // pass along failure message from failed contract deployment and revert.
             if iszero(spawnedContract) {
-                returndatacopy(0, 0, returndatasize)
-                revert(0, returndatasize)
+                returndatacopy(0, 0, returndatasize())
+                revert(0, returndatasize())
             }
         }
     }
