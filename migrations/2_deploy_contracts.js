@@ -1,6 +1,6 @@
 const MathTester = artifacts.require('MathTester.sol')
-const OToken = artifacts.require('OToken.sol')
-const OTokenFactory = artifacts.require('OTokenFactory.sol')
+const OToken = artifacts.require('Otoken.sol')
+const OTokenFactory = artifacts.require('OtokenFactory.sol')
 
 module.exports = function(deployer) {
   deployer.then(async () => {

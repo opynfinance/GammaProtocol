@@ -1,4 +1,4 @@
-import {OTokenFactoryInstance, OTokenInstance} from '../build/types/truffle-types'
+import {OtokenFactoryInstance, OtokenInstance} from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
 const {expectEvent, expectRevert, time} = require('@openzeppelin/test-helpers')
@@ -7,8 +7,8 @@ const OTokenFactory = artifacts.require('OtokenFactory.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
 contract('OTokenFactory', accounts => {
-  let oToken: OTokenInstance
-  let oTokenFactory: OTokenFactoryInstance
+  let oToken: OtokenInstance
+  let oTokenFactory: OtokenFactoryInstance
 
   // Paramter used for oToken init(). (Use random addresses as usdc and eth)
   const usdcAddress = accounts[5]
