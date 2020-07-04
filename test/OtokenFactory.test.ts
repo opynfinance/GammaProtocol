@@ -26,6 +26,14 @@ contract('OTokenFactory', accounts => {
   })
 
   describe('Get oToken address', () => {
+    it('Should have no otoken records at the begining', async () => {
+      const otokens = await oTokenFactory.getOtokens()
+      expect(otokens.length).to.equal(0)
+
+      const otokensCreated = await oTokenFactory.otokensCreated()
+      expect(otokensCreated.toNumber()).to.equal(0)
+    })
+
     it('Should return address(0) if token is not deployed', async () => {
       const existAddress = await oTokenFactory.getOtoken(
         usdcAddress,
@@ -126,6 +134,16 @@ contract('OTokenFactory', accounts => {
   })
 
   describe('Get oToken address after creation', () => {
+    it('Should have one otoken record', async () => {
+      const otokens = await oTokenFactory.getOtokens()
+      expect(otokens.length).to.equal(1)
+
+      expect(otokens.includes(oToken.address)).to.be.true
+
+      const otokensCreated = await oTokenFactory.otokensCreated()
+      expect(otokensCreated.toNumber()).to.equal(1)
+    })
+
     it('Should return correct token address', async () => {
       const existAddress = await oTokenFactory.getOtoken(
         usdcAddress,
@@ -141,11 +159,6 @@ contract('OTokenFactory', accounts => {
     it('Calling isOtoken with the correct address should return true ', async () => {
       const isOtoken = await oTokenFactory.isOtoken(oToken.address)
       expect(isOtoken).to.be.true
-    })
-
-    it('Should have added new token addresses to the array.', async () => {
-      const token1 = await oTokenFactory.otokens(0)
-      expect(token1).to.be.eq(oToken.address)
     })
 
     it('Should increase otokensCreated', async () => {

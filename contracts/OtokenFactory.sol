@@ -63,6 +63,13 @@ contract OtokenFactory is Spawner {
     }
 
     /**
+     * @dev get all otokens created by this factory.
+     */
+    function getOtokens() external view returns (address[] memory) {
+        return otokens;
+    }
+
+    /**
      * @dev get the otoken address with the set of paramters.
      */
     function getOtoken(
