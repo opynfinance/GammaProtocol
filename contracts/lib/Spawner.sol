@@ -1,3 +1,4 @@
+/* solhint-disable avoid-low-level-calls, no-inline-assembly */
 pragma solidity ^0.6.0;
 
 /**
