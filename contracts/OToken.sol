@@ -1,9 +1,17 @@
 pragma solidity =0.6.0;
 
 contract OToken {
-    address addressBook;
+    address public strikeAsset;
+    address public underlyingAsset;
+    uint256 public strikePrice;
 
-    constructor(address _addressBook) public {
-        addressBook = _addressBook;
+    function init(
+        address _strikeAsset,
+        address _underlyingAsset,
+        uint256 _strikePrice
+    ) external {
+        strikeAsset = _strikeAsset;
+        underlyingAsset = _underlyingAsset;
+        strikePrice = _strikePrice;
     }
 }
