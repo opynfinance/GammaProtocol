@@ -42,6 +42,9 @@ contract Spawn {
  * their current address (i.e. it is being `DELEGATECALL`ed from a constructor).
  */
 contract Spawner {
+    // Have a fixed salt value because we will only deploy oToken with same init value once.
+    uint256 private constant SALT = 0;
+
     /**
      * @notice Internal function for spawning an eip-1167 minimal proxy using
      * `CREATE2`.
@@ -88,7 +91,22 @@ contract Spawner {
         );
 
         // get target address using the constructed initialization code.
-        (, target) = _getSaltAndTarget(initCode);
+        bytes32 initCodeHash = keccak256(initCode);
+
+        target = address( // derive the target deployment address.
+            uint160( // downcast to match the address type.
+                uint256( // cast to uint to truncate upper digits.
+                    keccak256( // compute CREATE2 hash using 4 inputs.
+                        abi.encodePacked( // pack all inputs to the hash together.
+                            bytes1(0xff), // pass in the control character.
+                            address(this), // pass in the address of this contract.
+                            bytes32(SALT), // pass in the salt from above.
+                            initCodeHash // pass in hash of contract creation code.
+                        )
+                    )
+                )
+            )
+        );
     }
 
     /**
@@ -100,8 +118,7 @@ contract Spawner {
      * @return spawnedContract The address of the newly-spawned contract.
      */
     function _spawnCreate2(bytes memory initCode) private returns (address spawnedContract) {
-        // get salt to use during deployment using the supplied initialization code.
-        (bytes32 salt, ) = _getSaltAndTarget(initCode);
+        bytes32 salt = bytes32(SALT);
 
         assembly {
             let encoded_data := add(0x20, initCode) // load initialization code.
@@ -120,33 +137,5 @@ contract Spawner {
                 revert(0, returndatasize())
             }
         }
-    }
-
-    /**
-     * @notice Private function for determining the salt and the target deployment
-     * address for the next spawned contract (using create2) based on the contract
-     * creation code.
-     */
-    function _getSaltAndTarget(bytes memory initCode) private view returns (bytes32 salt, address target) {
-        // get the keccak256 hash of the init code for address derivation.
-        bytes32 initCodeHash = keccak256(initCode);
-
-        // Have a fixed salt value because we will only deploy oToken with same init value once.
-        salt = bytes32(0);
-
-        target = address( // derive the target deployment address.
-            uint160( // downcast to match the address type.
-                uint256( // cast to uint to truncate upper digits.
-                    keccak256( // compute CREATE2 hash using 4 inputs.
-                        abi.encodePacked( // pack all inputs to the hash together.
-                            bytes1(0xff), // pass in the control character.
-                            address(this), // pass in the address of this contract.
-                            salt, // pass in the salt from above.
-                            initCodeHash // pass in hash of contract creation code.
-                        )
-                    )
-                )
-            )
-        );
     }
 }
