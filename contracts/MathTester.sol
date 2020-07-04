@@ -15,7 +15,7 @@ contract MathTester {
     using SafeMath for uint256;
 
     // Assumes 18 digits precision of decimals.
-    uint256 constant decimals = 1e18;
+    uint256 public constant DECIMALS = 1e18;
 
     /**
      * @dev Multiplies two unsigned fixed points and maintains precision.
@@ -27,14 +27,14 @@ contract MathTester {
      */
     function mul(uint256 a, uint256 b) external pure returns (uint256) {
         uint256 c = a.mul(b);
-        return (c.add(decimals.div(2))).div(decimals);
+        return (c.add(DECIMALS.div(2))).div(DECIMALS);
     }
 
     /**
      * @dev Division of two unsigned fixed point numbers, rounding the quotient, reverts on division by zero.
      */
     function div(uint256 a, uint256 b) external pure returns (uint256) {
-        uint256 c = a.mul(decimals);
+        uint256 c = a.mul(DECIMALS);
         return (c.add(b.div(2))).div(b);
     }
 

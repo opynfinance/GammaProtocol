@@ -59,11 +59,12 @@
   },
   "lint-staged": {
     "**/*.sol": [
-      "prettier --write \"contracts/**/*.sol\"",
+      "npm run lint:contracts",
+      "npm run lint:sol:prettier:fix",
       "git add"
     ],
     "test/**": [
-      "eslint --fix",
+      "npm run lint:tests:fix",
       "git add"
     ]
   },
