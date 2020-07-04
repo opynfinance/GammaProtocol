@@ -9,7 +9,6 @@ const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 contract('OTokenFactory', accounts => {
   let oToken: OTokenInstance
   let oTokenFactory: OTokenFactoryInstance
-  let oToken1Addr: string
 
   // Paramter used for oToken init(). (Use random addresses as usdc and eth)
   const usdcAddress = accounts[5]
@@ -17,7 +16,8 @@ contract('OTokenFactory', accounts => {
   const strikePrice = new BigNumber(200)
 
   before('Deploy oToken logic and Factory contract', async () => {
-    oTokenFactory = await OTokenFactory.deployed()
+    const logic = await OToken.new()
+    oTokenFactory = await OTokenFactory.new(logic.address)
   })
 
   describe('Get oToken address', () => {
@@ -48,7 +48,6 @@ contract('OTokenFactory', accounts => {
       })
       expect(txResponse.logs[0].args.tokenAddress).to.be.equal(targetAddress)
       oToken = await OToken.at(targetAddress)
-      oToken1Addr = targetAddress
     })
 
     it('Should have correct paramter', async () => {
@@ -76,7 +75,7 @@ contract('OTokenFactory', accounts => {
   describe('Get oToken address after creation', () => {
     it('Should return token address correct token address', async () => {
       const existAddress = await oTokenFactory.getOtoken(usdcAddress, ethAddress, strikePrice)
-      expect(existAddress).to.equal(oToken1Addr)
+      expect(existAddress).to.equal(oToken.address)
     })
 
     it('should revert when calling getTargetOTokenAddress with existing paramters', async () => {
