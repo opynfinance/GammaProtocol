@@ -1,15 +1,17 @@
 import {OTokenFactoryInstance, OTokenInstance} from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
-const {expectEvent} = require('@openzeppelin/test-helpers')
+const {expectEvent, expectRevert} = require('@openzeppelin/test-helpers')
 const OToken = artifacts.require('OToken.sol')
 const OTokenFactory = artifacts.require('OTokenFactory.sol')
+const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
 contract('OtokenFactory Tester', accounts => {
   let oToken: OTokenInstance
   let oTokenFactory: OTokenFactoryInstance
+  let oToken1Addr: string
 
-  // use random address
+  // Paramter used for oToken init(). (Use random addresses as usdc and eth)
   const usdcAddress = accounts[5]
   const ethAddress = accounts[6]
   const strikePrice = new BigNumber(200)
@@ -18,9 +20,27 @@ contract('OtokenFactory Tester', accounts => {
     oTokenFactory = await OTokenFactory.deployed()
   })
 
+  describe('Get oToken address', () => {
+    it('Should return address(0) if token not deployed', async () => {
+      const existAddress = await oTokenFactory.getOToken(usdcAddress, ethAddress, strikePrice)
+      expect(existAddress).to.equal(ZERO_ADDR)
+    })
+
+    it('should get deterministic address with new oToken paramters', async () => {
+      const targetAddress = await oTokenFactory.getTargetOTokenAddress(usdcAddress, ethAddress, strikePrice)
+      expect(targetAddress).not.equal(ZERO_ADDR)
+    })
+
+    it('should get different target address with different oToken paramters', async () => {
+      const targetAddress1 = await oTokenFactory.getTargetOTokenAddress(usdcAddress, ethAddress, strikePrice)
+      const targetAddress2 = await oTokenFactory.getTargetOTokenAddress(ethAddress, usdcAddress, strikePrice)
+      expect(targetAddress1).not.equal(targetAddress2)
+    })
+  })
+
   describe('Create new oToken', () => {
     it('Should create new contract at expected address', async () => {
-      const targetAddress = await oTokenFactory.getUndeployedOTokenAddress(usdcAddress, ethAddress, strikePrice)
+      const targetAddress = await oTokenFactory.getTargetOTokenAddress(usdcAddress, ethAddress, strikePrice)
 
       const txResponse = await oTokenFactory.createOToken(usdcAddress, ethAddress, strikePrice)
       expectEvent(txResponse, 'OTokenCreated', {
@@ -28,6 +48,7 @@ contract('OtokenFactory Tester', accounts => {
       })
       expect(txResponse.logs[0].args.tokenAddress).to.be.equal(targetAddress)
       oToken = await OToken.at(targetAddress)
+      oToken1Addr = targetAddress
     })
 
     it('Should have correct paramter', async () => {
@@ -44,8 +65,25 @@ contract('OtokenFactory Tester', accounts => {
       expect(1).to.be.equal(1)
     })
 
-    it('Should not allow duplicated options', () => {
-      expect(1).to.be.equal(1)
+    it('Should not allow duplicated options', async () => {
+      await expectRevert(
+        oTokenFactory.createOToken(usdcAddress, ethAddress, strikePrice),
+        'OptionFactory: Option created',
+      )
+    })
+  })
+
+  describe('Get oToken address after creation', () => {
+    it('Should return token address correct token address', async () => {
+      const existAddress = await oTokenFactory.getOToken(usdcAddress, ethAddress, strikePrice)
+      expect(existAddress).to.equal(oToken1Addr)
+    })
+
+    it('should revert when calling getTargetOTokenAddress with existing paramters', async () => {
+      await expectRevert(
+        oTokenFactory.getTargetOTokenAddress(usdcAddress, ethAddress, strikePrice),
+        'OptionFactory: Option created',
+      )
     })
   })
 })
