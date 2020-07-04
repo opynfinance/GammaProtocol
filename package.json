@@ -85,6 +85,7 @@
   "homepage": "https://github.com/opynfinance/GammaProtocol#readme",
   "dependencies": {
     "@truffle/contract": "^4.2.7",
+    "bignumber.js": "^9.0.0",
     "mocha": "^7.2.0",
     "truffle-hdwallet-provider": "^1.0.17"
   }
