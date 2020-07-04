@@ -131,43 +131,22 @@ contract Spawner {
         // get the keccak256 hash of the init code for address derivation.
         bytes32 initCodeHash = keccak256(initCode);
 
-        // set the initial nonce to be provided when constructing the salt.
-        uint256 nonce = 0;
+        // Have a fixed salt value because we will only deploy oToken with same init value once.
+        salt = bytes32(0);
 
-        // declare variable for code size of derived address.
-        uint256 codeSize;
-
-        while (true) {
-            // derive `CREATE2` salt using `msg.sender` and nonce.
-            salt = keccak256(abi.encodePacked(msg.sender, nonce));
-
-            target = address( // derive the target deployment address.
-                uint160( // downcast to match the address type.
-                    uint256( // cast to uint to truncate upper digits.
-                        keccak256( // compute CREATE2 hash using 4 inputs.
-                            abi.encodePacked( // pack all inputs to the hash together.
-                                bytes1(0xff), // pass in the control character.
-                                address(this), // pass in the address of this contract.
-                                salt, // pass in the salt from above.
-                                initCodeHash // pass in hash of contract creation code.
-                            )
+        target = address( // derive the target deployment address.
+            uint160( // downcast to match the address type.
+                uint256( // cast to uint to truncate upper digits.
+                    keccak256( // compute CREATE2 hash using 4 inputs.
+                        abi.encodePacked( // pack all inputs to the hash together.
+                            bytes1(0xff), // pass in the control character.
+                            address(this), // pass in the address of this contract.
+                            salt, // pass in the salt from above.
+                            initCodeHash // pass in hash of contract creation code.
                         )
                     )
                 )
-            );
-
-            // determine if a contract is already deployed to the target address.
-            assembly {
-                codeSize := extcodesize(target)
-            }
-
-            // exit the loop if no contract is deployed to the target address.
-            if (codeSize == 0) {
-                break;
-            }
-
-            // otherwise, increment the nonce and derive a new salt.
-            nonce++;
-        }
+            )
+        );
     }
 }
