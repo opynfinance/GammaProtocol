@@ -82,7 +82,7 @@ contract Spawner {
      * @param initializationCalldata bytes The calldata that will be supplied to
      * the `DELEGATECALL` from the spawned contract to the logic contract during
      * contract creation.
-     * @return The address of the newly-spawned contract.
+     * @return spawnedContract The address of the newly-spawned contract.
      */
     function _spawn(address logicContract, bytes memory initializationCalldata)
         internal
@@ -108,7 +108,7 @@ contract Spawner {
      * @param initializationCalldata bytes The calldata that will be supplied to
      * the `DELEGATECALL` from the spawned contract to the logic contract during
      * contract creation.
-     * @return The address of the newly-spawned contract.
+     * @return spawnedContract The address of the newly-spawned contract.
      */
     function _spawnCompact(address compactLogicContract, bytes memory initializationCalldata)
         internal
@@ -135,7 +135,7 @@ contract Spawner {
      * @param initializationCalldata bytes The calldata that will be supplied to
      * the `DELEGATECALL` from the spawned contract to the logic contract during
      * contract creation.
-     * @return The address of the newly-spawned contract.
+     * @return spawnedContract The address of the newly-spawned contract.
      */
     function _spawnOldSchool(address logicContract, bytes memory initializationCalldata)
         internal
@@ -162,7 +162,7 @@ contract Spawner {
      * @param initializationCalldata bytes The calldata that will be supplied to
      * the `DELEGATECALL` from the spawned contract to the logic contract during
      * contract creation.
-     * @return The address of the newly-spawned contract.
+     * @return spawnedContract The address of the newly-spawned contract.
      */
     function _spawnCompactOldSchool(address compactLogicContract, bytes memory initializationCalldata)
         internal
@@ -189,7 +189,7 @@ contract Spawner {
      * @param initializationCalldata bytes The calldata that will be supplied to
      * the `DELEGATECALL` from the spawned contract to the logic contract during
      * contract creation.
-     * @return The address of the next spawned minimal proxy contract with the
+     * @return target The address of the next spawned minimal proxy contract with the
      * given parameters.
      */
     function _computeNextAddress(address logicContract, bytes memory initializationCalldata)
@@ -216,7 +216,7 @@ contract Spawner {
      * @param initializationCalldata bytes The calldata that will be supplied to
      * the `DELEGATECALL` from the spawned contract to the logic contract during
      * contract creation.
-     * @return The address of the next spawned compact minimal proxy contract with
+     * @return target The address of the next spawned compact minimal proxy contract with
      * the given parameters.
      */
     function _computeNextCompactAddress(address compactLogicContract, bytes memory initializationCalldata)
@@ -241,7 +241,7 @@ contract Spawner {
      * @notice Private function for spawning a compact eip-1167 minimal proxy
      * using `CREATE`. Provides logic that is reused by internal functions.
      * @param initCode bytes The contract creation code.
-     * @return The address of the newly-spawned contract.
+     * @return spawnedContract The address of the newly-spawned contract.
      */
     function _spawnCreate(bytes memory initCode) private returns (address spawnedContract) {
         assembly {
@@ -268,7 +268,7 @@ contract Spawner {
      * salt will also be chosen based on the calling address and a computed nonce
      * that prevents deployments to existing addresses.
      * @param initCode bytes The contract creation code.
-     * @return The address of the newly-spawned contract.
+     * @return spawnedContract The address of the newly-spawned contract.
      */
     function _spawnCreate2(bytes memory initCode) private returns (address spawnedContract) {
         // get salt to use during deployment using the supplied initialization code.
