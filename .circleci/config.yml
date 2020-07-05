@@ -39,11 +39,11 @@ jobs:
           name: Produce Coverage Report
           command: npm run coverage
       - coveralls/upload:
-          path_to_lcov: ./packages/smart-contracts/coverage/lcov.info
+          path_to_lcov: ./coverage/lcov.info
       - store_artifacts:
-          path: /packages/smart-contracts/coverage
+          path: /coverage
       - store_artifacts:
-          path: /packages/smart-contracts/coverage.json
+          path: /coverage.json
       - store_artifacts:
           path: test-results.xml
           prefix: tests
