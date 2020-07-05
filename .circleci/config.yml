@@ -36,8 +36,8 @@ jobs:
           paths:
             - node_modules
       - run:
-        name: Produce Coverage Report
-        command: npm run coverage
+          name: Produce Coverage Report
+          command: npm run coverage
       - coveralls/upload:
           path_to_lcov: ./packages/smart-contracts/coverage/lcov.info
       - store_artifacts:
