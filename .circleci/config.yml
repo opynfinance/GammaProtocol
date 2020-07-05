@@ -8,41 +8,42 @@ workflows:
       - build:
           context: COVERALLS_REPO_TOKEN
 jobs:
-  working_directory: ~/gammaprotocol
-  docker:
-    - image: circleci/node:10.18.0
-    - image: trufflesuite/ganache-cli:v6.7.0
-      command: ganache-cli --deterministic -e 300 -p 8545 -m 'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat' --accounts 30 --allowUnlimitedContractSize
-  
-  steps:
-    - checkout
-    - restore_cache:
-        key: dependency-cache-{{ checksum "package.json" }}
-    - run:
-        name: Install packages
-        command: npm install
-    - run:
-        name: Lint Contracts
-        command: npm run lint:sol
-    - run:
-        name: Deploy Contracts
-        command: npm run deploy:development
-    - run:
-        name: Test Contracts
-        command: npm run test
-    - save_cache:
-        key: dependency-cache-{{ checksum "package.json" }}
-        paths:
-          - node_modules
-    - run:
-      name: Produce Coverage Report
-      command: npm run coverage
-    - coveralls/upload:
-        path_to_lcov: ./packages/smart-contracts/coverage/lcov.info
-    - store_artifacts:
-        path: /packages/smart-contracts/coverage
-    - store_artifacts:
-        path: /packages/smart-contracts/coverage.json
-    - store_artifacts:
-        path: test-results.xml
-        prefix: tests
+  build:
+    working_directory: ~/gammaprotocol
+    docker:
+      - image: circleci/node:10.18.0
+      - image: trufflesuite/ganache-cli:v6.7.0
+        command: ganache-cli --deterministic -e 300 -p 8545 -m 'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat' --accounts 30 --allowUnlimitedContractSize
+    
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: Install packages
+          command: npm install
+      - run:
+          name: Lint Contracts
+          command: npm run lint:sol
+      - run:
+          name: Deploy Contracts
+          command: npm run deploy:development
+      - run:
+          name: Test Contracts
+          command: npm run test
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - node_modules
+      - run:
+        name: Produce Coverage Report
+        command: npm run coverage
+      - coveralls/upload:
+          path_to_lcov: ./packages/smart-contracts/coverage/lcov.info
+      - store_artifacts:
+          path: /packages/smart-contracts/coverage
+      - store_artifacts:
+          path: /packages/smart-contracts/coverage.json
+      - store_artifacts:
+          path: test-results.xml
+          prefix: tests
