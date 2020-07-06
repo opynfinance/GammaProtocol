@@ -3,6 +3,13 @@ pragma solidity =0.6.0;
 import "./lib/Spawner.sol";
 import "./Otoken.sol";
 
+/**
+ * @title A factory for opyn tokens
+ * @author Anton Cheng
+ * @notice Create new otokens and keep track of all created tokens.
+ * @dev Calculate contract address before each creation with CREATE2
+ * and deploy eip-1167 minimal proxies for otoken logic contract.
+ */
 contract OtokenFactory is Spawner {
     Otoken public logic;
 
@@ -19,8 +26,14 @@ contract OtokenFactory is Spawner {
     event OtokenCreated(address tokenAddress, address creator, address strike, address underlying, uint256 strikePrice);
 
     /**
-     * @dev create a new Otoken
-     * The address of the newly deployed token can be predicted by calling getTargetOtokenAddress
+     * @notice create new oTokens
+     * @dev deploy an eip-1167 minimal proxy with CREATE2 and register it to the whitelist module.
+     * @param _strikeAsset strike asset
+     * @param _underlyingAsset underlying asset
+     * @param _collateralAsset collateral asset
+     * @param _strikePrice strike price in __
+     * @param _expiry expiration timestamp in second
+     * @param _isPut is this a put option or not
      */
     function createOtoken(
         address _strikeAsset,
@@ -59,14 +72,21 @@ contract OtokenFactory is Spawner {
     }
 
     /**
-     * @dev get all otokens created by this factory.
+     * @notice get all otokens created by this factory.
+     * @return array of otoken addresses.
      */
     function getOtokens() external view returns (address[] memory) {
         return _otokens;
     }
 
     /**
-     * @dev get the otoken address with the set of paramters.
+     * @notice get the otoken address. If no token has been created with these parameters, will return address(0).
+     * @param _strikeAsset strike asset
+     * @param _underlyingAsset underlying asset
+     * @param _collateralAsset collateral asset
+     * @param _strikePrice strike price in __
+     * @param _expiry expiration timestamp in second
+     * @param _isPut is this a put option or not
      */
     function getOtoken(
         address _strikeAsset,
@@ -81,7 +101,14 @@ contract OtokenFactory is Spawner {
     }
 
     /**
-     * @dev get the address of undeployed otoken.
+     * @notice get the address otoken if call createOtoken with these paramters.
+     * @dev return the exact address that will be deployed at with _computeAddress
+     * @param _strikeAsset strike asset
+     * @param _underlyingAsset underlying asset
+     * @param _collateralAsset collateral asset
+     * @param _strikePrice strike price in __
+     * @param _expiry expiration timestamp in second
+     * @param _isPut is this a put option or not
      */
     function getTargetOtokenAddress(
         address _strikeAsset,
@@ -106,7 +133,13 @@ contract OtokenFactory is Spawner {
     }
 
     /**
-     * @dev internal function to hash paramters and get option id.
+     * @notice internal function to hash paramters and get option id.
+     * @param _strikeAsset strike asset
+     * @param _underlyingAsset underlying asset
+     * @param _collateralAsset collateral asset
+     * @param _strikePrice strike price in __
+     * @param _expiry expiration timestamp in second
+     * @param _isPut is this a put option or not
      */
     function _getOptionId(
         address _strikeAsset,
