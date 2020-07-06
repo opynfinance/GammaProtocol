@@ -8,6 +8,7 @@
     "plugin:@typescript-eslint/recommended",
     "plugin:prettier/recommended"
   ],
+  "ignorePatterns": ["build", "**/vendor/*.js"],
   "plugins": ["@typescript-eslint", "import"],
   "env": {
     "es6": true
