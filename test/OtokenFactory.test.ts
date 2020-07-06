@@ -173,4 +173,15 @@ contract('OTokenFactory', accounts => {
       )
     })
   })
+
+  describe('Wrong setup: wrong implementation contract', () => {
+    it('Should revert on token creation', async () => {
+      // We should initiate oTokenFactory with oToken implementation contract, so this is incorrect.
+      const wrongFactory: OtokenFactoryInstance = await OTokenFactory.new(oTokenFactory.address)
+      await expectRevert(
+        wrongFactory.createOtoken(usdcAddress, ethAddress, usdcAddress, strikePrice, expiry, isPut),
+        'revert',
+      )
+    })
+  })
 })
