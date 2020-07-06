@@ -21,8 +21,8 @@
     "lint-staged": "^9.5.0",
     "prettier": "^1.19.1",
     "prettier-plugin-solidity": "^1.0.0-alpha.54",
-    "solhint": "^2.3.1",
-    "solhint-plugin-prettier": "0.0.3",
+    "solhint": "3.0.0",
+    "solhint-plugin-prettier": "0.0.4",
     "solidity-coverage": "0.7.5",
     "truffle": "^5.1.32",
     "truffle-assertions": "0.9.2",
@@ -47,7 +47,7 @@
     "lint:contracts": "solhint 'contracts/**/*.sol'",
     "lint:tests": "eslint 'test/**/*.ts'",
     "lint:tests:fix": "npm run lint:tests -- --fix",
-    "lint:sol": "solhint 'contracts/**/*.sol'",
+    "lint:sol": "solhint -f table contracts/**/*.sol",
     "lint:sol:prettier:fix": "prettier --write \"contracts/**/*.sol\"",
     "test": "truffle test",
     "coverage": "truffle run coverage"
@@ -59,11 +59,12 @@
   },
   "lint-staged": {
     "**/*.sol": [
-      "prettier --write",
+      "npm run lint:contracts",
+      "npm run lint:sol:prettier:fix",
       "git add"
     ],
     "test/**": [
-      "eslint --fix",
+      "npm run lint:tests:fix",
       "git add"
     ]
   },
