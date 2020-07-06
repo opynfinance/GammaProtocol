@@ -6,8 +6,7 @@ import "./Otoken.sol";
 contract OtokenFactory is Spawner {
     Otoken public logic;
 
-    address[] public otokens;
-    uint256 public otokensCreated;
+    address[] private _otokens;
 
     mapping(address => bool) public isOtoken;
 
@@ -50,15 +49,12 @@ contract OtokenFactory is Spawner {
 
         newOtoken = _spawn(address(logic), initializationCalldata);
 
-        // record new otoken
-        otokensCreated += 1;
-        otokens.push(newOtoken);
+        _otokens.push(newOtoken);
         _tokenAddresses[id] = newOtoken;
         isOtoken[newOtoken] = true;
         /**
          * Todo: register to whitelist module
          */
-
         emit OtokenCreated(newOtoken, msg.sender, _strikeAsset, _underlyingAsset, _strikePrice);
     }
 
@@ -66,7 +62,7 @@ contract OtokenFactory is Spawner {
      * @dev get all otokens created by this factory.
      */
     function getOtokens() external view returns (address[] memory) {
-        return otokens;
+        return _otokens;
     }
 
     /**

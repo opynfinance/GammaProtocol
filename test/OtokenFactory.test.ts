@@ -29,9 +29,6 @@ contract('OTokenFactory', accounts => {
     it('Should have no otoken records at the begining', async () => {
       const otokens = await oTokenFactory.getOtokens()
       expect(otokens.length).to.equal(0)
-
-      const otokensCreated = await oTokenFactory.otokensCreated()
-      expect(otokensCreated.toNumber()).to.equal(0)
     })
 
     it('Should return address(0) if token is not deployed', async () => {
@@ -139,9 +136,6 @@ contract('OTokenFactory', accounts => {
       expect(otokens.length).to.equal(1)
 
       expect(otokens.includes(oToken.address)).to.be.true
-
-      const otokensCreated = await oTokenFactory.otokensCreated()
-      expect(otokensCreated.toNumber()).to.equal(1)
     })
 
     it('Should return correct token address', async () => {
@@ -156,14 +150,9 @@ contract('OTokenFactory', accounts => {
       expect(existAddress).to.equal(oToken.address)
     })
 
-    it('Calling isOtoken with the correct address should return true ', async () => {
+    it('Should return true when calling isOtoken with the correct address', async () => {
       const isOtoken = await oTokenFactory.isOtoken(oToken.address)
       expect(isOtoken).to.be.true
-    })
-
-    it('Should increase otokensCreated', async () => {
-      const total = await oTokenFactory.otokensCreated()
-      expect(total.toNumber()).to.be.eq(1)
     })
 
     it('should revert if calling getTargetOTokenAddress with existing option paramters', async () => {
