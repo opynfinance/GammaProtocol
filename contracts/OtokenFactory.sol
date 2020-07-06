@@ -11,10 +11,12 @@ import "./Otoken.sol";
  * and deploy eip-1167 minimal proxies for otoken logic contract.
  */
 contract OtokenFactory is Spawner {
+    // Implementation address of the otoken contract
     Otoken public logic;
 
     address[] private _otokens;
 
+    // A mapping that return true if oToken is valid
     mapping(address => bool) public isOtoken;
 
     mapping(bytes32 => address) private _tokenAddresses;
