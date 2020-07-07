@@ -25,7 +25,16 @@ contract OtokenFactory is Spawner {
         logic = _otokenImpl;
     }
 
-    event OtokenCreated(address tokenAddress, address creator, address strike, address underlying, uint256 strikePrice);
+    event OtokenCreated(
+        address tokenAddress,
+        address creator,
+        address strike,
+        address underlying,
+        address collateral,
+        uint256 strikePrice,
+        uint256 expiry,
+        bool isPut
+    );
 
     /**
      * @notice create new oTokens
@@ -70,7 +79,16 @@ contract OtokenFactory is Spawner {
         /**
          * Todo: register to whitelist module
          */
-        emit OtokenCreated(newOtoken, msg.sender, _strikeAsset, _underlyingAsset, _strikePrice);
+        emit OtokenCreated(
+            newOtoken,
+            msg.sender,
+            _strikeAsset,
+            _underlyingAsset,
+            _collateralAsset,
+            _strikePrice,
+            _expiry,
+            _isPut
+        );
     }
 
     /**

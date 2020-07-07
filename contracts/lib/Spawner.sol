@@ -40,6 +40,9 @@ contract Spawn {
  * point to existing logic contracts. The logic contracts need to have an
  * intitializer function that should only callable when no contract exists at
  * their current address (i.e. it is being `DELEGATECALL`ed from a constructor).
+ * @notice This contract has been updated by Anton Cheng as follow:
+ * Remove for loop in _computeAddress because we expect contract with same initData
+ * to only be deployed once with the factory
  */
 contract Spawner {
     // Have a fixed salt value because we will only deploy oToken with same init value once.

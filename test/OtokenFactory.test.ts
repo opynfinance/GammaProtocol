@@ -97,11 +97,18 @@ contract('OTokenFactory', accounts => {
         strikePrice,
         expiry,
         isPut,
+        {from: accounts[0]},
       )
       expectEvent(txResponse, 'OtokenCreated', {
+        creator: accounts[0],
+        strike: usdcAddress,
+        underlying: ethAddress,
+        collateral: usdcAddress,
+        strikePrice: strikePrice.toString(),
+        expiry: expiry.toString(),
+        isPut: isPut,
         tokenAddress: targetAddress,
       })
-      expect(txResponse.logs[0].args.tokenAddress).to.be.equal(targetAddress)
       oToken = await OToken.at(targetAddress)
     })
 
