@@ -4,8 +4,9 @@ import "./lib/Spawner.sol";
 import "./Otoken.sol";
 
 /**
+ * SPDX-License-Identifier: MIT
  * @title A factory for opyn tokens
- * @author Anton Cheng
+ * @author Opyn
  * @notice Create new otokens and keep track of all created tokens.
  * @dev Calculate contract address before each creation with CREATE2
  * and deploy eip-1167 minimal proxies for otoken logic contract.
@@ -61,10 +62,7 @@ contract OtokenFactory is Spawner {
         bytes32 id = _getOptionId(_strikeAsset, _underlyingAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
         require(_tokenAddresses[id] == address(0), "OptionFactory: Option created");
 
-        /**
-         * Todo: Check whitelist module
-         */
-
+        // Todo: Check whitelist module
         bytes memory initializationCalldata = abi.encodeWithSelector(
             logic.init.selector,
             _strikeAsset,

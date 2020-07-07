@@ -1,6 +1,7 @@
 /*
  * Safe Float Math contract. Copyright © 2020 by Opyn.co .
  * Author: Opyn
+ * SPDX-License-Identifier: MIT
  */
 pragma solidity 0.6.10;
 

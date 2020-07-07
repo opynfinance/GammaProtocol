@@ -3,6 +3,7 @@ pragma solidity =0.6.10;
 import {ERC20UpgradeSafe} from "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
 
 /**
+ * SPDX-License-Identifier: MIT
  * @dev The Otoken inherits ERC20UpgradeSafe because we need to use the init instead of constructor.
  */
 contract Otoken is ERC20UpgradeSafe {
@@ -15,10 +16,6 @@ contract Otoken is ERC20UpgradeSafe {
 
     bool public isPut;
 
-    string private _name;
-    string private _symbol;
-    string private _decimals;
-
     function init(
         address _strikeAsset,
         address _underlyingAsset,
@@ -26,8 +23,8 @@ contract Otoken is ERC20UpgradeSafe {
         uint256 _strikePrice,
         uint256 _expiry,
         bool _isPut,
-        string memory _tokenName,
-        string memory _tokenSymbol
+        string memory _name,
+        string memory _symbol
     ) external initializer {
         strikeAsset = _strikeAsset;
         underlyingAsset = _underlyingAsset;
@@ -35,6 +32,6 @@ contract Otoken is ERC20UpgradeSafe {
         strikePrice = _strikePrice;
         expiry = _expiry;
         isPut = _isPut;
-        __ERC20_init_unchained(_tokenName, _tokenSymbol);
+        __ERC20_init_unchained(_name, _symbol);
     }
 }
