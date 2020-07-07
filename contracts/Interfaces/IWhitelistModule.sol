@@ -1,4 +1,4 @@
-pragma solidity 0.6.0;
+pragma solidity 0.6.10;
 
 interface IWhitelistModule {
     function whitelistProduct(
@@ -14,4 +14,6 @@ interface IWhitelistModule {
     ) external view returns (bool isValid);
 
     function registerOtoken(address oToken) external returns (bool success);
+
+    function isValidOtoken(address oToken) external view returns (bool success);
 }
