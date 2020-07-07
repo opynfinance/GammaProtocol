@@ -7,8 +7,8 @@ import {ERC20UpgradeSafe} from "@openzeppelin/contracts-ethereum-package/contrac
  * @dev The Otoken inherits ERC20UpgradeSafe because we need to use the init instead of constructor.
  */
 contract Otoken is ERC20UpgradeSafe {
-    address public strikeAsset;
     address public underlyingAsset;
+    address public strikeAsset;
     address public collateralAsset;
 
     uint256 public strikePrice;
@@ -17,8 +17,8 @@ contract Otoken is ERC20UpgradeSafe {
     bool public isPut;
 
     function init(
-        address _strikeAsset,
         address _underlyingAsset,
+        address _strikeAsset,
         address _collateralAsset,
         uint256 _strikePrice,
         uint256 _expiry,
@@ -26,8 +26,8 @@ contract Otoken is ERC20UpgradeSafe {
         string memory _name,
         string memory _symbol
     ) external initializer {
-        strikeAsset = _strikeAsset;
         underlyingAsset = _underlyingAsset;
+        strikeAsset = _strikeAsset;
         collateralAsset = _collateralAsset;
         strikePrice = _strikePrice;
         expiry = _expiry;
