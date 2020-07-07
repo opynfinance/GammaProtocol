@@ -1,5 +1,5 @@
 /* solhint-disable avoid-low-level-calls, indent, no-inline-assembly */
-pragma solidity ^0.6.0;
+pragma solidity =0.6.10;
 
 /**
  * @title Spawn
