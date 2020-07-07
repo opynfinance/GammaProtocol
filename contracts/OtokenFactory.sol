@@ -1,4 +1,4 @@
-pragma solidity =0.6.0;
+pragma solidity =0.6.10;
 
 import "./lib/Spawner.sol";
 import "./Otoken.sol";
@@ -45,6 +45,8 @@ contract OtokenFactory is Spawner {
      * @param _strikePrice strike price in __
      * @param _expiry expiration timestamp in second
      * @param _isPut is this a put option or not
+     * @param _name token name for this option
+     * @param _symbol token symbol
      */
     function createOtoken(
         address _strikeAsset,
@@ -52,7 +54,9 @@ contract OtokenFactory is Spawner {
         address _collateralAsset,
         uint256 _strikePrice,
         uint256 _expiry,
-        bool _isPut
+        bool _isPut,
+        string memory _name,
+        string memory _symbol
     ) external returns (address newOtoken) {
         bytes32 id = _getOptionId(_strikeAsset, _underlyingAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
         require(_tokenAddresses[id] == address(0), "OptionFactory: Option created");
@@ -68,7 +72,9 @@ contract OtokenFactory is Spawner {
             _collateralAsset,
             _strikePrice,
             _expiry,
-            _isPut
+            _isPut,
+            _name,
+            _symbol
         );
 
         newOtoken = _spawn(address(logic), initializationCalldata);
@@ -129,6 +135,8 @@ contract OtokenFactory is Spawner {
      * @param _strikePrice strike price in __
      * @param _expiry expiration timestamp in second
      * @param _isPut is this a put option or not
+     * @param _name token name for this option
+     * @param _symbol token symbol
      */
     function getTargetOtokenAddress(
         address _strikeAsset,
@@ -136,7 +144,9 @@ contract OtokenFactory is Spawner {
         address _collateralAsset,
         uint256 _strikePrice,
         uint256 _expiry,
-        bool _isPut
+        bool _isPut,
+        string memory _name,
+        string memory _symbol
     ) external view returns (address targetAddress) {
         bytes32 id = _getOptionId(_strikeAsset, _underlyingAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
         require(_tokenAddresses[id] == address(0), "OptionFactory: Option created");
@@ -147,7 +157,9 @@ contract OtokenFactory is Spawner {
             _collateralAsset,
             _strikePrice,
             _expiry,
-            _isPut
+            _isPut,
+            _name,
+            _symbol
         );
         targetAddress = _computeAddress(address(logic), initializationCalldata);
     }

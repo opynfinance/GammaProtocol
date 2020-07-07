@@ -15,8 +15,8 @@ contract('OTokenFactory', accounts => {
   const ethAddress = accounts[6]
   const strikePrice = new BigNumber(200)
   const isPut = true
-  // const name = 'Opyn ETH-USDC 200 PUT'
-  // const symbol = 'ETH-USDC 200 P'
+  const name = 'Opyn ETH-USDC 200 PUT'
+  const symbol = 'ETH-USDC 200 P'
   let expiry: number
 
   before('Deploy oToken logic and Factory contract', async () => {
@@ -51,6 +51,8 @@ contract('OTokenFactory', accounts => {
         strikePrice,
         expiry,
         isPut,
+        name,
+        symbol,
       )
       expect(targetAddress).not.equal(ZERO_ADDR)
 
@@ -66,6 +68,8 @@ contract('OTokenFactory', accounts => {
         strikePrice,
         expiry,
         isPut,
+        name,
+        symbol,
       )
       const targetAddress2 = await oTokenFactory.getTargetOtokenAddress(
         ZERO_ADDR,
@@ -74,6 +78,8 @@ contract('OTokenFactory', accounts => {
         strikePrice,
         expiry,
         isPut,
+        name,
+        symbol,
       )
       expect(targetAddress1).not.equal(targetAddress2)
     })
@@ -88,6 +94,8 @@ contract('OTokenFactory', accounts => {
         strikePrice,
         expiry,
         isPut,
+        name,
+        symbol,
       )
 
       const txResponse = await oTokenFactory.createOtoken(
@@ -97,6 +105,8 @@ contract('OTokenFactory', accounts => {
         strikePrice,
         expiry,
         isPut,
+        name,
+        symbol,
         {from: accounts[0]},
       )
       expectEvent(txResponse, 'OtokenCreated', {
@@ -131,7 +141,7 @@ contract('OTokenFactory', accounts => {
 
     it('Should not allow duplicated options', async () => {
       await expectRevert(
-        oTokenFactory.createOtoken(usdcAddress, ethAddress, usdcAddress, strikePrice, expiry, isPut),
+        oTokenFactory.createOtoken(usdcAddress, ethAddress, usdcAddress, strikePrice, expiry, isPut, name, symbol),
         'OptionFactory: Option created',
       )
     })
@@ -164,7 +174,16 @@ contract('OTokenFactory', accounts => {
 
     it('should revert if calling getTargetOTokenAddress with existing option paramters', async () => {
       await expectRevert(
-        oTokenFactory.getTargetOtokenAddress(usdcAddress, ethAddress, usdcAddress, strikePrice, expiry, isPut),
+        oTokenFactory.getTargetOtokenAddress(
+          usdcAddress,
+          ethAddress,
+          usdcAddress,
+          strikePrice,
+          expiry,
+          isPut,
+          name,
+          symbol,
+        ),
         'OptionFactory: Option created',
       )
     })
@@ -175,7 +194,7 @@ contract('OTokenFactory', accounts => {
       // We should initiate oTokenFactory with oToken implementation contract, so this is incorrect.
       const wrongFactory: OtokenFactoryInstance = await OTokenFactory.new(oTokenFactory.address)
       await expectRevert(
-        wrongFactory.createOtoken(usdcAddress, ethAddress, usdcAddress, strikePrice, expiry, isPut),
+        wrongFactory.createOtoken(usdcAddress, ethAddress, usdcAddress, strikePrice, expiry, isPut, name, symbol),
         'revert',
       )
     })
