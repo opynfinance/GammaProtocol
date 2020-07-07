@@ -2,7 +2,7 @@
  * Safe Float Math contract. Copyright © 2020 by Opyn.co .
  * Author: Opyn
  */
-pragma solidity 0.6.0;
+pragma solidity 0.6.10;
 
 import {SafeMath} from "@openzeppelin/contracts/math/SafeMath.sol";
 
