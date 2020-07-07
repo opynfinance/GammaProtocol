@@ -6,6 +6,7 @@
     "@nomiclabs/buidler": "^1.3.5",
     "@openzeppelin/cli": "^2.8.2",
     "@openzeppelin/contracts": "^3.0.1",
+    "@openzeppelin/contracts-ethereum-package": "^3.0.0",
     "@openzeppelin/test-helpers": "^0.5.4",
     "@types/chai": "4.2.5",
     "@typescript-eslint/eslint-plugin": "^2.9.0",
@@ -86,7 +87,9 @@
   "dependencies": {
     "@truffle/contract": "^4.2.7",
     "bignumber.js": "^9.0.0",
+    "install": "^0.13.0",
     "mocha": "^7.2.0",
+    "npm": "^6.14.5",
     "truffle-hdwallet-provider": "^1.0.17"
   }
 }
