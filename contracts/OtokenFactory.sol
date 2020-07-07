@@ -4,7 +4,7 @@ import "./lib/Spawner.sol";
 import "./Otoken.sol";
 
 /**
- * SPDX-License-Identifier: MIT
+ * SPDX-License-Identifier: UNLICENSED
  * @title A factory for opyn tokens
  * @author Opyn
  * @notice Create new otokens and keep track of all created tokens.
