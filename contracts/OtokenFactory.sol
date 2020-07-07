@@ -29,8 +29,8 @@ contract OtokenFactory is Spawner {
     event OtokenCreated(
         address tokenAddress,
         address creator,
-        address strike,
         address underlying,
+        address strike,
         address collateral,
         uint256 strikePrice,
         uint256 expiry,
@@ -40,8 +40,8 @@ contract OtokenFactory is Spawner {
     /**
      * @notice create new oTokens
      * @dev deploy an eip-1167 minimal proxy with CREATE2 and register it to the whitelist module.
-     * @param _strikeAsset strike asset
      * @param _underlyingAsset underlying asset
+     * @param _strikeAsset strike asset
      * @param _collateralAsset collateral asset
      * @param _strikePrice strike price in __
      * @param _expiry expiration timestamp in second
@@ -50,8 +50,8 @@ contract OtokenFactory is Spawner {
      * @param _symbol token symbol
      */
     function createOtoken(
-        address _strikeAsset,
         address _underlyingAsset,
+        address _strikeAsset,
         address _collateralAsset,
         uint256 _strikePrice,
         uint256 _expiry,
@@ -59,14 +59,14 @@ contract OtokenFactory is Spawner {
         string memory _name,
         string memory _symbol
     ) external returns (address newOtoken) {
-        bytes32 id = _getOptionId(_strikeAsset, _underlyingAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
+        bytes32 id = _getOptionId(_underlyingAsset, _strikeAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
         require(_tokenAddresses[id] == address(0), "OptionFactory: Option created");
 
         // Todo: Check whitelist module
         bytes memory initializationCalldata = abi.encodeWithSelector(
             logic.init.selector,
-            _strikeAsset,
             _underlyingAsset,
+            _strikeAsset,
             _collateralAsset,
             _strikePrice,
             _expiry,
@@ -86,8 +86,8 @@ contract OtokenFactory is Spawner {
         emit OtokenCreated(
             newOtoken,
             msg.sender,
-            _strikeAsset,
             _underlyingAsset,
+            _strikeAsset,
             _collateralAsset,
             _strikePrice,
             _expiry,
@@ -105,30 +105,30 @@ contract OtokenFactory is Spawner {
 
     /**
      * @notice get the otoken address. If no token has been created with these parameters, will return address(0).
-     * @param _strikeAsset strike asset
      * @param _underlyingAsset underlying asset
+     * @param _strikeAsset strike asset
      * @param _collateralAsset collateral asset
      * @param _strikePrice strike price in __
      * @param _expiry expiration timestamp in second
      * @param _isPut is this a put option or not
      */
     function getOtoken(
-        address _strikeAsset,
         address _underlyingAsset,
+        address _strikeAsset,
         address _collateralAsset,
         uint256 _strikePrice,
         uint256 _expiry,
         bool _isPut
     ) external view returns (address otoken) {
-        bytes32 id = _getOptionId(_strikeAsset, _underlyingAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
+        bytes32 id = _getOptionId(_underlyingAsset, _strikeAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
         return _tokenAddresses[id];
     }
 
     /**
      * @notice get the address otoken if call createOtoken with these paramters.
      * @dev return the exact address that will be deployed at with _computeAddress
-     * @param _strikeAsset strike asset
      * @param _underlyingAsset underlying asset
+     * @param _strikeAsset strike asset
      * @param _collateralAsset collateral asset
      * @param _strikePrice strike price in __
      * @param _expiry expiration timestamp in second
@@ -137,8 +137,8 @@ contract OtokenFactory is Spawner {
      * @param _symbol token symbol
      */
     function getTargetOtokenAddress(
-        address _strikeAsset,
         address _underlyingAsset,
+        address _strikeAsset,
         address _collateralAsset,
         uint256 _strikePrice,
         uint256 _expiry,
@@ -146,12 +146,12 @@ contract OtokenFactory is Spawner {
         string memory _name,
         string memory _symbol
     ) external view returns (address targetAddress) {
-        bytes32 id = _getOptionId(_strikeAsset, _underlyingAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
+        bytes32 id = _getOptionId(_underlyingAsset, _strikeAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
         require(_tokenAddresses[id] == address(0), "OptionFactory: Option created");
         bytes memory initializationCalldata = abi.encodeWithSelector(
             logic.init.selector,
-            _strikeAsset,
             _underlyingAsset,
+            _strikeAsset,
             _collateralAsset,
             _strikePrice,
             _expiry,
@@ -164,23 +164,23 @@ contract OtokenFactory is Spawner {
 
     /**
      * @notice internal function to hash paramters and get option id.
-     * @param _strikeAsset strike asset
      * @param _underlyingAsset underlying asset
+     * @param _strikeAsset strike asset
      * @param _collateralAsset collateral asset
      * @param _strikePrice strike price in __
      * @param _expiry expiration timestamp in second
      * @param _isPut is this a put option or not
      */
     function _getOptionId(
-        address _strikeAsset,
         address _underlyingAsset,
+        address _strikeAsset,
         address _collateralAsset,
         uint256 _strikePrice,
         uint256 _expiry,
         bool _isPut
     ) internal pure returns (bytes32 id) {
         id = keccak256(
-            abi.encodePacked(_strikeAsset, _underlyingAsset, _collateralAsset, _strikePrice, _expiry, _isPut)
+            abi.encodePacked(_underlyingAsset, _strikeAsset, _collateralAsset, _strikePrice, _expiry, _isPut)
         );
     }
 }
