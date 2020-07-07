@@ -131,17 +131,31 @@ contract('OTokenFactory', accounts => {
       expect((await oToken.expiry()).toString()).to.be.equal(expiry.toString())
     })
 
-    it('Should not allow non-whitelisted options', () => {
+    it('Should revert when creating non-whitelisted options', () => {
       expect(1).to.be.equal(1)
     })
 
-    it('Should not allow re-init oToken', () => {
-      expect(1).to.be.equal(1)
+    it('Should revert when calling init on already inited oToken', async () => {
+      await expectRevert(
+        oToken.init(usdcAddress, usdcAddress, usdcAddress, strikePrice, expiry, isPut, name, symbol),
+        'revert',
+      )
     })
 
-    it('Should not allow duplicated options', async () => {
+    it('Should revert when creating duplicated option', async () => {
       await expectRevert(
         oTokenFactory.createOtoken(usdcAddress, ethAddress, usdcAddress, strikePrice, expiry, isPut, name, symbol),
+        'OptionFactory: Option created',
+      )
+    })
+
+    it('Should revert when creating same options with different name or symbol', async () => {
+      await expectRevert(
+        oTokenFactory.createOtoken(usdcAddress, ethAddress, usdcAddress, strikePrice, expiry, isPut, 'name2', symbol),
+        'OptionFactory: Option created',
+      )
+      await expectRevert(
+        oTokenFactory.createOtoken(usdcAddress, ethAddress, usdcAddress, strikePrice, expiry, isPut, name, 'symbol2'),
         'OptionFactory: Option created',
       )
     })
