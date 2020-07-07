@@ -1,4 +1,4 @@
-# Gamma Protocol
+# Gamma Protocol [![CircleCI](https://circleci.com/gh/opynfinance/GammaProtocol.svg?style=svg)](https://circleci.com/gh/opynfinance/GammaProtocol/tree/master) [![Coverage Status](https://coveralls.io/repos/github/opynfinance/GammaProtocol/badge.svg?branch=master)](https://coveralls.io/github/opynfinance/GammaProtocol?branch=master)
 A Decentralized Options Protocol built on Ethereum. It supports capital efficient put and call options. 
 
 - [Formal Spec](https://docs.google.com/document/d/1YpYYbIR4oKXua_6V5pw5X3XbCx05nBjpm_BaEiz7Vsg/edit?userstoinvite=sellamihaythem96@gmail.com&ts=5ef4a75b&actionButton=1#heading=h.l1p9gbp0fgoh)

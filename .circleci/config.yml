@@ -2,8 +2,13 @@ version: 2.1
 orbs:
   coveralls: coveralls/coveralls@1.0.6
   node: circleci/node@1.1.6
+workflows:
+  env-vars:
+    jobs:
+      - build:
+          context: COVERALLS_REPO_TOKEN
 jobs:
-  build-and-test:
+  build:
     working_directory: ~/gammaprotocol
     docker:
       - image: circleci/node:10.18.0
@@ -30,7 +35,15 @@ jobs:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
             - node_modules
-workflows:
-    build-and-test:
-      jobs:
-        - build-and-test
+      - run:
+          name: Produce Coverage Report
+          command: npm run coverage
+      - coveralls/upload:
+          path_to_lcov: ./coverage/lcov.info
+      - store_artifacts:
+          path: /coverage
+      - store_artifacts:
+          path: /coverage.json
+      - store_artifacts:
+          path: test-results.xml
+          prefix: tests
