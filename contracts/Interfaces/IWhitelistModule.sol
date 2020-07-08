@@ -14,7 +14,7 @@ interface IWhitelistModule {
         address collateral
     ) external view returns (bool isValid);
 
-    function registerOtoken(address oToken) external returns (bool success);
+    function registerOtoken(address oToken) external;
 
     function isValidOtoken(address oToken) external view returns (bool isValid);
 }

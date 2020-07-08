@@ -1,4 +1,9 @@
-import {OtokenFactoryInstance, OtokenInstance, MockAddressBookInstance} from '../build/types/truffle-types'
+import {
+  OtokenFactoryInstance,
+  OtokenInstance,
+  MockAddressBookInstance,
+  MockWhitelistModuleInstance,
+} from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
 const {expectEvent, expectRevert, time} = require('@openzeppelin/test-helpers')
@@ -23,15 +28,15 @@ contract('OTokenFactory', accounts => {
 
   before('Deploy oToken logic and Factory contract', async () => {
     const logic = await OToken.new()
-    console.log(`impl addres`, logic.address)
-    const mockWhitelist = await MockWhitelist.new()
+
+    // Deploy and whitelist ETH:USDC product
+    const mockWhitelist: MockWhitelistModuleInstance = await MockWhitelist.new()
+    await mockWhitelist.whitelistProduct(ethAddress, usdcAddress, usdcAddress)
+    // Deploy addressbook
     const addressBook: MockAddressBookInstance = await MockAddressBook.new()
-    // initiate addressBook
     await addressBook.setOtokenImpl(logic.address)
     await addressBook.setWhitelist(mockWhitelist.address)
-    // const impl = await addressBook.getOtokenImpl()
-    // console.log(`impl addres`, impl)
-    // console.log(`addressBook`, addressBook.address)
+
     oTokenFactory = await OTokenFactory.new(addressBook.address)
     expiry = (await time.latest()).toNumber() + time.duration.days(30).toNumber()
   })
@@ -66,11 +71,6 @@ contract('OTokenFactory', accounts => {
         symbol,
       )
       expect(targetAddress).not.equal(ZERO_ADDR)
-
-      console.log(`targetAddress`, targetAddress)
-
-      const isOtoken = await oTokenFactory.isOtoken(targetAddress)
-      expect(isOtoken).false
     })
 
     it('should get different target address with different oToken paramters', async () => {
@@ -194,10 +194,10 @@ contract('OTokenFactory', accounts => {
       expect(existAddress).to.equal(oToken.address)
     })
 
-    it('Should return true when calling isOtoken with the correct address', async () => {
-      const isOtoken = await oTokenFactory.isOtoken(oToken.address)
-      expect(isOtoken).to.be.true
-    })
+    // it('Should return true when calling isOtoken with the correct address', async () => {
+    //   const isOtoken = await oTokenFactory.isOtoken(oToken.address)
+    //   expect(isOtoken).to.be.true
+    // })
 
     it('should revert if calling getTargetOTokenAddress with existing option paramters', async () => {
       await expectRevert(

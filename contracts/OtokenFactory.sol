@@ -1,8 +1,9 @@
 pragma solidity =0.6.10;
 
-import "./lib/Spawner.sol";
-import "./interfaces/IAddressBook.sol";
-import "./Otoken.sol";
+import {Spawner} from "./lib/Spawner.sol";
+import {IAddressBook} from "./interfaces/IAddressBook.sol";
+import {IWhitelistModule} from "./interfaces/IWhitelistModule.sol";
+import {Otoken} from "./Otoken.sol";
 
 /**
  * SPDX-License-Identifier: UNLICENSED
@@ -15,9 +16,6 @@ import "./Otoken.sol";
 contract OtokenFactory is Spawner {
     // Implementation address of the otoken contract
     IAddressBook public addressBook;
-
-    // A mapping that return true if oToken is valid
-    mapping(address => bool) public isOtoken;
 
     address[] private _otokens;
 
@@ -62,7 +60,13 @@ contract OtokenFactory is Spawner {
     ) external returns (address newOtoken) {
         bytes32 id = _getOptionId(_underlyingAsset, _strikeAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
         require(_tokenAddresses[id] == address(0), "OptionFactory: Option created");
-        // Todo: Check whitelist module
+
+        IWhitelistModule whitelist = addressBook.getWhitelist();
+        require(
+            whitelist.isSupportedProduct(_underlyingAsset, _strikeAsset, _collateralAsset),
+            "OptionFactory: Unsupported Product"
+        );
+
         bytes memory initializationCalldata = abi.encodeWithSelector(
             addressBook.getOtokenImpl().init.selector,
             _underlyingAsset,
@@ -79,10 +83,8 @@ contract OtokenFactory is Spawner {
 
         _otokens.push(newOtoken);
         _tokenAddresses[id] = newOtoken;
-        isOtoken[newOtoken] = true;
-        /**
-         * Todo: register to whitelist module
-         */
+        whitelist.registerOtoken(newOtoken);
+
         emit OtokenCreated(
             newOtoken,
             msg.sender,
