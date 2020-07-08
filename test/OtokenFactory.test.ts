@@ -1,9 +1,11 @@
-import {OtokenFactoryInstance, OtokenInstance} from '../build/types/truffle-types'
+import {OtokenFactoryInstance, OtokenInstance, MockAddressBookInstance} from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
 const {expectEvent, expectRevert, time} = require('@openzeppelin/test-helpers')
 const OToken = artifacts.require('Otoken.sol')
 const OTokenFactory = artifacts.require('OtokenFactory.sol')
+const MockAddressBook = artifacts.require('MockAddressBook.sol')
+const MockWhitelist = artifacts.require('MockWhitelistModule.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
 contract('OTokenFactory', accounts => {
@@ -21,7 +23,16 @@ contract('OTokenFactory', accounts => {
 
   before('Deploy oToken logic and Factory contract', async () => {
     const logic = await OToken.new()
-    oTokenFactory = await OTokenFactory.new(logic.address)
+    console.log(`impl addres`, logic.address)
+    const mockWhitelist = await MockWhitelist.new()
+    const addressBook: MockAddressBookInstance = await MockAddressBook.new()
+    // initiate addressBook
+    await addressBook.setOtokenImpl(logic.address)
+    await addressBook.setWhitelist(mockWhitelist.address)
+    // const impl = await addressBook.getOtokenImpl()
+    // console.log(`impl addres`, impl)
+    // console.log(`addressBook`, addressBook.address)
+    oTokenFactory = await OTokenFactory.new(addressBook.address)
     expiry = (await time.latest()).toNumber() + time.duration.days(30).toNumber()
   })
 
@@ -55,6 +66,8 @@ contract('OTokenFactory', accounts => {
         symbol,
       )
       expect(targetAddress).not.equal(ZERO_ADDR)
+
+      console.log(`targetAddress`, targetAddress)
 
       const isOtoken = await oTokenFactory.isOtoken(targetAddress)
       expect(isOtoken).false

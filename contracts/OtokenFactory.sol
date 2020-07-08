@@ -1,6 +1,7 @@
 pragma solidity =0.6.10;
 
 import "./lib/Spawner.sol";
+import "./interfaces/IAddressBook.sol";
 import "./Otoken.sol";
 
 /**
@@ -13,7 +14,7 @@ import "./Otoken.sol";
  */
 contract OtokenFactory is Spawner {
     // Implementation address of the otoken contract
-    Otoken public logic;
+    IAddressBook public addressBook;
 
     // A mapping that return true if oToken is valid
     mapping(address => bool) public isOtoken;
@@ -22,8 +23,8 @@ contract OtokenFactory is Spawner {
 
     mapping(bytes32 => address) private _tokenAddresses;
 
-    constructor(Otoken _otokenImpl) public {
-        logic = _otokenImpl;
+    constructor(IAddressBook _addressBook) public {
+        addressBook = _addressBook;
     }
 
     event OtokenCreated(
@@ -61,10 +62,9 @@ contract OtokenFactory is Spawner {
     ) external returns (address newOtoken) {
         bytes32 id = _getOptionId(_underlyingAsset, _strikeAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
         require(_tokenAddresses[id] == address(0), "OptionFactory: Option created");
-
         // Todo: Check whitelist module
         bytes memory initializationCalldata = abi.encodeWithSelector(
-            logic.init.selector,
+            addressBook.getOtokenImpl().init.selector,
             _underlyingAsset,
             _strikeAsset,
             _collateralAsset,
@@ -75,7 +75,7 @@ contract OtokenFactory is Spawner {
             _symbol
         );
 
-        newOtoken = _spawn(address(logic), initializationCalldata);
+        newOtoken = _spawn(address(addressBook.getOtokenImpl()), initializationCalldata);
 
         _otokens.push(newOtoken);
         _tokenAddresses[id] = newOtoken;
@@ -148,8 +148,9 @@ contract OtokenFactory is Spawner {
     ) external view returns (address targetAddress) {
         bytes32 id = _getOptionId(_underlyingAsset, _strikeAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
         require(_tokenAddresses[id] == address(0), "OptionFactory: Option created");
+        // IOtoken logic = IOtoken(addressBook.getOtokenImpl());
         bytes memory initializationCalldata = abi.encodeWithSelector(
-            logic.init.selector,
+            addressBook.getOtokenImpl().init.selector,
             _underlyingAsset,
             _strikeAsset,
             _collateralAsset,
@@ -159,7 +160,7 @@ contract OtokenFactory is Spawner {
             _name,
             _symbol
         );
-        targetAddress = _computeAddress(address(logic), initializationCalldata);
+        targetAddress = _computeAddress(address(addressBook.getOtokenImpl()), initializationCalldata);
     }
 
     /**

@@ -5,16 +5,19 @@ contract MockAddressBook {
     address private _otokenImpl;
     address private _whitelist;
 
-    constructor(address _otoken, address _whitelistModule) public {
-        _otokenImpl = _otoken;
-        _whitelist = _whitelistModule;
+    function setOtokenImpl(address _newImpl) external {
+        _otokenImpl = _newImpl;
     }
 
-    function getOtokenImpl() external returns (address) {
+    function setWhitelist(address _newImpl) external {
+        _whitelist = _newImpl;
+    }
+
+    function getOtokenImpl() external view returns (address) {
         return _otokenImpl;
     }
 
-    function getWhitelist() external returns (address) {
+    function getWhitelist() external view returns (address) {
         return _whitelist;
     }
 }

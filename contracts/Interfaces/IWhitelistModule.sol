@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.6.10;
 
 interface IWhitelistModule {
@@ -15,5 +16,5 @@ interface IWhitelistModule {
 
     function registerOtoken(address oToken) external returns (bool success);
 
-    function isValidOtoken(address oToken) external view returns (bool success);
+    function isValidOtoken(address oToken) external view returns (bool isValid);
 }
