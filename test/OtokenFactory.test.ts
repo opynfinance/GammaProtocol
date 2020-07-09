@@ -21,6 +21,7 @@ contract('OTokenFactory', accounts => {
   // Paramter used for oToken init(). (Use random addresses as usdc and eth)
   const usdcAddress = accounts[5]
   const ethAddress = accounts[6]
+  const shitcoinAddr = accounts[7]
   const strikePrice = new BigNumber(200)
   const isPut = true
   const name = 'Opyn ETH-USDC 200 PUT'
@@ -145,8 +146,11 @@ contract('OTokenFactory', accounts => {
       expect((await oToken.expiry()).toString()).to.be.equal(expiry.toString())
     })
 
-    it('Should revert when creating non-whitelisted options', () => {
-      expect(1).to.be.equal(1)
+    it('Should revert when creating non-whitelisted options', async () => {
+      await expectRevert(
+        oTokenFactory.createOtoken(shitcoinAddr, usdcAddress, usdcAddress, strikePrice, expiry, isPut, name, symbol),
+        'OptionFactory: Unsupported Product',
+      )
     })
 
     it('Should revert when calling init on already inited oToken', async () => {
