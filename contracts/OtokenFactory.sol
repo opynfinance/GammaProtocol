@@ -14,7 +14,7 @@ import {Otoken} from "./Otoken.sol";
  * and deploy eip-1167 minimal proxies for otoken logic contract.
  */
 contract OtokenFactory is Spawner {
-    // AddressBook to look for whitelist module and oToken implementation contract
+    // The Opyn AddressBook contract that records addresses of whitelist module and oToken impl contract.
     IAddressBook public addressBook;
 
     address[] private _otokens;
@@ -42,11 +42,12 @@ contract OtokenFactory is Spawner {
      * @param _underlyingAsset underlying asset
      * @param _strikeAsset strike asset
      * @param _collateralAsset collateral asset
-     * @param _strikePrice strike price in __
+     * @param _strikePrice strike price with decimals = 18
      * @param _expiry expiration timestamp in second
      * @param _isPut is this a put option or not
      * @param _name token name for this option
      * @param _symbol token symbol
+     * @return newOtoken address of the newly created option
      */
     function createOtoken(
         address _underlyingAsset,
@@ -110,9 +111,10 @@ contract OtokenFactory is Spawner {
      * @param _underlyingAsset underlying asset
      * @param _strikeAsset strike asset
      * @param _collateralAsset collateral asset
-     * @param _strikePrice strike price in __
+     * @param _strikePrice strike price with decimals = 18
      * @param _expiry expiration timestamp in second
      * @param _isPut is this a put option or not
+     * @return otoken the address of target otoken.
      */
     function getOtoken(
         address _underlyingAsset,
@@ -132,11 +134,12 @@ contract OtokenFactory is Spawner {
      * @param _underlyingAsset underlying asset
      * @param _strikeAsset strike asset
      * @param _collateralAsset collateral asset
-     * @param _strikePrice strike price in __
+     * @param _strikePrice strike price with decimals = 18
      * @param _expiry expiration timestamp in second
      * @param _isPut is this a put option or not
      * @param _name token name for this option
      * @param _symbol token symbol
+     * @return targetAddress the address this otoken will be deployed at.
      */
     function getTargetOtokenAddress(
         address _underlyingAsset,
@@ -170,9 +173,10 @@ contract OtokenFactory is Spawner {
      * @param _underlyingAsset underlying asset
      * @param _strikeAsset strike asset
      * @param _collateralAsset collateral asset
-     * @param _strikePrice strike price in __
+     * @param _strikePrice strike price with decimals = 18
      * @param _expiry expiration timestamp in second
      * @param _isPut is this a put option or not
+     * @return id the id of an otoken
      */
     function _getOptionId(
         address _underlyingAsset,

@@ -4,7 +4,7 @@ import {ERC20Initializable} from "./lib/oz/ERC20Initializable.sol";
 
 /**
  * SPDX-License-Identifier: UNLICENSED
- * @dev The Otoken inherits ERC20UpgradeSafe because we need to use the init instead of constructor.
+ * @dev The Otoken inherits ERC20Initializable because we need to use the init instead of constructor.
  */
 contract Otoken is ERC20Initializable {
     address public underlyingAsset;

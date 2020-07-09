@@ -199,11 +199,6 @@ contract('OTokenFactory', accounts => {
       expect(existAddress).to.equal(oToken.address)
     })
 
-    // it('Should return true when calling isOtoken with the correct address', async () => {
-    //   const isOtoken = await oTokenFactory.isOtoken(oToken.address)
-    //   expect(isOtoken).to.be.true
-    // })
-
     it('should revert if calling getTargetOTokenAddress with existing option paramters', async () => {
       await expectRevert(
         oTokenFactory.getTargetOtokenAddress(
@@ -223,9 +218,9 @@ contract('OTokenFactory', accounts => {
 
   describe('Wrong setup: wrong implementation contract', () => {
     it('Should revert on token creation', async () => {
-      // set the oToken Impl contract to a wrong address
+      // Set the oToken Impl contract to a wrong address
       await addressBook.setOtokenImpl(oTokenFactory.address)
-      // try to create a 250 strike
+      // Try to create a 250 strike (use the 200 strike will throw "Option Created" error first.)
       const newStrikePrice = new BigNumber(250)
       await expectRevert(
         oTokenFactory.createOtoken(ethAddress, usdcAddress, usdcAddress, newStrikePrice, expiry, isPut, name, symbol),
