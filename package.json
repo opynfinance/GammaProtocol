@@ -85,9 +85,6 @@
   "dependencies": {
     "@truffle/contract": "^4.2.7",
     "bignumber.js": "^9.0.0",
-    "install": "^0.13.0",
-    "mocha": "^7.2.0",
-    "npm": "^6.14.5",
-    "truffle-hdwallet-provider": "^1.0.17"
+    "mocha": "^7.2.0"
   }
 }
