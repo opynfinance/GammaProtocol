@@ -5,11 +5,11 @@ module.exports = {
   },
   skipFiles: [
     'Migrations.sol',
-    'lib/oz/SafeMath.sol',
-    'lib/oz/Address.sol',
-    'lib/oz/Context.sol',
-    'lib/oz/IERC20.sol',
-    'lib/oz/ERC20Initializable.sol',
-    'lib/oz/Initializable.sol'
+    'packages/oz/SafeMath.sol',
+    'packages/oz/Address.sol',
+    'packages/oz/Context.sol',
+    'packages/oz/IERC20.sol',
+    'packages/oz/ERC20Initializable.sol',
+    'packages/oz/Initializable.sol'
   ]
 }
