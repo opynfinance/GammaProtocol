@@ -1,7 +1,8 @@
+// SPDX-License-Identifier: UNLICENSED
+/* solhint-disable */
 pragma solidity 0.6.0;
 
 interface IOtoken {
-
     function init(
         address _underlyingAsset,
         address _strikeAsset,

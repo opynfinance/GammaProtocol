@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: UNLICENSED
+/* solhint-disable */
 pragma solidity 0.6.0;
 
 interface IMarginPool {
@@ -12,5 +14,4 @@ interface IMarginPool {
         address user,
         uint256 amount
     ) external;
-
 }

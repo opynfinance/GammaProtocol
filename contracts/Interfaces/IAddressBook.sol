@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: UNLICENSED
+/* solhint-disable */
+
 pragma solidity 0.6.0;
 
 import {IWhitelistModule} from "./IWhitelistModule.sol";
