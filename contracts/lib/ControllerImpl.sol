@@ -5,16 +5,26 @@ pragma experimental ABIEncoderV2;
 
 import {MarginAccountLib} from "./MarginAccount.sol";
 import {Actions} from "./Actions.sol";
+// Interfaces
 import {IOtoken} from "../interfaces/IOtoken.sol";
+import {IAddressBook} from "../interfaces/IAddressBook.sol";
+import {IMarginPool} from "../interfaces/IMarginPool.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 library ControllerImpl {
     using MarginAccountLib for MarginAccountLib.Vault;
 
-    function _operate(MarginAccountLib.Vault storage vault, Actions.ActionArgs[] memory actions) internal {
+    function _operate(
+        MarginAccountLib.Vault storage vault, 
+        Actions.ActionArgs[] memory actions,
+        IAddressBook addressBook
+    ) internal {
         // Vaults.Vault storage vault = account[user].vaults[vaultId];
 
-        _runActions(vault, actions);
+        IMarginPool pool = addressBook.getMarginPool();
+        // IMarginPool pool = addressBook.getMarginPool();
+
+        _runActions(vault, actions, pool);
 
         // _checkRequirement(vault)
     }
@@ -22,7 +32,11 @@ library ControllerImpl {
     /**
      * Run actions
      */
-    function _runActions(MarginAccountLib.Vault storage vault, Actions.ActionArgs[] memory actions) private {
+    function _runActions(
+        MarginAccountLib.Vault storage vault,
+        Actions.ActionArgs[] memory actions,
+        IMarginPool pool
+    ) private {
         for (uint256 i = 0; i < actions.length; i++) {
             Actions.ActionArgs memory action = actions[i];
             Actions.ActionType actionType = action.actionType;

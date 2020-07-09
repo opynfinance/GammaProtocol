@@ -8,8 +8,16 @@ import {ControllerImpl} from "./lib/ControllerImpl.sol";
 import {Actions} from "./lib/Actions.sol";
 import {MarginAccountLib} from "./lib/MarginAccount.sol";
 
+import {IAddressBook} from "./interfaces/IAddressBook.sol";
+
 contract Controller {
     mapping(address => MarginAccountLib.Account) public accounts;
+
+    IAddressBook public addressBook;
+
+    constructor(IAddressBook _addressBook) public {
+        addressBook = _addressBook;
+    }
 
     function operate(
         address user,
@@ -17,6 +25,6 @@ contract Controller {
         Actions.ActionArgs[] calldata actions
     ) external {
         MarginAccountLib.Vault storage vault = accounts[user].vaults[vaultId];
-        ControllerImpl._operate(vault, actions);
+        ControllerImpl._operate(vault, actions, addressBook);
     }
 }
