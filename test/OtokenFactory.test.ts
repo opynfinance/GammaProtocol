@@ -15,6 +15,7 @@ const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
 contract('OTokenFactory', accounts => {
   let oToken: OtokenInstance
+  let addressBook: MockAddressBookInstance
   let oTokenFactory: OtokenFactoryInstance
 
   // Paramter used for oToken init(). (Use random addresses as usdc and eth)
@@ -33,7 +34,7 @@ contract('OTokenFactory', accounts => {
     const mockWhitelist: MockWhitelistModuleInstance = await MockWhitelist.new()
     await mockWhitelist.whitelistProduct(ethAddress, usdcAddress, usdcAddress)
     // Deploy addressbook
-    const addressBook: MockAddressBookInstance = await MockAddressBook.new()
+    addressBook = await MockAddressBook.new()
     await addressBook.setOtokenImpl(logic.address)
     await addressBook.setWhitelist(mockWhitelist.address)
 
@@ -218,10 +219,12 @@ contract('OTokenFactory', accounts => {
 
   describe('Wrong setup: wrong implementation contract', () => {
     it('Should revert on token creation', async () => {
-      // We should initiate oTokenFactory with oToken implementation contract, so this is incorrect.
-      const wrongFactory: OtokenFactoryInstance = await OTokenFactory.new(oTokenFactory.address)
+      // set the oToken Impl contract to a wrong address
+      await addressBook.setOtokenImpl(oTokenFactory.address)
+      // try to create a 250 strike
+      const newStrikePrice = new BigNumber(250)
       await expectRevert(
-        wrongFactory.createOtoken(ethAddress, usdcAddress, usdcAddress, strikePrice, expiry, isPut, name, symbol),
+        oTokenFactory.createOtoken(ethAddress, usdcAddress, usdcAddress, newStrikePrice, expiry, isPut, name, symbol),
         'revert',
       )
     })
