@@ -15,7 +15,7 @@ library ControllerImpl {
     using MarginAccountLib for MarginAccountLib.Vault;
 
     function _operate(
-        MarginAccountLib.Vault storage vault, 
+        MarginAccountLib.Vault storage vault,
         Actions.ActionArgs[] memory actions,
         IAddressBook addressBook
     ) internal {
