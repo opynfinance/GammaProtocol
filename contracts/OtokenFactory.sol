@@ -14,7 +14,7 @@ import {Otoken} from "./Otoken.sol";
  * and deploy eip-1167 minimal proxies for otoken logic contract.
  */
 contract OtokenFactory is Spawner {
-    // Implementation address of the otoken contract
+    // AddressBook to look for whitelist module and oToken implementation contract
     IAddressBook public addressBook;
 
     address[] private _otokens;
@@ -150,7 +150,7 @@ contract OtokenFactory is Spawner {
     ) external view returns (address targetAddress) {
         bytes32 id = _getOptionId(_underlyingAsset, _strikeAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
         require(_tokenAddresses[id] == address(0), "OptionFactory: Option created");
-        // IOtoken logic = IOtoken(addressBook.getOtokenImpl());
+
         bytes memory initializationCalldata = abi.encodeWithSelector(
             addressBook.getOtokenImpl().init.selector,
             _underlyingAsset,

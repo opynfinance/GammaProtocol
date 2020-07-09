@@ -1,12 +1,12 @@
 pragma solidity =0.6.10;
 
-import {ERC20UpgradeSafe} from "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
+import {ERC20Initializable} from "./lib/oz/ERC20Initializable.sol";
 
 /**
  * SPDX-License-Identifier: UNLICENSED
  * @dev The Otoken inherits ERC20UpgradeSafe because we need to use the init instead of constructor.
  */
-contract Otoken is ERC20UpgradeSafe {
+contract Otoken is ERC20Initializable {
     address public underlyingAsset;
     address public strikeAsset;
     address public collateralAsset;
