@@ -47,7 +47,7 @@ contract Spawn {
  */
 contract Spawner {
     // Have a fixed salt value because we will only deploy oToken with same init value once.
-    uint256 private constant SALT = 0;
+    bytes32 private constant SALT = 0;
 
     /**
      * @notice Internal function for spawning an eip-1167 minimal proxy using
@@ -93,24 +93,18 @@ contract Spawner {
             type(Spawn).creationCode,
             abi.encode(logicContract, initializationCalldata)
         );
-
         // get target address using the constructed initialization code.
         bytes32 initCodeHash = keccak256(initCode);
 
-        target = address( // derive the target deployment address.
-            uint160( // downcast to match the address type.
-                uint256( // cast to uint to truncate upper digits.
-                    keccak256( // compute CREATE2 hash using 4 inputs.
-                        abi.encodePacked( // pack all inputs to the hash together.
-                            bytes1(0xff), // pass in the control character.
-                            address(this), // pass in the address of this contract.
-                            bytes32(SALT), // pass in the salt from above.
-                            initCodeHash // pass in hash of contract creation code.
-                        )
-                    )
-                )
+        bytes32 _data = keccak256( // compute CREATE2 hash using 4 inputs.
+            abi.encodePacked(
+                bytes1(0xff), // pass in the control character.
+                address(this), // pass in the address of this contract.
+                SALT, // pass in the salt from above.
+                initCodeHash // pass in hash of contract creation code.
             )
         );
+        target = address(uint256(_data));
     }
 
     /**
@@ -122,17 +116,14 @@ contract Spawner {
      * @return spawnedContract The address of the newly-spawned contract.
      */
     function _spawnCreate2(bytes memory initCode) private returns (address spawnedContract) {
-        bytes32 salt = bytes32(SALT);
-
         assembly {
             let encoded_data := add(0x20, initCode) // load initialization code.
             let encoded_size := mload(initCode) // load the init code's length.
             spawnedContract := create2(
-                // call `CREATE2` w/ 4 arguments.
                 callvalue(), // forward any supplied endowment.
                 encoded_data, // pass in initialization code.
                 encoded_size, // pass in init code's length.
-                salt // pass in the salt value.
+                SALT // pass in the salt value.
             )
 
             // pass along failure message from failed contract deployment and revert.
