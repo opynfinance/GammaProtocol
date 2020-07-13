@@ -151,9 +151,6 @@ contract OtokenFactory is Spawner {
         string memory _name,
         string memory _symbol
     ) external view returns (address targetAddress) {
-        bytes32 id = _getOptionId(_underlyingAsset, _strikeAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
-        require(_tokenAddresses[id] == address(0), "OptionFactory: Option created");
-
         bytes memory initializationCalldata = abi.encodeWithSelector(
             addressBook.getOtokenImpl().init.selector,
             _underlyingAsset,

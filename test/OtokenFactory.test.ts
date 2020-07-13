@@ -187,6 +187,20 @@ contract('OTokenFactory', accounts => {
       expect(otokens.includes(oToken.address)).to.be.true
     })
 
+    it('should get same address if calling getTargetOTokenAddress with existing option paramters', async () => {
+      const addr = await oTokenFactory.getTargetOtokenAddress(
+        ethAddress,
+        usdcAddress,
+        usdcAddress,
+        strikePrice,
+        expiry,
+        isPut,
+        name,
+        symbol,
+      )
+      expect(addr).to.be.equal(oToken.address)
+    })
+
     it('Should return correct token address', async () => {
       const existAddress = await oTokenFactory.getOtoken(
         ethAddress,
@@ -197,22 +211,6 @@ contract('OTokenFactory', accounts => {
         isPut,
       )
       expect(existAddress).to.equal(oToken.address)
-    })
-
-    it('should revert if calling getTargetOTokenAddress with existing option paramters', async () => {
-      await expectRevert(
-        oTokenFactory.getTargetOtokenAddress(
-          ethAddress,
-          usdcAddress,
-          usdcAddress,
-          strikePrice,
-          expiry,
-          isPut,
-          name,
-          symbol,
-        ),
-        'OptionFactory: Option created',
-      )
     })
   })
 
