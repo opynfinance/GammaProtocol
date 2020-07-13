@@ -1,6 +1,7 @@
 pragma solidity =0.6.10;
 
 import {Spawner} from "./packages/Spawner.sol";
+import {FactoryErrorReporter} from "./ErrorReporter.sol";
 import {IAddressBook} from "./interfaces/IAddressBook.sol";
 import {IWhitelistModule} from "./interfaces/IWhitelistModule.sol";
 import {Otoken} from "./Otoken.sol";
@@ -13,7 +14,7 @@ import {Otoken} from "./Otoken.sol";
  * @dev Calculate contract address before each creation with CREATE2
  * and deploy eip-1167 minimal proxies for otoken logic contract.
  */
-contract OtokenFactory is Spawner {
+contract OtokenFactory is Spawner, FactoryErrorReporter {
     // The Opyn AddressBook contract that records addresses of whitelist module and oToken impl contract.
     IAddressBook public addressBook;
 
@@ -47,7 +48,7 @@ contract OtokenFactory is Spawner {
      * @param _isPut is this a put option or not
      * @param _name token name for this option
      * @param _symbol token symbol
-     * @return newOtoken address of the newly created option
+     * @return code
      */
     function createOtoken(
         address _underlyingAsset,
@@ -58,15 +59,16 @@ contract OtokenFactory is Spawner {
         bool _isPut,
         string memory _name,
         string memory _symbol
-    ) external returns (address newOtoken) {
+    ) external returns (uint256 code) {
         bytes32 id = _getOptionId(_underlyingAsset, _strikeAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
-        require(_tokenAddresses[id] == address(0), "OptionFactory: Option created");
 
+        if (_tokenAddresses[id] != address(0)) {
+            return fail(Error.OPTION_EXISTS);
+        }
         IWhitelistModule whitelist = addressBook.getWhitelist();
-        require(
-            whitelist.isSupportedProduct(_underlyingAsset, _strikeAsset, _collateralAsset),
-            "OptionFactory: Unsupported Product"
-        );
+        if (!whitelist.isSupportedProduct(_underlyingAsset, _strikeAsset, _collateralAsset)) {
+            return fail(Error.UNWHITELISTED_PRODUCT);
+        }
 
         bytes memory initializationCalldata = abi.encodeWithSelector(
             addressBook.getOtokenImpl().init.selector,
@@ -80,7 +82,7 @@ contract OtokenFactory is Spawner {
             _symbol
         );
 
-        newOtoken = _spawn(address(addressBook.getOtokenImpl()), initializationCalldata);
+        address newOtoken = _spawn(address(addressBook.getOtokenImpl()), initializationCalldata);
 
         _otokens.push(newOtoken);
         _tokenAddresses[id] = newOtoken;
@@ -96,6 +98,8 @@ contract OtokenFactory is Spawner {
             _expiry,
             _isPut
         );
+
+        return uint256(Error.NO_ERROR);
     }
 
     /**
@@ -151,9 +155,6 @@ contract OtokenFactory is Spawner {
         string memory _name,
         string memory _symbol
     ) external view returns (address targetAddress) {
-        bytes32 id = _getOptionId(_underlyingAsset, _strikeAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
-        require(_tokenAddresses[id] == address(0), "OptionFactory: Option created");
-
         bytes memory initializationCalldata = abi.encodeWithSelector(
             addressBook.getOtokenImpl().init.selector,
             _underlyingAsset,

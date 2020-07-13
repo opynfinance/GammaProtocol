@@ -5,13 +5,18 @@ import {
   MockWhitelistModuleInstance,
 } from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
-
 const {expectEvent, expectRevert, time} = require('@openzeppelin/test-helpers')
 const OToken = artifacts.require('Otoken.sol')
 const OTokenFactory = artifacts.require('OtokenFactory.sol')
 const MockAddressBook = artifacts.require('MockAddressBook.sol')
 const MockWhitelist = artifacts.require('MockWhitelistModule.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
+
+enum FactoryErrors {
+  NO_ERROR,
+  OPTION_EXISTS,
+  UNWHITELISTED_PRODUCT,
+}
 
 contract('OTokenFactory', accounts => {
   let oToken: OtokenInstance
@@ -146,11 +151,32 @@ contract('OTokenFactory', accounts => {
       expect((await oToken.expiry()).toString()).to.be.equal(expiry.toString())
     })
 
-    it('Should revert when creating non-whitelisted options', async () => {
-      await expectRevert(
-        oTokenFactory.createOtoken(shitcoinAddr, usdcAddress, usdcAddress, strikePrice, expiry, isPut, name, symbol),
-        'OptionFactory: Unsupported Product',
+    it('Should emit correct error code when creating duplicated option', async () => {
+      const createTx = await oTokenFactory.createOtoken(
+        ethAddress,
+        usdcAddress,
+        usdcAddress,
+        strikePrice,
+        expiry,
+        isPut,
+        name,
+        symbol,
       )
+      expectEvent(createTx, 'Failure', {error: FactoryErrors.OPTION_EXISTS.toString()})
+    })
+
+    it('Should emit correct error code when creating non-whitelisted options', async () => {
+      const tx = await oTokenFactory.createOtoken(
+        shitcoinAddr,
+        usdcAddress,
+        usdcAddress,
+        strikePrice,
+        expiry,
+        isPut,
+        name,
+        symbol,
+      )
+      expectEvent(tx, 'Failure', {error: FactoryErrors.UNWHITELISTED_PRODUCT.toString()})
     })
 
     it('Should revert when calling init on already inited oToken', async () => {
@@ -160,22 +186,31 @@ contract('OTokenFactory', accounts => {
       )
     })
 
-    it('Should revert when creating duplicated option', async () => {
-      await expectRevert(
-        oTokenFactory.createOtoken(ethAddress, usdcAddress, usdcAddress, strikePrice, expiry, isPut, name, symbol),
-        'OptionFactory: Option created',
+    it('Should revert when creating same options with different name', async () => {
+      const tx = await oTokenFactory.createOtoken(
+        ethAddress,
+        usdcAddress,
+        usdcAddress,
+        strikePrice,
+        expiry,
+        isPut,
+        'name2',
+        symbol,
       )
+      expectEvent(tx, 'Failure', {error: FactoryErrors.OPTION_EXISTS.toString()})
     })
-
-    it('Should revert when creating same options with different name or symbol', async () => {
-      await expectRevert(
-        oTokenFactory.createOtoken(ethAddress, usdcAddress, usdcAddress, strikePrice, expiry, isPut, 'name2', symbol),
-        'OptionFactory: Option created',
+    it('Should emit correct error code when creating same options with different symbol', async () => {
+      const tx = await oTokenFactory.createOtoken(
+        ethAddress,
+        usdcAddress,
+        usdcAddress,
+        strikePrice,
+        expiry,
+        isPut,
+        name,
+        'symbol2',
       )
-      await expectRevert(
-        oTokenFactory.createOtoken(ethAddress, usdcAddress, usdcAddress, strikePrice, expiry, isPut, name, 'symbol2'),
-        'OptionFactory: Option created',
-      )
+      expectEvent(tx, 'Failure', {error: FactoryErrors.OPTION_EXISTS.toString()})
     })
   })
 
@@ -197,22 +232,6 @@ contract('OTokenFactory', accounts => {
         isPut,
       )
       expect(existAddress).to.equal(oToken.address)
-    })
-
-    it('should revert if calling getTargetOTokenAddress with existing option paramters', async () => {
-      await expectRevert(
-        oTokenFactory.getTargetOtokenAddress(
-          ethAddress,
-          usdcAddress,
-          usdcAddress,
-          strikePrice,
-          expiry,
-          isPut,
-          name,
-          symbol,
-        ),
-        'OptionFactory: Option created',
-      )
     })
   })
 
