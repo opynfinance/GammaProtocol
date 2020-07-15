@@ -4,6 +4,7 @@ module.exports = {
     mnemonic: "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
   },
   skipFiles: [
-    'Migrations.sol'
+    'Migrations.sol',
+    'packages/oz/SafeMath.sol',
   ]
 }
