@@ -1,6 +1,6 @@
 import {
   OtokenFactoryInstance,
-  OtokenInstance,
+  MockOtokenInstance,
   MockAddressBookInstance,
   MockWhitelistModuleInstance,
   MockERC20Instance,
@@ -17,7 +17,7 @@ const MockOtoken = artifacts.require('MockOtoken.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
 contract('OTokenFactory', accounts => {
-  let oToken: OtokenInstance
+  let oToken: MockOtokenInstance
   let addressBook: MockAddressBookInstance
   let oTokenFactory: OtokenFactoryInstance
 
