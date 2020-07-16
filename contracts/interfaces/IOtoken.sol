@@ -8,8 +8,6 @@ interface IOtoken {
         address _collateralAsset,
         uint256 _strikePrice,
         uint256 _expiry,
-        bool _isPut,
-        string memory _name,
-        string memory _symbol
+        bool _isPut
     ) external;
 }

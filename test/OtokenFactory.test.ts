@@ -3,14 +3,17 @@ import {
   OtokenInstance,
   MockAddressBookInstance,
   MockWhitelistModuleInstance,
+  MockERC20Instance,
 } from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
 const {expectEvent, expectRevert, time} = require('@openzeppelin/test-helpers')
-const OToken = artifacts.require('Otoken.sol')
+// const OToken = artifacts.require('Otoken.sol')
 const OTokenFactory = artifacts.require('OtokenFactory.sol')
 const MockAddressBook = artifacts.require('MockAddressBook.sol')
 const MockWhitelist = artifacts.require('MockWhitelistModule.sol')
+const MockERC20 = artifacts.require('MockERC20.sol')
+const MockOtoken = artifacts.require('MockOtoken.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
 contract('OTokenFactory', accounts => {
@@ -19,21 +22,22 @@ contract('OTokenFactory', accounts => {
   let oTokenFactory: OtokenFactoryInstance
 
   // Paramter used for oToken init(). (Use random addresses as usdc and eth)
-  const usdcAddress = accounts[5]
-  const ethAddress = accounts[6]
-  const shitcoinAddr = accounts[7]
-  const strikePrice = new BigNumber(200)
+  let usdc: MockERC20Instance
+  let shitcoin: MockERC20Instance
+  const ethAddress = ZERO_ADDR
+  const strikePrice = new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18))
   const isPut = true
-  // const name = 'Opyn ETH-USDC 200 PUT'
-  // const symbol = 'ETH-USDC 200 P'
   let expiry: number
 
   before('Deploy oToken logic and Factory contract', async () => {
-    const logic = await OToken.new()
+    usdc = await MockERC20.new('USDC', 'USDC')
+    shitcoin = await MockERC20.new('Shit coin', 'STC')
+
+    const logic = await MockOtoken.new()
 
     // Deploy and whitelist ETH:USDC product
     const mockWhitelist: MockWhitelistModuleInstance = await MockWhitelist.new()
-    await mockWhitelist.whitelistProduct(ethAddress, usdcAddress, usdcAddress)
+    await mockWhitelist.whitelistProduct(ethAddress, usdc.address, usdc.address)
     // Deploy addressbook
     addressBook = await MockAddressBook.new()
     await addressBook.setOtokenImpl(logic.address)
@@ -52,8 +56,8 @@ contract('OTokenFactory', accounts => {
     it('Should return address(0) if token is not deployed', async () => {
       const existAddress = await oTokenFactory.getOtoken(
         ethAddress,
-        usdcAddress,
-        usdcAddress,
+        usdc.address,
+        usdc.address,
         strikePrice,
         expiry,
         isPut,
@@ -64,8 +68,8 @@ contract('OTokenFactory', accounts => {
     it('should get deterministic address with new oToken paramters', async () => {
       const targetAddress = await oTokenFactory.getTargetOtokenAddress(
         ethAddress,
-        usdcAddress,
-        usdcAddress,
+        usdc.address,
+        usdc.address,
         strikePrice,
         expiry,
         isPut,
@@ -76,8 +80,8 @@ contract('OTokenFactory', accounts => {
     it('should get different target address with different oToken paramters', async () => {
       const targetAddress1 = await oTokenFactory.getTargetOtokenAddress(
         ethAddress,
-        usdcAddress,
-        usdcAddress,
+        usdc.address,
+        usdc.address,
         strikePrice,
         expiry,
         isPut,
@@ -98,8 +102,8 @@ contract('OTokenFactory', accounts => {
     it('Should create new contract at expected address', async () => {
       const targetAddress = await oTokenFactory.getTargetOtokenAddress(
         ethAddress,
-        usdcAddress,
-        usdcAddress,
+        usdc.address,
+        usdc.address,
         strikePrice,
         expiry,
         isPut,
@@ -107,8 +111,8 @@ contract('OTokenFactory', accounts => {
 
       const txResponse = await oTokenFactory.createOtoken(
         ethAddress,
-        usdcAddress,
-        usdcAddress,
+        usdc.address,
+        usdc.address,
         strikePrice,
         expiry,
         isPut,
@@ -117,20 +121,20 @@ contract('OTokenFactory', accounts => {
       expectEvent(txResponse, 'OtokenCreated', {
         creator: accounts[0],
         underlying: ethAddress,
-        strike: usdcAddress,
-        collateral: usdcAddress,
+        strike: usdc.address,
+        collateral: usdc.address,
         strikePrice: strikePrice.toString(),
         expiry: expiry.toString(),
         isPut: isPut,
         tokenAddress: targetAddress,
       })
-      oToken = await OToken.at(targetAddress)
+      oToken = await MockOtoken.at(targetAddress)
     })
 
     it('Should have correct paramter', async () => {
       expect(await oToken.underlyingAsset()).to.be.equal(ethAddress)
-      expect(await oToken.strikeAsset()).to.be.equal(usdcAddress)
-      expect(await oToken.collateralAsset()).to.be.equal(usdcAddress)
+      expect(await oToken.strikeAsset()).to.be.equal(usdc.address)
+      expect(await oToken.collateralAsset()).to.be.equal(usdc.address)
       expect(await oToken.isPut()).to.be.equal(isPut)
       expect((await oToken.strikePrice()).toString()).to.be.equal(strikePrice.toString())
       expect((await oToken.expiry()).toString()).to.be.equal(expiry.toString())
@@ -138,29 +142,18 @@ contract('OTokenFactory', accounts => {
 
     it('Should revert when creating non-whitelisted options', async () => {
       await expectRevert(
-        oTokenFactory.createOtoken(shitcoinAddr, usdcAddress, usdcAddress, strikePrice, expiry, isPut),
+        oTokenFactory.createOtoken(shitcoin.address, usdc.address, usdc.address, strikePrice, expiry, isPut),
         'OptionFactory: Unsupported Product',
       )
     })
 
     it('Should revert when calling init on already inited oToken', async () => {
-      await expectRevert(oToken.init(usdcAddress, usdcAddress, usdcAddress, strikePrice, expiry, isPut), 'revert')
+      await expectRevert(oToken.init(usdc.address, usdc.address, usdc.address, strikePrice, expiry, isPut), 'revert')
     })
 
     it('Should revert when creating duplicated option', async () => {
       await expectRevert(
-        oTokenFactory.createOtoken(ethAddress, usdcAddress, usdcAddress, strikePrice, expiry, isPut),
-        'OptionFactory: Option created',
-      )
-    })
-
-    it('Should revert when creating same options with different name or symbol', async () => {
-      await expectRevert(
-        oTokenFactory.createOtoken(ethAddress, usdcAddress, usdcAddress, strikePrice, expiry, isPut),
-        'OptionFactory: Option created',
-      )
-      await expectRevert(
-        oTokenFactory.createOtoken(ethAddress, usdcAddress, usdcAddress, strikePrice, expiry, isPut),
+        oTokenFactory.createOtoken(ethAddress, usdc.address, usdc.address, strikePrice, expiry, isPut),
         'OptionFactory: Option created',
       )
     })
@@ -177,8 +170,8 @@ contract('OTokenFactory', accounts => {
     it('should get same address if calling getTargetOTokenAddress with existing option paramters', async () => {
       const addr = await oTokenFactory.getTargetOtokenAddress(
         ethAddress,
-        usdcAddress,
-        usdcAddress,
+        usdc.address,
+        usdc.address,
         strikePrice,
         expiry,
         isPut,
@@ -189,8 +182,8 @@ contract('OTokenFactory', accounts => {
     it('Should return correct token address', async () => {
       const existAddress = await oTokenFactory.getOtoken(
         ethAddress,
-        usdcAddress,
-        usdcAddress,
+        usdc.address,
+        usdc.address,
         strikePrice,
         expiry,
         isPut,
@@ -206,7 +199,7 @@ contract('OTokenFactory', accounts => {
       // Try to create a 250 strike (use the 200 strike will throw "Option Created" error first.)
       const newStrikePrice = new BigNumber(250)
       await expectRevert(
-        oTokenFactory.createOtoken(ethAddress, usdcAddress, usdcAddress, newStrikePrice, expiry, isPut),
+        oTokenFactory.createOtoken(ethAddress, usdc.address, usdc.address, newStrikePrice, expiry, isPut),
         'revert',
       )
     })
