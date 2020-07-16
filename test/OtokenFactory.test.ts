@@ -24,8 +24,8 @@ contract('OTokenFactory', accounts => {
   const shitcoinAddr = accounts[7]
   const strikePrice = new BigNumber(200)
   const isPut = true
-  const name = 'Opyn ETH-USDC 200 PUT'
-  const symbol = 'ETH-USDC 200 P'
+  // const name = 'Opyn ETH-USDC 200 PUT'
+  // const symbol = 'ETH-USDC 200 P'
   let expiry: number
 
   before('Deploy oToken logic and Factory contract', async () => {
@@ -69,8 +69,6 @@ contract('OTokenFactory', accounts => {
         strikePrice,
         expiry,
         isPut,
-        name,
-        symbol,
       )
       expect(targetAddress).not.equal(ZERO_ADDR)
     })
@@ -83,8 +81,6 @@ contract('OTokenFactory', accounts => {
         strikePrice,
         expiry,
         isPut,
-        name,
-        symbol,
       )
       const targetAddress2 = await oTokenFactory.getTargetOtokenAddress(
         ZERO_ADDR,
@@ -93,8 +89,6 @@ contract('OTokenFactory', accounts => {
         strikePrice,
         expiry,
         isPut,
-        name,
-        symbol,
       )
       expect(targetAddress1).not.equal(targetAddress2)
     })
@@ -109,8 +103,6 @@ contract('OTokenFactory', accounts => {
         strikePrice,
         expiry,
         isPut,
-        name,
-        symbol,
       )
 
       const txResponse = await oTokenFactory.createOtoken(
@@ -120,8 +112,6 @@ contract('OTokenFactory', accounts => {
         strikePrice,
         expiry,
         isPut,
-        name,
-        symbol,
         {from: accounts[0]},
       )
       expectEvent(txResponse, 'OtokenCreated', {
@@ -148,32 +138,29 @@ contract('OTokenFactory', accounts => {
 
     it('Should revert when creating non-whitelisted options', async () => {
       await expectRevert(
-        oTokenFactory.createOtoken(shitcoinAddr, usdcAddress, usdcAddress, strikePrice, expiry, isPut, name, symbol),
+        oTokenFactory.createOtoken(shitcoinAddr, usdcAddress, usdcAddress, strikePrice, expiry, isPut),
         'OptionFactory: Unsupported Product',
       )
     })
 
     it('Should revert when calling init on already inited oToken', async () => {
-      await expectRevert(
-        oToken.init(usdcAddress, usdcAddress, usdcAddress, strikePrice, expiry, isPut, name, symbol),
-        'revert',
-      )
+      await expectRevert(oToken.init(usdcAddress, usdcAddress, usdcAddress, strikePrice, expiry, isPut), 'revert')
     })
 
     it('Should revert when creating duplicated option', async () => {
       await expectRevert(
-        oTokenFactory.createOtoken(ethAddress, usdcAddress, usdcAddress, strikePrice, expiry, isPut, name, symbol),
+        oTokenFactory.createOtoken(ethAddress, usdcAddress, usdcAddress, strikePrice, expiry, isPut),
         'OptionFactory: Option created',
       )
     })
 
     it('Should revert when creating same options with different name or symbol', async () => {
       await expectRevert(
-        oTokenFactory.createOtoken(ethAddress, usdcAddress, usdcAddress, strikePrice, expiry, isPut, 'name2', symbol),
+        oTokenFactory.createOtoken(ethAddress, usdcAddress, usdcAddress, strikePrice, expiry, isPut),
         'OptionFactory: Option created',
       )
       await expectRevert(
-        oTokenFactory.createOtoken(ethAddress, usdcAddress, usdcAddress, strikePrice, expiry, isPut, name, 'symbol2'),
+        oTokenFactory.createOtoken(ethAddress, usdcAddress, usdcAddress, strikePrice, expiry, isPut),
         'OptionFactory: Option created',
       )
     })
@@ -195,8 +182,6 @@ contract('OTokenFactory', accounts => {
         strikePrice,
         expiry,
         isPut,
-        name,
-        symbol,
       )
       expect(addr).to.be.equal(oToken.address)
     })
@@ -221,7 +206,7 @@ contract('OTokenFactory', accounts => {
       // Try to create a 250 strike (use the 200 strike will throw "Option Created" error first.)
       const newStrikePrice = new BigNumber(250)
       await expectRevert(
-        oTokenFactory.createOtoken(ethAddress, usdcAddress, usdcAddress, newStrikePrice, expiry, isPut, name, symbol),
+        oTokenFactory.createOtoken(ethAddress, usdcAddress, usdcAddress, newStrikePrice, expiry, isPut),
         'revert',
       )
     })

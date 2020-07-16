@@ -45,8 +45,6 @@ contract OtokenFactory is Spawner {
      * @param _strikePrice strike price with decimals = 18
      * @param _expiry expiration timestamp in second
      * @param _isPut is this a put option or not
-     * @param _name token name for this option
-     * @param _symbol token symbol
      * @return newOtoken address of the newly created option
      */
     function createOtoken(
@@ -55,9 +53,7 @@ contract OtokenFactory is Spawner {
         address _collateralAsset,
         uint256 _strikePrice,
         uint256 _expiry,
-        bool _isPut,
-        string memory _name,
-        string memory _symbol
+        bool _isPut
     ) external returns (address newOtoken) {
         bytes32 id = _getOptionId(_underlyingAsset, _strikeAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
         require(_tokenAddresses[id] == address(0), "OptionFactory: Option created");
@@ -75,9 +71,7 @@ contract OtokenFactory is Spawner {
             _collateralAsset,
             _strikePrice,
             _expiry,
-            _isPut,
-            _name,
-            _symbol
+            _isPut
         );
 
         newOtoken = _spawn(address(addressBook.getOtokenImpl()), initializationCalldata);
@@ -137,8 +131,6 @@ contract OtokenFactory is Spawner {
      * @param _strikePrice strike price with decimals = 18
      * @param _expiry expiration timestamp in second
      * @param _isPut is this a put option or not
-     * @param _name token name for this option
-     * @param _symbol token symbol
      * @return targetAddress the address this otoken will be deployed at.
      */
     function getTargetOtokenAddress(
@@ -147,9 +139,7 @@ contract OtokenFactory is Spawner {
         address _collateralAsset,
         uint256 _strikePrice,
         uint256 _expiry,
-        bool _isPut,
-        string memory _name,
-        string memory _symbol
+        bool _isPut
     ) external view returns (address targetAddress) {
         bytes memory initializationCalldata = abi.encodeWithSelector(
             addressBook.getOtokenImpl().init.selector,
@@ -158,9 +148,7 @@ contract OtokenFactory is Spawner {
             _collateralAsset,
             _strikePrice,
             _expiry,
-            _isPut,
-            _name,
-            _symbol
+            _isPut
         );
         targetAddress = _computeAddress(address(addressBook.getOtokenImpl()), initializationCalldata);
     }
