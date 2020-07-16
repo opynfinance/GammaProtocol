@@ -3,7 +3,6 @@ pragma solidity =0.6.10;
 import {Spawner} from "./packages/Spawner.sol";
 import {IAddressBook} from "./interfaces/IAddressBook.sol";
 import {IWhitelistModule} from "./interfaces/IWhitelistModule.sol";
-import {Otoken} from "./Otoken.sol";
 
 /**
  * SPDX-License-Identifier: UNLICENSED
