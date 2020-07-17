@@ -11,6 +11,15 @@ pragma solidity 0.6.10;
 
 contract Otoken {
     /** TODO: */
+    bool public isPut;
+
+    /** TODO: */
+    uint256 public strikePrice;
+
+    /** TODO: */
+    uint256 public expiryTimestamp;
+
+    /** TODO: */
     address public underlying;
 
     /** TODO: */
@@ -21,15 +30,6 @@ contract Otoken {
 
     /** TODO: */
     address public addressBook;
-
-    /** TODO: */
-    uint256 public strikePrice;
-
-    /** TODO: */
-    uint256 public expiryTimestamp;
-
-    /** TODO: */
-    bool public isPut;
 
     constructor() internal {
         /** TODO: */
