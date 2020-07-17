@@ -29,8 +29,8 @@ contract WhitelistModule is Ownable {
     }
 
     /**
-     * @notice
-     * @dev
+     * @notice TODO:
+     * @dev TODO:
      * @param underlying TODO:
      * @param strike TODO:
      * @param collateral TODO:
@@ -45,8 +45,8 @@ contract WhitelistModule is Ownable {
     }
 
     /**
-     * @notice
-     * @dev
+     * @notice TODO:
+     * @dev TODO:
      * @param collateral TODO:
      */
     function isSupportedCollateral(address collateral) external view returns (bool isValid) {
@@ -55,8 +55,8 @@ contract WhitelistModule is Ownable {
     }
 
     /**
-     * @notice
-     * @dev
+     * @notice TODO:
+     * @dev TODO:
      * @param underlying TODO:
      * @param strike TODO:
      * @param collateral TODO:
@@ -70,8 +70,8 @@ contract WhitelistModule is Ownable {
     }
 
     /**
-     * @notice
-     * @dev
+     * @notice TODO:
+     * @dev TODO:
      * @param collateral TODO:
      */
     function whitelistCollateral(address collateral) external onlyOwner {
@@ -84,8 +84,8 @@ contract WhitelistModule is Ownable {
     }
 
     /**
-     * @notice
-     * @dev
+     * @notice TODO:
+     * @dev TODO:
      * @param otoken TODO:
      */
     function registerOtoken(address otoken) external onlyFactory {

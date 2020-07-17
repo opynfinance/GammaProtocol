@@ -46,16 +46,22 @@ contract Otoken {
     }
 
     /**
-     * @notice
-     * @dev
-     * @param otoken TODO:
+     * @notice TODO
+     * @dev TODO:
+     * @param underlyingAsset TODO:
+     * @param strikeAsset TODO:
+     * @param collateralAsset TODO:
+     * @param isPut TODO:
+     * @param expiryTimestamp TODO:
+     * @param strikePrice TODO:
      */
     function init(
         address underlyingAsset,
         address strikeAsset,
         address collateralAsset,
         bool isPut,
-        uint256 expiryTimestamp
+        uint256 expiryTimestamp,
+        uint256 strikePrice
     ) external onlyFactory {
         /** TODO: */
     }
