@@ -55,9 +55,9 @@
   },
   "lint-staged": {
     "**/*.sol": [
-      "npm run lint:sol",
       "npm run lint:sol:prettier:fix",
-      "git add"
+      "git add",
+      "npm run lint:sol"
     ],
     "test/**": [
       "npm run lint:tests:fix",
