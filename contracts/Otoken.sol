@@ -46,7 +46,7 @@ contract Otoken {
     }
 
     /**
-     * @notice TODO
+     * @notice TODO:
      * @dev TODO:
      * @param underlyingAsset TODO:
      * @param strikeAsset TODO:
