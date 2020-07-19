@@ -36,7 +36,7 @@ contract('Whitelist', ([owner, random]) => {
 
       expectEvent(whitelistTx, 'ProductWhitelisted')
 
-      const isSupportedProduct = await whitelist.isProductSupported(underlyingAsset, usdc.address, usdc.address)
+      const isSupportedProduct = await whitelist.isWhitelistedProduct(underlyingAsset, usdc.address, usdc.address)
       assert.equal(isSupportedProduct, true, 'fail: product not supported')
     })
   })

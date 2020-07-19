@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
  * @notice The whitelist module keeps track of all valid Otoken contracts.
  */
 contract Whitelist is Ownable {
-    mapping(bytes32 => bool) internal isSupportedProduct;
+    mapping(bytes32 => bool) internal whitelistedProduct;
 
     event ProductWhitelisted(
         bytes32 productHash,
@@ -26,14 +26,14 @@ contract Whitelist is Ownable {
      * @param _strike option strike asset address
      * @return boolean, true if product is supported
      */
-    function isProductSupported(
+    function isWhitelistedProduct(
         address _underlying,
         address _strike,
         address _collateral
     ) external view returns (bool) {
         bytes32 productHash = keccak256(abi.encode(_underlying, _collateral, _strike));
 
-        return isSupportedProduct[productHash];
+        return whitelistedProduct[productHash];
     }
 
     /**
@@ -52,7 +52,7 @@ contract Whitelist is Ownable {
     ) external onlyOwner returns (bytes32) {
         bytes32 productHash = keccak256(abi.encode(_underlying, _collateral, _strike));
 
-        _setIsSupportedProduct(productHash);
+        _setWhitelistedProduct(productHash);
 
         emit ProductWhitelisted(productHash, _underlying, _collateral, _strike);
 
@@ -63,9 +63,9 @@ contract Whitelist is Ownable {
      * @notice set a product hash as supported
      * @param _productHash product hash in bytes
      */
-    function _setIsSupportedProduct(bytes32 _productHash) internal {
-        require(isSupportedProduct[_productHash] == false, "Product already supported");
+    function _setWhitelistedProduct(bytes32 _productHash) internal {
+        require(whitelistedProduct[_productHash] == false, "Product already supported");
 
-        isSupportedProduct[_productHash] = true;
+        whitelistedProduct[_productHash] = true;
     }
 }
