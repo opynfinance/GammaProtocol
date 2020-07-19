@@ -1,8 +1,9 @@
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.6.10;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-import "./mocks/AddressBookMock.sol";
+import "./interfaces/IAddressBook.sol";
 
 /**
  * @author Opyn Team
@@ -10,34 +11,42 @@ import "./mocks/AddressBookMock.sol";
  * @notice The whitelist module keeps track of all valid Otoken contracts.
  */
 contract Whitelist is Ownable {
-    // TODO: change this to addressBook contract
-    AddressBookMock internal addressBook;
-
     mapping(bytes32 => bool) internal isSupportedProduct;
-    mapping(address => bool) public isValidOtoken;
 
-    modifier isFactory(address _contract) {
-        require(_contract == addressBook.getOtokenFactory(), "Sender is not OtokenFactory");
+    event ProductWhitelisted(
+        bytes32 productHash,
+        address indexed underlying,
+        address indexed collateral,
+        address indexed strike
+    );
 
-        _;
-    }
-
-    constructor(address _addresBook) public {
-        require(_addresBook != address(0), "Invalid AddressBook");
-
-        addressBook = AddressBookMock(_addresBook);
-    }
-
+    /**
+     * @notice whitelist a product
+     * @dev a product is the hash of the underlying, collateral and strike assets
+     * can only be called from owner address
+     * @param _underlying option underlying asset address
+     * @param _collateral option collateral asset address
+     * @param _underlying option strike asset address
+     * @return product hash
+     */
     function whitelistProduct(
         address _underlying,
         address _collateral,
         address _strike
-    ) external onlyOwner returns (byte32 id) {
-        bytes32 productHash = keccak256(_underlying, _collateral, _strike);
+    ) external onlyOwner returns (bytes32) {
+        bytes32 productHash = keccak256(abi.encode(_underlying, _collateral, _strike));
 
         _setIsSupportedProduct(productHash);
+
+        emit ProductWhitelisted(productHash, _underlying, _collateral, _strike);
+
+        return productHash;
     }
 
+    /**
+     * @notice set a product hash as supported
+     * @param _productHash product hash in bytes
+     */
     function _setIsSupportedProduct(bytes32 _productHash) internal {
         require(isSupportedProduct[_productHash] == false, "Product already supported");
 
