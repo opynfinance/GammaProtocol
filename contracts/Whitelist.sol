@@ -64,7 +64,7 @@ contract Whitelist is Ownable {
      * @param _productHash product hash in bytes
      */
     function _setWhitelistedProduct(bytes32 _productHash) internal {
-        require(whitelistedProduct[_productHash] == false, "Product already supported");
+        require(whitelistedProduct[_productHash] == false, "Product already whitelisted");
 
         whitelistedProduct[_productHash] = true;
     }

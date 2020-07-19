@@ -39,5 +39,12 @@ contract('Whitelist', ([owner, random]) => {
       const isSupportedProduct = await whitelist.isWhitelistedProduct(underlyingAsset, usdc.address, usdc.address)
       assert.equal(isSupportedProduct, true, 'fail: product not supported')
     })
+
+    it('should revert whitelisting an already whitelisted product', async () => {
+      await expectRevert(
+        whitelist.whitelistProduct(underlyingAsset, usdc.address, usdc.address, {from: owner}),
+        'Product already whitelisted',
+      )
+    })
   })
 })
