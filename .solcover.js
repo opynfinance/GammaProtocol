@@ -5,6 +5,6 @@ module.exports = {
   },
   skipFiles: [
     'Migrations.sol',
-    'packages/oz/SafeMath.sol',
+    'packages/oz/*.sol',
   ]
 }
