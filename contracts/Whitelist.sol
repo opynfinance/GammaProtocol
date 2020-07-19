@@ -39,7 +39,7 @@ contract Whitelist is Ownable {
     }
 
     /**
-     * @notice whitelist a product
+     * @notice allow owner to whitelist product
      * @dev a product is the hash of the underlying, collateral and strike assets
      * can only be called from owner address
      * @param _underlying option underlying asset address
