@@ -23,7 +23,7 @@ contract Whitelist is Ownable {
      * @dev product = the hash of underlying, collateral and strike asset
      * @param _underlying option underlying asset address
      * @param _collateral option collateral asset address
-     * @param _underlying option strike asset address
+     * @param _strike option strike asset address
      * @return boolean, true if product is supported
      */
     function isProductSupported(
@@ -42,7 +42,7 @@ contract Whitelist is Ownable {
      * can only be called from owner address
      * @param _underlying option underlying asset address
      * @param _collateral option collateral asset address
-     * @param _underlying option strike asset address
+     * @param _strike option strike asset address
      * @return product hash
      */
     function whitelistProduct(

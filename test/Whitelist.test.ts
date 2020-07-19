@@ -7,7 +7,7 @@ const Whitelist = artifacts.require('Whitelist.sol')
 // address(0)
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
-contract('OTokenFactory', ([owner, random]) => {
+contract('Whitelist', ([owner, random]) => {
   // ERC20 mocks
   let usdc: MockERC20Instance
   // Whitelist module
