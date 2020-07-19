@@ -49,7 +49,7 @@ contract('OTokenFactory', accounts => {
   describe('Get oToken address', () => {
     it('Should have no otoken records at the begining', async () => {
       const otokens = await oTokenFactory.getOtokens()
-      assert(otokens.length === 0, 'Should have no otoken records')
+      assert.equal(otokens.length, 0, 'Should have no otoken records')
     })
 
     it('Should return address(0) if token is not deployed', async () => {
@@ -61,7 +61,7 @@ contract('OTokenFactory', accounts => {
         expiry,
         isPut,
       )
-      assert(existAddress === ZERO_ADDR, 'getOtoken check failed on undeployed tokens.')
+      assert.equal(existAddress, ZERO_ADDR, 'getOtoken check failed on undeployed tokens.')
     })
 
     it('should get deterministic address with new oToken paramters', async () => {
@@ -73,7 +73,7 @@ contract('OTokenFactory', accounts => {
         expiry,
         isPut,
       )
-      assert(targetAddress !== ZERO_ADDR, 'getTargetOtokenAddress should never give 0 address.')
+      assert.notEqual(targetAddress, ZERO_ADDR, 'getTargetOtokenAddress should never give 0 address.')
     })
 
     it('should get different target address with different oToken paramters', async () => {
@@ -93,7 +93,7 @@ contract('OTokenFactory', accounts => {
         expiry,
         isPut,
       )
-      assert(targetAddress1 !== targetAddress2)
+      assert.notEqual(targetAddress1, targetAddress2)
     })
   })
 
@@ -131,12 +131,12 @@ contract('OTokenFactory', accounts => {
     })
 
     it('Should have correct paramter', async () => {
-      assert((await oToken.underlyingAsset()) === ethAddress)
-      assert((await oToken.strikeAsset()) === usdc.address)
-      assert((await oToken.collateralAsset()) === usdc.address)
-      assert((await oToken.isPut()) === isPut)
-      assert((await oToken.strikePrice()).toString() === strikePrice.toString())
-      assert((await oToken.expiry()).toString() === expiry.toString())
+      assert.equal(await oToken.underlyingAsset(), ethAddress)
+      assert.equal(await oToken.strikeAsset(), usdc.address)
+      assert.equal(await oToken.collateralAsset(), usdc.address)
+      assert.equal(await oToken.isPut(), isPut)
+      assert.equal((await oToken.strikePrice()).toString(), strikePrice.toString())
+      assert.equal((await oToken.expiry()).toString(), expiry.toString())
     })
 
     it('Should revert when creating non-whitelisted options', async () => {
@@ -161,7 +161,7 @@ contract('OTokenFactory', accounts => {
   describe('Get oToken address after creation', () => {
     it('Should have one otoken record', async () => {
       const otokens = await oTokenFactory.getOtokens()
-      assert(otokens.length === 1)
+      assert.equal(otokens.length, 1)
 
       assert(otokens.includes(oToken.address))
     })
@@ -175,7 +175,7 @@ contract('OTokenFactory', accounts => {
         expiry,
         isPut,
       )
-      assert(addr === oToken.address)
+      assert.equal(addr, oToken.address)
     })
 
     it('Should return correct token address', async () => {
@@ -187,7 +187,7 @@ contract('OTokenFactory', accounts => {
         expiry,
         isPut,
       )
-      assert(existAddress === oToken.address)
+      assert.equal(existAddress, oToken.address)
     })
   })
 
