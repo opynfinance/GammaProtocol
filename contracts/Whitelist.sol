@@ -9,6 +9,7 @@ import "./packages/oz/Ownable.sol";
  * @notice The whitelist module keeps track of all valid Otoken contracts.
  */
 contract Whitelist is Ownable {
+    ///@notice mapping to track whitelisted product
     mapping(bytes32 => bool) internal whitelistedProduct;
 
     ///@notice emitted when owner whitelist a product
