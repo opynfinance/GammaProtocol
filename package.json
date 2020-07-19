@@ -79,5 +79,8 @@
   "bugs": {
     "url": "https://github.com/opynfinance/GammaProtocol/issues"
   },
-  "homepage": "https://github.com/opynfinance/GammaProtocol#readme"
+  "homepage": "https://github.com/opynfinance/GammaProtocol#readme",
+  "dependencies": {
+    "@openzeppelin/contracts": "^3.1.0"
+  }
 }
