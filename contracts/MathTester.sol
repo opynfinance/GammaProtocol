@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.6.10;
 
-import {SafeMath} from "@openzeppelin/contracts/math/SafeMath.sol";
+import {SafeMath} from "./packages/oz/SafeMath.sol";
 
 /**
  * @title SafeUnsignedFloatMath
  * @dev unsigned math operations with safety checks that revert on error.
  */
-
 contract MathTester {
     using SafeMath for uint256;
 
