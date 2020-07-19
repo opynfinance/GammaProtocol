@@ -11,6 +11,7 @@ import "./packages/oz/Ownable.sol";
 contract Whitelist is Ownable {
     mapping(bytes32 => bool) internal whitelistedProduct;
 
+    ///@notice emitted when owner whitelist a product
     event ProductWhitelisted(
         bytes32 productHash,
         address indexed underlying,
@@ -20,7 +21,7 @@ contract Whitelist is Ownable {
 
     /**
      * @notice check if a product is supported
-     * @dev product = the hash of underlying, collateral and strike asset
+     * @dev product = the hash of underlying, strike and collateral asset
      * @param _underlying option underlying asset address
      * @param _strike option strike asset address
      * @param _collateral option collateral asset address
