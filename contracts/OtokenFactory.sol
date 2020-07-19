@@ -14,12 +14,14 @@ import {WhitelistInterface} from "./interfaces/WhitelistInterface.sol";
  * and deploy eip-1167 minimal proxies for otoken logic contract.
  */
 contract OtokenFactory is Spawner {
-    /* The Opyn AddressBook contract that records addresses of whitelist module and oToken impl contract. */
+    /* The Opyn AddressBook contract that records addresses of whitelist module and oToken impl address. */
     address public addressBook;
 
+    /* An array of all created otokens */
     address[] private _otokens;
 
-    mapping(bytes32 => address) private _tokenAddresses;
+    /* A mapping from parameters hash to its deployed address */
+    mapping(bytes32 => address) private _idToAddress;
 
     constructor(address _addressBook) public {
         addressBook = _addressBook;
@@ -56,7 +58,7 @@ contract OtokenFactory is Spawner {
         bool _isPut
     ) external returns (address newOtoken) {
         bytes32 id = _getOptionId(_underlyingAsset, _strikeAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
-        require(_tokenAddresses[id] == address(0), "OptionFactory: Option created");
+        require(_idToAddress[id] == address(0), "OptionFactory: Option created");
 
         address whitelist = AddressBookInterface(addressBook).getWhitelist();
         require(
@@ -79,7 +81,7 @@ contract OtokenFactory is Spawner {
         newOtoken = _spawn(AddressBookInterface(addressBook).getOtokenImpl(), initializationCalldata);
 
         _otokens.push(newOtoken);
-        _tokenAddresses[id] = newOtoken;
+        _idToAddress[id] = newOtoken;
         WhitelistInterface(whitelist).registerOtoken(newOtoken);
 
         emit OtokenCreated(
@@ -121,7 +123,7 @@ contract OtokenFactory is Spawner {
         bool _isPut
     ) external view returns (address otoken) {
         bytes32 id = _getOptionId(_underlyingAsset, _strikeAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
-        return _tokenAddresses[id];
+        return _idToAddress[id];
     }
 
     /**
