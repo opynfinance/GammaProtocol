@@ -28,8 +28,8 @@ contract Whitelist is Ownable {
      */
     function isWhitelistedProduct(
         address _underlying,
-        address _strike,
-        address _collateral
+        address _collateral,
+        address _strike
     ) external view returns (bool) {
         bytes32 productHash = keccak256(abi.encode(_underlying, _collateral, _strike));
 
