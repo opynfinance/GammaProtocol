@@ -3,8 +3,6 @@ pragma solidity 0.6.10;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-import "./interfaces/IAddressBook.sol";
-
 /**
  * @author Opyn Team
  * @title Whitelist Module
@@ -19,6 +17,24 @@ contract Whitelist is Ownable {
         address indexed collateral,
         address indexed strike
     );
+
+    /**
+     * @notice check if a product is supported
+     * @dev product = the hash of underlying, collateral and strike asset
+     * @param _underlying option underlying asset address
+     * @param _collateral option collateral asset address
+     * @param _underlying option strike asset address
+     * @return boolean, true if product is supported
+     */
+    function isProductSupported(
+        address _underlying,
+        address _strike,
+        address _collateral
+    ) external view returns (bool) {
+        bytes32 productHash = keccak256(abi.encode(_underlying, _collateral, _strike));
+
+        return isSupportedProduct[productHash];
+    }
 
     /**
      * @notice whitelist a product

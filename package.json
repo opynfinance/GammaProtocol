@@ -38,6 +38,7 @@
     "build"
   ],
   "scripts": {
+    "ganache": "ganache-cli --port 8545",
     "migrate": "truffle migrate",
     "build": "npm run compile:contracts && npm run compile:types",
     "compile:contracts": "truffle compile",
