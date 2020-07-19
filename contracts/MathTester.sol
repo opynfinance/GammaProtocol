@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.6.10;
 
-import {SafeMath} from "./packages/oz/SafeMath.sol";
+import {SafeMath} from "./packages/oz/upgradeability/SafeMath.sol";
 
 /**
  * @title SafeUnsignedFloatMath

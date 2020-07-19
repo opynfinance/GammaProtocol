@@ -2,7 +2,7 @@
 /* solhint-disable */
 pragma solidity ^0.6.0;
 
-import "./Context.sol";
+import "./ContextUpgradeSafe.sol";
 import "./IERC20.sol";
 import "./SafeMath.sol";
 import "./Address.sol";
