@@ -27,6 +27,7 @@ contract OtokenFactory is Spawner {
         addressBook = _addressBook;
     }
 
+    /* Event: OtokenCreated - Emitted when factory create a new Option. */
     event OtokenCreated(
         address indexed tokenAddress,
         address indexed creator,
