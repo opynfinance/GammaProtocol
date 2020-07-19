@@ -6,9 +6,8 @@ import {
   MockERC20Instance,
 } from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
-
+import {assert} from 'chai'
 const {expectEvent, expectRevert, time} = require('@openzeppelin/test-helpers')
-// const OToken = artifacts.require('Otoken.sol')
 const OTokenFactory = artifacts.require('OtokenFactory.sol')
 const MockAddressBook = artifacts.require('MockAddressBook.sol')
 const MockWhitelist = artifacts.require('MockWhitelistModule.sol')
@@ -50,7 +49,7 @@ contract('OTokenFactory', accounts => {
   describe('Get oToken address', () => {
     it('Should have no otoken records at the begining', async () => {
       const otokens = await oTokenFactory.getOtokens()
-      expect(otokens.length).to.equal(0)
+      assert(otokens.length === 0, 'Should have no otoken records')
     })
 
     it('Should return address(0) if token is not deployed', async () => {
@@ -62,7 +61,7 @@ contract('OTokenFactory', accounts => {
         expiry,
         isPut,
       )
-      expect(existAddress).to.equal(ZERO_ADDR)
+      assert(existAddress === ZERO_ADDR, 'getOtoken check failed on undeployed tokens.')
     })
 
     it('should get deterministic address with new oToken paramters', async () => {
@@ -74,7 +73,7 @@ contract('OTokenFactory', accounts => {
         expiry,
         isPut,
       )
-      expect(targetAddress).not.equal(ZERO_ADDR)
+      assert(targetAddress !== ZERO_ADDR, 'getTargetOtokenAddress should never give 0 address.')
     })
 
     it('should get different target address with different oToken paramters', async () => {
@@ -94,7 +93,7 @@ contract('OTokenFactory', accounts => {
         expiry,
         isPut,
       )
-      expect(targetAddress1).not.equal(targetAddress2)
+      assert(targetAddress1 !== targetAddress2)
     })
   })
 
@@ -132,12 +131,12 @@ contract('OTokenFactory', accounts => {
     })
 
     it('Should have correct paramter', async () => {
-      expect(await oToken.underlyingAsset()).to.be.equal(ethAddress)
-      expect(await oToken.strikeAsset()).to.be.equal(usdc.address)
-      expect(await oToken.collateralAsset()).to.be.equal(usdc.address)
-      expect(await oToken.isPut()).to.be.equal(isPut)
-      expect((await oToken.strikePrice()).toString()).to.be.equal(strikePrice.toString())
-      expect((await oToken.expiry()).toString()).to.be.equal(expiry.toString())
+      assert((await oToken.underlyingAsset()) === ethAddress)
+      assert((await oToken.strikeAsset()) === usdc.address)
+      assert((await oToken.collateralAsset()) === usdc.address)
+      assert((await oToken.isPut()) === isPut)
+      assert((await oToken.strikePrice()).toString() === strikePrice.toString())
+      assert((await oToken.expiry()).toString() === expiry.toString())
     })
 
     it('Should revert when creating non-whitelisted options', async () => {
@@ -162,9 +161,9 @@ contract('OTokenFactory', accounts => {
   describe('Get oToken address after creation', () => {
     it('Should have one otoken record', async () => {
       const otokens = await oTokenFactory.getOtokens()
-      expect(otokens.length).to.equal(1)
+      assert(otokens.length === 1)
 
-      expect(otokens.includes(oToken.address)).to.be.true
+      assert(otokens.includes(oToken.address))
     })
 
     it('should get same address if calling getTargetOTokenAddress with existing option paramters', async () => {
@@ -176,7 +175,7 @@ contract('OTokenFactory', accounts => {
         expiry,
         isPut,
       )
-      expect(addr).to.be.equal(oToken.address)
+      assert(addr === oToken.address)
     })
 
     it('Should return correct token address', async () => {
@@ -188,7 +187,7 @@ contract('OTokenFactory', accounts => {
         expiry,
         isPut,
       )
-      expect(existAddress).to.equal(oToken.address)
+      assert(existAddress === oToken.address)
     })
   })
 
