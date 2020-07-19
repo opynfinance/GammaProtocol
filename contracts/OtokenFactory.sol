@@ -26,8 +26,8 @@ contract OtokenFactory is Spawner {
     }
 
     event OtokenCreated(
-        address tokenAddress,
-        address creator,
+        address indexed tokenAddress,
+        address indexed creator,
         address underlying,
         address strike,
         address collateral,
