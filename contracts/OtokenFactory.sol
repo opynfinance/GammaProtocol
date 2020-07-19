@@ -1,9 +1,9 @@
 pragma solidity =0.6.10;
 
 import {Spawner} from "./packages/Spawner.sol";
-import {IAddressBook} from "./interfaces/IAddressBook.sol";
-import {IOtoken} from "./interfaces/IOtoken.sol";
-import {IWhitelistModule} from "./interfaces/IWhitelistModule.sol";
+import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
+import {OtokenInterface} from "./interfaces/OtokenInterface.sol";
+import {WhitelistInterface} from "./interfaces/WhitelistInterface.sol";
 
 /**
  * SPDX-License-Identifier: UNLICENSED
@@ -14,7 +14,7 @@ import {IWhitelistModule} from "./interfaces/IWhitelistModule.sol";
  * and deploy eip-1167 minimal proxies for otoken logic contract.
  */
 contract OtokenFactory is Spawner {
-    // The Opyn AddressBook contract that records addresses of whitelist module and oToken impl contract.
+    /* The Opyn AddressBook contract that records addresses of whitelist module and oToken impl contract. */
     address public addressBook;
 
     address[] private _otokens;
@@ -58,16 +58,16 @@ contract OtokenFactory is Spawner {
         bytes32 id = _getOptionId(_underlyingAsset, _strikeAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
         require(_tokenAddresses[id] == address(0), "OptionFactory: Option created");
 
-        address whitelist = IAddressBook(addressBook).getWhitelist();
+        address whitelist = AddressBookInterface(addressBook).getWhitelist();
         require(
-            IWhitelistModule(whitelist).isSupportedProduct(_underlyingAsset, _strikeAsset, _collateralAsset),
+            WhitelistInterface(whitelist).isSupportedProduct(_underlyingAsset, _strikeAsset, _collateralAsset),
             "OptionFactory: Unsupported Product"
         );
 
-        address otokenImpl = IAddressBook(addressBook).getOtokenImpl();
+        address otokenImpl = AddressBookInterface(addressBook).getOtokenImpl();
 
         bytes memory initializationCalldata = abi.encodeWithSelector(
-            IOtoken(otokenImpl).init.selector,
+            OtokenInterface(otokenImpl).init.selector,
             _underlyingAsset,
             _strikeAsset,
             _collateralAsset,
@@ -76,11 +76,11 @@ contract OtokenFactory is Spawner {
             _isPut
         );
 
-        newOtoken = _spawn(IAddressBook(addressBook).getOtokenImpl(), initializationCalldata);
+        newOtoken = _spawn(AddressBookInterface(addressBook).getOtokenImpl(), initializationCalldata);
 
         _otokens.push(newOtoken);
         _tokenAddresses[id] = newOtoken;
-        IWhitelistModule(whitelist).registerOtoken(newOtoken);
+        WhitelistInterface(whitelist).registerOtoken(newOtoken);
 
         emit OtokenCreated(
             newOtoken,
@@ -143,9 +143,9 @@ contract OtokenFactory is Spawner {
         uint256 _expiry,
         bool _isPut
     ) external view returns (address targetAddress) {
-        address otokenImpl = IAddressBook(addressBook).getOtokenImpl();
+        address otokenImpl = AddressBookInterface(addressBook).getOtokenImpl();
         bytes memory initializationCalldata = abi.encodeWithSelector(
-            IOtoken(otokenImpl).init.selector,
+            OtokenInterface(otokenImpl).init.selector,
             _underlyingAsset,
             _strikeAsset,
             _collateralAsset,
@@ -153,7 +153,7 @@ contract OtokenFactory is Spawner {
             _expiry,
             _isPut
         );
-        targetAddress = _computeAddress(IAddressBook(addressBook).getOtokenImpl(), initializationCalldata);
+        targetAddress = _computeAddress(AddressBookInterface(addressBook).getOtokenImpl(), initializationCalldata);
     }
 
     /**

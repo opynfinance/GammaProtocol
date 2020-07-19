@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.6.10;
 
-interface IWhitelistModule {
+interface WhitelistInterface {
     function whitelistProduct(
         address underlying,
         address strike,
