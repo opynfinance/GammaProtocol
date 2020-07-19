@@ -14,24 +14,24 @@ contract Whitelist is Ownable {
     event ProductWhitelisted(
         bytes32 productHash,
         address indexed underlying,
-        address indexed collateral,
-        address indexed strike
+        address indexed strike,
+        address indexed collateral
     );
 
     /**
      * @notice check if a product is supported
      * @dev product = the hash of underlying, collateral and strike asset
      * @param _underlying option underlying asset address
-     * @param _collateral option collateral asset address
      * @param _strike option strike asset address
+     * @param _collateral option collateral asset address
      * @return boolean, true if product is supported
      */
     function isWhitelistedProduct(
         address _underlying,
-        address _collateral,
-        address _strike
+        address _strike,
+        address _collateral
     ) external view returns (bool) {
-        bytes32 productHash = keccak256(abi.encode(_underlying, _collateral, _strike));
+        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral));
 
         return whitelistedProduct[productHash];
     }
@@ -41,20 +41,20 @@ contract Whitelist is Ownable {
      * @dev a product is the hash of the underlying, collateral and strike assets
      * can only be called from owner address
      * @param _underlying option underlying asset address
-     * @param _collateral option collateral asset address
      * @param _strike option strike asset address
+     * @param _collateral option collateral asset address
      * @return product hash
      */
     function whitelistProduct(
         address _underlying,
-        address _collateral,
-        address _strike
+        address _strike,
+        address _collateral
     ) external onlyOwner returns (bytes32) {
-        bytes32 productHash = keccak256(abi.encode(_underlying, _collateral, _strike));
+        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral));
 
         _setWhitelistedProduct(productHash);
 
-        emit ProductWhitelisted(productHash, _underlying, _collateral, _strike);
+        emit ProductWhitelisted(productHash, _underlying, _strike, _collateral);
 
         return productHash;
     }
