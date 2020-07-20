@@ -83,7 +83,6 @@ contract Whitelist is Ownable {
      * @param _underlying option underlying asset address
      * @param _strike option strike asset address
      * @param _collateral option collateral asset address
-     * @return product hash
      */
     function whitelistProduct(
         address _underlying,
