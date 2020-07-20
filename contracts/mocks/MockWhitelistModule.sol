@@ -15,7 +15,7 @@ contract MockWhitelistModule {
         _isWhitelistedProduct[id] = true;
     }
 
-    function isSupportedProduct(
+    function isWhitelistedProduct(
         address _underlying,
         address _strike,
         address _collateral

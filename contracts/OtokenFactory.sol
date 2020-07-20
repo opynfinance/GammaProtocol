@@ -63,7 +63,7 @@ contract OtokenFactory is Spawner {
 
         address whitelist = AddressBookInterface(addressBook).getWhitelist();
         require(
-            WhitelistInterface(whitelist).isSupportedProduct(_underlyingAsset, _strikeAsset, _collateralAsset),
+            WhitelistInterface(whitelist).isWhitelistedProduct(_underlyingAsset, _strikeAsset, _collateralAsset),
             "OptionFactory: Unsupported Product"
         );
 

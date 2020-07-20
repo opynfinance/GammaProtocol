@@ -8,11 +8,15 @@ interface WhitelistInterface {
         address collateral
     ) external returns (bytes32 id);
 
-    function isSupportedProduct(
+    function whitelistCollateral(address collateral) external returns (bytes32 id);
+
+    function isWhitelistedProduct(
         address underlying,
         address strike,
         address collateral
-    ) external view returns (bool isValid);
+    ) external view returns (bool);
+
+    function isWhitelistedCollateral(address collateral) external view returns (bool);
 
     function registerOtoken(address oToken) external;
 
