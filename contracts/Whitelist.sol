@@ -51,14 +51,12 @@ contract Whitelist is Ownable {
         address _underlying,
         address _strike,
         address _collateral
-    ) external onlyOwner returns (bytes32) {
+    ) external onlyOwner {
         bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral));
 
         _setWhitelistedProduct(productHash);
 
         emit ProductWhitelisted(productHash, _underlying, _strike, _collateral);
-
-        return productHash;
     }
 
     /**
