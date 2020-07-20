@@ -108,4 +108,10 @@ contract('Whitelist', ([owner, otokenFactoryAddress, random, newOwner]) => {
       assert.equal(isSupportedProduct, true, 'fail: product not supported')
     })
   })
+
+  describe('Deployment checks', () => {
+    it('should revert deploying Whitelist Module when AddressBook is equal to address(0)', async () => {
+      await expectRevert(Whitelist.new(ZERO_ADDR, {from: owner}), 'Invalid address book')
+    })
+  })
 })
