@@ -2,7 +2,6 @@
 pragma solidity 0.6.10;
 
 import "./interfaces/AddressBookInterface.sol";
-
 import "./packages/oz/Ownable.sol";
 
 /**
@@ -14,9 +13,9 @@ contract Whitelist is Ownable {
     ///@notice AddressBook module address
     address public addressBook;
 
-    ///@dev mapping to track whitelisted product
+    ///@dev mapping to track whitelisted products
     mapping(bytes32 => bool) internal whitelistedProduct;
-    ///@dev mapping to track whitelisted otoken
+    ///@dev mapping to track whitelisted otokens
     mapping(address => bool) internal whitelistedOtoken;
 
     /**
@@ -29,7 +28,7 @@ contract Whitelist is Ownable {
         addressBook = _addressBook;
     }
 
-    ///@notice emitted when owner whitelist a product
+    ///@notice emitted when the owner whitelists a new product
     event ProductWhitelisted(
         bytes32 productHash,
         address indexed underlying,
