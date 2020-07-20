@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.6.10;
 
+import "./interfaces/AddressBookInterface.sol";
+
 import "./packages/oz/Ownable.sol";
 
 /**
@@ -9,8 +11,23 @@ import "./packages/oz/Ownable.sol";
  * @notice The whitelist module keeps track of all valid Otoken contracts.
  */
 contract Whitelist is Ownable {
-    ///@notice mapping to track whitelisted product
+    ///@notice AddressBook module address
+    address public addressBook;
+
+    ///@dev mapping to track whitelisted product
     mapping(bytes32 => bool) internal whitelistedProduct;
+    ///@dev mapping to track whitelisted otoken
+    mapping(address => bool) internal whitelistedOtoken;
+
+    /**
+     * @dev constructor
+     * @param _addressBook AddressBook module address
+     */
+    constructor(address _addressBook) public {
+        require(_addressBook != address(0), "Invalid address book");
+
+        addressBook = _addressBook;
+    }
 
     ///@notice emitted when owner whitelist a product
     event ProductWhitelisted(
@@ -20,13 +37,25 @@ contract Whitelist is Ownable {
         address indexed collateral
     );
 
+    ///@notice emitted when Otoken Factory module whitelist an otoken
+    event OtokenWhitelisted(address otoken);
+
     /**
-     * @notice check if a product is supported
+     * @notice check if sender is Otoken Factory module
+     */
+    modifier onlyFactory() {
+        require(msg.sender == AddressBookInterface(addressBook).getOtokenFactory(), "Sender is not Otoken Factory");
+
+        _;
+    }
+
+    /**
+     * @notice check if a product is whitelisted
      * @dev product = the hash of underlying, strike and collateral asset
      * @param _underlying option underlying asset address
      * @param _strike option strike asset address
      * @param _collateral option collateral asset address
-     * @return boolean, true if product is supported
+     * @return boolean, true if product is whitelisted
      */
     function isWhitelistedProduct(
         address _underlying,
@@ -36,6 +65,15 @@ contract Whitelist is Ownable {
         bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral));
 
         return whitelistedProduct[productHash];
+    }
+
+    /**
+     * @notice check if an otoken is whitelisted
+     * @param _otoken otoken address
+     * @return boolean, true if otoken is whitelisted
+     */
+    function isWhitelistedOtoken(address _otoken) external view returns (bool) {
+        return whitelistedOtoken[_otoken];
     }
 
     /**
@@ -62,12 +100,33 @@ contract Whitelist is Ownable {
     }
 
     /**
-     * @notice set a product hash as supported
+     * @notice allow Otoken Factory to whitelist option
+     * @dev can only be called from owner address
+     * @param _otokenAddress otoken
+     */
+    function whitelistOtoken(address _otokenAddress) external onlyFactory {
+        require(whitelistedOtoken[_otokenAddress] == false, "Otoken already whitelisted");
+
+        _setWhitelistedOtoken(_otokenAddress);
+
+        emit OtokenWhitelisted(_otokenAddress);
+    }
+
+    /**
+     * @notice set a product hash as whitelisted
      * @param _productHash product hash in bytes
      */
     function _setWhitelistedProduct(bytes32 _productHash) internal {
         require(whitelistedProduct[_productHash] == false, "Product already whitelisted");
 
         whitelistedProduct[_productHash] = true;
+    }
+
+    /**
+     * @notice set an otoken address as whitelisted
+     * @param _otokenAddress product hash in bytes
+     */
+    function _setWhitelistedOtoken(address _otokenAddress) internal {
+        whitelistedOtoken[_otokenAddress] = true;
     }
 }
