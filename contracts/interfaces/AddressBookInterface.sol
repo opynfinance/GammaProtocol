@@ -22,19 +22,19 @@ interface AddressBookInterface {
 
     /* Setters */
 
-    function setOtokenImpl() external;
+    function setOtokenImpl(address _newImpl) external;
 
-    function setOtokenFactory() external;
+    function setOtokenFactory(address _newImpl) external;
 
-    function setWhitelist() external;
+    function setWhitelist(address _newImpl) external;
 
-    function setController() external;
+    function setController(address _newImpl) external;
 
-    function setMarginPool() external;
+    function setMarginPool(address _newImpl) external;
 
-    function setMarginCalculator() external;
+    function setMarginCalculator(address _newImpl) external;
 
-    function setLiquidationManager() external;
+    function setLiquidationManager(address _newImpl) external;
 
     function setAddress(bytes32 _id, address _newImpl) external;
 }
