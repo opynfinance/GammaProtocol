@@ -29,45 +29,7 @@ pragma solidity ^0.6.0;
 
 library BokkyPooBahsDateTimeLibrary {
     uint256 constant SECONDS_PER_DAY = 24 * 60 * 60;
-    // uint256 constant SECONDS_PER_HOUR = 60 * 60;
-    // uint256 constant SECONDS_PER_MINUTE = 60;
     int256 constant OFFSET19700101 = 2440588;
-
-    // ------------------------------------------------------------------------
-    // Calculate the number of days from 1970/01/01 to year/month/day using
-    // the date conversion algorithm from
-    //   http://aa.usno.navy.mil/faq/docs/JD_Formula.php
-    // and subtracting the offset 2440588 so that 1970/01/01 is day 0
-    //
-    // days = day
-    //      - 32075
-    //      + 1461 * (year + 4800 + (month - 14) / 12) / 4
-    //      + 367 * (month - 2 - (month - 14) / 12 * 12) / 12
-    //      - 3 * ((year + 4900 + (month - 14) / 12) / 100) / 4
-    //      - offset
-    // ------------------------------------------------------------------------
-    function _daysFromDate(
-        uint256 year,
-        uint256 month,
-        uint256 day
-    ) internal pure returns (uint256 _days) {
-        require(year >= 1970);
-        int256 _year = int256(year);
-        int256 _month = int256(month);
-        int256 _day = int256(day);
-
-        int256 __days = _day -
-            32075 +
-            (1461 * (_year + 4800 + (_month - 14) / 12)) /
-            4 +
-            (367 * (_month - 2 - ((_month - 14) / 12) * 12)) /
-            12 -
-            (3 * ((_year + 4900 + (_month - 14) / 12) / 100)) /
-            4 -
-            OFFSET19700101;
-
-        _days = uint256(__days);
-    }
 
     // ------------------------------------------------------------------------
     // Calculate year/month/day from the number of days since 1970/01/01 using

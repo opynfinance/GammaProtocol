@@ -24,7 +24,7 @@ contract Otoken is ERC20Initializable {
 
     bool public isPut;
 
-    uint256 private constant STRIKE_PRICE_DIGITS = 1000000000000000000;
+    uint256 private constant STRIKE_PRICE_DIGITS = 10**18;
 
     constructor(address _addressBook) public {
         addressBook = _addressBook;
