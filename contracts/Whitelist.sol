@@ -54,9 +54,9 @@ contract Whitelist is Ownable {
     /**
      * @notice check if a product is whitelisted
      * @dev product = the hash of underlying, strike and collateral asset
-     * @param _underlying option underlying asset address
-     * @param _strike option strike asset address
-     * @param _collateral option collateral asset address
+     * @param _underlying asset that the option references
+     * @param _strike asset that the strike price is denominated in
+     * @param _collateral asset that is held as collateral against short/written options
      * @return boolean, true if product is whitelisted
      */
     function isWhitelistedProduct(
@@ -82,9 +82,9 @@ contract Whitelist is Ownable {
      * @notice allow owner to whitelist product
      * @dev a product is the hash of the underlying, collateral and strike assets
      * can only be called from owner address
-     * @param _underlying option underlying asset address
-     * @param _strike option strike asset address
-     * @param _collateral option collateral asset address
+     * @param _underlying asset that the option references
+     * @param _strike asset that the strike price is denominated in
+     * @param _collateral asset that is held as collateral against short/written options
      */
     function whitelistProduct(
         address _underlying,
