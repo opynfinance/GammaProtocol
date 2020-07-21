@@ -11,10 +11,8 @@ module.exports = {
     'packages/oz/IERC20.sol',
     'packages/oz/Ownable.sol',
     'packages/oz/Create2.sol',
-    'packages/oz/upgradeability/Address.sol',
     'packages/oz/upgradeability/ContextUpgradeSafe.sol',
-    'packages/oz/upgradeability/IERC20.sol',
     'packages/oz/upgradeability/ERC20Initializable.sol',
-    'packages/oz/upgradeability/Initializable.sol',
+    'packages/oz/upgradeability/Initializable.sol'
   ]
 }

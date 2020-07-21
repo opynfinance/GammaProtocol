@@ -3,10 +3,10 @@
 pragma solidity ^0.6.0;
 
 import "./ContextUpgradeSafe.sol";
-import "./IERC20.sol";
-import "./Initializable.sol";
+import "../IERC20.sol";
 import "../SafeMath.sol";
 import "../Address.sol";
+import "./Initializable.sol";
 
 /**
  * @dev Implementation of the {IERC20} interface.
