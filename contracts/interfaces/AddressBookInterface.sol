@@ -2,7 +2,7 @@
 pragma solidity 0.6.10;
 
 interface AddressBookInterface {
-    function getOtokenImpl() external view returns (address otoken);
+    function getOtokenImpl() external view returns (address);
 
-    function getWhitelist() external view returns (address whitelist);
+    function getWhitelist() external view returns (address);
 }
