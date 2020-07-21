@@ -142,7 +142,7 @@ contract('OTokenFactory', accounts => {
     it('Should revert when creating non-whitelisted options', async () => {
       await expectRevert(
         oTokenFactory.createOtoken(shitcoin.address, usdc.address, usdc.address, strikePrice, expiry, isPut),
-        'OptionFactory: Unsupported Product',
+        'OtokenFactory: Unsupported Product',
       )
     })
 
@@ -153,7 +153,7 @@ contract('OTokenFactory', accounts => {
     it('Should revert when creating duplicated option', async () => {
       await expectRevert(
         oTokenFactory.createOtoken(ethAddress, usdc.address, usdc.address, strikePrice, expiry, isPut),
-        'OptionFactory: Option created',
+        'OtokenFactory: Option created',
       )
     })
   })

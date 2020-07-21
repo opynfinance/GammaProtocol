@@ -59,12 +59,12 @@ contract OtokenFactory is OtokenSpawner {
         bool _isPut
     ) external returns (address newOtoken) {
         bytes32 id = _getOptionId(_underlyingAsset, _strikeAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
-        require(_idToAddress[id] == address(0), "OptionFactory: Option created");
+        require(_idToAddress[id] == address(0), "OtokenFactory: Option created");
 
         address whitelist = AddressBookInterface(addressBook).getWhitelist();
         require(
             WhitelistInterface(whitelist).isWhitelistedProduct(_underlyingAsset, _strikeAsset, _collateralAsset),
-            "OptionFactory: Unsupported Product"
+            "OtokenFactory: Unsupported Product"
         );
 
         address otokenImpl = AddressBookInterface(addressBook).getOtokenImpl();
