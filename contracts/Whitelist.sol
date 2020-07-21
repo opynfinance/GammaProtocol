@@ -99,7 +99,7 @@ contract Whitelist is Ownable {
     }
 
     /**
-     * @notice allow Otoken Factory to whitelist option
+     * @notice allow Otoken Factory to whitelist a new option
      * @dev can only be called from the owner's address
      * @param _otokenAddress otoken
      */
