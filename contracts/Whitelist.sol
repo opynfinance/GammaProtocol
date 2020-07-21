@@ -10,11 +10,17 @@ import "./packages/oz/Ownable.sol";
  */
 contract Whitelist is Ownable {
     mapping(bytes32 => bool) internal whitelistedProduct;
+    mapping(address => bool) internal whitelistedCollateral;
 
     event ProductWhitelisted(
         bytes32 productHash,
         address indexed underlying,
         address indexed strike,
+        address indexed collateral
+    );
+
+    /// @notice emits an event when a collateral address is whitelisted by owner address 
+    event CollateralWhitelisted(
         address indexed collateral
     );
 
@@ -34,6 +40,17 @@ contract Whitelist is Ownable {
         bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral));
 
         return whitelistedProduct[productHash];
+    }
+
+    /**
+     * @notice check if the collateral is whitelisted
+     * @param _collateral collateral asset address
+     * @return boolean, true if the collateral is whitelisted
+     */
+    function isWhitelistedCollateral(
+        address _collateral
+    ) external view returns (bool) {
+        return whitelistedCollateral[_collateral];
     }
 
     /**
@@ -58,6 +75,19 @@ contract Whitelist is Ownable {
 
         return productHash;
     }
+    
+    /**
+     * @notice whitelist a collateral address, can only be called by owner
+     * @dev function can only be called by owner
+     * @param _collateral collateral asset address
+     */
+    function whitelistCollateral(
+        address _collateral
+    ) external onlyOwner {
+        _setWhitelistedCollateral(_collateral);
+
+        emit CollateralWhitelisted(_collateral);
+    }
 
     /**
      * @notice set a product hash as supported
@@ -68,4 +98,18 @@ contract Whitelist is Ownable {
 
         whitelistedProduct[_productHash] = true;
     }
+
+    /**
+     * @notice set a collateral address as whitelisted
+     * @param _collateral collateral address
+     */
+    function _setWhitelistedCollateral(address _collateral) internal {
+        require(whitelistedCollateral[_collateral] == false, "Collateral already whitelisted");
+
+        whitelistCollateral[_collateral] = true;
+    }
+}
+
+
+
 }
