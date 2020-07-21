@@ -1,9 +1,7 @@
-/* eslint-disable */
 import {OtokenInstance, MockERC20Instance} from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
-// const {expectEvent, expectRevert, time} = require('@openzeppelin/test-helpers')
-const {time} = require('@openzeppelin/test-helpers')
+const {expectRevert, time} = require('@openzeppelin/test-helpers')
 
 const Otoken = artifacts.require('Otoken.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
@@ -21,7 +19,7 @@ contract('Otoken', ([deployer, mockAddressBook]) => {
   const isPut = true
 
   before('Deployment', async () => {
-    // address book
+    // Need another mock contract for addressbook when we add ERC20 operations.
     otoken = await Otoken.new(mockAddressBook)
     usdc = await MockERC20.new('USDC', 'USDC')
     expiry = (await time.latest()).add(time.duration.days(30)).toNumber()
@@ -33,19 +31,55 @@ contract('Otoken', ([deployer, mockAddressBook]) => {
   })
 
   describe('Otoken Initialization', () => {
-    it('should be able to initialize the otoken and emit event', async () => {
+    it('should be able to initialize with put parameter', async () => {
       await otoken.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, expiry, isPut, {from: deployer})
     })
 
-    it('should initilized the token with a valid name / symbol', async () => {
+    it('should initilized the put option with valid name / symbol', async () => {
       const name = await otoken.name()
       const symbol = await otoken.symbol()
       assert.equal(name, `ETHUSDC $200Put ${expiryStringRedable}`)
       assert.equal(symbol, `ETHUSDC/${expiryStringRedable}/200P/USDC`)
     })
 
-    it('should set the parameters correctly.',  () => {})
+    it('should set the right name for calls', async () => {
+      const call = await Otoken.new(mockAddressBook)
+      await call.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, expiry, false, {from: deployer})
+      const name = await call.name()
+      const symbol = await call.symbol()
+      assert.equal(name, `ETHUSDC $200Call ${expiryStringRedable}`)
+      assert.equal(symbol, `ETHUSDC/${expiryStringRedable}/200C/USDC`)
+    })
 
-    it('should revert when init is called twice', async () => {})
+    it('should display strikePrice as $0 in name and symbol when strikePrice < 10^18', async () => {
+      const testOtoken = await Otoken.new(mockAddressBook)
+      await testOtoken.init(ETH_ADDR, usdc.address, usdc.address, 0, expiry, isPut, {from: deployer})
+      const name = await testOtoken.name()
+      const symbol = await testOtoken.symbol()
+      assert.equal(name, `ETHUSDC $0Put ${expiryStringRedable}`)
+      assert.equal(symbol, `ETHUSDC/${expiryStringRedable}/0P/USDC`)
+    })
+
+    it('should get the correct parameters.', async () => {
+      const _underlying = await otoken.underlyingAsset()
+      const _strike = await otoken.strikeAsset()
+      const _collateral = await otoken.collateralAsset()
+      const _strikePrice = (await otoken.strikePrice()).toString()
+      const _isPut = await otoken.isPut()
+      const _expiry = (await otoken.expiry()).toNumber()
+      assert.equal(_underlying, ETH_ADDR)
+      assert.equal(_strike, usdc.address)
+      assert.equal(_collateral, usdc.address)
+      assert.equal(_strikePrice, strikePrice.toString())
+      assert.equal(_isPut, isPut)
+      assert.equal(_expiry, expiry)
+    })
+
+    it('should revert when init is called twice', async () => {
+      await expectRevert(
+        otoken.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, expiry, isPut),
+        'Contract instance has already been initialized.',
+      )
+    })
   })
 })

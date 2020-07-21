@@ -5,13 +5,14 @@ module.exports = {
   },
   skipFiles: [
     'Migrations.sol',
-    'packages/oz/upgradeability/SafeMath.sol',
-    'packages/oz/upgradeability/Address.sol',
+    'packages/oz/SafeMath.sol',
+    'packages/oz/Address.sol',
     'packages/oz/upgradeability/ContextUpgradeSafe.sol',
-    'packages/oz/upgradeability/IERC20.sol',
+    'packages/oz/IERC20.sol',
     'packages/oz/upgradeability/ERC20Initializable.sol',
     'packages/oz/upgradeability/Initializable.sol',
+    'packages/BokkyPooBahsDateTimeLibrary.sol',
     'packages/oz/Context.sol',
-    'packages/oz/Ownable.sol'
+    'packages/oz/Ownable.sol',
   ]
 }

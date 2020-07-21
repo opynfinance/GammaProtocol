@@ -24,6 +24,8 @@ contract Otoken is ERC20Initializable {
 
     bool public isPut;
 
+    uint256 private constant STRIKE_PRICE_DIGITS = 1000000000000000000;
+
     constructor(address _addressBook) public {
         addressBook = _addressBook;
     }
@@ -78,11 +80,11 @@ contract Otoken is ERC20Initializable {
         string memory underlying = _getTokenSymbol(_underlyingAsset);
         string memory strike = _getTokenSymbol(_strikeAsset);
         string memory collateral = _getTokenSymbol(_collateralAsset);
-        uint256 displayedStrikePrice = _strikePrice.div(1000000000000000000);
+        uint256 displayedStrikePrice = _strikePrice.div(STRIKE_PRICE_DIGITS);
         // convert expiry to readable string
         (uint256 year, uint256 month, uint256 day) = BokkyPooBahsDateTimeLibrary.timestampToDate(_expiry);
 
-        // Get call or put string
+        // Get option type string
         string memory optionType;
         string memory optionTypeChar;
         if (_isPut) {
@@ -135,8 +137,9 @@ contract Otoken is ERC20Initializable {
 
     /**
      * @dev convert uint256 to string
+     * @param _i number to be converted to string
      */
-    function uint2str(uint256 _i) internal pure returns (string memory _uintAsString) {
+    function uint2str(uint256 _i) internal pure returns (string memory) {
         if (_i == 0) {
             return "0";
         }
@@ -157,6 +160,8 @@ contract Otoken is ERC20Initializable {
 
     /**
      * @dev Pad 0 at the start of the string if len < 2
+     * @param str string to be padded
+     * @return string with len >= 2
      */
     function padZero(string memory str) internal pure returns (string memory) {
         bytes memory bstr = bytes(str);
