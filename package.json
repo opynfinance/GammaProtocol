@@ -36,6 +36,7 @@
     "build"
   ],
   "scripts": {
+    "ganache": "ganache-cli --port 8545",
     "migrate": "truffle migrate",
     "build": "npm run compile:contracts && npm run compile:types",
     "compile:contracts": "truffle compile",
@@ -78,5 +79,6 @@
   "bugs": {
     "url": "https://github.com/opynfinance/GammaProtocol/issues"
   },
-  "homepage": "https://github.com/opynfinance/GammaProtocol#readme"
+  "homepage": "https://github.com/opynfinance/GammaProtocol#readme",
+  "dependencies": {}
 }

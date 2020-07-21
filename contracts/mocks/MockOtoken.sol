@@ -1,6 +1,6 @@
 pragma solidity =0.6.10;
 
-import {ERC20Initializable} from "../packages/oz/ERC20Initializable.sol";
+import {ERC20Initializable} from "../packages/oz/upgradeability/ERC20Initializable.sol";
 
 /**
  * SPDX-License-Identifier: UNLICENSED
