@@ -14,10 +14,10 @@ import {WhitelistInterface} from "./interfaces/WhitelistInterface.sol";
  * and deploy eip-1167 minimal proxies for otoken logic contract.
  */
 contract OtokenFactory is OtokenSpawner {
-    /* The Opyn AddressBook contract that records addresses of whitelist module and oToken impl address. */
+    /// @notice The Opyn AddressBook contract that records addresses of whitelist module and otoken impl address. */
     address public addressBook;
 
-    /* An array of all created otokens */
+    /// @dev An array of all created otokens */
     address[] private _otokens;
 
     /* A mapping from parameters hash to its deployed address */
@@ -40,7 +40,7 @@ contract OtokenFactory is OtokenSpawner {
     );
 
     /**
-     * @notice create new oTokens
+     * @notice create new otokens
      * @dev deploy an eip-1167 minimal proxy with CREATE2 and register it to the whitelist module.
      * @param _underlyingAsset underlying asset
      * @param _strikeAsset strike asset
@@ -83,7 +83,7 @@ contract OtokenFactory is OtokenSpawner {
 
         _otokens.push(newOtoken);
         _idToAddress[id] = newOtoken;
-        WhitelistInterface(whitelist).registerOtoken(newOtoken);
+        WhitelistInterface(whitelist).whitelistOtoken(newOtoken);
 
         emit OtokenCreated(
             newOtoken,

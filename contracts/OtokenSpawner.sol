@@ -14,7 +14,7 @@ import {Create2} from "./packages/oz/Create2.sol";
  * https://github.com/0age/Spawner/blob/master/contracts/Spawner.sol to fit into OtokenFactory
  */
 contract OtokenSpawner {
-    // Have a fixed salt value because we will only deploy oToken with same init value once.
+    // Have a fixed salt value because we will only deploy otoken with same init value once.
     bytes32 private constant SALT = 0;
 
     /**

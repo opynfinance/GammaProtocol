@@ -2,7 +2,7 @@
 pragma solidity 0.6.10;
 
 contract MockWhitelistModule {
-    mapping(address => bool) public isValidOtoken;
+    mapping(address => bool) public _isWhitelistedOtoken;
     mapping(bytes32 => bool) private _isWhitelistedProduct;
 
     function whitelistProduct(
@@ -24,7 +24,7 @@ contract MockWhitelistModule {
         return _isWhitelistedProduct[id];
     }
 
-    function registerOtoken(address oToken) external {
-        isValidOtoken[oToken] = true;
+    function whitelistOtoken(address _otoken) external {
+        _isWhitelistedOtoken[_otoken] = true;
     }
 }

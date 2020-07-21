@@ -18,7 +18,7 @@ interface WhitelistInterface {
 
     function isWhitelistedCollateral(address _collateral) external view returns (bool);
 
-    function registerOtoken(address _otoken) external;
+    function whitelistOtoken(address _otoken) external;
 
-    function isValidOtoken(address _otoken) external view returns (bool);
+    function isWhitelistedOtoken(address _otoken) external view returns (bool);
 }

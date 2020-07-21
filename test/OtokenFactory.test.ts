@@ -16,11 +16,11 @@ const MockOtoken = artifacts.require('MockOtoken.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
 contract('OTokenFactory', accounts => {
-  let oToken: MockOtokenInstance
+  let otoken: MockOtokenInstance
   let addressBook: MockAddressBookInstance
-  let oTokenFactory: OtokenFactoryInstance
+  let otokenFactory: OtokenFactoryInstance
 
-  // Paramter used for oToken init(). (Use random addresses as usdc and eth)
+  // Paramter used for otoken init(). (Use random addresses as usdc and eth)
   let usdc: MockERC20Instance
   let shitcoin: MockERC20Instance
   const ethAddress = ZERO_ADDR
@@ -28,7 +28,7 @@ contract('OTokenFactory', accounts => {
   const isPut = true
   let expiry: number
 
-  before('Deploy oToken logic and Factory contract', async () => {
+  before('Deploy otoken logic and Factory contract', async () => {
     usdc = await MockERC20.new('USDC', 'USDC')
     shitcoin = await MockERC20.new('Shit coin', 'STC')
 
@@ -42,18 +42,18 @@ contract('OTokenFactory', accounts => {
     await addressBook.setOtokenImpl(logic.address)
     await addressBook.setWhitelist(mockWhitelist.address)
 
-    oTokenFactory = await OTokenFactory.new(addressBook.address)
+    otokenFactory = await OTokenFactory.new(addressBook.address)
     expiry = (await time.latest()).toNumber() + time.duration.days(30).toNumber()
   })
 
-  describe('Get oToken address', () => {
+  describe('Get otoken address', () => {
     it('Should have no otoken records at the begining', async () => {
-      const otokens = await oTokenFactory.getOtokens()
+      const otokens = await otokenFactory.getOtokens()
       assert.equal(otokens.length, 0, 'Should have no otoken records')
     })
 
     it('Should return address(0) if token is not deployed', async () => {
-      const existAddress = await oTokenFactory.getOtoken(
+      const existAddress = await otokenFactory.getOtoken(
         ethAddress,
         usdc.address,
         usdc.address,
@@ -64,8 +64,8 @@ contract('OTokenFactory', accounts => {
       assert.equal(existAddress, ZERO_ADDR, 'getOtoken check failed on undeployed tokens.')
     })
 
-    it('should get deterministic address with new oToken paramters', async () => {
-      const targetAddress = await oTokenFactory.getTargetOtokenAddress(
+    it('should get deterministic address with new otoken paramters', async () => {
+      const targetAddress = await otokenFactory.getTargetOtokenAddress(
         ethAddress,
         usdc.address,
         usdc.address,
@@ -76,8 +76,8 @@ contract('OTokenFactory', accounts => {
       assert.notEqual(targetAddress, ZERO_ADDR, 'getTargetOtokenAddress should never give 0 address.')
     })
 
-    it('should get different target address with different oToken paramters', async () => {
-      const targetAddress1 = await oTokenFactory.getTargetOtokenAddress(
+    it('should get different target address with different otoken paramters', async () => {
+      const targetAddress1 = await otokenFactory.getTargetOtokenAddress(
         ethAddress,
         usdc.address,
         usdc.address,
@@ -85,7 +85,7 @@ contract('OTokenFactory', accounts => {
         expiry,
         isPut,
       )
-      const targetAddress2 = await oTokenFactory.getTargetOtokenAddress(
+      const targetAddress2 = await otokenFactory.getTargetOtokenAddress(
         ZERO_ADDR,
         ZERO_ADDR,
         ZERO_ADDR,
@@ -97,9 +97,9 @@ contract('OTokenFactory', accounts => {
     })
   })
 
-  describe('Create new oToken', () => {
+  describe('Create new otoken', () => {
     it('Should create new contract at expected address', async () => {
-      const targetAddress = await oTokenFactory.getTargetOtokenAddress(
+      const targetAddress = await otokenFactory.getTargetOtokenAddress(
         ethAddress,
         usdc.address,
         usdc.address,
@@ -108,7 +108,7 @@ contract('OTokenFactory', accounts => {
         isPut,
       )
 
-      const txResponse = await oTokenFactory.createOtoken(
+      const txResponse = await otokenFactory.createOtoken(
         ethAddress,
         usdc.address,
         usdc.address,
@@ -127,47 +127,47 @@ contract('OTokenFactory', accounts => {
         isPut: isPut,
         tokenAddress: targetAddress,
       })
-      oToken = await MockOtoken.at(targetAddress)
+      otoken = await MockOtoken.at(targetAddress)
     })
 
     it('Should have correct paramter', async () => {
-      assert.equal(await oToken.underlyingAsset(), ethAddress)
-      assert.equal(await oToken.strikeAsset(), usdc.address)
-      assert.equal(await oToken.collateralAsset(), usdc.address)
-      assert.equal(await oToken.isPut(), isPut)
-      assert.equal((await oToken.strikePrice()).toString(), strikePrice.toString())
-      assert.equal((await oToken.expiry()).toString(), expiry.toString())
+      assert.equal(await otoken.underlyingAsset(), ethAddress)
+      assert.equal(await otoken.strikeAsset(), usdc.address)
+      assert.equal(await otoken.collateralAsset(), usdc.address)
+      assert.equal(await otoken.isPut(), isPut)
+      assert.equal((await otoken.strikePrice()).toString(), strikePrice.toString())
+      assert.equal((await otoken.expiry()).toString(), expiry.toString())
     })
 
     it('Should revert when creating non-whitelisted options', async () => {
       await expectRevert(
-        oTokenFactory.createOtoken(shitcoin.address, usdc.address, usdc.address, strikePrice, expiry, isPut),
+        otokenFactory.createOtoken(shitcoin.address, usdc.address, usdc.address, strikePrice, expiry, isPut),
         'OtokenFactory: Unsupported Product',
       )
     })
 
-    it('Should revert when calling init on already inited oToken', async () => {
-      await expectRevert(oToken.init(usdc.address, usdc.address, usdc.address, strikePrice, expiry, isPut), 'revert')
+    it('Should revert when calling init on already inited otoken', async () => {
+      await expectRevert(otoken.init(usdc.address, usdc.address, usdc.address, strikePrice, expiry, isPut), 'revert')
     })
 
     it('Should revert when creating duplicated option', async () => {
       await expectRevert(
-        oTokenFactory.createOtoken(ethAddress, usdc.address, usdc.address, strikePrice, expiry, isPut),
+        otokenFactory.createOtoken(ethAddress, usdc.address, usdc.address, strikePrice, expiry, isPut),
         'OtokenFactory: Option created',
       )
     })
   })
 
-  describe('Get oToken address after creation', () => {
+  describe('Get otoken address after creation', () => {
     it('Should have one otoken record', async () => {
-      const otokens = await oTokenFactory.getOtokens()
+      const otokens = await otokenFactory.getOtokens()
       assert.equal(otokens.length, 1)
 
-      assert(otokens.includes(oToken.address))
+      assert(otokens.includes(otoken.address))
     })
 
     it('should get same address if calling getTargetOTokenAddress with existing option paramters', async () => {
-      const addr = await oTokenFactory.getTargetOtokenAddress(
+      const addr = await otokenFactory.getTargetOtokenAddress(
         ethAddress,
         usdc.address,
         usdc.address,
@@ -175,11 +175,11 @@ contract('OTokenFactory', accounts => {
         expiry,
         isPut,
       )
-      assert.equal(addr, oToken.address)
+      assert.equal(addr, otoken.address)
     })
 
     it('Should return correct token address', async () => {
-      const existAddress = await oTokenFactory.getOtoken(
+      const existAddress = await otokenFactory.getOtoken(
         ethAddress,
         usdc.address,
         usdc.address,
@@ -187,18 +187,18 @@ contract('OTokenFactory', accounts => {
         expiry,
         isPut,
       )
-      assert.equal(existAddress, oToken.address)
+      assert.equal(existAddress, otoken.address)
     })
   })
 
   describe('Wrong setup: wrong implementation contract', () => {
     it('Should revert on token creation', async () => {
-      // Set the oToken Impl contract to a wrong address
-      await addressBook.setOtokenImpl(oTokenFactory.address)
+      // Set the otoken Impl contract to a wrong address
+      await addressBook.setOtokenImpl(otokenFactory.address)
       // Try to create a 250 strike (use the 200 strike will throw "Option Created" error first.)
       const newStrikePrice = new BigNumber(250)
       await expectRevert(
-        oTokenFactory.createOtoken(ethAddress, usdc.address, usdc.address, newStrikePrice, expiry, isPut),
+        otokenFactory.createOtoken(ethAddress, usdc.address, usdc.address, newStrikePrice, expiry, isPut),
         'revert',
       )
     })
