@@ -100,7 +100,7 @@ contract Whitelist is Ownable {
 
     /**
      * @notice allow Otoken Factory to whitelist option
-     * @dev can only be called from owner address
+     * @dev can only be called from the owner's address
      * @param _otokenAddress otoken
      */
     function whitelistOtoken(address _otokenAddress) external onlyFactory {
