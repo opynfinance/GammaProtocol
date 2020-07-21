@@ -43,7 +43,10 @@ contract Whitelist is Ownable {
      * @notice check if sender is Otoken Factory module
      */
     modifier onlyFactory() {
-        require(msg.sender == AddressBookInterface(addressBook).getOtokenFactory(), "Sender is not Otoken Factory");
+        require(
+            msg.sender == AddressBookInterface(addressBook).getOtokenFactory(),
+            "WhiteList: Sender is not Otoken Factory"
+        );
 
         _;
     }
