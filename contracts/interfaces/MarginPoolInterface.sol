@@ -3,26 +3,26 @@ pragma solidity 0.6.10;
 
 interface MarginPoolInterface {
     function transferToPool(
-        address asset,
-        address user,
-        uint256 amount
+        address _asset,
+        address _user,
+        uint256 _amount
     ) external;
 
     function transferToUser(
-        address asset,
-        address user,
-        uint256 amount
+        address _asset,
+        address _user,
+        uint256 _amount
     ) external;
 
     function transferToPool(
-        address[] memory asset,
-        address[] memory user,
-        uint256[] memory amount
+        address[] memory _asset,
+        address[] memory _user,
+        uint256[] memory _amount
     ) external;
 
     function transferToUser(
-        address[] memory asset,
-        address[] memory user,
-        uint256[] memory amount
+        address[] memory _asset,
+        address[] memory _user,
+        uint256[] memory _amount
     ) external;
 }
