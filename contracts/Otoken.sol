@@ -145,17 +145,4 @@ contract Otoken is ERC20Initializable {
         }
         return string(bstr);
     }
-
-    /**
-     * @dev this override the _beforeTokenTransfer hook provided by OZ's ERC20Initializable
-     */
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 amount
-    ) internal override {
-        if (from == address(0) || to == address(0)) {
-            require(msg.sender == AddressBookInterface(addressBook).getController());
-        }
-    }
 }
