@@ -85,7 +85,9 @@ module.exports = {
     reporterOptions : {
       currency: 'USD',
       artifactType: 'truffle-v5',
-      coinmarketcap: `${process.env.COINMARKETCAP_API}`
+      coinmarketcap: `${process.env.COINMARKETCAP_API}`,
+      excludeContracts: ['Migrations'],
+      showTimeSpent: true
     } 
   },
 
