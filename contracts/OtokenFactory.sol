@@ -1,6 +1,6 @@
 pragma solidity =0.6.10;
 
-import {Spawner} from "./packages/Spawner.sol";
+import {OtokenSpawner} from "./OtokenSpawner.sol";
 import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
 import {OtokenInterface} from "./interfaces/OtokenInterface.sol";
 import {WhitelistInterface} from "./interfaces/WhitelistInterface.sol";
@@ -13,7 +13,7 @@ import {WhitelistInterface} from "./interfaces/WhitelistInterface.sol";
  * @dev Calculate contract address before each creation with CREATE2
  * and deploy eip-1167 minimal proxies for otoken logic contract.
  */
-contract OtokenFactory is Spawner {
+contract OtokenFactory is OtokenSpawner {
     /* The Opyn AddressBook contract that records addresses of whitelist module and oToken impl address. */
     address public addressBook;
 
