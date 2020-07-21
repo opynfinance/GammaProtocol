@@ -15,14 +15,14 @@ interface MarginPoolInterface {
     ) external;
 
     function transferToPool(
-        address[] memory _asset,
-        address[] memory _user,
-        uint256[] memory _amount
+        address[] calldata _asset,
+        address[] calldata _user,
+        uint256[] calldata _amount
     ) external;
 
     function transferToUser(
-        address[] memory _asset,
-        address[] memory _user,
-        uint256[] memory _amount
+        address[] calldata _asset,
+        address[] calldata _user,
+        uint256[] calldata _amount
     ) external;
 }
