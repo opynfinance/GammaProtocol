@@ -40,7 +40,7 @@ contract Whitelist is Ownable {
     event OtokenWhitelisted(address otoken);
 
     /**
-     * @notice check if sender is Otoken Factory module
+     * @notice check if the sender is the Otoken Factory module
      */
     modifier onlyFactory() {
         require(
@@ -99,8 +99,8 @@ contract Whitelist is Ownable {
     }
 
     /**
-     * @notice allow Otoken Factory to whitelist option
-     * @dev can only be called from owner address
+     * @notice allow Otoken Factory to whitelist a new option
+     * @dev can only be called from the owner's address
      * @param _otokenAddress otoken
      */
     function whitelistOtoken(address _otokenAddress) external onlyFactory {
@@ -123,7 +123,7 @@ contract Whitelist is Ownable {
 
     /**
      * @notice set an otoken address as whitelisted
-     * @param _otokenAddress product hash in bytes
+     * @param _otokenAddress address of the oToken that is being whitelisted
      */
     function _setWhitelistedOtoken(address _otokenAddress) internal {
         whitelistedOtoken[_otokenAddress] = true;
