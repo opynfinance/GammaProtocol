@@ -42,12 +42,12 @@ contract OtokenFactory is OtokenSpawner {
     /**
      * @notice create new otokens
      * @dev deploy an eip-1167 minimal proxy with CREATE2 and register it to the whitelist module.
-     * @param _underlyingAsset underlying asset
-     * @param _strikeAsset strike asset
-     * @param _collateralAsset collateral asset
+     * @param _underlyingAsset asset that the option references
+     * @param _strikeAsset asset that the strike price is denominated in
+     * @param _collateralAsset asset that is held as collateral against short/written options
      * @param _strikePrice strike price with decimals = 18
      * @param _expiry expiration timestamp in second
-     * @param _isPut is this a put option or not
+     * @param _isPut is this a put option, if not it is a call
      * @return newOtoken address of the newly created option
      */
     function createOtoken(
@@ -107,12 +107,12 @@ contract OtokenFactory is OtokenSpawner {
 
     /**
      * @notice get the otoken address. If no token has been created with these parameters, will return address(0).
-     * @param _underlyingAsset underlying asset
-     * @param _strikeAsset strike asset
-     * @param _collateralAsset collateral asset
+     * @param _underlyingAsset asset that the option references
+     * @param _strikeAsset asset that the strike price is denominated in
+     * @param _collateralAsset asset that is held as collateral against short/written options
      * @param _strikePrice strike price with decimals = 18
      * @param _expiry expiration timestamp in second
-     * @param _isPut is this a put option or not
+     * @param _isPut is this a put option, if not it is a call
      * @return otoken the address of target otoken.
      */
     function getOtoken(
@@ -130,12 +130,12 @@ contract OtokenFactory is OtokenSpawner {
     /**
      * @notice get the address otoken if call createOtoken with these paramters.
      * @dev return the exact address that will be deployed at with _computeAddress
-     * @param _underlyingAsset underlying asset
-     * @param _strikeAsset strike asset
-     * @param _collateralAsset collateral asset
+     * @param _underlyingAsset asset that the option references
+     * @param _strikeAsset asset that the strike price is denominated in
+     * @param _collateralAsset asset that is held as collateral against short/written options
      * @param _strikePrice strike price with decimals = 18
      * @param _expiry expiration timestamp in second
-     * @param _isPut is this a put option or not
+     * @param _isPut is this a put option, if not it is a call
      * @return targetAddress the address this otoken will be deployed at.
      */
     function getTargetOtokenAddress(
@@ -160,13 +160,13 @@ contract OtokenFactory is OtokenSpawner {
     }
 
     /**
-     * @notice internal function to hash paramters and get option id.
-     * @param _underlyingAsset underlying asset
-     * @param _strikeAsset strike asset
-     * @param _collateralAsset collateral asset
+     * @dev internal function to hash paramters and get option id.
+     * @param _underlyingAsset asset that the option references
+     * @param _strikeAsset asset that the strike price is denominated in
+     * @param _collateralAsset asset that is held as collateral against short/written options
      * @param _strikePrice strike price with decimals = 18
      * @param _expiry expiration timestamp in second
-     * @param _isPut is this a put option or not
+     * @param _isPut is this a put option, if not it is a call
      * @return id the id of an otoken
      */
     function _getOptionId(
