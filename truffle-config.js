@@ -83,7 +83,9 @@ module.exports = {
     // timeout: 100000,
     reporter: 'eth-gas-reporter',
     reporterOptions : {
-      currency: 'USD'
+      currency: 'USD',
+      artifactType: 'truffle-v5',
+      coinmarketcap: `${process.env.COINMARKETCAP_API}`
     } 
   },
 
