@@ -123,7 +123,7 @@ contract Whitelist is Ownable {
 
     /**
      * @notice set an otoken address as whitelisted
-     * @param _otokenAddress product hash in bytes
+     * @param _otokenAddress address of the oToken that is being whitelisted
      */
     function _setWhitelistedOtoken(address _otokenAddress) internal {
         whitelistedOtoken[_otokenAddress] = true;
