@@ -3,6 +3,7 @@ pragma solidity =0.6.10;
 
 import {ERC20Initializable} from "./packages/oz/upgradeability/ERC20Initializable.sol";
 import {SafeMath} from "./packages/oz/SafeMath.sol";
+import {BokkyPooBahsDateTimeLibrary} from "./packages/BokkyPooBahsDateTimeLibrary.sol";
 import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
 
 /**
@@ -78,6 +79,10 @@ contract Otoken is ERC20Initializable {
         string memory strike = _getTokenSymbol(_strikeAsset);
         string memory collateral = _getTokenSymbol(_collateralAsset);
         uint256 displayedStrikePrice = _strikePrice.div(1000000000000000000);
+        // convert expiry to readable string
+        (uint256 year, uint256 month, uint256 day) = BokkyPooBahsDateTimeLibrary.timestampToDate(_expiry);
+
+        // Get call or put string
         string memory optionType;
         string memory optionTypeChar;
         if (_isPut) {
@@ -96,7 +101,9 @@ contract Otoken is ERC20Initializable {
                 uint2str(displayedStrikePrice),
                 optionType,
                 " ",
-                uint2str(_expiry)
+                uint2str(year),
+                padZero(uint2str(month)),
+                padZero(uint2str(day))
             )
         );
 
@@ -105,7 +112,9 @@ contract Otoken is ERC20Initializable {
                 underlying,
                 strike,
                 "/",
-                uint2str(_expiry),
+                uint2str(year),
+                padZero(uint2str(month)),
+                padZero(uint2str(day)),
                 "/",
                 uint2str(displayedStrikePrice),
                 optionTypeChar,
@@ -144,5 +153,16 @@ contract Otoken is ERC20Initializable {
             _i /= 10;
         }
         return string(bstr);
+    }
+
+    /**
+     * @dev Pad 0 at the start of the string if len < 2
+     */
+    function padZero(string memory str) internal pure returns (string memory) {
+        bytes memory bstr = bytes(str);
+        if (bstr.length < 2) {
+            return string(abi.encodePacked("0", str));
+        }
+        return str;
     }
 }
