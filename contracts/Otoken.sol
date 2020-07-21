@@ -1,14 +1,19 @@
+/* SPDX-License-Identifier: UNLICENSED */
 pragma solidity =0.6.10;
 
 import {ERC20Initializable} from "./packages/oz/upgradeability/ERC20Initializable.sol";
 import {SafeMath} from "./packages/oz/SafeMath.sol";
+import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
 
 /**
- * SPDX-License-Identifier: UNLICENSED
+ * @title Otoken
+ * @author Opyn
+ * @notice Otoken is the ERC20 token for an option.
  * @dev The Otoken inherits ERC20Initializable because we need to use the init instead of constructor.
  */
 contract Otoken is ERC20Initializable {
     using SafeMath for uint256;
+    address public addressBook;
     address public underlyingAsset;
     address public strikeAsset;
     address public collateralAsset;
@@ -18,6 +23,19 @@ contract Otoken is ERC20Initializable {
 
     bool public isPut;
 
+    constructor(address _addressBook) public {
+        addressBook = _addressBook;
+    }
+
+    /**
+     * @notice initialize a new otokens.
+     * @param _underlyingAsset asset that the option references
+     * @param _strikeAsset asset that the strike price is denominated in
+     * @param _collateralAsset asset that is held as collateral against short/written options
+     * @param _strikePrice strike price with decimals = 18
+     * @param _expiry expiration timestamp in second
+     * @param _isPut is this a put option, if not it is a call
+     */
     function init(
         address _underlyingAsset,
         address _strikeAsset,
@@ -74,12 +92,11 @@ contract Otoken is ERC20Initializable {
             abi.encodePacked(
                 underlying,
                 strike,
-                "/",
-                uint2str(_expiry),
-                "/",
+                " $",
                 uint2str(displayedStrikePrice),
                 optionType,
-                "/"
+                " ",
+                uint2str(_expiry)
             )
         );
 
@@ -127,5 +144,18 @@ contract Otoken is ERC20Initializable {
             _i /= 10;
         }
         return string(bstr);
+    }
+
+    /**
+     * @dev this override the _beforeTokenTransfer hook provided by OZ's ERC20Initializable
+     */
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal override {
+        if (from == address(0) || to == address(0)) {
+            require(msg.sender == AddressBookInterface(addressBook).getController());
+        }
     }
 }
