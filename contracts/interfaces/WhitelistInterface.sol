@@ -6,9 +6,9 @@ interface WhitelistInterface {
         address _underlying,
         address _strike,
         address _collateral
-    ) external returns (bytes32 id);
+    ) external;
 
-    function whitelistCollateral(address _collateral) external returns (bytes32);
+    function whitelistCollateral(address _collateral) external;
 
     function isWhitelistedProduct(
         address underlying,
