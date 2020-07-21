@@ -50,6 +50,28 @@ contract('Whitelist', ([owner, random, newOwner]) => {
     })
   })
 
+  describe('Whitelist collateral', () => {
+    it('should revert whitelisting collateral from non-owner address', async () => {
+      await expectRevert(
+        whitelist.whitelistCollateral(usdc.address, {from: random}),
+        'Ownable: caller is not the owner',
+      )
+    })
+
+    it('should whitelist collateral from owner address', async () => {
+      const whitelistTx = await whitelist.whitelistCollateral(usdc.address, {from: owner})
+
+      expectEvent(whitelistTx, 'CollateralWhitelisted')
+
+      const isWhitelistedCollateral = await whitelist.isWhitelistedCollateral(usdc.address)
+      assert.equal(isWhitelistedCollateral, true, 'fail: collateral not whitelisted')
+    })
+
+    it('should revert whitelisting an already whitelisted collateral', async () => {
+      await expectRevert(whitelist.whitelistCollateral(usdc.address, {from: owner}), 'Collateral already whitelisted')
+    })
+  })
+
   describe('Transfer ownership', () => {
     it('should transfer ownership to new owner', async () => {
       await whitelist.transferOwnership(newOwner, {from: owner})
