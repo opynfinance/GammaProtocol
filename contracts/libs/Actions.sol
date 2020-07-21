@@ -60,4 +60,28 @@ library Actions {
         /// @notice The amount of asset that is to be transfered
         uint256 amount;
     }
+
+    /**
+     * @notice Parses the passed in action argmuents to get the argmuents for a deposit action
+     * @param _args The general action arguments structure
+     * @return The arguments for a deposit action
+     */
+    function _parseDepositArgs(ActionArgs memory _args) internal returns (DepositArgs memory) {
+        require(
+            (uint256(_args.actionType) == uint256(ActionType.DepositLongOption)) ||
+                (uint256(_args.actionType) == uint256(ActionType.DepositCollateral)),
+            "Actions: can only parse arguments for deposit actions"
+        );
+        require(_args.owner != address(0), "Actions: cannot deposit to an invalid account");
+
+        DepositArgs memory args;
+        args.owner = _args.owner;
+        args.vaultId = _args.vaultId;
+        args.from = _args.sender;
+        args.asset = _args.asset;
+        args.index = _args.index;
+        args.amount = _args.amount;
+
+        return args;
+    }
 }
