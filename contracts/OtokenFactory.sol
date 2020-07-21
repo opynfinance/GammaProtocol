@@ -20,7 +20,7 @@ contract OtokenFactory is OtokenSpawner {
     /// @dev An array of all created otokens */
     address[] private _otokens;
 
-    /* A mapping from parameters hash to its deployed address */
+    /// @dev A mapping from parameters hash to its deployed address
     mapping(bytes32 => address) private _idToAddress;
 
     constructor(address _addressBook) public {
