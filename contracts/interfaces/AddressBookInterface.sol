@@ -18,7 +18,7 @@ interface AddressBookInterface {
 
     function getLiquidationManager() external view returns (address);
 
-    function getAddress(bytes32 id) external view returns (address);
+    function getAddress(bytes32 _id) external view returns (address);
 
     /* Setters */
 
@@ -36,5 +36,5 @@ interface AddressBookInterface {
 
     function setLiquidationManager() external;
 
-    function setAddress(bytes32 id, address _newImpl) external;
+    function setAddress(bytes32 _id, address _newImpl) external;
 }
