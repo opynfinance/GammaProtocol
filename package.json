@@ -80,6 +80,5 @@
     "url": "https://github.com/opynfinance/GammaProtocol/issues"
   },
   "homepage": "https://github.com/opynfinance/GammaProtocol#readme",
-  "dependencies": {
-  }
+  "dependencies": {}
 }

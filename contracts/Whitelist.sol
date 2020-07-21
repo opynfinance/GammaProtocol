@@ -19,10 +19,8 @@ contract Whitelist is Ownable {
         address indexed collateral
     );
 
-    /// @notice emits an event when a collateral address is whitelisted by owner address 
-    event CollateralWhitelisted(
-        address indexed collateral
-    );
+    /// @notice emits an event when a collateral address is whitelisted by owner address
+    event CollateralWhitelisted(address indexed collateral);
 
     /**
      * @notice check if a product is supported
@@ -47,9 +45,7 @@ contract Whitelist is Ownable {
      * @param _collateral collateral asset address
      * @return boolean, true if the collateral is whitelisted
      */
-    function isWhitelistedCollateral(
-        address _collateral
-    ) external view returns (bool) {
+    function isWhitelistedCollateral(address _collateral) external view returns (bool) {
         return whitelistedCollateral[_collateral];
     }
 
@@ -75,15 +71,13 @@ contract Whitelist is Ownable {
 
         return productHash;
     }
-    
+
     /**
      * @notice whitelist a collateral address, can only be called by owner
      * @dev function can only be called by owner
      * @param _collateral collateral asset address
      */
-    function whitelistCollateral(
-        address _collateral
-    ) external onlyOwner {
+    function whitelistCollateral(address _collateral) external onlyOwner {
         _setWhitelistedCollateral(_collateral);
 
         emit CollateralWhitelisted(_collateral);
@@ -106,10 +100,6 @@ contract Whitelist is Ownable {
     function _setWhitelistedCollateral(address _collateral) internal {
         require(whitelistedCollateral[_collateral] == false, "Collateral already whitelisted");
 
-        whitelistCollateral[_collateral] = true;
+        whitelistedCollateral[_collateral] = true;
     }
-}
-
-
-
 }
