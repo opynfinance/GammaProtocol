@@ -40,7 +40,7 @@ contract Whitelist is Ownable {
     event OtokenWhitelisted(address otoken);
 
     /**
-     * @notice check if sender is Otoken Factory module
+     * @notice check if the sender is the Otoken Factory module
      */
     modifier onlyFactory() {
         require(
