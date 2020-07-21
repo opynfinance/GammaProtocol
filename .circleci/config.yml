@@ -31,6 +31,9 @@ jobs:
       - run:
           name: Test Contracts
           command: npm run test
+      - run: 
+          name: Gas Reporter
+          command: npx codechecks
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
