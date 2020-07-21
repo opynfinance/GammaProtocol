@@ -1,17 +1,12 @@
-/*
- * Safe Float Math contract. Copyright © 2020 by Opyn.co .
- * Author: Opyn
- * SPDX-License-Identifier: UNLICENSED
- */
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.6.10;
 
-import {SafeMath} from "./packages/oz/SafeMath.sol";
+import {SafeMath} from "./packages/oz/upgradeability/SafeMath.sol";
 
 /**
  * @title SafeUnsignedFloatMath
  * @dev unsigned math operations with safety checks that revert on error.
  */
-
 contract MathTester {
     using SafeMath for uint256;
 
