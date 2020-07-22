@@ -37,17 +37,10 @@ contract Otoken is ERC20Initializable {
     /// @notice is this a put option, if not it is a call
     bool public isPut;
 
-    /// @dev internal mapping to convert month number to symbol
-    mapping(uint256 => string) private monthSymbol;
-
-    /// @dev internal mapping to convert month number to full name
-    mapping(uint256 => string) private monthFull;
-
     uint256 private constant STRIKE_PRICE_DIGITS = 1e18;
 
     constructor(address _addressBook) public {
         addressBook = _addressBook;
-        _initMonths();
     }
 
     /**
@@ -106,15 +99,9 @@ contract Otoken is ERC20Initializable {
         (uint256 year, uint256 month, uint256 day) = BokkyPooBahsDateTimeLibrary.timestampToDate(_expiry);
 
         // Get option type string
-        string memory optionType;
-        string memory optionTypeChar;
-        if (_isPut) {
-            optionType = "Put";
-            optionTypeChar = "P";
-        } else {
-            optionType = "Call";
-            optionTypeChar = "C";
-        }
+        (string memory typeSymbol, string memory typeFull) = _getOptionType(isPut);
+
+        (string memory monthSymbol, string memory monthFull) = _getMonth(month);
 
         // concat name string: ETHUSDC 05-September-2020 200 Put USDC Collateral
         name = string(
@@ -124,12 +111,12 @@ contract Otoken is ERC20Initializable {
                 " ",
                 _uintTo2Chars(day),
                 "-",
-                monthFull[month],
+                monthFull,
                 "-",
                 Strings.toString(year),
                 " ",
                 Strings.toString(displayedStrikePrice),
-                optionType,
+                typeFull,
                 " ",
                 collateral,
                 " Collateral"
@@ -144,11 +131,11 @@ contract Otoken is ERC20Initializable {
                 strike,
                 "-",
                 _uintTo2Chars(day),
-                monthSymbol[month],
+                monthSymbol,
                 _uintTo2Chars(year),
                 "-",
                 Strings.toString(displayedStrikePrice),
-                optionTypeChar
+                typeSymbol
             )
         );
     }
@@ -177,33 +164,48 @@ contract Otoken is ERC20Initializable {
     }
 
     /**
-     * @dev initialize string mappings for month.
+     * @dev return string of optino type
+     * @return symbol P or C
+     * @return full Put or Call
      */
-    function _initMonths() internal {
-        monthSymbol[1] = "JAN";
-        monthSymbol[2] = "FEB";
-        monthSymbol[3] = "MAR";
-        monthSymbol[4] = "APR";
-        monthSymbol[5] = "MAY";
-        monthSymbol[6] = "JUN";
-        monthSymbol[7] = "JUL";
-        monthSymbol[8] = "AUG";
-        monthSymbol[9] = "SEP";
-        monthSymbol[10] = "OCT";
-        monthSymbol[11] = "NOV";
-        monthSymbol[12] = "DEC";
+    function _getOptionType(bool _isPut) internal pure returns (string memory symbol, string memory full) {
+        if (_isPut) {
+            return ("P", "Put");
+        } else {
+            return ("C", "Call");
+        }
+    }
 
-        monthFull[1] = "January";
-        monthFull[2] = "February";
-        monthFull[3] = "March";
-        monthFull[4] = "April";
-        monthFull[5] = "May";
-        monthFull[6] = "June";
-        monthFull[7] = "July";
-        monthFull[8] = "August";
-        monthFull[9] = "September";
-        monthFull[10] = "October";
-        monthFull[11] = "November";
-        monthFull[12] = "December";
+    /**
+     * @dev return string of month.
+     * @return symbol SEP, DEC ...etc
+     * @return full September, December ...etc
+     */
+    function _getMonth(uint256 _month) internal pure returns (string memory symbol, string memory full) {
+        if (_month == 1) {
+            return ("JAN", "January");
+        } else if (_month == 2) {
+            return ("FEB", "February");
+        } else if (_month == 3) {
+            return ("MAR", "March");
+        } else if (_month == 4) {
+            return ("APR", "April");
+        } else if (_month == 5) {
+            return ("MAY", "May");
+        } else if (_month == 6) {
+            return ("JUN", "June");
+        } else if (_month == 7) {
+            return ("JUL", "July");
+        } else if (_month == 8) {
+            return ("AUG", "August");
+        } else if (_month == 9) {
+            return ("SEP", "September");
+        } else if (_month == 10) {
+            return ("OCT", "October");
+        } else if (_month == 11) {
+            return ("NOV", "November");
+        } else if (_month == 12) {
+            return ("DEC", "December");
+        }
     }
 }
