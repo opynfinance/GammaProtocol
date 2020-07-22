@@ -67,14 +67,7 @@ contract Otoken is ERC20Initializable {
         strikePrice = _strikePrice;
         expiry = _expiry;
         isPut = _isPut;
-        (string memory name, string memory symbol) = _getNameAndSymbol(
-            _underlyingAsset,
-            _strikeAsset,
-            _collateralAsset,
-            _strikePrice,
-            _expiry,
-            _isPut
-        );
+        (string memory name, string memory symbol) = _getNameAndSymbol();
         __ERC20_init_unchained(name, symbol);
     }
 
@@ -83,20 +76,13 @@ contract Otoken is ERC20Initializable {
      * @return name ETHUSDC 05-September-2020 200 Put USDC Collateral
      * @return symbol oETHUSDC-05SEP20-200P
      */
-    function _getNameAndSymbol(
-        address _underlyingAsset,
-        address _strikeAsset,
-        address _collateralAsset,
-        uint256 _strikePrice,
-        uint256 _expiry,
-        bool _isPut
-    ) internal view returns (string memory name, string memory symbol) {
-        string memory underlying = _getTokenSymbol(_underlyingAsset);
-        string memory strike = _getTokenSymbol(_strikeAsset);
-        string memory collateral = _getTokenSymbol(_collateralAsset);
-        uint256 displayedStrikePrice = _strikePrice.div(STRIKE_PRICE_DIGITS);
+    function _getNameAndSymbol() internal view returns (string memory name, string memory symbol) {
+        string memory underlying = _getTokenSymbol(underlyingAsset);
+        string memory strike = _getTokenSymbol(strikeAsset);
+        string memory collateral = _getTokenSymbol(collateralAsset);
+        uint256 displayedStrikePrice = strikePrice.div(STRIKE_PRICE_DIGITS);
         // convert expiry to readable string
-        (uint256 year, uint256 month, uint256 day) = BokkyPooBahsDateTimeLibrary.timestampToDate(_expiry);
+        (uint256 year, uint256 month, uint256 day) = BokkyPooBahsDateTimeLibrary.timestampToDate(expiry);
 
         // Get option type string
         (string memory typeSymbol, string memory typeFull) = _getOptionType(isPut);
