@@ -4,9 +4,9 @@ pragma solidity 0.6.10;
 interface WhitelistInterface {
     /* View functions */
     function isWhitelistedProduct(
-        address underlying,
-        address strike,
-        address collateral
+        address _underlying,
+        address _strike,
+        address _collateral
     ) external view returns (bool);
 
     function isWhitelistedCollateral(address _collateral) external view returns (bool);
