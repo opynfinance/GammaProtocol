@@ -71,6 +71,26 @@ contract Otoken is ERC20Initializable {
     }
 
     /**
+     * @notice Mint oToken for an account
+     * @dev this is a Controller only method.
+     * @param account the account to mint token to.
+     * @param amount the amount to mint
+     */
+    function mintOtoken(address account, uint256 amount) external {
+        _mint(account, amount);
+    }
+
+    /**
+     * @notice Burn oToken from an account
+     * @dev this is a Controller only method.
+     * @param account the account to burn token from.
+     * @param amount the amount to burn
+     */
+    function burnOtoken(address account, uint256 amount) external {
+        _burn(account, amount);
+    }
+
+    /**
      * @notice generate name and symbol for an option
      * @return name ETHUSDC 05-September-2020 200 Put USDC Collateral
      * @return symbol oETHUSDC-05SEP20-200P
@@ -192,26 +212,6 @@ contract Otoken is ERC20Initializable {
         } else {
             return ("DEC", "December");
         }
-    }
-
-    /**
-     * @notice Mint oToken for an account
-     * @dev this is a Controller only method.
-     * @param account the account to mint token to.
-     * @param amount the amount to mint
-     */
-    function mintOtoken(address account, uint256 amount) external {
-        _mint(account, amount);
-    }
-
-    /**
-     * @notice Burn oToken from an account
-     * @dev this is a Controller only method.
-     * @param account the account to burn token from.
-     * @param amount the amount to burn
-     */
-    function burnOtoken(address account, uint256 amount) external {
-        _burn(account, amount);
     }
 
     /**
