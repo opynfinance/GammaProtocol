@@ -10,13 +10,13 @@ import "./packages/oz/Ownable.sol";
  * @notice The whitelist module keeps track of all valid Otoken contracts.
  */
 contract Whitelist is Ownable {
-    ///@notice AddressBook module address
+    /// @notice AddressBook module address
     address public addressBook;
-    /// @notice mapping to track whitelisted product
+    /// @dev mapping to track whitelisted product
     mapping(bytes32 => bool) internal whitelistedProduct;
-    /// @notice mapping to track whitelised collateral
+    /// @dev mapping to track whitelised collateral
     mapping(address => bool) internal whitelistedCollateral;
-    ///@dev mapping to track whitelisted otokens
+    /// @dev mapping to track whitelisted otokens
     mapping(address => bool) internal whitelistedOtoken;
 
     /**
@@ -38,7 +38,7 @@ contract Whitelist is Ownable {
     );
     /// @notice emits an event when a collateral address is whitelisted by the owner address
     event CollateralWhitelisted(address indexed collateral);
-    ///@notice emitted when Otoken Factory module whitelist an otoken
+    /// @notice emitted when Otoken Factory module whitelist an otoken
     event OtokenWhitelisted(address otoken);
 
     /**
