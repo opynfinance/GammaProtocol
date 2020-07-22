@@ -8,7 +8,7 @@ const MockERC20 = artifacts.require('MockERC20.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 const ETH_ADDR = ZERO_ADDR
 
-contract('Otoken', ([deployer, mockAddressBook]) => {
+contract('Otoken', ([deployer, mockAddressBook, random]) => {
   let otoken: OtokenInstance
   let usdc: MockERC20Instance
 
@@ -80,19 +80,36 @@ contract('Otoken', ([deployer, mockAddressBook]) => {
       assert.equal(symbol, `$200 WETHP ${expiryStringRedable}`)
     })
 
-    it('should set the right name for options expiry far in the future', async () => {
+    it('should revert when init asset with non-erc20 address', async () => {
+      /* This behavior should've been banned by factory) */
+      const put = await Otoken.new(mockAddressBook)
+      await expectRevert(
+        put.init(random, usdc.address, usdc.address, strikePrice, expiry, isPut, {from: deployer}),
+        'revert',
+      )
+    })
+
+    it('should set the right name for options with 0 expiry (should be banned by factory)', async () => {
+      /* This behavior should've been banned by factory) */
       const perpetual = await Otoken.new(mockAddressBook)
-      const future = (await time.latest()).add(time.duration.years(3000)).toNumber()
-      const _expiryStringRedable = new Date(future * 1000)
-        .toISOString()
-        .split('T')[0]
-        .replace('-', '')
-        .replace('-', '')
-      await perpetual.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, future, isPut, {from: deployer})
+      const yMMdd = '19700101'
+      await perpetual.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, 0, isPut, {from: deployer})
       const name = await perpetual.name()
       const symbol = await perpetual.symbol()
-      assert.equal(name, `ETHUSDC/${_expiryStringRedable}/200P/USDC`)
-      assert.equal(symbol, `$200 ETHP ${_expiryStringRedable}`)
+      assert.equal(name, `ETHUSDC/${yMMdd}/200P/USDC`)
+      assert.equal(symbol, `$200 ETHP ${yMMdd}`)
+    })
+
+    it('should set the right name for options expiry equals max uint256', async () => {
+      const perpetual = await Otoken.new(mockAddressBook)
+      // const future = (await time.latest()).add(time.duration.years(3000)).toNumber()
+      const maxUint = '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
+      const yMMdd = '36693052369986871806748314922394250196682488430961445211647051340058220219'
+      await perpetual.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, maxUint, isPut, {from: deployer})
+      const name = await perpetual.name()
+      const symbol = await perpetual.symbol()
+      assert.equal(name, `ETHUSDC/${yMMdd}/200P/USDC`)
+      assert.equal(symbol, `$200 ETHP ${yMMdd}`)
     })
 
     it('should display strikePrice as $0 in name and symbol when strikePrice < 10^18', async () => {
