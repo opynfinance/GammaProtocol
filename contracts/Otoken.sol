@@ -14,29 +14,41 @@ import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
  */
 contract Otoken is ERC20Initializable {
     using SafeMath for uint256;
+
+    /// @notice address of the addressBook module
     address public addressBook;
+
+    /// @notice asset that the option references
     address public underlyingAsset;
+
+    /// @notice asset that the strike price is denominated in
     address public strikeAsset;
+
+    /// @notice asset that is held as collateral against short/written options
     address public collateralAsset;
 
+    /// @notice strike price with decimals = 18
     uint256 public strikePrice;
+
+    /// @notice time of the option represented by unix timestamp
     uint256 public expiry;
 
+    /// @notice is this a put option, if not it is a call
     bool public isPut;
 
-    uint256 private constant STRIKE_PRICE_DIGITS = 10**18;
+    uint256 private constant STRIKE_PRICE_DIGITS = 1e18;
 
     constructor(address _addressBook) public {
         addressBook = _addressBook;
     }
 
     /**
-     * @notice initialize a new otokens.
+     * @notice initialize the otoken.
      * @param _underlyingAsset asset that the option references
      * @param _strikeAsset asset that the strike price is denominated in
      * @param _collateralAsset asset that is held as collateral against short/written options
      * @param _strikePrice strike price with decimals = 18
-     * @param _expiry expiration timestamp in second
+     * @param _expiry time of the option represented by unix timestamp
      * @param _isPut is this a put option, if not it is a call
      */
     function init(
@@ -65,9 +77,9 @@ contract Otoken is ERC20Initializable {
     }
 
     /**
-     * @notice return option name as ETHUSDC/1597512453/200P/USDC, symbol ETHUSDC/1597512453/200P/USDC
-     * @return name ETH-USDC 200 Put 1597512453
-     * @return symbol ETHUSDC/1597512453/200P/USDC
+     * @notice generate name and symbol for an option
+     * @return name ETHUSDC/20200930/200P/USDC
+     * @return symbol $200 ETHP 20200930
      */
     function _getNameAndSymbol(
         address _underlyingAsset,
@@ -86,30 +98,14 @@ contract Otoken is ERC20Initializable {
 
         // Get option type string
         string memory optionType;
-        string memory optionTypeChar;
         if (_isPut) {
-            optionType = "Put";
-            optionTypeChar = "P";
+            optionType = "P";
         } else {
-            optionType = "Call";
-            optionTypeChar = "C";
+            optionType = "C";
         }
 
+        // concat name string: ETHUSDC/20200930/200P/USDC
         name = string(
-            abi.encodePacked(
-                underlying,
-                strike,
-                " $",
-                uint2str(displayedStrikePrice),
-                optionType,
-                " ",
-                uint2str(year),
-                padZero(uint2str(month)),
-                padZero(uint2str(day))
-            )
-        );
-
-        symbol = string(
             abi.encodePacked(
                 underlying,
                 strike,
@@ -119,9 +115,24 @@ contract Otoken is ERC20Initializable {
                 padZero(uint2str(day)),
                 "/",
                 uint2str(displayedStrikePrice),
-                optionTypeChar,
+                optionType,
                 "/",
                 collateral
+            )
+        );
+
+        // concat symbol string: $200 ETHP 20200930
+        symbol = string(
+            abi.encodePacked(
+                "$",
+                uint2str(displayedStrikePrice),
+                " ",
+                underlying,
+                optionType,
+                " ",
+                uint2str(year),
+                padZero(uint2str(month)),
+                padZero(uint2str(day))
             )
         );
     }

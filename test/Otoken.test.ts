@@ -38,8 +38,8 @@ contract('Otoken', ([deployer, mockAddressBook]) => {
     it('should initilized the put option with valid name / symbol', async () => {
       const name = await otoken.name()
       const symbol = await otoken.symbol()
-      assert.equal(name, `ETHUSDC $200Put ${expiryStringRedable}`)
-      assert.equal(symbol, `ETHUSDC/${expiryStringRedable}/200P/USDC`)
+      assert.equal(name, `ETHUSDC/${expiryStringRedable}/200P/USDC`)
+      assert.equal(symbol, `$200 ETHP ${expiryStringRedable}`)
     })
 
     it('should set the right name for calls', async () => {
@@ -47,8 +47,8 @@ contract('Otoken', ([deployer, mockAddressBook]) => {
       await call.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, expiry, false, {from: deployer})
       const name = await call.name()
       const symbol = await call.symbol()
-      assert.equal(name, `ETHUSDC $200Call ${expiryStringRedable}`)
-      assert.equal(symbol, `ETHUSDC/${expiryStringRedable}/200C/USDC`)
+      assert.equal(name, `ETHUSDC/${expiryStringRedable}/200C/USDC`)
+      assert.equal(symbol, `$200 ETHC ${expiryStringRedable}`)
     })
 
     it('should display strikePrice as $0 in name and symbol when strikePrice < 10^18', async () => {
@@ -56,8 +56,8 @@ contract('Otoken', ([deployer, mockAddressBook]) => {
       await testOtoken.init(ETH_ADDR, usdc.address, usdc.address, 0, expiry, isPut, {from: deployer})
       const name = await testOtoken.name()
       const symbol = await testOtoken.symbol()
-      assert.equal(name, `ETHUSDC $0Put ${expiryStringRedable}`)
-      assert.equal(symbol, `ETHUSDC/${expiryStringRedable}/0P/USDC`)
+      assert.equal(name, `ETHUSDC/${expiryStringRedable}/0P/USDC`)
+      assert.equal(symbol, `$0 ETHP ${expiryStringRedable}`)
     })
 
     it('should get the correct parameters.', async () => {
