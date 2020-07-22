@@ -194,14 +194,29 @@ contract Otoken is ERC20Initializable {
         }
     }
 
+    /**
+     * @notice Mint oToken for an account
+     * @dev this is a Controller only method.
+     * @param account the account to mint token to.
+     * @param amount the amount to mint
+     */
     function mintOtoken(address account, uint256 amount) external {
         _mint(account, amount);
     }
 
+    /**
+     * @notice Burn oToken from an account
+     * @dev this is a Controller only method.
+     * @param account the account to burn token from.
+     * @param amount the amount to burn
+     */
     function burnOtoken(address account, uint256 amount) external {
         _burn(account, amount);
     }
 
+    /**
+     * @dev this function overrides the _beforeTokenTransfer function in ERC20Initializable.sol
+     */
     function _beforeTokenTransfer(
         address from,
         address to,
