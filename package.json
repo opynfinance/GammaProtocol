@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Advanced Margin Opyn",
   "devDependencies": {
+    "@codechecks/client": "^0.1.10",
     "@openzeppelin/cli": "^2.8.2",
     "@openzeppelin/test-helpers": "^0.5.4",
     "@types/chai": "4.2.5",
@@ -12,10 +13,12 @@
     "chai": "4.2.0",
     "coveralls": "^3.0.11",
     "date-fns": "^2.9.0",
+    "dotenv": "^8.2.0",
     "eslint": "^6.7.2",
     "eslint-config-prettier": "^6.7.0",
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-prettier": "^3.1.1",
+    "eth-gas-reporter": "^0.2.17",
     "husky": "^3.1.0",
     "lint-staged": "^9.5.0",
     "prettier": "^1.19.1",
@@ -46,7 +49,7 @@
     "lint:tests:fix": "npm run lint:tests -- --fix",
     "lint:sol": "solhint -f table contracts/**/*.sol",
     "lint:sol:prettier:fix": "prettier --write \"contracts/**/*.sol\"",
-    "test": "truffle test",
+    "test": "CI=true truffle test",
     "coverage": "truffle run coverage"
   },
   "husky": {
@@ -57,7 +60,6 @@
   "lint-staged": {
     "**/*.sol": [
       "npm run lint:sol",
-      "npm run lint:sol:prettier:fix",
       "git add"
     ],
     "test/**": [
