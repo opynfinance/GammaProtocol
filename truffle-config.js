@@ -19,7 +19,6 @@
  */
 require('ts-node/register')
 require('dotenv').config()
-const API_KEY = process.env.COINMARKETCAP_API
 
 // const HDWalletProvider = require('@truffle/hdwallet-provider');
 // const infuraKey = "fj4jll3k.....";
@@ -87,7 +86,7 @@ module.exports = {
     reporterOptions: {
       currency: 'USD',
       artifactType: 'truffle-v5',
-      coinmarketcap: API_KEY,
+      coinmarketcap: process.env.COINMARKETCAP_API,
       excludeContracts: ['Migrations'],
       showTimeSpent: true,
     },
