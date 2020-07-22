@@ -73,7 +73,7 @@ contract Whitelist is Ownable {
 
     /**
      * @notice check if the collateral is whitelisted
-     * @param _collateral collateral asset address
+     * @param _collateral asset that is held as collateral against short/written options
      * @return boolean, true if the collateral is whitelisted
      */
     function isWhitelistedCollateral(address _collateral) external view returns (bool) {
