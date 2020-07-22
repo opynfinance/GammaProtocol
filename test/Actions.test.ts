@@ -88,5 +88,34 @@ contract('Actions', ([owner, random]) => {
       assert.equal(depositArgs.vaultId, new BN(vaultId))
       assert.equal(depositArgs.index, new BN(index))
     })
+    it('should be able to parse arguments for a deposit collateral action', async () => {
+      const actionType = '5'
+      const asset = ZERO_ADDR
+      const vaultId = '3'
+      const amount = '10'
+      const index = '0'
+      const bytesArgs = ZERO_ADDR
+
+      const data = {
+        actionType: actionType,
+        owner: random,
+        sender: owner,
+        asset: asset,
+        vaultId: vaultId,
+        amount: amount,
+        index: index,
+        data: bytesArgs,
+      }
+
+      await controller.testParseDespositAction(data)
+
+      const depositArgs = await controller.getDepositArgs()
+      assert.equal(depositArgs.owner, random)
+      assert.equal(depositArgs.amount, new BN(amount))
+      assert.equal(depositArgs.asset, asset)
+      assert.equal(depositArgs.from, owner)
+      assert.equal(depositArgs.vaultId, new BN(vaultId))
+      assert.equal(depositArgs.index, new BN(index))
+    })
   })
 })
