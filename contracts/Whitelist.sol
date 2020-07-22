@@ -22,7 +22,7 @@ contract Whitelist is Ownable {
         address indexed collateral
     );
 
-    /// @notice emits an event when a collateral address is whitelisted by owner address
+    /// @notice emits an event when a collateral address is whitelisted by the owner address
     event CollateralWhitelisted(address indexed collateral);
 
     /**
