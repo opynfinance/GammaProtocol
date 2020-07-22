@@ -98,6 +98,21 @@ contract('OTokenFactory', accounts => {
   })
 
   describe('Create new otoken', () => {
+    it('Should revert when creating expired option', async () => {
+      const lastTimeStamp = await time.latest()
+      await expectRevert(
+        otokenFactory.createOtoken(
+          ethAddress,
+          usdc.address,
+          usdc.address,
+          strikePrice,
+          lastTimeStamp.toString(),
+          isPut,
+          {from: accounts[0]},
+        ),
+        "OtokenFactory: Can't create expired option.",
+      )
+    })
     it('Should create new contract at expected address', async () => {
       const targetAddress = await otokenFactory.getTargetOtokenAddress(
         ethAddress,
