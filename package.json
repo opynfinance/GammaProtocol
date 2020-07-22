@@ -60,7 +60,6 @@
   "lint-staged": {
     "**/*.sol": [
       "npm run lint:sol",
-      "npm run lint:sol:prettier:fix",
       "git add"
     ],
     "test/**": [
@@ -83,6 +82,5 @@
     "url": "https://github.com/opynfinance/GammaProtocol/issues"
   },
   "homepage": "https://github.com/opynfinance/GammaProtocol#readme",
-  "dependencies": {
-  }
+  "dependencies": {}
 }

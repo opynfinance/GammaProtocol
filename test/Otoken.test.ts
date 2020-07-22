@@ -75,7 +75,7 @@ contract('Otoken', ([deployer, mockAddressBook]) => {
       assert.equal(_expiry, expiry)
     })
 
-    it('should revert when init is called twice', async () => {
+    it('should revert when init is called twice on the parameters', async () => {
       await expectRevert(
         otoken.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, expiry, isPut),
         'Contract instance has already been initialized.',
