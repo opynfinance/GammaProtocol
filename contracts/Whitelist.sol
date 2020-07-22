@@ -12,7 +12,6 @@ import "./packages/oz/Ownable.sol";
 contract Whitelist is Ownable {
     ///@notice AddressBook module address
     address public addressBook;
-
     /// @notice mapping to track whitelisted product
     mapping(bytes32 => bool) internal whitelistedProduct;
     /// @notice mapping to track whitelised collateral
@@ -37,7 +36,7 @@ contract Whitelist is Ownable {
         address indexed strike,
         address indexed collateral
     );
-    /// @notice emits an event when a collateral address is whitelisted by owner address
+    /// @notice emits an event when a collateral address is whitelisted by the owner address
     event CollateralWhitelisted(address indexed collateral);
     ///@notice emitted when Otoken Factory module whitelist an otoken
     event OtokenWhitelisted(address otoken);
