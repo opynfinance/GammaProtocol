@@ -51,6 +51,16 @@ contract('Otoken', ([deployer, mockAddressBook]) => {
       assert.equal(symbol, `$200 ETHC ${expiryStringRedable}`)
     })
 
+    it('should set the right name for non-eth options', async () => {
+      const weth = await MockERC20.new('WETH', 'WETH')
+      const put = await Otoken.new(mockAddressBook)
+      await put.init(weth.address, usdc.address, usdc.address, strikePrice, expiry, isPut, {from: deployer})
+      const name = await put.name()
+      const symbol = await put.symbol()
+      assert.equal(name, `WETHUSDC/${expiryStringRedable}/200P/USDC`)
+      assert.equal(symbol, `$200 WETHP ${expiryStringRedable}`)
+    })
+
     it('should display strikePrice as $0 in name and symbol when strikePrice < 10^18', async () => {
       const testOtoken = await Otoken.new(mockAddressBook)
       await testOtoken.init(ETH_ADDR, usdc.address, usdc.address, 0, expiry, isPut, {from: deployer})
