@@ -11,7 +11,7 @@ import "./packages/oz/Ownable.sol";
 contract Whitelist is Ownable {
     /// @notice mapping to track whitelisted product
     mapping(bytes32 => bool) internal whitelistedProduct;
-    /// @notice mapping to track whitelised collateral;g
+    /// @notice mapping to track whitelised collateral
     mapping(address => bool) internal whitelistedCollateral;
 
     /// @notice emitted when owner whitelist a product
