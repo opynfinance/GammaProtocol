@@ -3,6 +3,7 @@ pragma solidity =0.6.10;
 
 import {ERC20Initializable} from "./packages/oz/upgradeability/ERC20Initializable.sol";
 import {SafeMath} from "./packages/oz/SafeMath.sol";
+import {Strings} from "./packages/oz/Strings.sol";
 import {BokkyPooBahsDateTimeLibrary} from "./packages/BokkyPooBahsDateTimeLibrary.sol";
 import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
 
@@ -36,10 +37,17 @@ contract Otoken is ERC20Initializable {
     /// @notice is this a put option, if not it is a call
     bool public isPut;
 
+    /// @dev internal mapping to convert month number to symbol
+    mapping(uint256 => string) private monthSymbol;
+
+    /// @dev internal mapping to convert month number to full name
+    mapping(uint256 => string) private monthFull;
+
     uint256 private constant STRIKE_PRICE_DIGITS = 1e18;
 
     constructor(address _addressBook) public {
         addressBook = _addressBook;
+        _initMonths();
     }
 
     /**
@@ -59,6 +67,7 @@ contract Otoken is ERC20Initializable {
         uint256 _expiry,
         bool _isPut
     ) external initializer {
+        require(_expiry < 11865398400, "Otoken: Can't init with expiry > 2345/12/31.");
         underlyingAsset = _underlyingAsset;
         strikeAsset = _strikeAsset;
         collateralAsset = _collateralAsset;
@@ -78,8 +87,8 @@ contract Otoken is ERC20Initializable {
 
     /**
      * @notice generate name and symbol for an option
-     * @return name ETHUSDC/20200930/200P/USDC
-     * @return symbol $200 ETHP 20200930
+     * @return name ETHUSDC 05-September-2020 200 Put USDC Collateral
+     * @return symbol oETHUSDC-05SEP20-200P
      */
     function _getNameAndSymbol(
         address _underlyingAsset,
@@ -98,41 +107,48 @@ contract Otoken is ERC20Initializable {
 
         // Get option type string
         string memory optionType;
+        string memory optionTypeChar;
         if (_isPut) {
-            optionType = "P";
+            optionType = "Put";
+            optionTypeChar = "P";
         } else {
-            optionType = "C";
+            optionType = "Call";
+            optionTypeChar = "C";
         }
 
-        // concat name string: ETHUSDC/20200930/200P/USDC
+        // concat name string: ETHUSDC 05-September-2020 200 Put USDC Collateral
         name = string(
             abi.encodePacked(
                 underlying,
                 strike,
-                "/",
-                uint2str(year),
-                padZero(uint2str(month)),
-                padZero(uint2str(day)),
-                "/",
-                uint2str(displayedStrikePrice),
+                " ",
+                _uintTo2Chars(day),
+                "-",
+                monthFull[month],
+                "-",
+                Strings.toString(year),
+                " ",
+                Strings.toString(displayedStrikePrice),
                 optionType,
-                "/",
-                collateral
+                " ",
+                collateral,
+                " Collateral"
             )
         );
 
-        // concat symbol string: $200 ETHP 20200930
+        // concat symbol string: oETHUSDC-05SEP20-200P
         symbol = string(
             abi.encodePacked(
-                "$",
-                uint2str(displayedStrikePrice),
-                " ",
+                "o",
                 underlying,
-                optionType,
-                " ",
-                uint2str(year),
-                padZero(uint2str(month)),
-                padZero(uint2str(day))
+                strike,
+                "-",
+                _uintTo2Chars(day),
+                monthSymbol[month],
+                _uintTo2Chars(year),
+                "-",
+                Strings.toString(displayedStrikePrice),
+                optionTypeChar
             )
         );
     }
@@ -147,38 +163,47 @@ contract Otoken is ERC20Initializable {
     }
 
     /**
-     * @dev convert uint256 to string
-     * @param _i number to be converted to string
+     * @dev Internal function to get the number with 2 characters.
+     * @return The 2 characters for the number.
      */
-    function uint2str(uint256 _i) internal pure returns (string memory) {
-        if (_i == 0) {
-            return "0";
+    function _uintTo2Chars(uint256 number) internal pure returns (string memory) {
+        string memory str = Strings.toString(number);
+        if (number > 99) return Strings.toString(number % 100);
+        if (number < 10) {
+            return string(abi.encodePacked("0", str));
+        } else {
+            return str;
         }
-        uint256 j = _i;
-        uint256 len;
-        while (j != 0) {
-            len++;
-            j /= 10;
-        }
-        bytes memory bstr = new bytes(len);
-        uint256 k = len.sub(1);
-        while (_i != 0) {
-            bstr[k--] = bytes1(uint8(48 + (_i % 10)));
-            _i /= 10;
-        }
-        return string(bstr);
     }
 
     /**
-     * @dev Pad 0 at the start of the string if len < 2
-     * @param str string to be padded
-     * @return string with len >= 2
+     * @dev initialize string mappings for month.
      */
-    function padZero(string memory str) internal pure returns (string memory) {
-        bytes memory bstr = bytes(str);
-        if (bstr.length < 2) {
-            return string(abi.encodePacked("0", str));
-        }
-        return str;
+    function _initMonths() internal {
+        monthSymbol[1] = "JAN";
+        monthSymbol[2] = "FEB";
+        monthSymbol[3] = "MAR";
+        monthSymbol[4] = "APR";
+        monthSymbol[5] = "MAY";
+        monthSymbol[6] = "JUN";
+        monthSymbol[7] = "JUL";
+        monthSymbol[8] = "AUG";
+        monthSymbol[9] = "SEP";
+        monthSymbol[10] = "OCT";
+        monthSymbol[11] = "NOV";
+        monthSymbol[12] = "DEC";
+
+        monthFull[1] = "January";
+        monthFull[2] = "February";
+        monthFull[3] = "March";
+        monthFull[4] = "April";
+        monthFull[5] = "May";
+        monthFull[6] = "June";
+        monthFull[7] = "July";
+        monthFull[8] = "August";
+        monthFull[9] = "September";
+        monthFull[10] = "October";
+        monthFull[11] = "November";
+        monthFull[12] = "December";
     }
 }

@@ -1,7 +1,7 @@
 import {OtokenInstance, MockERC20Instance} from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
-const {expectRevert, time} = require('@openzeppelin/test-helpers')
+const {expectRevert} = require('@openzeppelin/test-helpers')
 
 const Otoken = artifacts.require('Otoken.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
@@ -14,20 +14,13 @@ contract('Otoken', ([deployer, mockAddressBook, random]) => {
 
   // let expiry: number;
   const strikePrice = new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18))
-  let expiry: number
-  let expiryStringRedable: string
+  const expiry = 1601020800 // 2020/09/25 0800 UTC
   const isPut = true
 
   before('Deployment', async () => {
     // Need another mock contract for addressbook when we add ERC20 operations.
     otoken = await Otoken.new(mockAddressBook)
     usdc = await MockERC20.new('USDC', 'USDC')
-    expiry = (await time.latest()).add(time.duration.days(30)).toNumber()
-    expiryStringRedable = new Date(expiry * 1000)
-      .toISOString()
-      .split('T')[0]
-      .replace('-', '')
-      .replace('-', '')
   })
 
   describe('Otoken Initialization', () => {
@@ -50,8 +43,8 @@ contract('Otoken', ([deployer, mockAddressBook, random]) => {
     it('should initilized the put option with valid name / symbol', async () => {
       const name = await otoken.name()
       const symbol = await otoken.symbol()
-      assert.equal(name, `ETHUSDC/${expiryStringRedable}/200P/USDC`)
-      assert.equal(symbol, `$200 ETHP ${expiryStringRedable}`)
+      assert.equal(name, `ETHUSDC 25-September-2020 200Put USDC Collateral`)
+      assert.equal(symbol, `oETHUSDC-25SEP20-200P`)
     })
 
     it('should revert when init is called twice on the parameters', async () => {
@@ -66,8 +59,8 @@ contract('Otoken', ([deployer, mockAddressBook, random]) => {
       await call.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, expiry, false, {from: deployer})
       const name = await call.name()
       const symbol = await call.symbol()
-      assert.equal(name, `ETHUSDC/${expiryStringRedable}/200C/USDC`)
-      assert.equal(symbol, `$200 ETHC ${expiryStringRedable}`)
+      assert.equal(name, `ETHUSDC 25-September-2020 200Call USDC Collateral`)
+      assert.equal(symbol, `oETHUSDC-25SEP20-200C`)
     })
 
     it('should set the right name for non-eth options', async () => {
@@ -76,8 +69,8 @@ contract('Otoken', ([deployer, mockAddressBook, random]) => {
       await put.init(weth.address, usdc.address, usdc.address, strikePrice, expiry, isPut, {from: deployer})
       const name = await put.name()
       const symbol = await put.symbol()
-      assert.equal(name, `WETHUSDC/${expiryStringRedable}/200P/USDC`)
-      assert.equal(symbol, `$200 WETHP ${expiryStringRedable}`)
+      assert.equal(name, `WETHUSDC 25-September-2020 200Put USDC Collateral`)
+      assert.equal(symbol, `oWETHUSDC-25SEP20-200P`)
     })
 
     it('should revert when init asset with non-erc20 address', async () => {
@@ -92,24 +85,32 @@ contract('Otoken', ([deployer, mockAddressBook, random]) => {
     it('should set the right name for options with 0 expiry (should be banned by factory)', async () => {
       /* This behavior should've been banned by factory) */
       const perpetual = await Otoken.new(mockAddressBook)
-      const yMMdd = '19700101'
       await perpetual.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, 0, isPut, {from: deployer})
       const name = await perpetual.name()
       const symbol = await perpetual.symbol()
-      assert.equal(name, `ETHUSDC/${yMMdd}/200P/USDC`)
-      assert.equal(symbol, `$200 ETHP ${yMMdd}`)
+      assert.equal(name, `ETHUSDC 01-January-1970 200Put USDC Collateral`)
+      assert.equal(symbol, `oETHUSDC-01JAN70-200P`)
     })
 
-    it('should set the right name for options expiry equals max uint256', async () => {
+    it('should set the right name for options expiry on 2345/12/31', async () => {
+      /** This is the largest timestamp that bokkypoobah tested **/
       const perpetual = await Otoken.new(mockAddressBook)
-      // const future = (await time.latest()).add(time.duration.years(3000)).toNumber()
-      const maxUint = '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
-      const yMMdd = '36693052369986871806748314922394250196682488430961445211647051340058220219'
-      await perpetual.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, maxUint, isPut, {from: deployer})
+      const _expiry = '11865394800' // Mon, 31 Dec 2345
+      await perpetual.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, _expiry, isPut, {from: deployer})
       const name = await perpetual.name()
       const symbol = await perpetual.symbol()
-      assert.equal(name, `ETHUSDC/${yMMdd}/200P/USDC`)
-      assert.equal(symbol, `$200 ETHP ${yMMdd}`)
+      assert.equal(name, `ETHUSDC 31-December-2345 200Put USDC Collateral`)
+      assert.equal(symbol, `oETHUSDC-31DEC45-200P`)
+    })
+
+    it('should revert when trying to init option with expiry > 2345/12/31)', async () => {
+      const _expiry = '11865398400' // Tue, 1 JAN 2346
+      const otoken = await Otoken.new(mockAddressBook)
+
+      await expectRevert(
+        otoken.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, _expiry, isPut, {from: deployer}),
+        "Otoken: Can't init with expiry > 2345/12/31.",
+      )
     })
 
     it('should display strikePrice as $0 in name and symbol when strikePrice < 10^18', async () => {
@@ -117,8 +118,8 @@ contract('Otoken', ([deployer, mockAddressBook, random]) => {
       await testOtoken.init(ETH_ADDR, usdc.address, usdc.address, 0, expiry, isPut, {from: deployer})
       const name = await testOtoken.name()
       const symbol = await testOtoken.symbol()
-      assert.equal(name, `ETHUSDC/${expiryStringRedable}/0P/USDC`)
-      assert.equal(symbol, `$0 ETHP ${expiryStringRedable}`)
+      assert.equal(name, `ETHUSDC 25-September-2020 0Put USDC Collateral`)
+      assert.equal(symbol, `oETHUSDC-25SEP20-0P`)
     })
   })
 })
