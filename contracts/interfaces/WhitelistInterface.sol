@@ -2,14 +2,7 @@
 pragma solidity 0.6.10;
 
 interface WhitelistInterface {
-    function whitelistProduct(
-        address _underlying,
-        address _strike,
-        address _collateral
-    ) external returns (bytes32);
-
-    function whitelistCollateral(address collateral) external returns (bytes32);
-
+    /* View functions */
     function isWhitelistedProduct(
         address _underlying,
         address _strike,
@@ -18,7 +11,16 @@ interface WhitelistInterface {
 
     function isWhitelistedCollateral(address _collateral) external view returns (bool);
 
-    function whitelistOtoken(address _otoken) external;
-
     function isWhitelistedOtoken(address _otoken) external view returns (bool);
+
+    /* Admin / factory only functions */
+    function whitelistProduct(
+        address _underlying,
+        address _strike,
+        address _collateral
+    ) external;
+
+    function whitelistCollateral(address _collateral) external;
+
+    function whitelistOtoken(address _otoken) external;
 }
