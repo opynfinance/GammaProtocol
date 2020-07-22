@@ -31,8 +31,20 @@ contract('Otoken', ([deployer, mockAddressBook]) => {
   })
 
   describe('Otoken Initialization', () => {
-    it('should be able to initialize with put parameter', async () => {
+    it('should be able to initialize with put parameter correctly', async () => {
       await otoken.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, expiry, isPut, {from: deployer})
+      const _underlying = await otoken.underlyingAsset()
+      const _strike = await otoken.strikeAsset()
+      const _collateral = await otoken.collateralAsset()
+      const _strikePrice = (await otoken.strikePrice()).toString()
+      const _isPut = await otoken.isPut()
+      const _expiry = (await otoken.expiry()).toNumber()
+      assert.equal(_underlying, ETH_ADDR)
+      assert.equal(_strike, usdc.address)
+      assert.equal(_collateral, usdc.address)
+      assert.equal(_strikePrice, strikePrice.toString())
+      assert.equal(_isPut, isPut)
+      assert.equal(_expiry, expiry)
     })
 
     it('should initilized the put option with valid name / symbol', async () => {
@@ -40,6 +52,13 @@ contract('Otoken', ([deployer, mockAddressBook]) => {
       const symbol = await otoken.symbol()
       assert.equal(name, `ETHUSDC/${expiryStringRedable}/200P/USDC`)
       assert.equal(symbol, `$200 ETHP ${expiryStringRedable}`)
+    })
+
+    it('should revert when init is called twice on the parameters', async () => {
+      await expectRevert(
+        otoken.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, expiry, isPut),
+        'Contract instance has already been initialized.',
+      )
     })
 
     it('should set the right name for calls', async () => {
@@ -61,6 +80,21 @@ contract('Otoken', ([deployer, mockAddressBook]) => {
       assert.equal(symbol, `$200 WETHP ${expiryStringRedable}`)
     })
 
+    it('should set the right name for options expiry far in the future', async () => {
+      const perpetual = await Otoken.new(mockAddressBook)
+      const future = (await time.latest()).add(time.duration.years(3000)).toNumber()
+      const _expiryStringRedable = new Date(future * 1000)
+        .toISOString()
+        .split('T')[0]
+        .replace('-', '')
+        .replace('-', '')
+      await perpetual.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, future, isPut, {from: deployer})
+      const name = await perpetual.name()
+      const symbol = await perpetual.symbol()
+      assert.equal(name, `ETHUSDC/${_expiryStringRedable}/200P/USDC`)
+      assert.equal(symbol, `$200 ETHP ${_expiryStringRedable}`)
+    })
+
     it('should display strikePrice as $0 in name and symbol when strikePrice < 10^18', async () => {
       const testOtoken = await Otoken.new(mockAddressBook)
       await testOtoken.init(ETH_ADDR, usdc.address, usdc.address, 0, expiry, isPut, {from: deployer})
@@ -68,28 +102,6 @@ contract('Otoken', ([deployer, mockAddressBook]) => {
       const symbol = await testOtoken.symbol()
       assert.equal(name, `ETHUSDC/${expiryStringRedable}/0P/USDC`)
       assert.equal(symbol, `$0 ETHP ${expiryStringRedable}`)
-    })
-
-    it('should get the correct parameters.', async () => {
-      const _underlying = await otoken.underlyingAsset()
-      const _strike = await otoken.strikeAsset()
-      const _collateral = await otoken.collateralAsset()
-      const _strikePrice = (await otoken.strikePrice()).toString()
-      const _isPut = await otoken.isPut()
-      const _expiry = (await otoken.expiry()).toNumber()
-      assert.equal(_underlying, ETH_ADDR)
-      assert.equal(_strike, usdc.address)
-      assert.equal(_collateral, usdc.address)
-      assert.equal(_strikePrice, strikePrice.toString())
-      assert.equal(_isPut, isPut)
-      assert.equal(_expiry, expiry)
-    })
-
-    it('should revert when init is called twice on the parameters', async () => {
-      await expectRevert(
-        otoken.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, expiry, isPut),
-        'Contract instance has already been initialized.',
-      )
     })
   })
 })
