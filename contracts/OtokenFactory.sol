@@ -60,7 +60,7 @@ contract OtokenFactory is OtokenSpawner {
     ) external returns (address newOtoken) {
         require(_expiry > now, "OtokenFactory: Can't create expired option.");
         bytes32 id = _getOptionId(_underlyingAsset, _strikeAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
-        require(_idToAddress[id] == address(0), "OtokenFactory: Option created");
+        require(_idToAddress[id] == address(0), "OtokenFactory: Option already created");
 
         address whitelist = AddressBookInterface(addressBook).getWhitelist();
         require(

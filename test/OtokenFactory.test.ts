@@ -15,7 +15,7 @@ const MockERC20 = artifacts.require('MockERC20.sol')
 const MockOtoken = artifacts.require('MockOtoken.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
-contract('OTokenFactory', accounts => {
+contract('OTokenFactory', ([user1, user2]) => {
   let otoken: MockOtokenInstance
   let addressBook: MockAddressBookInstance
   let otokenFactory: OtokenFactoryInstance
@@ -76,6 +76,26 @@ contract('OTokenFactory', accounts => {
       assert.notEqual(targetAddress, ZERO_ADDR, 'getTargetOtokenAddress should never give 0 address.')
     })
 
+    it('should get same target address with same otoken paramters', async () => {
+      const targetAddress1 = await otokenFactory.getTargetOtokenAddress(
+        ethAddress,
+        usdc.address,
+        usdc.address,
+        strikePrice,
+        expiry,
+        false,
+      )
+      const targetAddress2 = await otokenFactory.getTargetOtokenAddress(
+        ethAddress,
+        usdc.address,
+        usdc.address,
+        strikePrice,
+        expiry,
+        false,
+      )
+      assert.equal(targetAddress1, targetAddress2)
+    })
+
     it('should get different target address with different otoken paramters', async () => {
       const targetAddress1 = await otokenFactory.getTargetOtokenAddress(
         ethAddress,
@@ -108,7 +128,7 @@ contract('OTokenFactory', accounts => {
           strikePrice,
           lastTimeStamp.toString(),
           isPut,
-          {from: accounts[0]},
+          {from: user1},
         ),
         "OtokenFactory: Can't create expired option.",
       )
@@ -130,10 +150,10 @@ contract('OTokenFactory', accounts => {
         strikePrice,
         expiry,
         isPut,
-        {from: accounts[0]},
+        {from: user1},
       )
       expectEvent(txResponse, 'OtokenCreated', {
-        creator: accounts[0],
+        creator: user1,
         underlying: ethAddress,
         strike: usdc.address,
         collateral: usdc.address,
@@ -143,6 +163,38 @@ contract('OTokenFactory', accounts => {
         tokenAddress: targetAddress,
       })
       otoken = await MockOtoken.at(targetAddress)
+    })
+
+    it('Should be able to create a new Otoken by another user', async () => {
+      const _strikePrice = new BigNumber(250).times(new BigNumber(10).exponentiatedBy(18))
+      const targetAddress = await otokenFactory.getTargetOtokenAddress(
+        ethAddress,
+        usdc.address,
+        usdc.address,
+        _strikePrice,
+        expiry,
+        isPut,
+      )
+
+      const txResponse = await otokenFactory.createOtoken(
+        ethAddress,
+        usdc.address,
+        usdc.address,
+        _strikePrice,
+        expiry,
+        isPut,
+        {from: user2},
+      )
+      expectEvent(txResponse, 'OtokenCreated', {
+        creator: user2,
+        underlying: ethAddress,
+        strike: usdc.address,
+        collateral: usdc.address,
+        strikePrice: _strikePrice.toString(),
+        expiry: expiry.toString(),
+        isPut: isPut,
+        tokenAddress: targetAddress,
+      })
     })
 
     it('Should have correct paramter', async () => {
@@ -174,9 +226,9 @@ contract('OTokenFactory', accounts => {
   })
 
   describe('Get otoken address after creation', () => {
-    it('Should have one otoken record', async () => {
+    it('Should have two otoken records', async () => {
       const otokens = await otokenFactory.getOtokens()
-      assert.equal(otokens.length, 1)
+      assert.equal(otokens.length, 2)
 
       assert(otokens.includes(otoken.address))
     })
