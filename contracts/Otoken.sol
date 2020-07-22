@@ -193,4 +193,30 @@ contract Otoken is ERC20Initializable {
             return ("DEC", "December");
         }
     }
+
+    function mintOtoken(address account, uint256 amount) external {
+        _mint(account, amount);
+    }
+
+    function burnOtoken(address account, uint256 amount) external {
+        _burn(account, amount);
+    }
+
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal override {
+        if (from == address(0)) {
+            require(
+                msg.sender == AddressBookInterface(addressBook).getController(),
+                "Otoken: Only Controller can mint Otokens."
+            );
+        } else if (to == address(0)) {
+            require(
+                msg.sender == AddressBookInterface(addressBook).getController(),
+                "Otoken: Only Controller can burn Otokens."
+            );
+        }
+    }
 }

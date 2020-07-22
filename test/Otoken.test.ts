@@ -5,10 +5,11 @@ const {expectRevert} = require('@openzeppelin/test-helpers')
 
 const Otoken = artifacts.require('Otoken.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
+const MockAddressBook = artifacts.require('MockAddressBook.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 const ETH_ADDR = ZERO_ADDR
 
-contract('Otoken', ([deployer, mockAddressBook, random]) => {
+contract('Otoken', ([deployer, mockAddressBook, random, controller, user1, user2]) => {
   let otoken: OtokenInstance
   let usdc: MockERC20Instance
 
@@ -19,7 +20,12 @@ contract('Otoken', ([deployer, mockAddressBook, random]) => {
 
   before('Deployment', async () => {
     // Need another mock contract for addressbook when we add ERC20 operations.
-    otoken = await Otoken.new(mockAddressBook)
+    const addressBook = await MockAddressBook.new()
+    await addressBook.setController(controller)
+
+    // deploy oToken with addressbook
+    otoken = await Otoken.new(addressBook.address)
+
     usdc = await MockERC20.new('USDC', 'USDC')
   })
 
@@ -62,7 +68,7 @@ contract('Otoken', ([deployer, mockAddressBook, random]) => {
     })
 
     it('should set the right name for calls', async () => {
-      const call = await Otoken.new(mockAddressBook)
+      const call = await Otoken.new(random)
       await call.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, expiry, false, {from: deployer})
       const name = await call.name()
       const symbol = await call.symbol()
@@ -72,7 +78,7 @@ contract('Otoken', ([deployer, mockAddressBook, random]) => {
 
     it('should set the right name for non-eth options', async () => {
       const weth = await MockERC20.new('WETH', 'WETH')
-      const put = await Otoken.new(mockAddressBook)
+      const put = await Otoken.new(random)
       await put.init(weth.address, usdc.address, usdc.address, strikePrice, expiry, isPut, {from: deployer})
       const name = await put.name()
       const symbol = await put.symbol()
@@ -174,12 +180,88 @@ contract('Otoken', ([deployer, mockAddressBook, random]) => {
     })
 
     it('should display strikePrice as $0 in name and symbol when strikePrice < 10^18', async () => {
-      const testOtoken = await Otoken.new(mockAddressBook)
+      const testOtoken = await Otoken.new(random)
       await testOtoken.init(ETH_ADDR, usdc.address, usdc.address, 0, expiry, isPut, {from: deployer})
       const name = await testOtoken.name()
       const symbol = await testOtoken.symbol()
       assert.equal(name, `ETHUSDC 25-September-2020 0Put USDC Collateral`)
       assert.equal(symbol, `oETHUSDC-25SEP20-0P`)
+    })
+  })
+
+  describe('Token operations: Mint', () => {
+    const amountToMint = new BigNumber(10).times(new BigNumber(10).exponentiatedBy(18))
+    it('should be able to mint tokens from controller address', async () => {
+      await otoken.mintOtoken(user1, amountToMint, {from: controller})
+      const balance = await otoken.balanceOf(user1)
+      assert.equal(balance.toString(), amountToMint.toString())
+    })
+
+    it('should revert when minting from random address', async () => {
+      await expectRevert(
+        otoken.mintOtoken(user1, amountToMint, {from: random}),
+        'Otoken: Only Controller can mint Otokens.',
+      )
+    })
+
+    it('should revert when someone try to mint for himself.', async () => {
+      await expectRevert(
+        otoken.mintOtoken(user1, amountToMint, {from: user1}),
+        'Otoken: Only Controller can mint Otokens.',
+      )
+    })
+  })
+
+  describe('Token operations: Transfer', () => {
+    const amountToMint = new BigNumber(10).times(new BigNumber(10).exponentiatedBy(18))
+    it('should be able to transfer tokens from user 1 to user 2', async () => {
+      await otoken.transfer(user2, amountToMint, {from: user1})
+      const balance = await otoken.balanceOf(user2)
+      assert.equal(balance.toString(), amountToMint.toString())
+    })
+
+    it('should revert when calling transferFrom with no allownace', async () => {
+      await expectRevert(
+        otoken.transferFrom(user2, user1, amountToMint, {from: random}),
+        'ERC20: transfer amount exceeds allowance',
+      )
+    })
+
+    it('should revert when controller call transferFrom with no allownace', async () => {
+      await expectRevert(
+        otoken.transferFrom(user2, user1, amountToMint, {from: controller}),
+        'ERC20: transfer amount exceeds allowance',
+      )
+    })
+
+    it('should be able to use transferFrom to transfer token from user2 to user1.', async () => {
+      await otoken.approve(random, amountToMint, {from: user2})
+      await otoken.transferFrom(user2, user1, amountToMint, {from: random})
+      const user2Remaining = await otoken.balanceOf(user2)
+      assert.equal(user2Remaining.toString(), '0')
+    })
+  })
+
+  describe('Token operations: Burn', () => {
+    const amountToMint = new BigNumber(10).times(new BigNumber(10).exponentiatedBy(18))
+    it('should revert when burning from random address', async () => {
+      await expectRevert(
+        otoken.burnOtoken(user1, amountToMint, {from: random}),
+        'Otoken: Only Controller can burn Otokens.',
+      )
+    })
+
+    it('should revert when someone trys to burn for himeself', async () => {
+      await expectRevert(
+        otoken.burnOtoken(user1, amountToMint, {from: user1}),
+        'Otoken: Only Controller can burn Otokens.',
+      )
+    })
+
+    it('should be able to burn tokens from controller address', async () => {
+      await otoken.burnOtoken(user1, amountToMint, {from: controller})
+      const balance = await otoken.balanceOf(user1)
+      assert.equal(balance.toString(), '0')
     })
   })
 })
