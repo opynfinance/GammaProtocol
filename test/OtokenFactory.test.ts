@@ -266,7 +266,7 @@ contract('OTokenFactory', ([user1, user2]) => {
       const newStrikePrice = new BigNumber(250)
       await expectRevert(
         otokenFactory.createOtoken(ethAddress, usdc.address, usdc.address, newStrikePrice, expiry, isPut),
-        'revert',
+        'Create2: Failed on deploy',
       )
     })
   })
