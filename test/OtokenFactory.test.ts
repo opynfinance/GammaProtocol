@@ -168,7 +168,7 @@ contract('OTokenFactory', accounts => {
     it('Should revert when creating duplicated option', async () => {
       await expectRevert(
         otokenFactory.createOtoken(ethAddress, usdc.address, usdc.address, strikePrice, expiry, isPut),
-        'OtokenFactory: Option created',
+        'OtokenFactory: Option already created',
       )
     })
   })

@@ -27,7 +27,7 @@ contract OtokenFactory is OtokenSpawner {
         addressBook = _addressBook;
     }
 
-    /* Event: OtokenCreated - Emitted when factory create a new Option. */
+    /// @notice emitted when factory create a new Option
     event OtokenCreated(
         address indexed tokenAddress,
         address indexed creator,
@@ -80,7 +80,7 @@ contract OtokenFactory is OtokenSpawner {
             _isPut
         );
 
-        newOtoken = _spawn(AddressBookInterface(addressBook).getOtokenImpl(), initializationCalldata);
+        newOtoken = _spawn(otokenImpl, initializationCalldata);
 
         _otokens.push(newOtoken);
         _idToAddress[id] = newOtoken;
@@ -129,7 +129,7 @@ contract OtokenFactory is OtokenSpawner {
     }
 
     /**
-     * @notice get the address otoken if call createOtoken with these paramters.
+     * @notice get the address at which a new otoken with these paramters will be deployed
      * @dev return the exact address that will be deployed at with _computeAddress
      * @param _underlyingAsset asset that the option references
      * @param _strikeAsset asset that the strike price is denominated in
@@ -161,7 +161,7 @@ contract OtokenFactory is OtokenSpawner {
     }
 
     /**
-     * @dev internal function to hash paramters and get option id.
+     * @dev internal function to hash paramters and get option id. Each option has a unique id.
      * @param _underlyingAsset asset that the option references
      * @param _strikeAsset asset that the strike price is denominated in
      * @param _collateralAsset asset that is held as collateral against short/written options
