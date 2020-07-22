@@ -18,6 +18,7 @@
  *
  */
 require('ts-node/register')
+require('dotenv').config()
 
 // const HDWalletProvider = require('@truffle/hdwallet-provider');
 // const infuraKey = "fj4jll3k.....";
@@ -82,13 +83,13 @@ module.exports = {
   mocha: {
     // timeout: 100000,
     reporter: 'eth-gas-reporter',
-    reporterOptions : {
+    reporterOptions: {
       currency: 'USD',
       artifactType: 'truffle-v5',
-      coinmarketcap: `${process.env.COINMARKETCAP_API}`,
+      coinmarketcap: process.env.COINMARKETCAP_API,
       excludeContracts: ['Migrations'],
-      showTimeSpent: true
-    } 
+      showTimeSpent: true,
+    },
   },
 
   plugins: ['solidity-coverage'],
