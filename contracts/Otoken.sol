@@ -71,9 +71,9 @@ contract Otoken is ERC20Initializable {
     }
 
     /**
-     * @notice Mint oToken for an account
-     * @dev this is a Controller only method.
-     * @param account the account to mint token to.
+     * @notice Mint oToken for an account.
+     * @dev this is a Controller only method. Access control is taken care of by _beforeTokenTransfer hook.
+     * @param account the account to mint token to
      * @param amount the amount to mint
      */
     function mintOtoken(address account, uint256 amount) external {
@@ -81,9 +81,9 @@ contract Otoken is ERC20Initializable {
     }
 
     /**
-     * @notice Burn oToken from an account
-     * @dev this is a Controller only method.
-     * @param account the account to burn token from.
+     * @notice Burn oToken from an account.
+     * @dev this is a Controller only method. Access control is taken care of by _beforeTokenTransfer hook.
+     * @param account the account to burn token from
      * @param amount the amount to burn
      */
     function burnOtoken(address account, uint256 amount) external {
@@ -215,7 +215,12 @@ contract Otoken is ERC20Initializable {
     }
 
     /**
-     * @dev this function overrides the _beforeTokenTransfer function in ERC20Initializable.sol
+     * @dev this function overrides the _beforeTokenTransfer hook in ERC20Initializable.sol.
+     * If the operation is mint or burn, requires msg.sender to be the controller.
+     * @dev the functino signature is the same as _beforeTokenTransfer defined in ERC20Initializable.sol.
+     * @param from from address
+     * @param to to address
+     * @param amount amount to transfer
      */
     function _beforeTokenTransfer(
         address from,

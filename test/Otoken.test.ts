@@ -32,25 +32,18 @@ contract('Otoken', ([deployer, mockAddressBook, random, controller, user1, user2
   describe('Otoken Initialization', () => {
     it('should be able to initialize with put parameter correctly', async () => {
       await otoken.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, expiry, isPut, {from: deployer})
-      const _underlying = await otoken.underlyingAsset()
-      const _strike = await otoken.strikeAsset()
-      const _collateral = await otoken.collateralAsset()
-      const _strikePrice = (await otoken.strikePrice()).toString()
-      const _isPut = await otoken.isPut()
-      const _expiry = (await otoken.expiry()).toNumber()
-      assert.equal(_underlying, ETH_ADDR)
-      assert.equal(_strike, usdc.address)
-      assert.equal(_collateral, usdc.address)
-      assert.equal(_strikePrice, strikePrice.toString())
-      assert.equal(_isPut, isPut)
-      assert.equal(_expiry, expiry)
+      assert.equal(await otoken.underlyingAsset(), ETH_ADDR)
+      assert.equal(await otoken.strikeAsset(), usdc.address)
+      assert.equal(await otoken.collateralAsset(), usdc.address)
+      assert.equal((await otoken.strikePrice()).toString(), strikePrice.toString())
+      assert.equal(await otoken.isPut(), isPut)
+      assert.equal((await otoken.expiry()).toNumber(), expiry)
     })
 
     it('should initilized the put option with valid name / symbol', async () => {
-      const name = await otoken.name()
-      const symbol = await otoken.symbol()
-      assert.equal(name, `ETHUSDC 25-September-2020 200Put USDC Collateral`)
-      assert.equal(symbol, `oETHUSDC-25SEP20-200P`)
+      assert.equal(await otoken.name(), `ETHUSDC 25-September-2020 200Put USDC Collateral`)
+      assert.equal(await otoken.symbol(), `oETHUSDC-25SEP20-200P`)
+      assert.equal((await otoken.decimals()).toNumber(), 18)
     })
 
     it('should revert when init is called again with the same parameters', async () => {
@@ -70,20 +63,16 @@ contract('Otoken', ([deployer, mockAddressBook, random, controller, user1, user2
     it('should set the right name for calls', async () => {
       const call = await Otoken.new(random)
       await call.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, expiry, false, {from: deployer})
-      const name = await call.name()
-      const symbol = await call.symbol()
-      assert.equal(name, `ETHUSDC 25-September-2020 200Call USDC Collateral`)
-      assert.equal(symbol, `oETHUSDC-25SEP20-200C`)
+      assert.equal(await call.name(), `ETHUSDC 25-September-2020 200Call USDC Collateral`)
+      assert.equal(await call.symbol(), `oETHUSDC-25SEP20-200C`)
     })
 
     it('should set the right name for non-eth options', async () => {
       const weth = await MockERC20.new('WETH', 'WETH')
       const put = await Otoken.new(random)
       await put.init(weth.address, usdc.address, usdc.address, strikePrice, expiry, isPut, {from: deployer})
-      const name = await put.name()
-      const symbol = await put.symbol()
-      assert.equal(name, `WETHUSDC 25-September-2020 200Put USDC Collateral`)
-      assert.equal(symbol, `oWETHUSDC-25SEP20-200P`)
+      assert.equal(await put.name(), `WETHUSDC 25-September-2020 200Put USDC Collateral`)
+      assert.equal(await put.symbol(), `oWETHUSDC-25SEP20-200P`)
     })
 
     it('should revert when init asset with non-erc20 address', async () => {
@@ -99,10 +88,8 @@ contract('Otoken', ([deployer, mockAddressBook, random, controller, user1, user2
       /* This behavior should've been banned by factory) */
       const otoken = await Otoken.new(mockAddressBook)
       await otoken.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, 0, isPut, {from: deployer})
-      const name = await otoken.name()
-      const symbol = await otoken.symbol()
-      assert.equal(name, `ETHUSDC 01-January-1970 200Put USDC Collateral`)
-      assert.equal(symbol, `oETHUSDC-01JAN70-200P`)
+      assert.equal(await otoken.name(), `ETHUSDC 01-January-1970 200Put USDC Collateral`)
+      assert.equal(await otoken.symbol(), `oETHUSDC-01JAN70-200P`)
     })
 
     it('should set the right name for options expiry on 2345/12/31', async () => {
@@ -110,10 +97,8 @@ contract('Otoken', ([deployer, mockAddressBook, random, controller, user1, user2
       const otoken = await Otoken.new(mockAddressBook)
       const _expiry = '11865394800' // Mon, 31 Dec 2345
       await otoken.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, _expiry, isPut, {from: deployer})
-      const name = await otoken.name()
-      const symbol = await otoken.symbol()
-      assert.equal(name, `ETHUSDC 31-December-2345 200Put USDC Collateral`)
-      assert.equal(symbol, `oETHUSDC-31DEC45-200P`)
+      assert.equal(await otoken.name(), `ETHUSDC 31-December-2345 200Put USDC Collateral`)
+      assert.equal(await otoken.symbol(), `oETHUSDC-31DEC45-200P`)
     })
 
     it('should set the right name and symbol for expiry on each month', async () => {
@@ -182,10 +167,8 @@ contract('Otoken', ([deployer, mockAddressBook, random, controller, user1, user2
     it('should display strikePrice as $0 in name and symbol when strikePrice < 10^18', async () => {
       const testOtoken = await Otoken.new(random)
       await testOtoken.init(ETH_ADDR, usdc.address, usdc.address, 0, expiry, isPut, {from: deployer})
-      const name = await testOtoken.name()
-      const symbol = await testOtoken.symbol()
-      assert.equal(name, `ETHUSDC 25-September-2020 0Put USDC Collateral`)
-      assert.equal(symbol, `oETHUSDC-25SEP20-0P`)
+      assert.equal(await testOtoken.name(), `ETHUSDC 25-September-2020 0Put USDC Collateral`)
+      assert.equal(await testOtoken.symbol(), `oETHUSDC-25SEP20-0P`)
     })
   })
 
