@@ -47,9 +47,16 @@ contract('Otoken', ([deployer, mockAddressBook, random]) => {
       assert.equal(symbol, `oETHUSDC-25SEP20-200P`)
     })
 
-    it('should revert when init is called twice on the parameters', async () => {
+    it('should revert when init is called again with the same parameters', async () => {
       await expectRevert(
         otoken.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, expiry, isPut),
+        'Contract instance has already been initialized.',
+      )
+    })
+
+    it('should revert when init is called again with different parameters', async () => {
+      await expectRevert(
+        otoken.init(usdc.address, ETH_ADDR, ETH_ADDR, strikePrice, expiry, false),
         'Contract instance has already been initialized.',
       )
     })
