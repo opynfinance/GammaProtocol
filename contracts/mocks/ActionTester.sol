@@ -3,7 +3,7 @@ pragma experimental ABIEncoderV2;
 
 import {Actions} from "../libs/Actions.sol";
 
-contract MockController {
+contract ActionTester {
     Actions.DepositArgs private depositArgs;
 
     function testParseDespositAction(Actions.ActionArgs memory _args) external {

@@ -1,21 +1,33 @@
-import {MockControllerInstance} from '../build/types/truffle-types'
+import {ActionTesterInstance} from '../build/types/truffle-types'
 
 const {BN, expectRevert} = require('@openzeppelin/test-helpers')
 
-const MockController = artifacts.require('MockController.sol')
+const ActionTester = artifacts.require('ActionTester.sol')
 
 contract('Actions', ([owner, random]) => {
-  // Controller mock instance
-  let controller: MockControllerInstance
+  // actionTester mock instance
+  let actionTester: ActionTesterInstance
+  enum ActionType {
+    OpenVault,
+    MintShortOption,
+    BurnShortOption,
+    DepositLongOption,
+    WithdrawLongOption,
+    DepositCollateral,
+    WithdrawCollateral,
+    SettleVault,
+    Exercise,
+    Call,
+  }
   const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
   before('Deployment', async () => {
-    controller = await MockController.new({from: owner})
+    actionTester = await ActionTester.new({from: owner})
   })
 
   describe('Parse Deposit Arguments', () => {
     it('should not be able to parse a non Deposit action', async () => {
-      const actionType = '0'
+      const actionType = ActionType.OpenVault
       const asset = ZERO_ADDR
       const vaultId = '0'
       const amount = '10'
@@ -34,12 +46,12 @@ contract('Actions', ([owner, random]) => {
       }
 
       await expectRevert(
-        controller.testParseDespositAction(data),
+        actionTester.testParseDespositAction(data),
         'Actions: can only parse arguments for deposit actions',
       )
     })
     it('should not be able to parse an invalid sender address', async () => {
-      const actionType = '3'
+      const actionType = ActionType.DepositCollateral
       const asset = ZERO_ADDR
       const vaultId = '0'
       const amount = '10'
@@ -57,10 +69,10 @@ contract('Actions', ([owner, random]) => {
         data: bytesArgs,
       }
 
-      await expectRevert(controller.testParseDespositAction(data), 'Actions: cannot deposit to an invalid account')
+      await expectRevert(actionTester.testParseDespositAction(data), 'Actions: cannot deposit to an invalid account')
     })
     it('should be able to parse arguments for a deposit long action', async () => {
-      const actionType = '3'
+      const actionType = ActionType.DepositLongOption
       const asset = ZERO_ADDR
       const vaultId = '1'
       const amount = '10'
@@ -78,9 +90,9 @@ contract('Actions', ([owner, random]) => {
         data: bytesArgs,
       }
 
-      await controller.testParseDespositAction(data)
+      await actionTester.testParseDespositAction(data)
 
-      const depositArgs = await controller.getDepositArgs()
+      const depositArgs = await actionTester.getDepositArgs()
       assert.equal(depositArgs.owner, owner)
       assert.equal(depositArgs.amount, new BN(amount))
       assert.equal(depositArgs.asset, asset)
@@ -89,7 +101,7 @@ contract('Actions', ([owner, random]) => {
       assert.equal(depositArgs.index, new BN(index))
     })
     it('should be able to parse arguments for a deposit collateral action', async () => {
-      const actionType = '5'
+      const actionType = ActionType.DepositCollateral
       const asset = ZERO_ADDR
       const vaultId = '3'
       const amount = '10'
@@ -107,9 +119,9 @@ contract('Actions', ([owner, random]) => {
         data: bytesArgs,
       }
 
-      await controller.testParseDespositAction(data)
+      await actionTester.testParseDespositAction(data)
 
-      const depositArgs = await controller.getDepositArgs()
+      const depositArgs = await actionTester.getDepositArgs()
       assert.equal(depositArgs.owner, random)
       assert.equal(depositArgs.amount, new BN(amount))
       assert.equal(depositArgs.asset, asset)

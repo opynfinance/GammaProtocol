@@ -17,6 +17,7 @@ library Actions {
         WithdrawLongOption,
         DepositCollateral,
         WithdrawCollateral,
+        SettleVault,
         Exercise,
         Call
     }
@@ -30,7 +31,7 @@ library Actions {
         address sender;
         /// @notice The asset that is to be transfered
         address asset;
-        /// @notice The address of the vault that is to be modified (if any)
+        /// @notice The index of the vault that is to be modified (if any)
         uint256 vaultId;
         /// @notice The amount of asset that is to be transfered
         uint256 amount;
@@ -46,7 +47,7 @@ library Actions {
     struct DepositArgs {
         /// @notice The address of the account owner
         address owner;
-        /// @notice The address of the vault to which the asset will be added
+        /// @notice The index of the vault to which the asset will be added
         uint256 vaultId;
         /// @notice The address from which we transfer the asset
         address from;
@@ -68,20 +69,19 @@ library Actions {
      */
     function _parseDepositArgs(ActionArgs memory _args) internal returns (DepositArgs memory) {
         require(
-            (uint256(_args.actionType) == uint256(ActionType.DepositLongOption)) ||
-                (uint256(_args.actionType) == uint256(ActionType.DepositCollateral)),
+            (_args.actionType == ActionType.DepositLongOption) || (_args.actionType == ActionType.DepositCollateral),
             "Actions: can only parse arguments for deposit actions"
         );
         require(_args.owner != address(0), "Actions: cannot deposit to an invalid account");
 
-        DepositArgs memory args;
-        args.owner = _args.owner;
-        args.vaultId = _args.vaultId;
-        args.from = _args.sender;
-        args.asset = _args.asset;
-        args.index = _args.index;
-        args.amount = _args.amount;
-
-        return args;
+        return
+            DepositArgs({
+                owner: _args.owner,
+                vaultId: _args.vaultId,
+                from: _args.sender,
+                asset: _args.asset,
+                index: _args.index,
+                amount: _args.amount
+            });
     }
 }
