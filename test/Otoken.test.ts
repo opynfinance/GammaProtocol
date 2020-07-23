@@ -84,33 +84,86 @@ contract('Otoken', ([deployer, mockAddressBook, random]) => {
 
     it('should set the right name for options with 0 expiry (should be banned by factory)', async () => {
       /* This behavior should've been banned by factory) */
-      const perpetual = await Otoken.new(mockAddressBook)
-      await perpetual.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, 0, isPut, {from: deployer})
-      const name = await perpetual.name()
-      const symbol = await perpetual.symbol()
+      const otoken = await Otoken.new(mockAddressBook)
+      await otoken.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, 0, isPut, {from: deployer})
+      const name = await otoken.name()
+      const symbol = await otoken.symbol()
       assert.equal(name, `ETHUSDC 01-January-1970 200Put USDC Collateral`)
       assert.equal(symbol, `oETHUSDC-01JAN70-200P`)
     })
 
     it('should set the right name for options expiry on 2345/12/31', async () => {
-      /** This is the largest timestamp that bokkypoobah tested **/
-      const perpetual = await Otoken.new(mockAddressBook)
+      /** This is the largest timestamp that the factoy will allow (the largest bokkypoobah covers) **/
+      const otoken = await Otoken.new(mockAddressBook)
       const _expiry = '11865394800' // Mon, 31 Dec 2345
-      await perpetual.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, _expiry, isPut, {from: deployer})
-      const name = await perpetual.name()
-      const symbol = await perpetual.symbol()
+      await otoken.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, _expiry, isPut, {from: deployer})
+      const name = await otoken.name()
+      const symbol = await otoken.symbol()
       assert.equal(name, `ETHUSDC 31-December-2345 200Put USDC Collateral`)
       assert.equal(symbol, `oETHUSDC-31DEC45-200P`)
     })
 
-    it('should revert when trying to init option with expiry > 2345/12/31)', async () => {
-      const _expiry = '11865398400' // Tue, 1 JAN 2346
-      const otoken = await Otoken.new(mockAddressBook)
+    it('should set the right name and symbol for expiry on each month', async () => {
+      // We need to go through all decision branches in _getMonth() to make a 100% test coverage.
+      const January = await Otoken.new(mockAddressBook)
+      await January.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, 1893456000, isPut, {from: deployer})
+      assert.equal(await January.name(), 'ETHUSDC 01-January-2030 200Put USDC Collateral')
+      assert.equal(await January.symbol(), 'oETHUSDC-01JAN30-200P')
 
-      await expectRevert(
-        otoken.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, _expiry, isPut, {from: deployer}),
-        "Otoken: Can't init with expiry > 2345/12/31.",
-      )
+      const February = await Otoken.new(mockAddressBook)
+      await February.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, 1896134400, isPut, {from: deployer})
+      assert.equal(await February.name(), 'ETHUSDC 01-February-2030 200Put USDC Collateral')
+      assert.equal(await February.symbol(), 'oETHUSDC-01FEB30-200P')
+
+      const March = await Otoken.new(mockAddressBook)
+      await March.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, 1898553600, isPut, {from: deployer})
+      assert.equal(await March.name(), 'ETHUSDC 01-March-2030 200Put USDC Collateral')
+      assert.equal(await March.symbol(), 'oETHUSDC-01MAR30-200P')
+
+      const April = await Otoken.new(mockAddressBook)
+      await April.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, 1901232000, isPut, {from: deployer})
+      assert.equal(await April.name(), 'ETHUSDC 01-April-2030 200Put USDC Collateral')
+      assert.equal(await April.symbol(), 'oETHUSDC-01APR30-200P')
+
+      const May = await Otoken.new(mockAddressBook)
+      await May.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, 1903824000, isPut, {from: deployer})
+      assert.equal(await May.name(), 'ETHUSDC 01-May-2030 200Put USDC Collateral')
+      assert.equal(await May.symbol(), 'oETHUSDC-01MAY30-200P')
+
+      const June = await Otoken.new(mockAddressBook)
+      await June.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, 1906502400, isPut, {from: deployer})
+      assert.equal(await June.name(), 'ETHUSDC 01-June-2030 200Put USDC Collateral')
+      assert.equal(await June.symbol(), 'oETHUSDC-01JUN30-200P')
+
+      const July = await Otoken.new(mockAddressBook)
+      await July.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, 1909094400, isPut, {from: deployer})
+      assert.equal(await July.name(), 'ETHUSDC 01-July-2030 200Put USDC Collateral')
+      assert.equal(await July.symbol(), 'oETHUSDC-01JUL30-200P')
+
+      const August = await Otoken.new(mockAddressBook)
+      await August.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, 1911772800, isPut, {from: deployer})
+      assert.equal(await August.name(), 'ETHUSDC 01-August-2030 200Put USDC Collateral')
+      assert.equal(await August.symbol(), 'oETHUSDC-01AUG30-200P')
+
+      const September = await Otoken.new(mockAddressBook)
+      await September.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, 1914451200, isPut, {from: deployer})
+      assert.equal(await September.name(), 'ETHUSDC 01-September-2030 200Put USDC Collateral')
+      assert.equal(await September.symbol(), 'oETHUSDC-01SEP30-200P')
+
+      const October = await Otoken.new(mockAddressBook)
+      await October.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, 1917043200, isPut, {from: deployer})
+      assert.equal(await October.name(), 'ETHUSDC 01-October-2030 200Put USDC Collateral')
+      assert.equal(await October.symbol(), 'oETHUSDC-01OCT30-200P')
+
+      const November = await Otoken.new(mockAddressBook)
+      await November.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, 1919721600, isPut, {from: deployer})
+      assert.equal(await November.name(), 'ETHUSDC 01-November-2030 200Put USDC Collateral')
+      assert.equal(await November.symbol(), 'oETHUSDC-01NOV30-200P')
+
+      const December = await Otoken.new(mockAddressBook)
+      await December.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, 1922313600, isPut, {from: deployer})
+      assert.equal(await December.name(), 'ETHUSDC 01-December-2030 200Put USDC Collateral')
+      assert.equal(await December.symbol(), 'oETHUSDC-01DEC30-200P')
     })
 
     it('should display strikePrice as $0 in name and symbol when strikePrice < 10^18', async () => {

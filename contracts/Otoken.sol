@@ -60,7 +60,6 @@ contract Otoken is ERC20Initializable {
         uint256 _expiry,
         bool _isPut
     ) external initializer {
-        require(_expiry < 11865398400, "Otoken: Can't init with expiry > 2345/12/31.");
         underlyingAsset = _underlyingAsset;
         strikeAsset = _strikeAsset;
         collateralAsset = _collateralAsset;
@@ -190,7 +189,7 @@ contract Otoken is ERC20Initializable {
             return ("OCT", "October");
         } else if (_month == 11) {
             return ("NOV", "November");
-        } else if (_month == 12) {
+        } else {
             return ("DEC", "December");
         }
     }
