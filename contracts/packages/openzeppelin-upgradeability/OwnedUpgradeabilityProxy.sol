@@ -15,7 +15,7 @@ contract OwnedUpgradeabilityProxy is UpgradeabilityProxy {
      */
     event ProxyOwnershipTransferred(address previousOwner, address newOwner);
 
-    // Storage position of the owner of the contract
+    /// @dev Storage position of the owner of the contract
     bytes32 private constant proxyOwnerPosition = keccak256("org.zeppelinos.proxy.owner");
 
     /**
@@ -46,8 +46,9 @@ contract OwnedUpgradeabilityProxy is UpgradeabilityProxy {
 
     /**
      * @dev Sets the address of the owner
+     * @param _newProxyOwner address of new proxy owner
      */
-    function setUpgradeabilityOwner(address newProxyOwner) internal {
+    function setUpgradeabilityOwner(address _newProxyOwner) internal {
         bytes32 position = proxyOwnerPosition;
         assembly {
             sstore(position, newProxyOwner)
@@ -56,9 +57,9 @@ contract OwnedUpgradeabilityProxy is UpgradeabilityProxy {
 
     /**
      * @dev Allows the current owner to transfer control of the contract to a newOwner.
-     * @param newOwner The address to transfer ownership to.
+     * @param _newOwner The address to transfer ownership to.
      */
-    function transferProxyOwnership(address newOwner) public onlyProxyOwner {
+    function transferProxyOwnership(address _newOwner) public onlyProxyOwner {
         require(newOwner != address(0));
         emit ProxyOwnershipTransferred(proxyOwner(), newOwner);
         setUpgradeabilityOwner(newOwner);
@@ -66,20 +67,20 @@ contract OwnedUpgradeabilityProxy is UpgradeabilityProxy {
 
     /**
      * @dev Allows the proxy owner to upgrade the current version of the proxy.
-     * @param implementation representing the address of the new implementation to be set.
+     * @param _implementation representing the address of the new implementation to be set.
      */
-    function upgradeTo(address implementation) public onlyProxyOwner {
+    function upgradeTo(address _implementation) public onlyProxyOwner {
         _upgradeTo(implementation);
     }
 
     /**
      * @dev Allows the proxy owner to upgrade the current version of the proxy and call the new implementation
      * to initialize whatever is needed through a low level call.
-     * @param implementation representing the address of the new implementation to be set.
-     * @param data represents the msg.data to bet sent in the low level call. This parameter may include the function
+     * @param _implementation representing the address of the new implementation to be set.
+     * @param _data represents the msg.data to bet sent in the low level call. This parameter may include the function
      * signature of the implementation to be called with the needed payload
      */
-    function upgradeToAndCall(address implementation, bytes calldata data) public payable onlyProxyOwner {
+    function upgradeToAndCall(address _implementation, bytes calldata _data) public payable onlyProxyOwner {
         upgradeTo(implementation);
         (bool success, ) = address(this).call{value: msg.value}(data);
         require(success);

@@ -14,7 +14,7 @@ contract UpgradeabilityProxy is Proxy {
      */
     event Upgraded(address indexed implementation);
 
-    // Storage position of the address of the current implementation
+    /// @dev Storage position of the address of the current implementation
     bytes32 private constant implementationPosition = keccak256("org.zeppelinos.proxy.implementation");
 
     /**
@@ -30,9 +30,9 @@ contract UpgradeabilityProxy is Proxy {
 
     /**
      * @dev Sets the address of the current implementation
-     * @param newImplementation address representing the new implementation to be set
+     * @param _newImplementation address representing the new implementation to be set
      */
-    function setImplementation(address newImplementation) internal {
+    function setImplementation(address _newImplementation) internal {
         bytes32 position = implementationPosition;
         assembly {
             sstore(position, newImplementation)
@@ -41,9 +41,9 @@ contract UpgradeabilityProxy is Proxy {
 
     /**
      * @dev Upgrades the implementation address
-     * @param newImplementation representing the address of the new implementation to be set
+     * @param _newImplementation representing the address of the new implementation to be set
      */
-    function _upgradeTo(address newImplementation) internal {
+    function _upgradeTo(address _newImplementation) internal {
         address currentImplementation = implementation();
         require(currentImplementation != newImplementation);
         setImplementation(newImplementation);
