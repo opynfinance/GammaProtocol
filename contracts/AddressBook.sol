@@ -23,8 +23,11 @@ contract AddressBook is Ownable {
     /// @dev a mapping between module key and module address
     mapping(bytes32 => address) private modules;
 
+    /// @notice event emitted when a new proxy get created
+    event ProxyCreated(bytes32 id, address proxy);
+
     function getAddress(bytes32 _key) public view returns (address) {
-        return addresses[_key];
+        return modules[_key];
     }
 
     function getOtokenImpl() external view returns (address) {
