@@ -35,7 +35,7 @@ contract UpgradeabilityProxy is Proxy {
     function setImplementation(address _newImplementation) internal {
         bytes32 position = implementationPosition;
         assembly {
-            sstore(position, newImplementation)
+            sstore(position, _newImplementation)
         }
     }
 
@@ -45,8 +45,8 @@ contract UpgradeabilityProxy is Proxy {
      */
     function _upgradeTo(address _newImplementation) internal {
         address currentImplementation = implementation();
-        require(currentImplementation != newImplementation);
-        setImplementation(newImplementation);
-        emit Upgraded(newImplementation);
+        require(currentImplementation != _newImplementation);
+        setImplementation(_newImplementation);
+        emit Upgraded(_newImplementation);
     }
 }

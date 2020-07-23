@@ -51,7 +51,7 @@ contract OwnedUpgradeabilityProxy is UpgradeabilityProxy {
     function setUpgradeabilityOwner(address _newProxyOwner) internal {
         bytes32 position = proxyOwnerPosition;
         assembly {
-            sstore(position, newProxyOwner)
+            sstore(position, _newProxyOwner)
         }
     }
 
@@ -60,9 +60,9 @@ contract OwnedUpgradeabilityProxy is UpgradeabilityProxy {
      * @param _newOwner The address to transfer ownership to.
      */
     function transferProxyOwnership(address _newOwner) public onlyProxyOwner {
-        require(newOwner != address(0));
-        emit ProxyOwnershipTransferred(proxyOwner(), newOwner);
-        setUpgradeabilityOwner(newOwner);
+        require(_newOwner != address(0));
+        emit ProxyOwnershipTransferred(proxyOwner(), _newOwner);
+        setUpgradeabilityOwner(_newOwner);
     }
 
     /**
@@ -70,7 +70,7 @@ contract OwnedUpgradeabilityProxy is UpgradeabilityProxy {
      * @param _implementation representing the address of the new implementation to be set.
      */
     function upgradeTo(address _implementation) public onlyProxyOwner {
-        _upgradeTo(implementation);
+        _upgradeTo(_implementation);
     }
 
     /**
@@ -81,8 +81,8 @@ contract OwnedUpgradeabilityProxy is UpgradeabilityProxy {
      * signature of the implementation to be called with the needed payload
      */
     function upgradeToAndCall(address _implementation, bytes calldata _data) public payable onlyProxyOwner {
-        upgradeTo(implementation);
-        (bool success, ) = address(this).call{value: msg.value}(data);
+        upgradeTo(_implementation);
+        (bool success, ) = address(this).call{value: msg.value}(_data);
         require(success);
     }
 }
