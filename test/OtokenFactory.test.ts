@@ -185,6 +185,11 @@ contract('OTokenFactory', ([user1, user2]) => {
       otoken = await MockOtoken.at(targetAddress)
     })
 
+    it('Should revert when calling init on already inited otoken', async () => {
+      /* This should be included in the integration test. */
+      await expectRevert(otoken.init(usdc.address, usdc.address, usdc.address, strikePrice, expiry, isPut), 'revert')
+    })
+
     it('Should be able to create a new Otoken by another user', async () => {
       const _strikePrice = new BigNumber(250).times(new BigNumber(10).exponentiatedBy(18))
       const targetAddress = await otokenFactory.getTargetOtokenAddress(
@@ -217,24 +222,11 @@ contract('OTokenFactory', ([user1, user2]) => {
       })
     })
 
-    it('Should have correct paramter', async () => {
-      assert.equal(await otoken.underlyingAsset(), ethAddress)
-      assert.equal(await otoken.strikeAsset(), usdc.address)
-      assert.equal(await otoken.collateralAsset(), usdc.address)
-      assert.equal(await otoken.isPut(), isPut)
-      assert.equal((await otoken.strikePrice()).toString(), strikePrice.toString())
-      assert.equal((await otoken.expiry()).toString(), expiry.toString())
-    })
-
     it('Should revert when creating non-whitelisted options', async () => {
       await expectRevert(
         otokenFactory.createOtoken(shitcoin.address, usdc.address, usdc.address, strikePrice, expiry, isPut),
         'OtokenFactory: Unsupported Product',
       )
-    })
-
-    it('Should revert when calling init on already inited otoken', async () => {
-      await expectRevert(otoken.init(usdc.address, usdc.address, usdc.address, strikePrice, expiry, isPut), 'revert')
     })
 
     it('Should revert when creating duplicated option', async () => {
