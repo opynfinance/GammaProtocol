@@ -8,6 +8,8 @@ import {SafeMath} from "./packages/oz/SafeMath.sol";
  * the functions that manipulate vaults. Vaults describe positions that users have.
  */
 library MarginAccount {
+    using SafeMath for uint256;
+
     struct Account {
         address owner;
         uint256 vaultIds;
@@ -89,7 +91,7 @@ library MarginAccount {
         //Check the token is the same as vault.longOtoken[idx]
         //Revert if vault.longOtoken[index] !== asset
         //vault.longAmounts[index] -= amount
-        require(_vault.longOtoken[index] == longOtoken);
+        require(_vault.longOtokens[index] == longOtoken);
         _vault.longAmounts[index].sub(amount);
     }
 
