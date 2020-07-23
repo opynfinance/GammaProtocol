@@ -23,7 +23,7 @@ contract OtokenFactory is OtokenSpawner {
     address[] public otokens;
 
     /// @dev A mapping from parameters hash to its deployed address
-    mapping(bytes32 => address) private _idToAddress;
+    mapping(bytes32 => address) private idToAddress;
 
     constructor(address _addressBook) public {
         addressBook = _addressBook;
@@ -64,7 +64,7 @@ contract OtokenFactory is OtokenSpawner {
         require(_expiry < 11865398400, "OtokenFactory: Can't create option with expiry > 2345/12/31.");
         require(_expiry.sub(28800).mod(86400) == 0, "OtokenFactory: Option has to expire 08:00 UTC.");
         bytes32 id = _getOptionId(_underlyingAsset, _strikeAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
-        require(_idToAddress[id] == address(0), "OtokenFactory: Option already created");
+        require(idToAddress[id] == address(0), "OtokenFactory: Option already created");
 
         address whitelist = AddressBookInterface(addressBook).getWhitelist();
         require(
@@ -87,7 +87,7 @@ contract OtokenFactory is OtokenSpawner {
         newOtoken = _spawn(otokenImpl, initializationCalldata);
 
         otokens.push(newOtoken);
-        _idToAddress[id] = newOtoken;
+        idToAddress[id] = newOtoken;
         WhitelistInterface(whitelist).whitelistOtoken(newOtoken);
 
         emit OtokenCreated(
@@ -129,7 +129,7 @@ contract OtokenFactory is OtokenSpawner {
         bool _isPut
     ) external view returns (address otoken) {
         bytes32 id = _getOptionId(_underlyingAsset, _strikeAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
-        return _idToAddress[id];
+        return idToAddress[id];
     }
 
     /**
