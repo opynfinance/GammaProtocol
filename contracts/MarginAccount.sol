@@ -74,7 +74,7 @@ library MarginAccount {
         //vault.longOtoken[index] += amount
         require(_vault.longOtokens[index] == longOtoken);
         require(_vault.longOtokens[index] != address(0));
-        vault.longAmounts[index].add(amount);
+        _vault.longAmounts[index].add(amount);
     }
 
     /**
@@ -90,7 +90,7 @@ library MarginAccount {
         //Revert if vault.longOtoken[index] !== asset
         //vault.longAmounts[index] -= amount
         require(_vault.longOtoken[index] == longOtoken);
-        vault.longAmounts[index].sub(amount);
+        _vault.longAmounts[index].sub(amount);
     }
 
     /**
