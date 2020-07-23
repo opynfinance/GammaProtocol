@@ -1,6 +1,7 @@
 pragma solidity =0.6.10;
 
 import {OtokenSpawner} from "./OtokenSpawner.sol";
+import {SafeMath} from "./packages/oz/SafeMath.sol";
 import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
 import {OtokenInterface} from "./interfaces/OtokenInterface.sol";
 import {WhitelistInterface} from "./interfaces/WhitelistInterface.sol";
@@ -14,11 +15,12 @@ import {WhitelistInterface} from "./interfaces/WhitelistInterface.sol";
  * and deploy eip-1167 minimal proxies for otoken logic contract.
  */
 contract OtokenFactory is OtokenSpawner {
+    using SafeMath for uint256;
     /// @notice The Opyn AddressBook contract that records addresses of whitelist module and otoken impl address. */
     address public addressBook;
 
-    /// @dev An array of all created otokens */
-    address[] private _otokens;
+    /// @notice An array of all created otokens */
+    address[] public otokens;
 
     /// @dev A mapping from parameters hash to its deployed address
     mapping(bytes32 => address) private _idToAddress;
@@ -82,7 +84,7 @@ contract OtokenFactory is OtokenSpawner {
 
         newOtoken = _spawn(otokenImpl, initializationCalldata);
 
-        _otokens.push(newOtoken);
+        otokens.push(newOtoken);
         _idToAddress[id] = newOtoken;
         WhitelistInterface(whitelist).whitelistOtoken(newOtoken);
 
@@ -99,11 +101,11 @@ contract OtokenFactory is OtokenSpawner {
     }
 
     /**
-     * @notice get all otokens created by this factory.
-     * @return array of otoken addresses.
+     * @notice Get the total otokens created by the factory.
+     * @return length of the otokens array.
      */
-    function getOtokens() external view returns (address[] memory) {
-        return _otokens;
+    function getOtokensLength() external view returns (uint256) {
+        return otokens.length;
     }
 
     /**

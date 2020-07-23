@@ -26,7 +26,7 @@ contract('OTokenFactory', ([user1, user2]) => {
   const ethAddress = ZERO_ADDR
   const strikePrice = new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18))
   const isPut = true
-  let expiry: number
+  const expiry = 1753776000 // 07/29/2025 @ 8:00am (UTC)
 
   before('Deploy otoken logic and Factory contract', async () => {
     usdc = await MockERC20.new('USDC', 'USDC')
@@ -43,13 +43,13 @@ contract('OTokenFactory', ([user1, user2]) => {
     await addressBook.setWhitelist(mockWhitelist.address)
 
     otokenFactory = await OTokenFactory.new(addressBook.address)
-    expiry = (await time.latest()).toNumber() + time.duration.days(30).toNumber()
+    // expiry = (await time.latest()).toNumber() + time.duration.days(30).toNumber()
   })
 
   describe('Get otoken address', () => {
     it('Should have no otoken records at the begining', async () => {
-      const otokens = await otokenFactory.getOtokens()
-      assert.equal(otokens.length, 0, 'Should have no otoken records')
+      const counter = await otokenFactory.getOtokensLength()
+      assert.equal(counter.toString(), '0', 'Should have no otoken records')
     })
 
     it('Should return address(0) if token is not deployed', async () => {
@@ -227,10 +227,11 @@ contract('OTokenFactory', ([user1, user2]) => {
 
   describe('Get otoken address after creation', () => {
     it('Should have two otoken records', async () => {
-      const otokens = await otokenFactory.getOtokens()
-      assert.equal(otokens.length, 2)
+      const counter = await otokenFactory.getOtokensLength()
+      assert.equal(counter.toString(), '2')
 
-      assert(otokens.includes(otoken.address))
+      const firstToken = await otokenFactory.otokens(0)
+      assert.equal(firstToken, otoken.address)
     })
 
     it('should get same address if calling getTargetOTokenAddress with existing option paramters', async () => {
