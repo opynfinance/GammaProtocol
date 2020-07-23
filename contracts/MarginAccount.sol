@@ -22,13 +22,11 @@ library MarginAccount {
         address[] collateralAssets;
     }
 
-    //TODO: do I need to add events here? how do events interact with libraries?
-
     /**
      * @dev Increment vault numbers in account
      */
     function openNewVault(Account storage _account) internal {
-        _account.vaultIds += 1;
+        _account.vaultIds.add(1);
     }
 
     /**
@@ -44,8 +42,7 @@ library MarginAccount {
         //Reverts if vault.shortOtokens[index] != shortOtoken && vault.shortOtoken[index] !== address(0)
         require(_vault.shortOtokens[index] == shortOtoken);
         require(_vault.shortOtokens[index] != address(0));
-        _vault.shortAmounts[index] += amount;
-        return;
+        _vault.shortAmounts[index].add(amount);
     }
 
     /**
@@ -60,10 +57,7 @@ library MarginAccount {
         //Check the token is the same as vault.shortOtoken[idx] (isn't this the same as below?)
         //Revert if vault.shortOtoken[index] !== asset
         require(_vault.shortOtokens[index] == shortOtoken);
-        //TODO: just to make sure - we don't need a require condition that ensures final state is nonnegative because of "flash loan" philosophy
-        //TODO: do we need to ensure vault.shortOtoken[index] !== address(0) as we did in addShort()
-        _vault.shortAmounts[index] -= amount;
-        return;
+        _vault.shortAmounts[index].sub(amount);
     }
 
     /**
@@ -80,8 +74,7 @@ library MarginAccount {
         //vault.longOtoken[index] += amount
         require(_vault.longOtokens[index] == longOtoken);
         require(_vault.longOtokens[index] != address(0));
-        vault.longAmounts[index] += amount;
-        return;
+        vault.longAmounts[index].add(amount);
     }
 
     /**
@@ -97,11 +90,7 @@ library MarginAccount {
         //Revert if vault.longOtoken[index] !== asset
         //vault.longAmounts[index] -= amount
         require(_vault.longOtoken[index] == longOtoken);
-        //TODO: just to make sure - we don't need a require condition that ensures final state is nonnegative because of "flash loan" philosophy
-        //TODO: do we need to ensure vault.longOtoken[index] !== address(0) as we did in addLong()
-        //DO we need to deal with the address(0) check we have in the function above?
-        vault.longAmounts[index] -= amount;
-        return;
+        vault.longAmounts[index].sub(amount);
     }
 
     /**
@@ -120,8 +109,7 @@ library MarginAccount {
         require(_vault.collateralAssets[index] != address(0));
         //TODO: confused about the above - doesnt the above imply ETH can't be the collateral asset?
         //TODO: do we want error messages inline above?
-        vault.collateralAmounts[index] += amount;
-        return;
+        _vault.collateralAmounts[index].add(amount);
     }
 
     /**
@@ -137,22 +125,20 @@ library MarginAccount {
         //Revert if vault.collateral[index] !== asset
         //vault.collateral[index] -= amount
         require(_vault.collateralAssets[index] == collateralAsset);
-        //TODO: do we need to deal with the address(0) check we have in the function above?
-        vault.collateralAmounts[index] -= amount;
-        return;
+        _vault.collateralAmounts[index].sub(amount);
     }
 
     /**
      * @dev remove everything in a vault. Reset short, long and collateral assets and amounts arrays to [].
      */
-    function clearVault(Vault storage vault) internal {
+    function clearVault(Vault storage _vault) internal {
         //TODO: do we want to ensure enough gas first
-        delete vault.shortAmounts;
-        delete vault.longAmounts;
-        delete vault.collateralAmounts;
-        delete vault.shortOtokens;
-        delete vault.longOtokens;
-        delete vault.collateralAssets;
-        return;
+        //TODO: haythem what are you thinking about in terms of gas efficiency here?
+        delete _vault.shortAmounts;
+        delete _vault.longAmounts;
+        delete _vault.collateralAmounts;
+        delete _vault.shortOtokens;
+        delete _vault.longOtokens;
+        delete _vault.collateralAssets;
     }
 }
