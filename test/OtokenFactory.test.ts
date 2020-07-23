@@ -43,7 +43,6 @@ contract('OTokenFactory', ([user1, user2]) => {
     await addressBook.setWhitelist(mockWhitelist.address)
 
     otokenFactory = await OTokenFactory.new(addressBook.address)
-    // expiry = (await time.latest()).toNumber() + time.duration.days(30).toNumber()
   })
 
   describe('Get otoken address', () => {
@@ -133,6 +132,27 @@ contract('OTokenFactory', ([user1, user2]) => {
         "OtokenFactory: Can't create expired option.",
       )
     })
+
+    it('Should revert when using random timestamp.', async () => {
+      const randomTime = (await time.latest()).toNumber() + time.duration.days(30).toNumber()
+      await expectRevert(
+        otokenFactory.createOtoken(ethAddress, usdc.address, usdc.address, strikePrice, randomTime.toString(), isPut, {
+          from: user1,
+        }),
+        'OtokenFactory: Option has to expire 08:00 UTC.',
+      )
+    })
+
+    it('Should revert when timestamp > 2345/12/31', async () => {
+      const tooFar = 11865398400 // 01/01/2346 @ 12:00am (UTC)
+      await expectRevert(
+        otokenFactory.createOtoken(ethAddress, usdc.address, usdc.address, strikePrice, tooFar, isPut, {
+          from: user1,
+        }),
+        "OtokenFactory: Can't create option with expiry > 2345/12/31.",
+      )
+    })
+
     it('Should create new contract at expected address', async () => {
       const targetAddress = await otokenFactory.getTargetOtokenAddress(
         ethAddress,
