@@ -40,19 +40,28 @@ contract MarginPool {
         _;
     }
 
+    /**
+     * @notice transfers asset from user to pool
+     * @dev all tokens are scaled to have 1e18 precision in contracts,
+     *      so amounts are scaled down to native token decimals using _calcTransferAmount()
+     * @param _asset address of asset to transfer
+     * @param _user address of user to transfer assets from
+     * @param _amount amount of token to transfer from _user, scaled to 1e18 of precision
+     * @return true if successful transfer
+     */
     function transferToPool(
         address _asset,
         address _user,
         uint256 _amount
-    ) external payable onlyController returns (bool success) {
-        require(_amount > 0, "MarginPool: invalid amount");
+    ) external payable onlyController returns (bool) {
+        require(_amount > 0, "MarginPool: transferToPool amount is below 0");
 
         // get asset decimals
         uint8 assetDecimal = ERC20Interface(_asset).decimals();
         // scale amount
         uint256 val = _calcTransferAmount(_amount, assetDecimal);
         // transfer val from _user to pool
-        ERC20Interface(_asset).transferFrom(_user, address(this), val);
+        return ERC20Interface(_asset).transferFrom(_user, address(this), val);
     }
 
     /**
@@ -63,5 +72,28 @@ contract MarginPool {
      */
     function _calcTransferAmount(uint256 _amt, uint256 _decimals) internal returns (uint256) {
         return _amt.div(BASE_UNIT.sub(_decimals));
+    }
+
+    /**
+     * @notice transfers asset from pool to user
+     * @dev all tokens are scaled to have 1e18 precision in contracts,
+     *      so amounts are scaled down to native token decimals using _calcTransferAmount()
+     * @param _asset address of asset to transfer
+     * @param _user address of user to transfer assets to
+     * @param _amount amount of token to transfer to _user, scaled to 1e18 of precision
+     * @return true if successful transfer
+     */
+    function transferToUser(
+        address _asset,
+        address _user,
+        uint256 _amount
+    ) external onlyController returns (bool) {
+        require(_amount > 0, "MarginPool: transferToUser amount is below 0");
+        // get asset decimals
+        uint8 assetDecimal = ERC20Interface(_asset).decimals();
+        // scale amount
+        uint256 val = _calcTransferAmount(_amount, assetDecimal);
+        // transfer val from pool to _user
+        return ERC20Interface(_asset).transfer(_user, val);
     }
 }
