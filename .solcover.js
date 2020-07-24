@@ -13,6 +13,8 @@ module.exports = {
     'packages/oz/Create2.sol',
     'packages/oz/upgradeability/ContextUpgradeSafe.sol',
     'packages/oz/upgradeability/ERC20Initializable.sol',
-    'packages/oz/upgradeability/Initializable.sol'
+    'packages/oz/upgradeability/Initializable.sol',
+    'packages/canonical-weth/WETH9.sol',
+    'packages/BokkyPooBahsDateTimeLibrary.sol'
   ]
 }
