@@ -111,7 +111,7 @@ contract MarginPool {
             // unwrap WETH
             WETH.withdraw(val);
             // transfer ETH to user
-            //_user.transfer(val);
+            _user.transfer(val);
 
             return true;
         } else {
