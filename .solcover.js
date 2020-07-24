@@ -7,9 +7,10 @@ module.exports = {
     'Migrations.sol',
     'packages/oz/SafeMath.sol',
     'packages/oz/Address.sol',
-    'packages/oz/IERC20.sol',
     'packages/oz/Context.sol',
+    'packages/oz/IERC20.sol',
     'packages/oz/Ownable.sol',
+    'packages/oz/Create2.sol',
     'packages/oz/upgradeability/ContextUpgradeSafe.sol',
     'packages/oz/upgradeability/ERC20Initializable.sol',
     'packages/oz/upgradeability/Initializable.sol'
