@@ -63,7 +63,7 @@ contract MarginPool {
         address _asset,
         address _user,
         uint256 _amount
-    ) external payable onlyController returns (bool) {
+    ) external onlyController returns (bool) {
         require(_amount > 0, "MarginPool: transferToPool amount is below 0");
 
         // get asset decimals
@@ -96,9 +96,9 @@ contract MarginPool {
      */
     function transferToUser(
         address _asset,
-        address _user,
+        address payable _user,
         uint256 _amount
-    ) external onlyController returns (bool) {
+    ) external payable onlyController returns (bool) {
         require(_amount > 0, "MarginPool: transferToUser amount is below 0");
 
         // get asset decimals
@@ -106,18 +106,18 @@ contract MarginPool {
         // scale amount
         uint256 val = _calcTransferAmount(_amount, assetDecimal);
 
-        bool success;
-
         // check if asset is WETH or not, if WETH transfer the val from pool to Controller address
         if (_asset == address(WETH)) {
-            // tranfer WETH val from Pool to Controller
-            success = ERC20Interface(_asset).transfer(msg.sender, val);
+            // unwrap WETH
+            WETH.withdraw(val);
+            // transfer ETH to user
+            //_user.transfer(val);
+
+            return true;
         } else {
             // transfer asset val from Pool to _user
-            success = ERC20Interface(_asset).transfer(_user, val);
+            return ERC20Interface(_asset).transfer(_user, val);
         }
-
-        return success;
     }
 
     /**
@@ -126,7 +126,7 @@ contract MarginPool {
      * @param _decimals token decimals
      * @return scaled amount
      */
-    function _calcTransferAmount(uint256 _amt, uint256 _decimals) internal returns (uint256) {
+    function _calcTransferAmount(uint256 _amt, uint256 _decimals) internal pure returns (uint256) {
         return _amt.div(BASE_UNIT.sub(_decimals));
     }
 }
