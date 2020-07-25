@@ -44,6 +44,11 @@ library Actions {
         bytes data;
     }
 
+    struct OpenVaultArgs {
+        /// @notice The address of the account owner
+        address owner;
+    }
+
     struct DepositArgs {
         /// @notice The address of the account owner
         address owner;
@@ -60,6 +65,18 @@ library Actions {
         uint256 index;
         /// @notice The amount of asset that is to be transfered
         uint256 amount;
+    }
+
+    /**
+     * @notice Parses the passed in action argmuents to get the argmuents for a open vault action
+     * @param _args The general action arguments structure
+     * @return The arguments for a open vault action
+     */
+    function _parseOpenVaultArgs(ActionArgs memory _args) internal returns (OpenVaultArgs memory) {
+        require(_args.actionType == ActionType.OpenVault, "Actions: can only parse arguments for open vault actions");
+        require(_args.owner != address(0), "Actions: cannot open vault for an invalid account");
+
+        return OpenVaultArgs({owner: _args.owner});
     }
 
     /**
