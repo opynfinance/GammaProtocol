@@ -169,7 +169,7 @@ contract Otoken is ERC20Initializable {
     }
 
     /**
-     * @dev return string of optino type
+     * @dev return string of option type
      * @return symbol P or C
      * @return full Put or Call
      */
@@ -217,7 +217,7 @@ contract Otoken is ERC20Initializable {
     /**
      * @dev this function overrides the _beforeTokenTransfer hook in ERC20Initializable.sol.
      * If the operation is mint or burn, requires msg.sender to be the controller.
-     * @dev the functino signature is the same as _beforeTokenTransfer defined in ERC20Initializable.sol.
+     * The function signature is the same as _beforeTokenTransfer defined in ERC20Initializable.sol.
      * @param from from address
      * @param to to address
      * @param amount amount to transfer
