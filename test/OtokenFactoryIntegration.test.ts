@@ -2,7 +2,6 @@ import {
   OtokenFactoryInstance,
   OtokenInstance,
   MockAddressBookInstance,
-  WhitelistInstance,
   MockERC20Instance,
 } from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
@@ -16,7 +15,7 @@ const MockERC20 = artifacts.require('MockERC20.sol')
 const Otoken = artifacts.require('Otoken.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
-contract('OTokenFactory + Otoken', ([deployer, controller, user1, user2]) => {
+contract('OTokenFactory + Otoken', ([deployer, controller, newController, user1, user2]) => {
   let otokenImpl: OtokenInstance
   let otoken1: OtokenInstance
   let otoken2: OtokenInstance
@@ -51,37 +50,42 @@ contract('OTokenFactory + Otoken', ([deployer, controller, user1, user2]) => {
     await whitelist.whitelistProduct(ethAddress, dai.address, dai.address)
   })
 
-  before('Deploy 2 Otokens', async () => {
-    // otoken1: eth-usdc option
-    const targetAddress1 = await otokenFactory.getTargetOtokenAddress(
-      ethAddress,
-      usdc.address,
-      usdc.address,
-      strikePrice,
-      expiry,
-      isPut,
-    )
-    await otokenFactory.createOtoken(ethAddress, usdc.address, usdc.address, strikePrice, expiry, isPut, {
-      from: user1,
-    })
-    otoken1 = await Otoken.at(targetAddress1)
-
-    // otoken2: eth-dai option
-    const targetAddress2 = await otokenFactory.getTargetOtokenAddress(
-      ethAddress,
-      dai.address,
-      dai.address,
-      strikePrice,
-      expiry,
-      isPut,
-    )
-    await otokenFactory.createOtoken(ethAddress, dai.address, dai.address, strikePrice, expiry, isPut, {
-      from: user1,
-    })
-    otoken2 = await Otoken.at(targetAddress2)
-  })
-
   describe('Init process on minimal proxy', () => {
+    it('Should init otoken1 with correct name and symbol', async () => {
+      // otoken1: eth-usdc option
+      const targetAddress1 = await otokenFactory.getTargetOtokenAddress(
+        ethAddress,
+        usdc.address,
+        usdc.address,
+        strikePrice,
+        expiry,
+        isPut,
+      )
+      await otokenFactory.createOtoken(ethAddress, usdc.address, usdc.address, strikePrice, expiry, isPut, {
+        from: user1,
+      })
+      otoken1 = await Otoken.at(targetAddress1)
+      assert.equal(await otoken1.name(), 'ETHUSDC 29-July-2025 200Put USDC Collateral')
+      assert.equal(await otoken1.symbol(), 'oETHUSDC-29JUL25-200P')
+    })
+    it('Should init otoken2 with correct name and symbol', async () => {
+      // otoken2: eth-dai option
+      const targetAddress2 = await otokenFactory.getTargetOtokenAddress(
+        ethAddress,
+        dai.address,
+        dai.address,
+        strikePrice,
+        expiry,
+        isPut,
+      )
+      await otokenFactory.createOtoken(ethAddress, dai.address, dai.address, strikePrice, expiry, isPut, {
+        from: user2,
+      })
+      otoken2 = await Otoken.at(targetAddress2)
+      assert.equal(await otoken2.name(), 'ETHDAI 29-July-2025 200Put DAI Collateral')
+      assert.equal(await otoken2.symbol(), 'oETHDAI-29JUL25-200P')
+    })
+
     it('Should revert when calling init after createOtoken', async () => {
       /* Should revert because the init function is already called by the factory in createOtoken() */
       await expectRevert(
@@ -96,10 +100,8 @@ contract('OTokenFactory + Otoken', ([deployer, controller, user1, user2]) => {
     })
 
     it('Calling init on otoken logic contract should not affecting the minimal proxies.', async () => {
-      await otokenImpl.init(randomERC20.address, ethAddress, randomERC20.address, strikePrice, expiry, isPut)
-
-      const strikeOfLogicAddres = await otokenImpl.strikeAsset()
-      const collateralOfLogicAddres = await otokenImpl.collateralAsset()
+      // someone call init on the logic function for no reason
+      await otokenImpl.init(randomERC20.address, randomERC20.address, randomERC20.address, strikePrice, expiry, isPut)
 
       const strikeOfOtoken1 = await otoken1.strikeAsset()
       const collateralOfOtoken1 = await otoken1.collateralAsset()
@@ -107,51 +109,26 @@ contract('OTokenFactory + Otoken', ([deployer, controller, user1, user2]) => {
       const strikeOfOtoken2 = await otoken2.strikeAsset()
       const collateralOfOtoken2 = await otoken2.collateralAsset()
 
-      assert.notEqual(strikeOfOtoken1, strikeOfLogicAddres)
-      assert.notEqual(strikeOfOtoken2, strikeOfLogicAddres)
-      assert.notEqual(collateralOfOtoken1, collateralOfLogicAddres)
-      assert.notEqual(collateralOfOtoken2, collateralOfLogicAddres)
-    })
-  })
-
-  describe('Init process on minimal proxy', () => {
-    it('Should revert when calling init after createOtoken', async () => {
-      /* Should revert because the init function is already called by the factory in createOtoken() */
-      await expectRevert(
-        otoken1.init(usdc.address, usdc.address, usdc.address, strikePrice, expiry, isPut),
-        'Contract instance has already been initialized',
-      )
-
-      await expectRevert(
-        otoken2.init(randomERC20.address, dai.address, usdc.address, strikePrice, expiry, isPut),
-        'Contract instance has already been initialized',
-      )
-    })
-
-    it('Calling init on otoken logic contract should not affecting the minimal proxies.', async () => {
-      await otokenImpl.init(randomERC20.address, ethAddress, randomERC20.address, strikePrice, expiry, isPut)
-
-      const strikeOfLogicAddres = await otokenImpl.strikeAsset()
-      const collateralOfLogicAddres = await otokenImpl.collateralAsset()
-
-      const strikeOfOtoken1 = await otoken1.strikeAsset()
-      const collateralOfOtoken1 = await otoken1.collateralAsset()
-
-      const strikeOfOtoken2 = await otoken2.strikeAsset()
-      const collateralOfOtoken2 = await otoken2.collateralAsset()
-
-      assert.notEqual(strikeOfOtoken1, strikeOfLogicAddres)
-      assert.notEqual(strikeOfOtoken2, strikeOfLogicAddres)
-      assert.notEqual(collateralOfOtoken1, collateralOfLogicAddres)
-      assert.notEqual(collateralOfOtoken2, collateralOfLogicAddres)
+      assert.equal(strikeOfOtoken1, usdc.address)
+      assert.equal(strikeOfOtoken2, dai.address)
+      assert.equal(collateralOfOtoken1, usdc.address)
+      assert.equal(collateralOfOtoken2, dai.address)
     })
   })
 
   describe('Controller only functions on oToken', () => {
-    it('should be able to mint tokens from controller address', async () => {
-      // await otoken1.mintOtoken(user1, amountToMint, {from: controller})
-      // const balance = await otoken1.balanceOf(user1)
+    const amountToMint = new BigNumber(10).times(new BigNumber(10).exponentiatedBy(18))
+
+    it('should be able to mint token1 from controller address', async () => {
+      // const add = await otoken1.addressBook()
+
+      await otoken1.mintOtoken(user1, amountToMint.toString(), {from: controller})
       // assert.equal(balance.toString(), amountToMint.toString())
+    })
+
+    it('should revert minting tokens from old controller address after update', async () => {
+      await addressBook.setController(newController, {from: deployer})
+      await expectRevert(otoken1.mintOtoken(user1, amountToMint, {from: controller}), 'kkk')
     })
   })
 })
