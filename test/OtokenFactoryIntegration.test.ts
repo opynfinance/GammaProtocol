@@ -124,7 +124,7 @@ contract('OTokenFactory + Otoken', ([deployer, controller, newController, user1,
     })
   })
 
-  describe('Controller only functions on oToken', () => {
+  describe('Controller only functions on cloned otokens', () => {
     const amountToMint = new BigNumber(10).times(new BigNumber(10).exponentiatedBy(18))
 
     it('should be able to mint token1 from controller address', async () => {
@@ -139,6 +139,19 @@ contract('OTokenFactory + Otoken', ([deployer, controller, newController, user1,
         otoken1.mintOtoken(user1, amountToMint, {from: controller}),
         'Otoken: Only Controller can mint Otokens',
       )
+    })
+
+    it('should revert when burning token1 from the old controller ', async () => {
+      await expectRevert(
+        otoken1.burnOtoken(user1, amountToMint, {from: controller}),
+        'Otoken: Only Controller can burn Otokens.',
+      )
+    })
+
+    it('should be able to burn tokens from new controller address', async () => {
+      await otoken1.burnOtoken(user1, amountToMint, {from: newController})
+      const balance = await otoken1.balanceOf(user1)
+      assert.equal(balance.toString(), '0')
     })
   })
 })
