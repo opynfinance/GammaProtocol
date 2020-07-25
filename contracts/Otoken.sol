@@ -71,6 +71,26 @@ contract Otoken is ERC20Initializable {
     }
 
     /**
+     * @notice Mint oToken for an account.
+     * @dev this is a Controller only method. Access control is taken care of by _beforeTokenTransfer hook.
+     * @param account the account to mint token to
+     * @param amount the amount to mint
+     */
+    function mintOtoken(address account, uint256 amount) external {
+        _mint(account, amount);
+    }
+
+    /**
+     * @notice Burn oToken from an account.
+     * @dev this is a Controller only method. Access control is taken care of by _beforeTokenTransfer hook.
+     * @param account the account to burn token from
+     * @param amount the amount to burn
+     */
+    function burnOtoken(address account, uint256 amount) external {
+        _burn(account, amount);
+    }
+
+    /**
      * @notice generate name and symbol for an option
      * @return name ETHUSDC 05-September-2020 200 Put USDC Collateral
      * @return symbol oETHUSDC-05SEP20-200P
@@ -149,7 +169,7 @@ contract Otoken is ERC20Initializable {
     }
 
     /**
-     * @dev return string of optino type
+     * @dev return string of option type
      * @return symbol P or C
      * @return full Put or Call
      */
@@ -191,6 +211,32 @@ contract Otoken is ERC20Initializable {
             return ("NOV", "November");
         } else {
             return ("DEC", "December");
+        }
+    }
+
+    /**
+     * @dev this function overrides the _beforeTokenTransfer hook in ERC20Initializable.sol.
+     * If the operation is mint or burn, requires msg.sender to be the controller.
+     * The function signature is the same as _beforeTokenTransfer defined in ERC20Initializable.sol.
+     * @param from from address
+     * @param to to address
+     * @param amount amount to transfer
+     */
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal override {
+        if (from == address(0)) {
+            require(
+                msg.sender == AddressBookInterface(addressBook).getController(),
+                "Otoken: Only Controller can mint Otokens."
+            );
+        } else if (to == address(0)) {
+            require(
+                msg.sender == AddressBookInterface(addressBook).getController(),
+                "Otoken: Only Controller can burn Otokens."
+            );
         }
     }
 }
