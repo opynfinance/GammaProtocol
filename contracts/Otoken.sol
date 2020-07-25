@@ -39,10 +39,6 @@ contract Otoken is ERC20Initializable {
 
     uint256 private constant STRIKE_PRICE_DIGITS = 1e18;
 
-    constructor(address _addressBook) public {
-        addressBook = _addressBook;
-    }
-
     /**
      * @notice initialize the otoken.
      * @param _underlyingAsset asset that the option references
@@ -53,6 +49,7 @@ contract Otoken is ERC20Initializable {
      * @param _isPut is this a put option, if not it is a call
      */
     function init(
+        address _addressBook,
         address _underlyingAsset,
         address _strikeAsset,
         address _collateralAsset,
@@ -60,6 +57,7 @@ contract Otoken is ERC20Initializable {
         uint256 _expiry,
         bool _isPut
     ) external initializer {
+        addressBook = _addressBook;
         underlyingAsset = _underlyingAsset;
         strikeAsset = _strikeAsset;
         collateralAsset = _collateralAsset;

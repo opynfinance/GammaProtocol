@@ -15,6 +15,7 @@ interface OtokenInterface {
     function isPut() external returns (bool);
 
     function init(
+        address _addressBook,
         address _underlyingAsset,
         address _strikeAsset,
         address _collateralAsset,
