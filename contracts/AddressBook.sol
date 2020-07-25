@@ -18,16 +18,17 @@ contract AddressBook is Ownable {
     bytes32 private constant MARGIN_POOL = "MARGIN_POOL";
     bytes32 private constant MARGIN_CALCULATOR = "MARGIN_CALCULATOR";
     bytes32 private constant LIQUIDATION_MANAGER = "LIQUIDATION_MANAGER";
-    bytes32 private constant ORACLE = "Oracle";
+    bytes32 private constant ORACLE = "ORACLE";
+    bytes32 private constant WETH = "WETH";
 
-    /// @dev a mapping between module key and module address
-    mapping(bytes32 => address) private modules;
+    /// @dev a mapping between key and address
+    mapping(bytes32 => address) private addresses;
 
     /// @notice event emitted when a new proxy get created
     event ProxyCreated(bytes32 id, address proxy);
 
     function getAddress(bytes32 _key) public view returns (address) {
-        return modules[_key];
+        return addresses[_key];
     }
 
     function getOtokenImpl() external view returns (address) {
@@ -62,12 +63,16 @@ contract AddressBook is Ownable {
         return getAddress(ORACLE);
     }
 
+    function getWeth() external view returns (address) {
+        return getAddress(WETH);
+    }
+
     function setAddress(bytes32 _key, address _module) public onlyOwner {
-        modules[_key] = _module;
+        addresses[_key] = _module;
     }
 
     function setOtokenImpl(address _otokenImpl) external onlyOwner {
-        updateImplInternal(OTOKEN_IMPL, _otokenImpl);
+        setAddress(OTOKEN_IMPL, _otokenImpl);
     }
 
     function setOtokenFactory(address _otokenFactory) external onlyOwner {
@@ -96,6 +101,10 @@ contract AddressBook is Ownable {
 
     function setOracle(address _oracle) external onlyOwner {
         updateImplInternal(ORACLE, _oracle);
+    }
+
+    function setWeth(address _weth) external onlyOwner {
+        setAddress(WETH, _weth);
     }
 
     /**

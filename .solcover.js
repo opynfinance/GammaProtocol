@@ -12,6 +12,10 @@ module.exports = {
     'packages/oz/Ownable.sol',
     'packages/oz/upgradeability/ContextUpgradeSafe.sol',
     'packages/oz/upgradeability/ERC20Initializable.sol',
-    'packages/oz/upgradeability/Initializable.sol'
+    'packages/oz/upgradeability/Initializable.sol',
+    'packages/openzeppelin-upgradeability/OwnedUpgradeabilityProxy.sol',
+    'packages/openzeppelin-upgradeability/Proxy.sol',
+    'packages/openzeppelin-upgradeability/UpgradeabilityProxy.sol',
+    'packages/openzeppelin-upgradeability/VersionInitializable.sol'
   ]
 }
