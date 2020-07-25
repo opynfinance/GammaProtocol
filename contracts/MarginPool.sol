@@ -50,6 +50,11 @@ contract MarginPool {
     }
 
     /**
+     * @notice fallback function to reveive ETH
+     */
+    receive() external payable {}
+
+    /**
      * @notice transfers asset from user to pool
      * @dev all tokens are scaled to have 1e18 precision in contracts,
      *      so amounts are scaled down to native token decimals using _calcTransferAmount().
@@ -98,7 +103,7 @@ contract MarginPool {
         address _asset,
         address payable _user,
         uint256 _amount
-    ) external payable onlyController returns (bool) {
+    ) external onlyController returns (bool) {
         require(_amount > 0, "MarginPool: transferToUser amount is below 0");
 
         // get asset decimals
