@@ -89,19 +89,27 @@ contract('OTokenFactory + Otoken', ([deployer, controller, newController, user1,
     it('Should revert when calling init after createOtoken', async () => {
       /* Should revert because the init function is already called by the factory in createOtoken() */
       await expectRevert(
-        otoken1.init(usdc.address, usdc.address, usdc.address, strikePrice, expiry, isPut),
+        otoken1.init(addressBook.address, usdc.address, usdc.address, usdc.address, strikePrice, expiry, isPut),
         'Contract instance has already been initialized',
       )
 
       await expectRevert(
-        otoken2.init(randomERC20.address, dai.address, usdc.address, strikePrice, expiry, isPut),
+        otoken2.init(addressBook.address, randomERC20.address, dai.address, usdc.address, strikePrice, expiry, isPut),
         'Contract instance has already been initialized',
       )
     })
 
     it('Calling init on otoken logic contract should not affecting the minimal proxies.', async () => {
       // someone call init on the logic function for no reason
-      await otokenImpl.init(randomERC20.address, randomERC20.address, randomERC20.address, strikePrice, expiry, isPut)
+      await otokenImpl.init(
+        addressBook.address,
+        randomERC20.address,
+        randomERC20.address,
+        ethAddress,
+        strikePrice,
+        expiry,
+        isPut,
+      )
 
       const strikeOfOtoken1 = await otoken1.strikeAsset()
       const collateralOfOtoken1 = await otoken1.collateralAsset()
@@ -120,15 +128,17 @@ contract('OTokenFactory + Otoken', ([deployer, controller, newController, user1,
     const amountToMint = new BigNumber(10).times(new BigNumber(10).exponentiatedBy(18))
 
     it('should be able to mint token1 from controller address', async () => {
-      // const add = await otoken1.addressBook()
-
       await otoken1.mintOtoken(user1, amountToMint.toString(), {from: controller})
-      // assert.equal(balance.toString(), amountToMint.toString())
+      const balance = await otoken1.balanceOf(user1)
+      assert.equal(balance.toString(), amountToMint.toString())
     })
 
     it('should revert minting tokens from old controller address after update', async () => {
       await addressBook.setController(newController, {from: deployer})
-      await expectRevert(otoken1.mintOtoken(user1, amountToMint, {from: controller}), 'kkk')
+      await expectRevert(
+        otoken1.mintOtoken(user1, amountToMint, {from: controller}),
+        'Otoken: Only Controller can mint Otokens',
+      )
     })
   })
 })

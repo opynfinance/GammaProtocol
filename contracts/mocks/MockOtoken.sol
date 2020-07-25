@@ -7,6 +7,7 @@ pragma solidity =0.6.10;
  * @dev The Otoken inherits ERC20Initializable because we need to use the init instead of constructor.
  */
 contract MockOtoken {
+    address public addressBook;
     address public underlyingAsset;
     address public strikeAsset;
     address public collateralAsset;
@@ -19,6 +20,7 @@ contract MockOtoken {
     bool public inited = false;
 
     function init(
+        address _addressBook,
         address _underlyingAsset,
         address _strikeAsset,
         address _collateralAsset,
@@ -27,14 +29,12 @@ contract MockOtoken {
         bool _isPut
     ) external {
         inited = true;
-        // underlyingAsset = _underlyingAsset;
-        // strikeAsset = _strikeAsset;
-        // collateralAsset = _collateralAsset;
-        // strikePrice = _strikePrice;
-        // expiry = _expiry;
-        // isPut = _isPut;
-        // string memory name = "ETHUSDC/1597511955/200P/USDC";
-        // string memory symbol = "oETHUSDCP";
-        // __ERC20_init_unchained(name, symbol);
+        addressBook = _addressBook;
+        underlyingAsset = _underlyingAsset;
+        strikeAsset = _strikeAsset;
+        collateralAsset = _collateralAsset;
+        strikePrice = _strikePrice;
+        expiry = _expiry;
+        isPut = _isPut;
     }
 }
