@@ -12,7 +12,7 @@ jobs:
     working_directory: ~/gammaprotocol
     docker:
       - image: circleci/node:10.18.0
-      - image: trufflesuite/ganache-cli:v6.7.0
+      - image: trufflesuite/ganache-cli:v6.9.1
         command: ganache-cli --deterministic -e 300 -p 8545 -m 'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat' --accounts 30 --allowUnlimitedContractSize
     
     steps:
