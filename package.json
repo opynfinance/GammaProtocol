@@ -45,10 +45,11 @@
     "compile:contracts": "truffle compile",
     "compile:types": "typechain --target=truffle --outDir build/types/truffle-types \"build/contracts/*.json\"",
     "deploy:development": "npm run build && npm run migrate -- --network development",
-    "lint:tests": "eslint 'test/**/*.ts'",
+    "lint:tests": "eslint 'test/*.ts'",
     "lint:tests:fix": "npm run lint:tests -- --fix",
     "lint:sol": "solhint -f table contracts/**/*.sol",
     "lint:sol:prettier:fix": "prettier --write \"contracts/**/*.sol\"",
+    "lint:tests:prettier:fix": "prettier --write \"test/**/*.ts\"",
     "test": "CI=true truffle test",
     "coverage": "truffle run coverage"
   },
