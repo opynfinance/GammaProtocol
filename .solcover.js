@@ -16,6 +16,6 @@ module.exports = {
     'packages/openzeppelin-upgradeability/OwnedUpgradeabilityProxy.sol',
     'packages/openzeppelin-upgradeability/Proxy.sol',
     'packages/openzeppelin-upgradeability/UpgradeabilityProxy.sol',
-    'packages/openzeppelin-upgradeability/VersionInitializable.sol'
+    'packages/openzeppelin-upgradeability/VersionedInitializable.sol'
   ]
 }
