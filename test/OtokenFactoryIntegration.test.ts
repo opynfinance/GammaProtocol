@@ -1,19 +1,20 @@
 import {
   OtokenFactoryInstance,
   OtokenInstance,
+  MockOtokenInstance,
   MockAddressBookInstance,
   MockERC20Instance,
 } from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 import {assert} from 'chai'
 import {setupContracts} from './utils'
-const {expectEvent, expectRevert} = require('@openzeppelin/test-helpers')
-// const OTokenFactory = artifacts.require('OtokenFactory.sol')
-// const MockAddressBook = artifacts.require('MockAddressBook.sol')
-// const Whitelist = artifacts.require('Whitelist.sol')
+const {expectRevert} = require('@openzeppelin/test-helpers')
 const MockERC20 = artifacts.require('MockERC20.sol')
 const Otoken = artifacts.require('Otoken.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
+
+// used for testing change of Otoken impl address in AddressBook
+const MockOtoken = artifacts.require('MockOtoken.sol')
 
 contract('OTokenFactory + Otoken', ([deployer, controller, newController, user1, user2]) => {
   let otokenImpl: OtokenInstance
@@ -152,6 +153,36 @@ contract('OTokenFactory + Otoken', ([deployer, controller, newController, user1,
       await otoken1.burnOtoken(user1, amountToMint, {from: newController})
       const balance = await otoken1.balanceOf(user1)
       assert.equal(balance.toString(), '0')
+    })
+  })
+
+  describe('Otoken Implementation address upgrade ', () => {
+    const amountToMint = new BigNumber(10).times(new BigNumber(10).exponentiatedBy(18))
+    it('should not affect existing otoken instances', async () => {
+      await otoken1.mintOtoken(user1, amountToMint, {from: newController})
+      const newOtoken = await MockOtoken.new()
+      await addressBook.setOtokenImpl(newOtoken.address, {from: deployer})
+
+      const balance = await otoken1.balanceOf(user1)
+      assert.equal(balance.toString(), amountToMint.toString())
+    })
+
+    it('should deploy MockOtoken after upgrade', async () => {
+      const newExpiry = expiry + 86400
+      const address = await otokenFactory.getTargetOtokenAddress(
+        ethAddress,
+        usdc.address,
+        usdc.address,
+        strikePrice,
+        newExpiry,
+        isPut,
+      )
+      await otokenFactory.createOtoken(ethAddress, usdc.address, usdc.address, strikePrice, newExpiry, isPut)
+
+      const mockedToken: MockOtokenInstance = await MockOtoken.at(address)
+      // Only MockOtoken has this method, if it return true that means we created a MockOtoken instance.
+      const inited = await mockedToken.inited()
+      assert.isTrue(inited)
     })
   })
 })
