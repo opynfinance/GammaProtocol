@@ -146,7 +146,7 @@ contract AddressBook is Ownable {
      * @param _otokenFactory otoken factory address
      */
     function setOtokenFactory(address _otokenFactory) external onlyOwner {
-        updateImpl(OTOKEN_FACTORY, _otokenFactory);
+        setAddress(OTOKEN_FACTORY, _otokenFactory);
     }
 
     /**
@@ -155,7 +155,7 @@ contract AddressBook is Ownable {
      * @param _whitelist whitelist address
      */
     function setWhitelist(address _whitelist) external onlyOwner {
-        updateImpl(WHITELIST, _whitelist);
+        setAddress(WHITELIST, _whitelist);
     }
 
     /**
@@ -173,7 +173,7 @@ contract AddressBook is Ownable {
      * @param _marginPool pool address
      */
     function setMarginPool(address _marginPool) external onlyOwner {
-        updateImpl(MARGIN_POOL, _marginPool);
+        setAddress(MARGIN_POOL, _marginPool);
     }
 
     /**

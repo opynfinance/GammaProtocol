@@ -1,16 +1,18 @@
 import {
   MockERC20Instance,
-  MockAddressBookInstance,
   WhitelistInstance,
+  OtokenFactoryInstance,
   UpgradeableContractV1Instance,
   UpgradeableContractV2Instance,
   OwnedUpgradeabilityProxyInstance,
   AddressBookInstance,
 } from '../build/types/truffle-types'
 
-const {expectEvent, expectRevert} = require('@openzeppelin/test-helpers')
+const {expectRevert} = require('@openzeppelin/test-helpers')
 
 const MockERC20 = artifacts.require('MockERC20.sol')
+const OtokenFactory = artifacts.require('OtokenFactory.sol')
+const MarginPool = artifacts.require('MarginPool.sol')
 const UpgradeableContractV1 = artifacts.require('UpgradeableContractV1.sol')
 const UpgradeableContractV2 = artifacts.require('UpgradeableContractV2.sol')
 const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy.sol')
@@ -18,7 +20,7 @@ const AddressBook = artifacts.require('AddressBook.sol')
 const Whitelist = artifacts.require('Whitelist.sol')
 // address(0)
 
-contract('AddressBook', ([owner, otokenImplAdd, random]) => {
+contract('AddressBook', ([owner, otokenImplAdd, marginPoolAdd, random]) => {
   // ERC20 mocks
   let weth: MockERC20Instance
   // addressbook instance
@@ -74,10 +76,10 @@ contract('AddressBook', ([owner, otokenImplAdd, random]) => {
   })
 
   describe('Set otoken factory', () => {
-    let otokenFactory: UpgradeableContractV1Instance
+    let otokenFactory: OtokenFactoryInstance
 
     before(async () => {
-      otokenFactory = await UpgradeableContractV1.new()
+      otokenFactory = await OtokenFactory.new(addressBook.address)
     })
 
     it('should revert adding otoken factory address from non-owner address', async () => {
@@ -90,28 +92,15 @@ contract('AddressBook', ([owner, otokenImplAdd, random]) => {
     it('should set otoken factory address', async () => {
       await addressBook.setOtokenFactory(otokenFactory.address, {from: owner})
 
-      const proxy: OwnedUpgradeabilityProxyInstance = await OwnedUpgradeabilityProxy.at(
-        await addressBook.getOtokenFactory(),
-      )
-      const implementationAddress = await proxy.implementation()
-
-      assert.equal(otokenFactory.address, implementationAddress, 'Otoken factory implementation address mismatch')
-
-      otokenFactory = await UpgradeableContractV1.at(await addressBook.getOtokenFactory())
-
-      assert.equal(
-        (await otokenFactory.CONTRACT_REVISION()).toString(),
-        '1',
-        'Otoken factory implementation version mismatch',
-      )
+      assert.equal(await addressBook.getOtokenFactory(), otokenFactory.address, 'Otoken factory address mismatch')
     })
   })
 
   describe('Set whitelist', () => {
-    let whitelist: UpgradeableContractV1Instance
+    let whitelist: WhitelistInstance
 
     before(async () => {
-      whitelist = await UpgradeableContractV1.new()
+      whitelist = await Whitelist.new(addressBook.address)
     })
 
     it('should revert adding whitelist address from non-owner address', async () => {
@@ -124,46 +113,19 @@ contract('AddressBook', ([owner, otokenImplAdd, random]) => {
     it('should set whitelist address', async () => {
       await addressBook.setWhitelist(whitelist.address, {from: owner})
 
-      const proxy: OwnedUpgradeabilityProxyInstance = await OwnedUpgradeabilityProxy.at(
-        await addressBook.getWhitelist(),
-      )
-      const implementationAddress = await proxy.implementation()
-
-      assert.equal(whitelist.address, implementationAddress, 'Whitelist implementation address mismatch')
-
-      whitelist = await UpgradeableContractV1.at(await addressBook.getOtokenFactory())
-
-      assert.equal((await whitelist.CONTRACT_REVISION()).toString(), '1', 'Whitelist implementation version mismatch')
+      assert.equal(await addressBook.getWhitelist(), whitelist.address, 'Whitelist address mismatch')
     })
   })
 
   describe('Set margin pool', () => {
-    let marginPool: UpgradeableContractV1Instance
-
-    before(async () => {
-      marginPool = await UpgradeableContractV1.new()
-    })
-
     it('should revert adding pool address from non-owner address', async () => {
-      await expectRevert(
-        addressBook.setMarginPool(marginPool.address, {from: random}),
-        'Ownable: caller is not the owner',
-      )
+      await expectRevert(addressBook.setMarginPool(marginPoolAdd, {from: random}), 'Ownable: caller is not the owner')
     })
 
     it('should set pool address', async () => {
-      await addressBook.setMarginPool(marginPool.address, {from: owner})
+      await addressBook.setMarginPool(marginPoolAdd, {from: owner})
 
-      const proxy: OwnedUpgradeabilityProxyInstance = await OwnedUpgradeabilityProxy.at(
-        await addressBook.getMarginPool(),
-      )
-      const implementationAddress = await proxy.implementation()
-
-      assert.equal(marginPool.address, implementationAddress, 'Pool implementation address mismatch')
-
-      marginPool = await UpgradeableContractV1.at(await addressBook.getMarginPool())
-
-      assert.equal((await marginPool.CONTRACT_REVISION()).toString(), '1', 'Pool implementation version mismatch')
+      assert.equal(await addressBook.getMarginPool(), marginPoolAdd, 'Pool address mismatch')
     })
   })
 
