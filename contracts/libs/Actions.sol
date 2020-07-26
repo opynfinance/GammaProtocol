@@ -68,7 +68,7 @@ library Actions {
     }
 
     /**
-     * @notice Parses the passed in action argmuents to get the argmuents for a open vault action
+     * @notice Parses the passed in action argmuents to get the argmuents for an open vault action
      * @param _args The general action arguments structure
      * @return The arguments for a open vault action
      */
