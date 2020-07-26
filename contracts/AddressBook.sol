@@ -76,31 +76,31 @@ contract AddressBook is Ownable {
     }
 
     function setOtokenFactory(address _otokenFactory) external onlyOwner {
-        updateImplInternal(OTOKEN_FACTORY, _otokenFactory);
+        updateImpl(OTOKEN_FACTORY, _otokenFactory);
     }
 
     function setWhitelist(address _whitelist) external onlyOwner {
-        updateImplInternal(MARGIN_WHITELIST, _whitelist);
+        updateImpl(MARGIN_WHITELIST, _whitelist);
     }
 
     function setController(address _controller) external onlyOwner {
-        updateImplInternal(CONTROLLER, _controller);
+        updateImpl(CONTROLLER, _controller);
     }
 
     function setMarginPool(address _marginPool) external onlyOwner {
-        updateImplInternal(MARGIN_POOL, _marginPool);
+        updateImpl(MARGIN_POOL, _marginPool);
     }
 
     function setMarginCalculator(address _marginCalculator) external onlyOwner {
-        updateImplInternal(MARGIN_CALCULATOR, _marginCalculator);
+        updateImpl(MARGIN_CALCULATOR, _marginCalculator);
     }
 
     function setLiquidationManager(address _liquidationManager) external onlyOwner {
-        updateImplInternal(LIQUIDATION_MANAGER, _liquidationManager);
+        updateImpl(LIQUIDATION_MANAGER, _liquidationManager);
     }
 
     function setOracle(address _oracle) external onlyOwner {
-        updateImplInternal(ORACLE, _oracle);
+        updateImpl(ORACLE, _oracle);
     }
 
     function setWeth(address _weth) external onlyOwner {
@@ -112,7 +112,7 @@ contract AddressBook is Ownable {
      * @param _id the id of the contract to be updated
      * @param _newAddress the address of the new implementation
      **/
-    function updateImplInternal(bytes32 _id, address _newAddress) public onlyOwner {
+    function updateImpl(bytes32 _id, address _newAddress) public onlyOwner {
         address payable proxyAddress = address(uint160(getAddress(_id)));
 
         OwnedUpgradeabilityProxy proxy = OwnedUpgradeabilityProxy(proxyAddress);
