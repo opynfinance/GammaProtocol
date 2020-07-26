@@ -10,11 +10,16 @@ import "../packages/openzeppelin-upgradeability/VersionedInitializable.sol";
  * @notice Upgradeable testing contract
  */
 contract UpgradeableContractV2 is VersionedInitializable {
+    /// @notice addressbook address
     address public addressBook;
 
     // new constant added here to follow same slot order
     uint256 public constant CONTRACT_REVISION = 0x2;
 
+    /**
+     * @notice return current contract version
+     * @dev should be implemented in all contracts that inherit VersionedInitializable
+     */
     function getRevision() internal override pure returns (uint256) {
         return CONTRACT_REVISION;
     }
