@@ -65,6 +65,16 @@ contract('MarginPool', ([controllerAddress, user1, random]) => {
       )
     })
 
+    it('should revert transfering to pool an amount equal to zero', async () => {
+      // user approve USDC transfer
+      await usdc.approve(marginPool.address, usdcToTransfer, {from: user1})
+
+      await expectRevert(
+        marginPool.transferToPool(usdc.address, user1, ether('0'), {from: controllerAddress}),
+        'MarginPool: transferToPool amount is below 0',
+      )
+    })
+
     it('should transfer to pool from user when called by the controller address', async () => {
       const userBalanceBefore = new BigNumber(await usdc.balanceOf(user1))
       const poolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
@@ -121,6 +131,13 @@ contract('MarginPool', ([controllerAddress, user1, random]) => {
       await expectRevert(
         marginPool.transferToUser(usdc.address, user1, usdcToTransfer, {from: random}),
         'MarginPool: Sender is not Controller',
+      )
+    })
+
+    it('should revert transfering to user an amount equal to zero', async () => {
+      await expectRevert(
+        marginPool.transferToUser(usdc.address, user1, ether('0'), {from: controllerAddress}),
+        'MarginPool: transferToUser amount is below 0',
       )
     })
 
