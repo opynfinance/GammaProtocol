@@ -18,7 +18,6 @@ const UpgradeableContractV2 = artifacts.require('UpgradeableContractV2.sol')
 const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy.sol')
 const AddressBook = artifacts.require('AddressBook.sol')
 const Whitelist = artifacts.require('Whitelist.sol')
-// address(0)
 
 contract('AddressBook', ([owner, otokenImplAdd, marginPoolAdd, random]) => {
   // ERC20 mocks
