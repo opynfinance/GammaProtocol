@@ -130,4 +130,109 @@ contract('Actions', ([owner, random]) => {
       assert.equal(depositArgs.index, new BN(index))
     })
   })
+  describe('Parse Withdraw Arguments', () => {
+    it('should not be able to parse a non withdraw action', async () => {
+      const actionType = ActionType.OpenVault
+      const asset = ZERO_ADDR
+      const vaultId = '0'
+      const amount = '10'
+      const index = '0'
+      const bytesArgs = ZERO_ADDR
+
+      const data = {
+        actionType: actionType,
+        owner: owner,
+        sender: owner,
+        asset: asset,
+        vaultId: vaultId,
+        amount: amount,
+        index: index,
+        data: bytesArgs,
+      }
+
+      await expectRevert(
+        actionTester.testParseWithdrawAction(data),
+        'Actions: can only parse arguments for withdraw actions',
+      )
+    })
+    it('should not be able to parse an invalid sender address', async () => {
+      const actionType = ActionType.WithdrawCollateral
+      const asset = ZERO_ADDR
+      const vaultId = '0'
+      const amount = '10'
+      const index = '0'
+      const bytesArgs = ZERO_ADDR
+
+      const data = {
+        actionType: actionType,
+        owner: ZERO_ADDR,
+        sender: owner,
+        asset: asset,
+        vaultId: vaultId,
+        amount: amount,
+        index: index,
+        data: bytesArgs,
+      }
+
+      await expectRevert(actionTester.testParseWithdrawAction(data), 'Actions: cannot withdraw to an invalid account')
+    })
+    it('should be able to parse arguments for a withdraw long action', async () => {
+      const actionType = ActionType.WithdrawLongOption
+      const asset = ZERO_ADDR
+      const vaultId = '1'
+      const amount = '10'
+      const index = '0'
+      const bytesArgs = ZERO_ADDR
+
+      const data = {
+        actionType: actionType,
+        owner: owner,
+        sender: random,
+        asset: asset,
+        vaultId: vaultId,
+        amount: amount,
+        index: index,
+        data: bytesArgs,
+      }
+
+      await actionTester.testParseWithdrawAction(data)
+
+      const depositArgs = await actionTester.getWithdrawArgs()
+      assert.equal(depositArgs.owner, owner)
+      assert.equal(depositArgs.amount, new BN(amount))
+      assert.equal(depositArgs.asset, asset)
+      assert.equal(depositArgs.to, random)
+      assert.equal(depositArgs.vaultId, new BN(vaultId))
+      assert.equal(depositArgs.index, new BN(index))
+    })
+    it('should be able to parse arguments for a deposit collateral action', async () => {
+      const actionType = ActionType.WithdrawCollateral
+      const asset = ZERO_ADDR
+      const vaultId = '3'
+      const amount = '10'
+      const index = '0'
+      const bytesArgs = ZERO_ADDR
+
+      const data = {
+        actionType: actionType,
+        owner: random,
+        sender: owner,
+        asset: asset,
+        vaultId: vaultId,
+        amount: amount,
+        index: index,
+        data: bytesArgs,
+      }
+
+      await actionTester.testParseWithdrawAction(data)
+
+      const depositArgs = await actionTester.getWithdrawArgs()
+      assert.equal(depositArgs.owner, random)
+      assert.equal(depositArgs.amount, new BN(amount))
+      assert.equal(depositArgs.asset, asset)
+      assert.equal(depositArgs.to, owner)
+      assert.equal(depositArgs.vaultId, new BN(vaultId))
+      assert.equal(depositArgs.index, new BN(index))
+    })
+  })
 })
