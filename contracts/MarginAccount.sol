@@ -46,7 +46,7 @@ library MarginAccount {
      * @dev Increment vault numbers in account
      * @param _account The account relating to the user for whom the protocol is opening the new vault.
      */
-    function openNewVault(Account storage _account) internal {
+    function _openNewVault(Account storage _account) internal {
         _account.vaultIds.add(1);
     }
 
