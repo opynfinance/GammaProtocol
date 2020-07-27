@@ -113,7 +113,8 @@ library Actions {
             (_args.actionType == ActionType.WithdrawLongOption) || (_args.actionType == ActionType.WithdrawCollateral),
             "Actions: can only parse arguments for withdraw actions"
         );
-        require(_args.owner != address(0), "Actions: cannot withdraw to an invalid account");
+        require(_args.owner != address(0), "Actions: cannot withdraw from an invalid vault");
+        require(_args.sender != address(0), "Actions: cannot withdraw to an invalid account");
 
         return
             WithdrawArgs({
