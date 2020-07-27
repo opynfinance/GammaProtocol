@@ -156,7 +156,7 @@ contract('Actions', ([owner, random]) => {
         'Actions: can only parse arguments for settle vault actions',
       )
     })
-    it('should not be able to parse an invalid sender address', async () => {
+    it('should not be able to parse an invalid owner address', async () => {
       const actionType = ActionType.SettleVault
       const asset = ZERO_ADDR
       const vaultId = '0'
