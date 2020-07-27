@@ -270,7 +270,7 @@ contract('Actions', ([owner, random]) => {
 
       await expectRevert(actionTester.testParseBurnAction(data), 'Actions: cannot burn from an invalid account')
     })
-    it('should be able to parse arguments for a burn long action', async () => {
+    it('should be able to parse arguments for a burn short action', async () => {
       const actionType = ActionType.BurnShortOption
       const asset = ZERO_ADDR
       const vaultId = '1'
