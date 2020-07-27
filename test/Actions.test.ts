@@ -167,7 +167,7 @@ contract('Actions', ([owner, random]) => {
 
       await expectRevert(actionTester.testParseMintAction(data), 'Actions: cannot mint from an invalid account')
     })
-    it('should be able to parse arguments for a mint long action', async () => {
+    it('should be able to parse arguments for a mint short action', async () => {
       const actionType = ActionType.MintShortOption
       const asset = ZERO_ADDR
       const vaultId = '1'
