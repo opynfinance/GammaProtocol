@@ -299,7 +299,7 @@ contract('Actions', ([owner, random]) => {
       assert.equal(burnArgs.vaultId, new BN(vaultId))
       assert.equal(burnArgs.index, new BN(index))
     })
-    it('should be able to parse arguments for a burn collateral action', async () => {
+    it('should be able to parse arguments for a burn short action', async () => {
       const actionType = ActionType.BurnShortOption
       const asset = ZERO_ADDR
       const vaultId = '3'
