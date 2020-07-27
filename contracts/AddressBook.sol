@@ -224,11 +224,12 @@ contract AddressBook is Ownable {
         bytes memory params = abi.encodeWithSignature("initialize(address)", address(this));
 
         if (proxyAddress == address(0)) {
-            proxy = new OwnedUpgradeabilityProxy();
+            OwnedUpgradeabilityProxy proxy = new OwnedUpgradeabilityProxy();
             proxy.upgradeToAndCall(_newAddress, params);
             setAddress(_id, address(proxy));
             emit ProxyCreated(_id, address(proxy));
         } else {
+            OwnedUpgradeabilityProxy proxy = OwnedUpgradeabilityProxy(proxyAddress);
             proxy.upgradeToAndCall(_newAddress, params);
         }
     }
