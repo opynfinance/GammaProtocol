@@ -34,7 +34,7 @@ contract MarginPool {
 
         addressBook = _addressBook;
 
-        WETH = WETH9(payable(AddressBookInterface(addressBook).getWethToken()));
+        WETH = WETH9(payable(AddressBookInterface(addressBook).getWeth()));
     }
 
     /**

@@ -37,7 +37,7 @@ contract('MarginPool', ([controllerAddress, user1, random]) => {
     // set Controller module address
     await addressBook.setController(controllerAddress)
     // set WETH address
-    await addressBook.setWethToken(weth.address)
+    await addressBook.setWeth(weth.address)
     // deploy MarginPool module
     marginPool = await MarginPool.new(addressBook.address)
 

@@ -4,7 +4,7 @@ pragma solidity 0.6.10;
 interface AddressBookInterface {
     /* Getters */
 
-    function getWethToken() external view returns (address);
+    function getWeth() external view returns (address);
 
     function getOtokenImpl() external view returns (address);
 
@@ -24,7 +24,7 @@ interface AddressBookInterface {
 
     /* Setters */
 
-    function setWethToken(address _weth) external;
+    function setWeth(address _weth) external;
 
     function setOtokenImpl(address _otokenImpl) external;
 

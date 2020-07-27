@@ -20,7 +20,7 @@ contract MockAddressBook {
         return _otokenFactoryImpl;
     }
 
-    function getWethToken() external view returns (address) {
+    function getWeth() external view returns (address) {
         return _weth;
     }
 
@@ -40,7 +40,7 @@ contract MockAddressBook {
         _otokenFactoryImpl = _otokenFactory;
     }
 
-    function setWethToken(address _wethAdd) external {
+    function setWeth(address _wethAdd) external {
         _weth = _wethAdd;
     }
 
