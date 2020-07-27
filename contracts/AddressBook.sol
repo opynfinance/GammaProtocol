@@ -39,15 +39,6 @@ contract AddressBook is Ownable {
     event AddressAdded(bytes32 id, address add);
 
     /**
-     * @notice return an address for specific key
-     * @param _key key address
-     * @return address
-     */
-    function getAddress(bytes32 _key) public view returns (address) {
-        return addresses[_key];
-    }
-
-    /**
      * @notice return otoken implementation address
      * @return otoken implementation address
      */
@@ -117,18 +108,6 @@ contract AddressBook is Ownable {
      */
     function getWeth() external view returns (address) {
         return getAddress(WETH);
-    }
-
-    /**
-     * @notice set a specific address for a specific key
-     * @dev can only be called by addressbook owner
-     * @param _key key
-     * @param _address address
-     */
-    function setAddress(bytes32 _key, address _address) public onlyOwner {
-        addresses[_key] = _address;
-
-        emit AddressAdded(_key, _address);
     }
 
     /**
@@ -210,6 +189,27 @@ contract AddressBook is Ownable {
      */
     function setWeth(address _weth) external onlyOwner {
         setAddress(WETH, _weth);
+    }
+
+    /**
+     * @notice return an address for specific key
+     * @param _key key address
+     * @return address
+     */
+    function getAddress(bytes32 _key) public view returns (address) {
+        return addresses[_key];
+    }
+
+    /**
+     * @notice set a specific address for a specific key
+     * @dev can only be called by addressbook owner
+     * @param _key key
+     * @param _address address
+     */
+    function setAddress(bytes32 _key, address _address) public onlyOwner {
+        addresses[_key] = _address;
+
+        emit AddressAdded(_key, _address);
     }
 
     /**
