@@ -51,7 +51,7 @@ contract('AddressBook', ([owner, otokenImplAdd, marginPoolAdd, random]) => {
       controller = await UpgradeableContractV1.new()
     })
 
-    it('should revert adding otoken implementation address from non-owner address', async () => {
+    it('should revert adding controller from non-owner address', async () => {
       await expectRevert(
         addressBook.setController(controller.address, {from: random}),
         'Ownable: caller is not the owner',
