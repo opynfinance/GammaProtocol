@@ -3,7 +3,7 @@
  */
 pragma solidity 0.6.10;
 
-import "../packages/openzeppelin-upgradeability/VersionedInitializable.sol";
+import "../packages/oz/upgradeability/VersionedInitializable.sol";
 
 /**
  * @author Opyn Team

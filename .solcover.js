@@ -14,10 +14,10 @@ module.exports = {
     'packages/oz/upgradeability/ContextUpgradeSafe.sol',
     'packages/oz/upgradeability/ERC20Initializable.sol',
     'packages/oz/upgradeability/Initializable.sol',
-    'packages/openzeppelin-upgradeability/OwnedUpgradeabilityProxy.sol',
-    'packages/openzeppelin-upgradeability/Proxy.sol',
-    'packages/openzeppelin-upgradeability/UpgradeabilityProxy.sol',
-    'packages/openzeppelin-upgradeability/VersionedInitializable.sol',
+    'packages/oz/upgradeability/OwnedUpgradeabilityProxy.sol',
+    'packages/oz/upgradeability/Proxy.sol',
+    'packages/oz/upgradeability/UpgradeabilityProxy.sol',
+    'packages/oz/upgradeability/VersionedInitializable.sol',
     'packages/canonical-weth/WETH9.sol',
     'packages/BokkyPooBahsDateTimeLibrary.sol'
   ]

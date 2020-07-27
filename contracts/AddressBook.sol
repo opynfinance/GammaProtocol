@@ -4,7 +4,7 @@
 pragma solidity 0.6.10;
 
 import {Ownable} from "./packages/oz/Ownable.sol";
-import {OwnedUpgradeabilityProxy} from "./packages/openzeppelin-upgradeability/OwnedUpgradeabilityProxy.sol";
+import {OwnedUpgradeabilityProxy} from "./packages/oz/upgradeability/OwnedUpgradeabilityProxy.sol";
 
 /**
  * @author Opyn Team
