@@ -133,22 +133,15 @@ contract('Actions', ([owner, random]) => {
 
   describe('Parse Mint Arguments', () => {
     it('should not be able to parse a non Mint action', async () => {
-      const actionType = ActionType.OpenVault
-      const asset = ZERO_ADDR
-      const vaultId = '0'
-      const amount = '10'
-      const index = '0'
-      const bytesArgs = ZERO_ADDR
-
       const data = {
-        actionType: actionType,
-        owner: owner,
+        actionType: ActionType.OpenVault,
+        owner: ZERO_ADDR,
         sender: owner,
-        asset: asset,
+        asset: ZERO_ADDR,
         vaultId: vaultId,
-        amount: amount,
-        index: index,
-        data: bytesArgs,
+        amount: '10',
+        index: '0',
+        data: ZERO_ADDR,
       }
 
       await expectRevert(actionTester.testParseMintAction(data), 'Actions: can only parse arguments for mint actions')
