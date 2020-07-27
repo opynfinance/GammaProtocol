@@ -130,4 +130,79 @@ contract('Actions', ([owner, random]) => {
       assert.equal(depositArgs.index, new BN(index))
     })
   })
+
+  describe('Parse Open Vault Arguments', () => {
+    it('should not be able to parse a non Open Vault action', async () => {
+      const actionType = ActionType.DepositCollateral
+      const asset = ZERO_ADDR
+      const vaultId = '0'
+      const amount = '10'
+      const index = '0'
+      const bytesArgs = ZERO_ADDR
+
+      const data = {
+        actionType: actionType,
+        owner: owner,
+        sender: owner,
+        asset: asset,
+        vaultId: vaultId,
+        amount: amount,
+        index: index,
+        data: bytesArgs,
+      }
+
+      await expectRevert(
+        actionTester.testParseOpenVaultAction(data),
+        'Actions: can only parse arguments for open vault actions',
+      )
+    })
+    it('should not be able to parse an invalid owner address', async () => {
+      const actionType = ActionType.OpenVault
+      const asset = ZERO_ADDR
+      const vaultId = '0'
+      const amount = '10'
+      const index = '0'
+      const bytesArgs = ZERO_ADDR
+
+      const data = {
+        actionType: actionType,
+        owner: ZERO_ADDR,
+        sender: owner,
+        asset: asset,
+        vaultId: vaultId,
+        amount: amount,
+        index: index,
+        data: bytesArgs,
+      }
+
+      await expectRevert(
+        actionTester.testParseOpenVaultAction(data),
+        'Actions: cannot open vault for an invalid account',
+      )
+    })
+    it('should be able to parse arguments for an open vault action', async () => {
+      const actionType = ActionType.OpenVault
+      const asset = ZERO_ADDR
+      const vaultId = '1'
+      const amount = '10'
+      const index = '0'
+      const bytesArgs = ZERO_ADDR
+
+      const data = {
+        actionType: actionType,
+        owner: owner,
+        sender: random,
+        asset: asset,
+        vaultId: vaultId,
+        amount: amount,
+        index: index,
+        data: bytesArgs,
+      }
+
+      await actionTester.testParseOpenVaultAction(data)
+
+      const depositArgs = await actionTester.getOpenVaultArgs()
+      assert.equal(depositArgs.owner, owner)
+    })
+  })
 })
