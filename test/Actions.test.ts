@@ -196,7 +196,7 @@ contract('Actions', ([owner, random]) => {
       assert.equal(mintArgs.vaultId, new BN(vaultId))
       assert.equal(mintArgs.index, new BN(index))
     })
-    it('should be able to parse arguments for a mint collateral action', async () => {
+    it('should be able to parse arguments for a mint short action', async () => {
       const actionType = ActionType.MintShortOption
       const asset = ZERO_ADDR
       const vaultId = '3'
