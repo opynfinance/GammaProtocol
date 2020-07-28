@@ -3,11 +3,15 @@
  */
 pragma solidity 0.6.10;
 
+import "../packages/oz/SignedSafeMath.sol";
+
 /**
  *
  */
 library FixedPointInt256 {
-    uint256 private constant SCALING_FACTOR = 1e18;
+    using SignedSafeMath for int256;
+
+    int256 private constant SCALING_FACTOR = 1e18;
 
     /**
      * @notice convert an unsigned integer to signed integer
@@ -15,8 +19,45 @@ library FixedPointInt256 {
      * @return the converted signed integer.
      */
     function fromUint(uint256 a) internal pure returns (int256) {
-        require(a < uint256(-1), "FixedPointInt256: can't cast - out of int range");
+        require(a < uint256(-1), "FixedPointInt256: out of int range");
 
         return int256(a);
+    }
+
+    /**
+     * @notice convert a signed integer to unsigned integer
+     * @param a int to convert into an unsigned integer.
+     * @return the converted unsigned integer.
+     */
+    function fromInt(int256 a) internal pure returns (int256) {
+        if (a < 0) {
+            uint256(-a);
+        } else {
+            uint256(a);
+        }
+    }
+
+    function add(int256 a, int256 b) internal pure returns (int256) {
+        return a.add(b);
+    }
+
+    function sub(int256 a, int256 b) internal pure returns (int256) {
+        return a.sub(b);
+    }
+
+    function mul(int256 a, int256 b) internal pure returns (int256) {
+        return (a.mul(b)).div(SCALING_FACTOR);
+    }
+
+    function div(int256 a, int256 b) internal pure returns (int256) {
+        return (a.div(b)).mul(SCALING_FACTOR);
+    }
+
+    function min(int256 a, int256 b) internal pure returns (int256) {
+        return a < b ? a : b;
+    }
+
+    function max(int256 a, int256 b) internal pure returns (int256) {
+        return a > b ? a : b;
     }
 }
