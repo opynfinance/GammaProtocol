@@ -88,13 +88,13 @@ contract('MarginPool', ([controllerAddress, user1, random]) => {
       const poolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
 
       assert.equal(
-        new BigNumber(usdcToTransfer).dividedBy(1e18).toString(),
+        new BigNumber(usdcToTransfer).toString(),
         userBalanceBefore.minus(userBalanceAfter).toString(),
         'USDC value transfered from user mismatch',
       )
 
       assert.equal(
-        new BigNumber(usdcToTransfer).dividedBy(1e18).toString(),
+        new BigNumber(usdcToTransfer).toString(),
         poolBalanceAfter.minus(poolBalanceBefore).toString(),
         'USDC value transfered into pool mismatch',
       )
@@ -104,19 +104,19 @@ contract('MarginPool', ([controllerAddress, user1, random]) => {
       const controllerBalanceBefore = new BigNumber(await weth.balanceOf(controllerAddress))
       const poolBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
 
-      await marginPool.transferToPool(weth.address, user1, wethToTransfer, {from: controllerAddress})
+      await marginPool.transferToPool(weth.address, controllerAddress, wethToTransfer, {from: controllerAddress})
 
       const controllerBalanceAfter = new BigNumber(await weth.balanceOf(controllerAddress))
       const poolBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
 
       assert.equal(
-        new BigNumber(wethToTransfer).dividedBy(1e18).toString(),
+        new BigNumber(wethToTransfer).toString(),
         controllerBalanceBefore.minus(controllerBalanceAfter).toString(),
         'WETH value transfered from controller mismatch',
       )
 
       assert.equal(
-        new BigNumber(wethToTransfer).dividedBy(1e18).toString(),
+        new BigNumber(wethToTransfer).toString(),
         poolBalanceAfter.minus(poolBalanceBefore).toString(),
         'WETH value transfered into pool mismatch',
       )
@@ -151,35 +151,40 @@ contract('MarginPool', ([controllerAddress, user1, random]) => {
       const poolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
 
       assert.equal(
-        new BigNumber(usdcToTransfer).dividedBy(1e18).toString(),
+        new BigNumber(usdcToTransfer).toString(),
         userBalanceAfter.minus(userBalanceBefore).toString(),
         'USDC value transfered to user mismatch',
       )
 
       assert.equal(
-        new BigNumber(usdcToTransfer).dividedBy(1e18).toString(),
+        new BigNumber(usdcToTransfer).toString(),
         poolBalanceBefore.minus(poolBalanceAfter).toString(),
         'USDC value transfered from pool mismatch',
       )
     })
 
-    it('should unwrap WETH and transfer ETH to user from pool when called by the controller address', async () => {
+    it('should transfer WETH to controller from pool, unwrap it and transfer ETH to user when called by the controller address', async () => {
       const poolBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
       const userBalanceBefore = new BigNumber(await web3.eth.getBalance(user1))
 
-      await marginPool.transferToUser(weth.address, user1, wethToTransfer, {from: controllerAddress})
+      // transfer to controller
+      await marginPool.transferToUser(weth.address, controllerAddress, wethToTransfer, {from: controllerAddress})
+      // unwrap WETH to ETH
+      await weth.withdraw(wethToTransfer)
+      // send ETH to user
+      await web3.eth.sendTransaction({from: controllerAddress, to: user1, value: wethToTransfer})
 
       const poolBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
       const userBalanceAfter = new BigNumber(await web3.eth.getBalance(user1))
 
       assert.equal(
-        new BigNumber(wethToTransfer).dividedBy(1e18).toString(),
+        new BigNumber(wethToTransfer).toString(),
         poolBalanceBefore.minus(poolBalanceAfter).toString(),
         'WETH value un-wrapped from pool mismatch',
       )
 
       assert.equal(
-        new BigNumber(wethToTransfer).dividedBy(1e18).toString(),
+        new BigNumber(wethToTransfer).toString(),
         userBalanceAfter.minus(userBalanceBefore).toString(),
         'ETH value transfered to user mismatch',
       )

@@ -22,9 +22,6 @@ contract MarginPool {
     /// @notice AddressBook module
     address public addressBook;
 
-    /// @notice WETH token
-    WETH9 public WETH;
-
     /**
      * @notice contructor
      * @param _addressBook adressbook module
@@ -33,8 +30,6 @@ contract MarginPool {
         require(_addressBook != address(0), "Invalid address book");
 
         addressBook = _addressBook;
-
-        WETH = WETH9(payable(AddressBookInterface(addressBook).getWeth()));
     }
 
     /**
@@ -71,23 +66,8 @@ contract MarginPool {
     ) external onlyController returns (bool) {
         require(_amount > 0, "MarginPool: transferToPool amount is below 0");
 
-        // get asset decimals
-        uint8 assetDecimal = ERC20Interface(_asset).decimals();
-        // scale amount
-        uint256 val = _calcTransferAmount(_amount, assetDecimal);
-
-        bool success;
-
-        /// check if asset is WETH or not, if WETH transfer the val from Controller address
-        if (_asset == address(WETH)) {
-            // tranfer WETH from controller to pool
-            success = ERC20Interface(_asset).transferFrom(msg.sender, address(this), val);
-        } else {
-            // transfer val from _user to pool
-            success = ERC20Interface(_asset).transferFrom(_user, address(this), val);
-        }
-
-        return success;
+        // transfer val from _user to pool
+        return ERC20Interface(_asset).transferFrom(_user, address(this), _amount);
     }
 
     /**
@@ -106,32 +86,7 @@ contract MarginPool {
     ) external onlyController returns (bool) {
         require(_amount > 0, "MarginPool: transferToUser amount is below 0");
 
-        // get asset decimals
-        uint8 assetDecimal = ERC20Interface(_asset).decimals();
-        // scale amount
-        uint256 val = _calcTransferAmount(_amount, assetDecimal);
-
-        // check if asset is WETH or not, if WETH transfer the val from pool to Controller address
-        if (_asset == address(WETH)) {
-            // unwrap WETH
-            WETH.withdraw(val);
-            // transfer ETH to user
-            _user.transfer(val);
-
-            return true;
-        } else {
-            // transfer asset val from Pool to _user
-            return ERC20Interface(_asset).transfer(_user, val);
-        }
-    }
-
-    /**
-     * @notice Scale _amt
-     * @param _amt amount of tokens
-     * @param _decimals token decimals
-     * @return scaled amount
-     */
-    function _calcTransferAmount(uint256 _amt, uint256 _decimals) internal pure returns (uint256) {
-        return _amt.div(BASE_UNIT.sub(_decimals));
+        // transfer asset val from Pool to _user
+        return ERC20Interface(_asset).transfer(_user, _amount);
     }
 }
