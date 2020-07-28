@@ -29,7 +29,7 @@ library FixedPointInt256 {
      * @param a int to convert into an unsigned integer.
      * @return the converted unsigned integer.
      */
-    function fromInt(int256 a) internal pure returns (int256) {
+    function fromInt(int256 a) internal pure returns (uint256) {
         if (a < 0) {
             uint256(-a);
         } else {
