@@ -46,11 +46,11 @@ library FixedPointInt256 {
     }
 
     function mul(int256 a, int256 b) internal pure returns (int256) {
-        return (a.mul(b)).div(SCALING_FACTOR);
+        return add(mul(a, b), SCALING_FACTOR / 2) / SCALING_FACTOR;
     }
 
     function div(int256 a, int256 b) internal pure returns (int256) {
-        return (a.div(b)).mul(SCALING_FACTOR);
+        return add(mul(a, SCALING_FACTOR), b / 2) / b;
     }
 
     function min(int256 a, int256 b) internal pure returns (int256) {
