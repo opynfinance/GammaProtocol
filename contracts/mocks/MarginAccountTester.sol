@@ -10,6 +10,14 @@ contract MarginAccountTester {
     MarginAccount.Account private account;
     MarginAccount.Vault private vault;
 
+    function getVault() external view returns (MarginAccount.Vault memory) {
+        return vault;
+    }
+
+    function getAccount() external view returns (MarginAccount.Account memory) {
+        return account;
+    }
+
     function testOpenNewVault() external {
         MarginAccount._openNewVault(account);
     }
