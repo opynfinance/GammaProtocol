@@ -220,7 +220,6 @@ contract AddressBook is Ownable {
     function updateImpl(bytes32 _id, address _newAddress) public onlyOwner {
         address payable proxyAddress = address(uint160(getAddress(_id)));
 
-        OwnedUpgradeabilityProxy proxy = OwnedUpgradeabilityProxy(proxyAddress);
         bytes memory params = abi.encodeWithSignature("initialize(address)", address(this));
 
         if (proxyAddress == address(0)) {
