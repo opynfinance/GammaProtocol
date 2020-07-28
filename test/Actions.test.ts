@@ -138,7 +138,7 @@ contract('Actions', ([owner, random]) => {
         owner: ZERO_ADDR,
         sender: owner,
         asset: ZERO_ADDR,
-        vaultId: vaultId,
+        vaultId: '0',
         amount: '10',
         index: '0',
         data: ZERO_ADDR,
