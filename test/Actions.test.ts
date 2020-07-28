@@ -27,22 +27,15 @@ contract('Actions', ([owner, random]) => {
 
   describe('Parse Deposit Arguments', () => {
     it('should not be able to parse a non Deposit action', async () => {
-      const actionType = ActionType.OpenVault
-      const asset = ZERO_ADDR
-      const vaultId = '0'
-      const amount = '10'
-      const index = '0'
-      const bytesArgs = ZERO_ADDR
-
       const data = {
-        actionType: actionType,
+        actionType: ActionType.OpenVault,
         owner: owner,
         sender: owner,
-        asset: asset,
-        vaultId: vaultId,
-        amount: amount,
-        index: index,
-        data: bytesArgs,
+        asset: ZERO_ADDR,
+        vaultId: '0',
+        amount: '10',
+        index: '0',
+        data: ZERO_ADDR,
       }
 
       await expectRevert(
@@ -51,22 +44,15 @@ contract('Actions', ([owner, random]) => {
       )
     })
     it('should not be able to parse an invalid sender address', async () => {
-      const actionType = ActionType.DepositCollateral
-      const asset = ZERO_ADDR
-      const vaultId = '0'
-      const amount = '10'
-      const index = '0'
-      const bytesArgs = ZERO_ADDR
-
       const data = {
-        actionType: actionType,
+        actionType: ActionType.DepositCollateral,
         owner: ZERO_ADDR,
         sender: owner,
-        asset: asset,
-        vaultId: vaultId,
-        amount: amount,
-        index: index,
-        data: bytesArgs,
+        asset: ZERO_ADDR,
+        vaultId: '0',
+        amount: '10',
+        index: '0',
+        data: ZERO_ADDR,
       }
 
       await expectRevert(actionTester.testParseDespositAction(data), 'Actions: cannot deposit to an invalid account')
@@ -133,22 +119,15 @@ contract('Actions', ([owner, random]) => {
 
   describe('Parse Open Vault Arguments', () => {
     it('should not be able to parse a non Open Vault action', async () => {
-      const actionType = ActionType.DepositCollateral
-      const asset = ZERO_ADDR
-      const vaultId = '0'
-      const amount = '10'
-      const index = '0'
-      const bytesArgs = ZERO_ADDR
-
       const data = {
-        actionType: actionType,
+        actionType: ActionType.DepositCollateral,
         owner: owner,
         sender: owner,
-        asset: asset,
-        vaultId: vaultId,
-        amount: amount,
-        index: index,
-        data: bytesArgs,
+        asset: ZERO_ADDR,
+        vaultId: '0',
+        amount: '10',
+        index: '0',
+        data: ZERO_ADDR,
       }
 
       await expectRevert(
@@ -203,6 +182,53 @@ contract('Actions', ([owner, random]) => {
 
       const depositArgs = await actionTester.getOpenVaultArgs()
       assert.equal(depositArgs.owner, owner)
+    })
+  })
+
+  describe('Parse Exercise Arguments', () => {
+    it('should not be able to parse a non Exercise action', async () => {
+      const data = {
+        actionType: ActionType.OpenVault,
+        owner: owner,
+        sender: owner,
+        asset: ZERO_ADDR,
+        vaultId: '0',
+        amount: '10',
+        index: '0',
+        data: ZERO_ADDR,
+      }
+
+      await expectRevert(
+        actionTester.testParseExerciseAction(data),
+        'Actions: can only parse arguments for exercise actions',
+      )
+    })
+
+    it('should be able to parse arguments for an exercise action', async () => {
+      const actionType = ActionType.Exercise
+      const asset = ZERO_ADDR
+      const vaultId = '1'
+      const amount = '10'
+      const index = '0'
+      const bytesArgs = ZERO_ADDR
+
+      const data = {
+        actionType: actionType,
+        owner: owner,
+        sender: random,
+        asset: asset,
+        vaultId: vaultId,
+        amount: amount,
+        index: index,
+        data: bytesArgs,
+      }
+
+      await actionTester.testParseExerciseAction(data)
+
+      const depositArgs = await actionTester.getExerciseArgs()
+      assert.equal(depositArgs.exerciser, random)
+      assert.equal(depositArgs.otoken, asset)
+      assert.equal(depositArgs.amount, new BN(amount))
     })
   })
 })
