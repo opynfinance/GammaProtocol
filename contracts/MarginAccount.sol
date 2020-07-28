@@ -63,9 +63,12 @@ library MarginAccount {
         uint256 _amount,
         uint256 _index
     ) internal {
-        //Check the adding token is the same as vault.shortOtokens[idx] if it exists. (TODO: isn't that the same as the below?)
-        //Reverts if vault.shortOtokens[index] != shortOtoken && vault.shortOtoken[index] !== address(0)
-        require((_vault.shortOtokens[_index] == _shortOtoken) && (_vault.shortOtokens[_index] != address(0)));
+        //Check the adding token is the same as vault.shortOtokens[idx] if it exists or should be equal to address(0) if adding short for the first time
+        require(
+            (_vault.shortOtokens[_index] == _shortOtoken) || (_vault.shortOtokens[_index] == address(0)),
+            "MarginAccount: invalid short otoken address"
+        );
+
         _vault.shortAmounts[_index].add(_amount);
     }
 
@@ -78,14 +81,14 @@ library MarginAccount {
      */
     function _removeShort(
         Vault storage _vault,
-        address shortOtoken,
-        uint256 amount,
-        uint256 index
+        address _shortOtoken,
+        uint256 _amount,
+        uint256 _index
     ) internal {
-        //Check the token is the same as vault.shortOtoken[idx] (isn't this the same as below?)
-        //Revert if vault.shortOtoken[index] !== asset
-        require(_vault.shortOtokens[index] == shortOtoken);
-        _vault.shortAmounts[index].sub(amount);
+        //Check that the removed short otoken exists in the vault
+        require(_vault.shortOtokens[_index] == _shortOtoken, "MarginAccount: short otoken address mismatch");
+
+        _vault.shortAmounts[_index].sub(_amount);
     }
 
     /**
@@ -101,10 +104,9 @@ library MarginAccount {
         uint256 _amount,
         uint256 _index
     ) internal {
-        //Check the adding token is the same as vault.longOtoken[idx] if it exists.
-        //Reverts if vault.longOtoken[index] != longOtoken && vault.longOtoken[index] !== address(0)
-        //vault.longOtoken[index] += amount
-        require((_vault.longOtokens[_index] == _longOtoken) && (_vault.longOtokens[_index] != address(0)));
+        //Check the adding token is the same as vault.longOtoken[idx] if it exists or address(0) if adding for the first time
+        require((_vault.longOtokens[_index] == _longOtoken) || (_vault.longOtokens[_index] == address(0)));
+
         _vault.longAmounts[_index].add(_amount);
     }
 
@@ -121,10 +123,9 @@ library MarginAccount {
         uint256 _amount,
         uint256 _index
     ) internal {
-        //Check the token is the same as vault.longOtoken[idx]
-        //Revert if vault.longOtoken[index] !== asset
-        //vault.longAmounts[index] -= amount
-        require(_vault.longOtokens[_index] == _longOtoken);
+        //Check that the removed long token exists in the vault
+        require(_vault.longOtokens[_index] == _longOtoken, "MarginAccount: long token address mismatch");
+
         _vault.longAmounts[_index].sub(_amount);
     }
 
@@ -141,14 +142,12 @@ library MarginAccount {
         uint256 _amount,
         uint256 _index
     ) internal {
-        //Check the adding token is the same as vault.collateral[idx] if it exists.
-        //Reverts if vault.collateral[index] != collateral && vault.collateral[index] !== address(0)
-        //vault.collateral[index] += amount
+        //Check the adding token is the same as vault.collateral[idx] if it exists or equal to address(0) if no collateral at that index
         require(
-            (_vault.collateralAssets[_index] == _collateralAsset) && (_vault.collateralAssets[_index] != address(0))
+            (_vault.collateralAssets[_index] == _collateralAsset) || (_vault.collateralAssets[_index] == address(0)),
+            "MarginAccount: collateral token address mismatch"
         );
-        //TODO: confused about the above - doesnt the above imply ETH can't be the collateral asset?
-        //TODO: do we want error messages inline above?
+
         _vault.collateralAmounts[_index].add(_amount);
     }
 
@@ -166,9 +165,11 @@ library MarginAccount {
         uint256 _index
     ) internal {
         //Check the token is the same as vault.collateral[idx]
-        //Revert if vault.collateral[index] !== asset
-        //vault.collateral[index] -= amount
-        require(_vault.collateralAssets[_index] == _collateralAsset);
+        require(
+            _vault.collateralAssets[_index] == _collateralAsset,
+            "MarginAccount: collateral token address mismatch"
+        );
+
         _vault.collateralAmounts[_index].sub(_amount);
     }
 
