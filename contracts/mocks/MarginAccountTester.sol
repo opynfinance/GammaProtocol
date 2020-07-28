@@ -3,7 +3,7 @@ pragma experimental ABIEncoderV2;
 
 import {MarginAccount} from "../libs/MarginAccount.sol";
 
-contract ActionTester {
+contract MarginAccountTester {
     using MarginAccount for MarginAccount.Account;
     using MarginAccount for MarginAccount.Vault;
 
