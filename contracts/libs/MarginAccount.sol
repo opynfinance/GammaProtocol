@@ -146,7 +146,7 @@ library MarginAccount {
         //Check that the removed long token exists in the vault
         require(
             (_index < _vault.longOtokens.length) && (_vault.longOtokens[_index] == _longOtoken),
-            "MarginAccount: long token address mismatch"
+            "MarginAccount: long otoken address mismatch"
         );
 
         _vault.longAmounts[_index] = _vault.longAmounts[_index].sub(_amount);
@@ -212,6 +212,7 @@ library MarginAccount {
         delete _vault.shortAmounts;
         delete _vault.longAmounts;
         delete _vault.collateralAmounts;
+        //TODO: are the following required?
         delete _vault.shortOtokens;
         delete _vault.longOtokens;
         delete _vault.collateralAssets;

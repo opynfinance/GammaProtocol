@@ -1,3 +1,5 @@
+pragma solidity =0.6.10;
+
 // SPDX-License-Identifier: UNLICENSED
 pragma experimental ABIEncoderV2;
 
@@ -51,7 +53,7 @@ contract MarginAccountTester {
         uint256 _amount,
         uint256 _index
     ) external {
-        vault._removeShort(_longOtoken, _amount, _index);
+        vault._removeLong(_longOtoken, _amount, _index);
     }
 
     function testAddCollateral(
@@ -70,7 +72,7 @@ contract MarginAccountTester {
         vault._removeCollateral(_collateralAsset, _amount, _index);
     }
 
-    function testClearVault() internal {
+    function testClearVault() external {
         vault._clearVault();
     }
 }
