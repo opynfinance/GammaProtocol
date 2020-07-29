@@ -47,7 +47,7 @@ library MarginAccount {
      * @param _account The account relating to the user for whom the protocol is opening the new vault.
      */
     function _openNewVault(Account storage _account) internal {
-        _account.vaultIds.add(1);
+        _account.vaultIds = _account.vaultIds.add(1);
     }
 
     /**
