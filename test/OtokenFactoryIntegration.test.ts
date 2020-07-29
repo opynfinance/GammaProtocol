@@ -37,7 +37,7 @@ contract('OTokenFactory + Otoken', ([deployer, user1, user2, random]) => {
   const isPut = true
   const expiry = 1753776000 // 07/29/2025 @ 8:00am (UTC)
 
-  before('Deploy addreeBook, otoken logic, whitelist, Factory contract', async () => {
+  before('Deploy addressBook, otoken logic, whitelist, Factory contract', async () => {
     usdc = await MockERC20.new('USDC', 'USDC')
     dai = await MockERC20.new('DAI', 'DAI')
     randomERC20 = await MockERC20.new('RANDOM', 'RAM')
