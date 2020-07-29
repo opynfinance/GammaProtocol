@@ -25,7 +25,7 @@ contract('MarginAccount', ([deployer, controller]) => {
   const expiry = 1601020800 // 2020/09/25 0800 UTC
   const isPut = true
 
-  const testAccount: {owner: string; vaultIds: BigNumber} = {owner: deployer, vaultIds: new BigNumber(0)}
+  const testAccount: {owner: string; vaultIds: BigNumber} = {owner: ZERO_ADDR, vaultIds: new BigNumber(0)}
   let account: {owner: string; vaultIds: BigNumber}
 
   before('Deployment', async () => {
@@ -64,9 +64,10 @@ contract('MarginAccount', ([deployer, controller]) => {
     describe('Open new vault', () => {
       it('vaultIds should be zero, owner should be null', async () => {
         account = await marginAccountTester.getAccount({from: deployer})
-        // console.log(account.owner)
-        // console.log(testAccount)
-
+        console.log(account.owner)
+        console.log(testAccount.owner)
+        console.log(account.vaultIds)
+        console.log(testAccount.vaultIds)
         assert.equal(account.owner, testAccount.owner, 'MarginAccount.Account owner addr mismatch')
         assert.equal(account.vaultIds, testAccount.vaultIds, 'Incorrect vaultIds')
       })
