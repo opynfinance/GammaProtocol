@@ -1,19 +1,19 @@
 import {
   OtokenFactoryInstance,
   OtokenInstance,
-  MockAddressBookInstance,
+  AddressBookInstance,
   WhitelistInstance,
 } from '../build/types/truffle-types'
 
 const OTokenFactory = artifacts.require('OtokenFactory.sol')
-const MockAddressBook = artifacts.require('MockAddressBook.sol')
+const AddressBook = artifacts.require('AddressBook.sol')
 const Whitelist = artifacts.require('Whitelist.sol')
 const Otoken = artifacts.require('Otoken.sol')
 
 export async function setupContracts(deployer: string) {
   // Todoo: Use Real addressBook instance when available
 
-  const addressBook: MockAddressBookInstance = await MockAddressBook.new({from: deployer})
+  const addressBook: AddressBookInstance = await AddressBook.new({from: deployer})
 
   const otokenImpl: OtokenInstance = await Otoken.new(addressBook.address, {from: deployer})
   const whitelist: WhitelistInstance = await Whitelist.new(addressBook.address, {from: deployer})

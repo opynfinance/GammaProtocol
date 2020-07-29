@@ -4,19 +4,22 @@ import {
   MockOtokenInstance,
   MockAddressBookInstance,
   MockERC20Instance,
+  TestControllerInstance,
 } from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 import {assert} from 'chai'
 import {setupContracts} from './utils'
 const {expectRevert} = require('@openzeppelin/test-helpers')
+
+const TestController = artifacts.require('TestController.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
 const Otoken = artifacts.require('Otoken.sol')
-const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
-
 // used for testing change of Otoken impl address in AddressBook
 const MockOtoken = artifacts.require('MockOtoken.sol')
 
-contract('OTokenFactory + Otoken', ([deployer, controller, newController, user1, user2]) => {
+const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
+
+contract('OTokenFactory + Otoken', ([deployer, user1, user2, random]) => {
   let otokenImpl: OtokenInstance
   let otoken1: OtokenInstance
   let otoken2: OtokenInstance
@@ -26,6 +29,8 @@ contract('OTokenFactory + Otoken', ([deployer, controller, newController, user1,
   let usdc: MockERC20Instance
   let dai: MockERC20Instance
   let randomERC20: MockERC20Instance
+
+  let testController: TestControllerInstance
 
   const ethAddress = ZERO_ADDR
   const strikePrice = new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18))
@@ -41,14 +46,18 @@ contract('OTokenFactory + Otoken', ([deployer, controller, newController, user1,
       deployer,
     )
 
+    testController = await TestController.new()
+
     otokenFactory = _factory
     otokenImpl = _otokenImpl
     addressBook = _addressBook
 
-    // controller is not in the setup flow
-    await addressBook.setController(controller)
+    // set the testController as controller (so it has access to minting tokens)
+    await addressBook.setController(testController.address)
     await whitelist.whitelistProduct(ethAddress, usdc.address, usdc.address)
     await whitelist.whitelistProduct(ethAddress, dai.address, dai.address)
+
+    testController = await TestController.at(await addressBook.getController())
   })
 
   describe('Init process on minimal proxy', () => {
@@ -128,29 +137,29 @@ contract('OTokenFactory + Otoken', ([deployer, controller, newController, user1,
   describe('Controller only functions on cloned otokens', () => {
     const amountToMint = new BigNumber(10).times(new BigNumber(10).exponentiatedBy(18))
 
-    it('should be able to mint token1 from controller address', async () => {
-      await otoken1.mintOtoken(user1, amountToMint.toString(), {from: controller})
-      const balance = await otoken1.balanceOf(user1)
-      assert.equal(balance.toString(), amountToMint.toString())
-    })
-
-    it('should revert minting tokens from old controller address after update', async () => {
-      await addressBook.setController(newController, {from: deployer})
+    it('should revert when mintOtoken is called by random address', async () => {
       await expectRevert(
-        otoken1.mintOtoken(user1, amountToMint, {from: controller}),
+        otoken1.mintOtoken(user1, amountToMint, {from: random}),
         'Otoken: Only Controller can mint Otokens',
       )
     })
 
-    it('should revert when burning token1 from the old controller ', async () => {
+    it('should be able to mint token1 from controller', async () => {
+      // the testController will call otoken1.mintOtoken()
+      await testController.testMintOtoken(otoken1.address, user1, amountToMint.toString())
+      const balance = await otoken1.balanceOf(user1)
+      assert.equal(balance.toString(), amountToMint.toString())
+    })
+
+    it('should revert when burnOtoken is called by random address', async () => {
       await expectRevert(
-        otoken1.burnOtoken(user1, amountToMint, {from: controller}),
-        'Otoken: Only Controller can burn Otokens.',
+        otoken1.burnOtoken(user1, amountToMint, {from: random}),
+        'Otoken: Only Controller can burn Otokens',
       )
     })
 
-    it('should be able to burn tokens from new controller address', async () => {
-      await otoken1.burnOtoken(user1, amountToMint, {from: newController})
+    it('should be able to burn tokens from controller', async () => {
+      await testController.testBurnOtoken(otoken1.address, user1, amountToMint.toString())
       const balance = await otoken1.balanceOf(user1)
       assert.equal(balance.toString(), '0')
     })
@@ -159,7 +168,7 @@ contract('OTokenFactory + Otoken', ([deployer, controller, newController, user1,
   describe('Otoken Implementation address upgrade ', () => {
     const amountToMint = new BigNumber(10).times(new BigNumber(10).exponentiatedBy(18))
     it('should not affect existing otoken instances', async () => {
-      await otoken1.mintOtoken(user1, amountToMint, {from: newController})
+      await testController.testMintOtoken(otoken1.address, user1, amountToMint.toString())
       const newOtoken = await MockOtoken.new()
       await addressBook.setOtokenImpl(newOtoken.address, {from: deployer})
 
