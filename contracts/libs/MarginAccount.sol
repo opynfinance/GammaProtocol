@@ -64,12 +64,17 @@ library MarginAccount {
         uint256 _index
     ) internal {
         //Check the adding token is the same as vault.shortOtokens[idx] if it exists or should be equal to address(0) if adding short for the first time
-        require(
-            (_vault.shortOtokens[_index] == _shortOtoken) || (_vault.shortOtokens[_index] == address(0)),
-            "MarginAccount: invalid short otoken address"
-        );
+        if ((_vault.shortOtokens.length > 0) || (_vault.shortAmounts.length > 0)) {
+            require(
+                (_vault.shortOtokens[_index] == _shortOtoken) || (_vault.shortOtokens[_index] == address(0)),
+                "MarginAccount: invalid short otoken address"
+            );
 
-        _vault.shortAmounts[_index].add(_amount);
+            _vault.shortAmounts[_index] = _vault.shortAmounts[_index].add(_amount);
+        } else {
+            _vault.shortOtokens.push(_shortOtoken);
+            _vault.shortAmounts.push(_amount);
+        }
     }
 
     /**

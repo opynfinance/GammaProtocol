@@ -64,10 +64,6 @@ contract('MarginAccount', ([deployer, controller]) => {
     describe('Open new vault', () => {
       it('vaultIds should be zero, owner should be null', async () => {
         account = await marginAccountTester.getAccount({from: deployer})
-        console.log(account.owner)
-        console.log(testAccount.owner)
-        console.log(account.vaultIds)
-        console.log(testAccount.vaultIds)
         assert.equal(account.owner, testAccount.owner, 'MarginAccount.Account owner addr mismatch')
         assert.equal(account.vaultIds, testAccount.vaultIds, 'Incorrect vaultIds')
       })
@@ -89,18 +85,17 @@ contract('MarginAccount', ([deployer, controller]) => {
     describe('Add short', () => {
       it('vaultIds should be zero, owner should be null', async () => {
         account = await marginAccountTester.getAccount({from: deployer})
-        console.log(account.owner)
-        console.log(testAccount.owner)
-        console.log(account.vaultIds)
-        console.log(testAccount.vaultIds)
         assert.equal(account.owner, testAccount.owner, 'MarginAccount.Account owner addr mismatch')
       })
 
-      it('should revert if trying on the wrong vault', async () => {
-        await expectRevert(await marginAccountTester.testAddShort(Otoken, 10, 3, {from: deployer}), 'revert')
+      it('should add short', async () => {
+        await marginAccountTester.testAddShort(otoken.address, 10, 0)
+      })
+      /*it('should revert if trying on the wrong vault', async () => {
+        await expectRevert(await marginAccountTester.testAddShort(otoken.address, 10, 3, {from: deployer}), 'revert')
         // await expectRevert(await marginAccountTester.testAddShort(Otoken, 10, 3, {from: deployer}), 'revert')
         // await expectRevert(await marginAccountTester.testAddShort(Otoken, 10, 100, {from: deployer}), 'revert')
-      })
+      })*/
 
       // it('should add short correctly if called on correct vault', async () => {
       //   await marginAccountTester.testAddShort(Otoken, 10, 0, {from: deployer})
