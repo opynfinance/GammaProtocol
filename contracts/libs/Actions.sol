@@ -67,6 +67,15 @@ library Actions {
         uint256 amount;
     }
 
+    struct ExerciseArgs {
+        /// @notice The address from which we transfer the otokens, to which we pay out the cash difference if the option is ITM.
+        address exerciser;
+        /// @notice The otoken that is to be exercised
+        address otoken;
+        /// @notice The amount of otokens that is to be exercised
+        uint256 amount;
+    }
+
     /**
      * @notice Parses the passed in action argmuents to get the argmuents for an open vault action
      * @param _args The general action arguments structure
@@ -100,5 +109,16 @@ library Actions {
                 index: _args.index,
                 amount: _args.amount
             });
+    }
+
+    /**
+     * @notice Parses the passed in action argmuents to get the argmuents for an exercise action
+     * @param _args The general action arguments structure
+     * @return The arguments for a exercise action
+     */
+    function _parseExerciseArgs(ActionArgs memory _args) internal returns (ExerciseArgs memory) {
+        require(_args.actionType == ActionType.Exercise, "Actions: can only parse arguments for exercise actions");
+
+        return ExerciseArgs({exerciser: _args.sender, otoken: _args.asset, amount: _args.amount});
     }
 }

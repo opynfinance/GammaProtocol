@@ -6,6 +6,7 @@ import {Actions} from "../libs/Actions.sol";
 contract ActionTester {
     Actions.OpenVaultArgs private openVaultArgs;
     Actions.DepositArgs private depositArgs;
+    Actions.ExerciseArgs private exerciseArgs;
 
     function testParseDespositAction(Actions.ActionArgs memory _args) external {
         depositArgs = Actions._parseDepositArgs(_args);
@@ -21,5 +22,13 @@ contract ActionTester {
 
     function getOpenVaultArgs() external view returns (Actions.OpenVaultArgs memory) {
         return openVaultArgs;
+    }
+
+    function testParseExerciseAction(Actions.ActionArgs memory _args) external {
+        exerciseArgs = Actions._parseExerciseArgs(_args);
+    }
+
+    function getExerciseArgs() external view returns (Actions.ExerciseArgs memory) {
+        return exerciseArgs;
     }
 }
