@@ -166,7 +166,7 @@ library MarginAccount {
         uint256 _index
     ) internal {
         // Valid indexes in any array are between 0 and array.length - 1.
-        // If adding amount into an existant long otoken, make sure _index in the range of 0->length-1
+        // If adding amount into an existing long otoken, make sure _index in the range of 0->length-1
         if ((_index >= _vault.collateralAssets.length) && ((_index >= _vault.collateralAmounts.length))) {
             _vault.collateralAssets.push(_collateralAsset);
             _vault.collateralAmounts.push(_amount);

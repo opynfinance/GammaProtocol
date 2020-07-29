@@ -97,16 +97,15 @@ contract('MarginAccount', ([deployer, controller]) => {
         await marginAccountTester.testAddShort(otoken.address, 10, 0)
         const vault = await marginAccountTester.getVault()
         assert.equal(vault.shortAmounts[0], new BigNumber(10))
-        //assert.equal(vault.shortAmounts[1], new BigNumber(0));
       })
 
-      it('should add some more short otokens', async () => {
+      it('should add a different short otokens to a different index', async () => {
         await marginAccountTester.testAddShort(otoken2.address, 11, 1)
         const vault = await marginAccountTester.getVault()
         assert.equal(vault.shortAmounts[1], new BigNumber(11))
       })
 
-      it('should add some more short otokens', async () => {
+      it('should add some more of the second short otoken', async () => {
         await marginAccountTester.testAddShort(otoken2.address, 12, 1)
         const vault = await marginAccountTester.getVault()
         assert.equal(vault.shortAmounts[1], new BigNumber(23))
@@ -117,14 +116,13 @@ contract('MarginAccount', ([deployer, controller]) => {
           marginAccountTester.testAddShort(otoken.address, 10, 1),
           'MarginAccount: invalid short otoken position',
         )
-        // await expectRevert(marginAccountTester.testAddShort(otoken2.address, 10, 0))
       })
 
-      it('should revert if trying on the wrong vault', async () => {
-        // await expectRevert(marginAccountTester.testAddShort(otoken.address, 10, 5, {from: deployer}), 'revert')
-        // await expectRevert(await marginAccountTester.testAddShort(Otoken, 10, 3, {from: deployer}), 'revert')
-        // await expectRevert(await marginAccountTester.testAddShort(Otoken, 10, 100, {from: deployer}), 'revert')
-      })
+      // it('should revert if trying on the wrong vault', async () => {
+      //   // await expectRevert(marginAccountTester.testAddShort(otoken.address, 10, 5, {from: deployer}), 'revert')
+      //   // await expectRevert(await marginAccountTester.testAddShort(Otoken, 10, 3, {from: deployer}), 'revert')
+      //   // await expectRevert(await marginAccountTester.testAddShort(Otoken, 10, 100, {from: deployer}), 'revert')
+      // })
     })
 
     describe('Add long', () => {
@@ -134,32 +132,37 @@ contract('MarginAccount', ([deployer, controller]) => {
       })
 
       it('should add long otokens', async () => {
-        await marginAccountTester.testAddLong(otoken.address, 10, 0)
+        const index = 0
+        const amount = 10
+        await marginAccountTester.testAddLong(otoken.address, amount, index)
         const vault = await marginAccountTester.getVault()
-        // assert.equal(vault,2)
+        assert.equal(vault.longAmounts[index], new BigNumber(amount))
       })
 
-      it('should add some more long otokens', async () => {
-        await marginAccountTester.testAddLong(otoken2.address, 10, 1)
+      it('should add a different long otoken', async () => {
+        const index = 1
+        const amount = 10
+        await marginAccountTester.testAddLong(otoken2.address, amount, index)
         const vault = await marginAccountTester.getVault()
-        //assert.equal(vault)
+        assert.equal(vault.longAmounts[index], new BigNumber(amount))
       })
 
       it('should revert if trying to add wrong otoken to an index', async () => {
+        const index = 1
+        const amount = 10
         await expectRevert(
-          marginAccountTester.testAddLong(otoken.address, 10, 1),
+          marginAccountTester.testAddLong(otoken.address, amount, index),
           'MarginAccount: invalid long otoken position',
         )
-        const vault = await marginAccountTester.getVault()
       })
 
-      //TODO: should it revert if trying to add a long otoken to an vault where the same otoken is shorted?'
-
-      it('should revert if trying on the wrong vault', async () => {
-        // await expectRevert(marginAccountTester.testAddShort(otoken.address, 10, 5, {from: deployer}), 'revert')
-        // await expectRevert(await marginAccountTester.testAddShort(Otoken, 10, 3, {from: deployer}), 'revert')
-        // await expectRevert(await marginAccountTester.testAddShort(Otoken, 10, 100, {from: deployer}), 'revert')
-      })
+      //TODO: do we need to check addition overflows?
+      // //TODO: should it revert if trying to add a long otoken to an vault where the same otoken is shorted?'
+      // it('should revert if trying on the wrong vault', async () => {
+      //   // await expectRevert(marginAccountTester.testAddShort(otoken.address, 10, 5, {from: deployer}), 'revert')
+      //   // await expectRevert(await marginAccountTester.testAddShort(Otoken, 10, 3, {from: deployer}), 'revert')
+      //   // await expectRevert(await marginAccountTester.testAddShort(Otoken, 10, 100, {from: deployer}), 'revert')
+      // })
     })
 
     describe('Add collateral', () => {
@@ -169,9 +172,11 @@ contract('MarginAccount', ([deployer, controller]) => {
       })
 
       it('should add weth collateral', async () => {
-        await marginAccountTester.testAddCollateral(weth.address, 10, 0)
+        const index = 0
+        const amount = 10
+        await marginAccountTester.testAddCollateral(weth.address, amount, index)
         const vault = await marginAccountTester.getVault()
-        //assert.equal(vault)
+        assert.equal(vault.collateralAmounts[index], new BigNumber(amount))
       })
 
       //TODO: understand why below doesn't work
@@ -193,35 +198,57 @@ contract('MarginAccount', ([deployer, controller]) => {
         )
       })
 
+      //TODO: shouldn't the below revert?
+      // it('should revert if trying to add WETH as collateral to wrong index', async () => {
+      //   const changeAmt = 10
+      //   const index = 1
+      //   await expectRevert(marginAccountTester.testAddCollateral(otoken.address, changeAmt, index), "MarginAccount: invalid collateral token position")
+      // })
+
       it('should add usdc collateral', async () => {
-        await marginAccountTester.testAddCollateral(usdc.address, 10, 1)
+        const index = 1
+        const amount = 20
+        await marginAccountTester.testAddCollateral(usdc.address, amount, index)
+        const vault = await marginAccountTester.getVault()
+        assert.equal(vault.collateralAmounts[index], new BigNumber(amount))
       })
 
       it('should revert if adding usdc collateral to wrong index', async () => {
+        const changeAmt = 10
+        const index = 0
         await expectRevert(
-          marginAccountTester.testAddCollateral(usdc.address, 10, 0),
+          marginAccountTester.testAddCollateral(usdc.address, changeAmt, index),
           'MarginAccount: invalid collateral token position',
         )
       })
 
       it('should add some more usdc collateral', async () => {
-        await marginAccountTester.testAddCollateral(usdc.address, 20, 1)
-        // assert.equal(new BigNumber(afterVault.collateralAmounts[index]).minus(new BigNumber(beforeVault.collateralAmounts[index])).toString(), changeAmt.toString())
+        const beforeVault = await marginAccountTester.getVault()
+        const changeAmt = 30
+        const index = 1
+        await marginAccountTester.testAddCollateral(usdc.address, changeAmt, index)
+        const afterVault = await marginAccountTester.getVault()
+        assert.equal(
+          new BigNumber(afterVault.collateralAmounts[index])
+            .minus(new BigNumber(beforeVault.collateralAmounts[index]))
+            .toString(),
+          changeAmt.toString(),
+        )
       })
 
-      //TODO: this is out of scope of the margin account
+      //TODO:  is this out of scope of the margin account?
       // it('should revert if trying to add otoken as collateral to a vault', async () => {
       //   await expectRevert(marginAccountTester.testAddCollateral(otoken.address, 10, 3))
       //   await expectRevert(marginAccountTester.testAddCollateral(otoken.address, 10, 2))
       //   await expectRevert(marginAccountTester.testAddCollateral(otoken.address, 10, 1))
       //   await expectRevert(marginAccountTester.testAddCollateral(otoken.address, 10, 0))
       // })
-
-      it('should revert if trying on the wrong vault', async () => {
-        // await expectRevert(marginAccountTester.testAddShort(otoken.address, 10, 5, {from: deployer}), 'revert')
-        // await expectRevert(await marginAccountTester.testAddShort(Otoken, 10, 3, {from: deployer}), 'revert')
-        // await expectRevert(await marginAccountTester.testAddShort(Otoken, 10, 100, {from: deployer}), 'revert')
-      })
+      //
+      // it('should revert if trying on the wrong vault', async () => {
+      //   // await expectRevert(marginAccountTester.testAddShort(otoken.address, 10, 5, {from: deployer}), 'revert')
+      //   // await expectRevert(await marginAccountTester.testAddShort(Otoken, 10, 3, {from: deployer}), 'revert')
+      //   // await expectRevert(await marginAccountTester.testAddShort(Otoken, 10, 100, {from: deployer}), 'revert')
+      // })
     })
 
     describe('Remove short', () => {
@@ -276,7 +303,7 @@ contract('MarginAccount', ([deployer, controller]) => {
       //   assert.equal(1,2)
       // })
 
-      it('should be able to remove the remaining short otokens', async () => {
+      it('should be able to remove some of the remaining short otokens', async () => {
         const index = 0
         const toRemove = 5
         const beforeVault = await marginAccountTester.getVault()
@@ -304,9 +331,10 @@ contract('MarginAccount', ([deployer, controller]) => {
         marginAccountTester = await MarginAccountTester.new()
       })
 
-      it('vaultIds should no longer be zero, owner should be null', async () => {
+      it('vaultIds should be zero again, owner should be ZERO_ADDR', async () => {
         account = await marginAccountTester.getAccount({from: deployer})
         assert.equal(account.owner, testAccount.owner, 'MarginAccount.Account owner addr mismatch')
+        assert.equal(account.vaultIds, testAccount.vaultIds, 'MarginAccount.Account owner vaultids mismatch')
       })
 
       it('should not remove long otokens if there are none', async () => {
@@ -316,15 +344,31 @@ contract('MarginAccount', ([deployer, controller]) => {
         )
       })
 
-      it('should remove more long otokens', async () => {
-        await marginAccountTester.testAddShort(otoken.address, 10, 0)
-        const vault = await marginAccountTester.getVault()
+      it('should add some long otokens to be removed later', async () => {
+        await marginAccountTester.testAddLong(otoken.address, 10, 0)
       })
 
-      it('should not be able to remove more than the num those long otokens', async () => {
+      it('should not be able to remove more than the num of remaining long otokens', async () => {
+        await expectRevert(marginAccountTester.testRemoveLong(otoken.address, 100, 0), 'SafeMath: subtraction overflow')
+      })
+
+      it('should be able to remove some of the remaining long oTokens', async () => {
+        const index = 0
+        const toRemove = 1
+        const beforeVault = await marginAccountTester.getVault()
+        await marginAccountTester.testRemoveLong(otoken.address, toRemove, index)
+        const afterVault = await marginAccountTester.getVault()
+        assert.equal(
+          new BigNumber(beforeVault.longAmounts[index]).minus(new BigNumber(afterVault.longAmounts[index])).toString(),
+          new BigNumber(toRemove).toString(),
+          'amount removed mismatch',
+        )
+      })
+
+      it('should not be able to remove the wrong otoken from a long position with a different index', async () => {
         await expectRevert(
-          marginAccountTester.testRemoveShort(otoken.address, 100, 0),
-          'SafeMath: subtraction overflow',
+          marginAccountTester.testRemoveLong(otoken2.address, 1, 0),
+          'MarginAccount: long otoken address mismatch',
         )
       })
     })
@@ -395,6 +439,10 @@ contract('MarginAccount', ([deployer, controller]) => {
     })
 
     describe('Clear vault', () => {
+      before('redeploying', async () => {
+        marginAccountTester = await MarginAccountTester.new()
+      })
+
       it('vaultIds should no longer be zero, owner should be null', async () => {
         account = await marginAccountTester.getAccount({from: deployer})
         assert.equal(account.owner, testAccount.owner, 'MarginAccount.Account owner addr mismatch')
@@ -406,6 +454,10 @@ contract('MarginAccount', ([deployer, controller]) => {
 
       it('should add long oTokens', async () => {
         await marginAccountTester.testAddLong(otoken.address, 10, 0)
+      })
+
+      it('should add short oTokens', async () => {
+        await marginAccountTester.testAddShort(otoken2.address, 10, 0)
       })
 
       it('ensure that the vault is not empty before clearing', async () => {
