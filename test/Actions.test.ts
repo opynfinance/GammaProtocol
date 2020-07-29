@@ -231,4 +231,81 @@ contract('Actions', ([owner, random]) => {
       assert.equal(depositArgs.amount, new BN(amount))
     })
   })
+
+  describe('Parse Settle Vault Arguments', () => {
+    it('should not be able to parse a non Settle Vault action', async () => {
+      const actionType = ActionType.OpenVault
+      const asset = ZERO_ADDR
+      const vaultId = '0'
+      const amount = '10'
+      const index = '0'
+      const bytesArgs = ZERO_ADDR
+
+      const data = {
+        actionType: actionType,
+        owner: owner,
+        sender: owner,
+        asset: asset,
+        vaultId: vaultId,
+        amount: amount,
+        index: index,
+        data: bytesArgs,
+      }
+
+      await expectRevert(
+        actionTester.testParseSettleVaultAction(data),
+        'Actions: can only parse arguments for settle vault actions',
+      )
+    })
+    it('should not be able to parse an invalid owner address', async () => {
+      const actionType = ActionType.SettleVault
+      const asset = ZERO_ADDR
+      const vaultId = '0'
+      const amount = '10'
+      const index = '0'
+      const bytesArgs = ZERO_ADDR
+
+      const data = {
+        actionType: actionType,
+        owner: ZERO_ADDR,
+        sender: owner,
+        asset: asset,
+        vaultId: vaultId,
+        amount: amount,
+        index: index,
+        data: bytesArgs,
+      }
+
+      await expectRevert(
+        actionTester.testParseSettleVaultAction(data),
+        'Actions: cannot settle vault for an invalid account',
+      )
+    })
+    it('should be able to parse arguments for a settle vault action', async () => {
+      const actionType = ActionType.SettleVault
+      const asset = ZERO_ADDR
+      const vaultId = '1'
+      const amount = '10'
+      const index = '0'
+      const bytesArgs = ZERO_ADDR
+
+      const data = {
+        actionType: actionType,
+        owner: owner,
+        sender: random,
+        asset: asset,
+        vaultId: vaultId,
+        amount: amount,
+        index: index,
+        data: bytesArgs,
+      }
+
+      await actionTester.testParseSettleVaultAction(data)
+
+      const depositArgs = await actionTester.getSettleVaultArgs()
+      assert.equal(depositArgs.owner, owner)
+      assert.equal(depositArgs.to, random)
+      assert.equal(depositArgs.vaultId, new BN(vaultId))
+    })
+  })
 })

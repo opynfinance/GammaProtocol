@@ -76,6 +76,15 @@ library Actions {
         uint256 amount;
     }
 
+    struct SettleVaultArgs {
+        /// @notice The address of the account owner
+        address owner;
+        /// @notice The index of the vault to which is to be settled
+        uint256 vaultId;
+        /// @notice The address to which we transfer the remaining collateral
+        address to;
+    }
+
     /**
      * @notice Parses the passed in action argmuents to get the argmuents for an open vault action
      * @param _args The general action arguments structure
@@ -120,5 +129,20 @@ library Actions {
         require(_args.actionType == ActionType.Exercise, "Actions: can only parse arguments for exercise actions");
 
         return ExerciseArgs({exerciser: _args.sender, otoken: _args.asset, amount: _args.amount});
+    }
+
+    /**
+     * @notice Parses the passed in action argmuents to get the argmuents for a settle vault action
+     * @param _args The general action arguments structure
+     * @return The arguments for a settle vault action
+     */
+    function _parseSettleVaultArgs(ActionArgs memory _args) internal returns (SettleVaultArgs memory) {
+        require(
+            _args.actionType == ActionType.SettleVault,
+            "Actions: can only parse arguments for settle vault actions"
+        );
+        require(_args.owner != address(0), "Actions: cannot settle vault for an invalid account");
+
+        return SettleVaultArgs({owner: _args.owner, vaultId: _args.vaultId, to: _args.sender});
     }
 }

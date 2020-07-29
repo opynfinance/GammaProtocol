@@ -7,6 +7,7 @@ contract ActionTester {
     Actions.OpenVaultArgs private openVaultArgs;
     Actions.DepositArgs private depositArgs;
     Actions.ExerciseArgs private exerciseArgs;
+    Actions.SettleVaultArgs private settleVaultArgs;
 
     function testParseDespositAction(Actions.ActionArgs memory _args) external {
         depositArgs = Actions._parseDepositArgs(_args);
@@ -30,5 +31,13 @@ contract ActionTester {
 
     function getExerciseArgs() external view returns (Actions.ExerciseArgs memory) {
         return exerciseArgs;
+    }
+
+    function testParseSettleVaultAction(Actions.ActionArgs memory _args) external {
+        settleVaultArgs = Actions._parseSettleVaultArgs(_args);
+    }
+
+    function getSettleVaultArgs() external view returns (Actions.SettleVaultArgs memory) {
+        return settleVaultArgs;
     }
 }
