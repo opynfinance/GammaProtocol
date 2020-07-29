@@ -17,6 +17,7 @@ contract('MarginAccount', ([deployer, controller]) => {
   // addressbook instance
   let marginAccountTester: MarginAccountTesterInstance
   let otoken: OtokenInstance
+  let otoken2: OtokenInstance
   let usdc: MockERC20Instance
   let mockAddressBookAddr: string
 
@@ -42,6 +43,10 @@ contract('MarginAccount', ([deployer, controller]) => {
     otoken = await Otoken.new(addressBook.address)
 
     usdc = await MockERC20.new('USDC', 'USDC')
+
+    // deploy second otoken
+    otoken2 = await Otoken.new(addressBook.address)
+    await otoken2.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, expiry, isPut, {from: deployer})
   })
 
   describe('Otoken Initialization', () => {
@@ -88,9 +93,22 @@ contract('MarginAccount', ([deployer, controller]) => {
         assert.equal(account.owner, testAccount.owner, 'MarginAccount.Account owner addr mismatch')
       })
 
-      it('should add short', async () => {
+      it('should add short otoken', async () => {
         await marginAccountTester.testAddShort(otoken.address, 10, 0)
+        const vault = await marginAccountTester.getVault()
+
+        console.log(vault)
+        //assert.equal(vault)
       })
+
+      it('should add another short otoken', async () => {
+        await marginAccountTester.testAddShort(otoken2.address, 10, 1)
+        const vault = await marginAccountTester.getVault()
+
+        console.log(vault)
+        //assert.equal(vault)
+      })
+
       /*it('should revert if trying on the wrong vault', async () => {
         await expectRevert(await marginAccountTester.testAddShort(otoken.address, 10, 3, {from: deployer}), 'revert')
         // await expectRevert(await marginAccountTester.testAddShort(Otoken, 10, 3, {from: deployer}), 'revert')
