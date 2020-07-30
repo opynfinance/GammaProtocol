@@ -41,4 +41,24 @@ contract FixedPointInt256Tester {
     function testMax(int256 a, int256 b) external pure returns (int256) {
         return FixedPointInt256.max(a, b);
     }
+
+    function testIsEqual(int256 a, int256 b) external pure returns (bool) {
+        return FixedPointInt256.isEqual(a, b);
+    }
+
+    function testIsGreaterThan(int256 a, int256 b) external pure returns (bool) {
+        return FixedPointInt256.isGreaterThan(a, b);
+    }
+
+    function testIsGreaterThanOrEqual(int256 a, int256 b) external pure returns (bool) {
+        return FixedPointInt256.isGreaterThanOrEqual(a, b);
+    }
+
+    function testIsLessThan(int256 a, int256 b) external pure returns (bool) {
+        return FixedPointInt256.isLessThan(a, b);
+    }
+
+    function testIsLessThanOrEqual(int256 a, int256 b) external pure returns (bool) {
+        return FixedPointInt256.isLessThanOrEqual(a, b);
+    }
 }

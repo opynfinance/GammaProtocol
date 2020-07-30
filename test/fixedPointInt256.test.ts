@@ -109,4 +109,46 @@ contract('FixedPointInt256 lib', () => {
       assert.equal((await lib.testMax(a, b)).toString(), expectedResult.toString(), 'maximum result mismatch')
     })
   })
+
+  describe('Test comparison operator', () => {
+    it('Should return if two int are equal or not', async () => {
+      const a = new BigNumber(3).multipliedBy(1e18)
+      const b = new BigNumber(3).multipliedBy(1e18)
+      const expectedResult = a.isEqualTo(b)
+
+      assert.equal(await lib.testIsEqual(a, b), expectedResult, 'isEqual result mismatch')
+    })
+
+    it('Should return if a is greater than b or not', async () => {
+      const a = new BigNumber(-2).multipliedBy(1e18)
+      const b = new BigNumber(2).multipliedBy(1e18)
+      const expectedResult = a.isGreaterThan(b)
+
+      assert.equal(await lib.testIsGreaterThan(a, b), expectedResult, 'isGreaterThan result mismatch')
+    })
+
+    it('Should return if a is greater than or equal b', async () => {
+      const a = new BigNumber(-2).multipliedBy(1e18)
+      const b = new BigNumber(-2).multipliedBy(1e18)
+      const expectedResult = a.isGreaterThanOrEqualTo(b)
+
+      assert.equal(await lib.testIsGreaterThanOrEqual(a, b), expectedResult, 'isGreaterThanOrEqual result mismatch')
+    })
+
+    it('Should return if a is less than b or not', async () => {
+      const a = new BigNumber(-2).multipliedBy(1e18)
+      const b = new BigNumber(0).multipliedBy(1e18)
+      const expectedResult = a.isLessThan(b)
+
+      assert.equal(await lib.testIsLessThan(a, b), expectedResult, 'isLessThan result mismatch')
+    })
+
+    it('Should return if a is less than or equal b', async () => {
+      const a = new BigNumber(0).multipliedBy(1e18)
+      const b = new BigNumber(0).multipliedBy(1e18)
+      const expectedResult = a.isLessThanOrEqualTo(b)
+
+      assert.equal(await lib.testIsLessThanOrEqual(a, b), expectedResult, 'isLessThanOrEqual result mismatch')
+    })
+  })
 })
