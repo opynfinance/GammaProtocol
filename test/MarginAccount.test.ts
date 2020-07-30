@@ -73,6 +73,16 @@ contract('MarginAccount', ([deployer, controller]) => {
         assert.equal(account.vaultIds, testAccount.vaultIds, 'Incorrect vaultIds')
       })
 
+      it('ensure that the vault is empty when first opened', async () => {
+        const vault = await marginAccountTester.getVault()
+        assert.equal(vault.shortAmounts.length, 0, 'shortAmounts.length should be 0')
+        assert.equal(vault.longAmounts.length, 0, 'longAmounts.length should be 0')
+        assert.equal(vault.collateralAmounts.length, 0, 'collateralAmounts.length should be 0')
+        assert.equal(vault.shortOtokens.length, 0, 'shortOtokens.length should be 0')
+        assert.equal(vault.longOtokens.length, 0, 'longOtokens.length should be 0')
+        assert.equal(vault.collateralAssets.length, 0, 'collateralAssets.length should be 0')
+      })
+
       //TODO: should vaultIds be at 1 or 0 at the end (i.e. how do we do indices)
       it('should increment vaultID otoken implementation address', async () => {
         await marginAccountTester.testOpenNewVault({from: deployer})
