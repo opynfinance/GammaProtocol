@@ -24,6 +24,12 @@ contract('FixedPointInt256 lib', () => {
       )
     })
 
+    it('It should revert converting an unsigned integer greater than uint256(-1) to signed integer', async () => {
+      const uint = new BigNumber(2).multipliedBy(1e256).minus(1)
+
+      await expectRevert(lib.testFromUint(uint), 'FixedPointInt256: out of int range')
+    })
+
     it('Should convert from signed integer to unsigned integer', async () => {
       const int = new BigNumber(-3)
       const expectedUint = new BigNumber(3)
