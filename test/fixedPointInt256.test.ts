@@ -94,7 +94,7 @@ contract('FixedPointInt256 lib', () => {
     })
   })
 
-  describe('Test min', () => {
+  describe('Test max', () => {
     it('Should return 3e18 between 3e18 and 1e18', async () => {
       const a = new BigNumber(3).multipliedBy(1e18)
       const b = new BigNumber(1).multipliedBy(1e18)
