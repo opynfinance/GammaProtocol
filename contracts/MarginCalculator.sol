@@ -64,10 +64,15 @@ contract MarginCalculator is Initializable {
      * @param _otoken otoken address
      * @return id the batchDd of an otoken
      */
-    function _getBatchId(address _otoken) internal pure returns (bytes32 id) {
+    function _getBatchId(address _otoken) internal view returns (bytes32 id) {
         OtokenInterface otoken = OtokenInterface(_otoken);
         id = keccak256(
-            abi.encodePacked(otoken.underlyingAsset, otoken.strikeAsset, otoken.collateralAsset, otoken.expiry)
+            abi.encodePacked(
+                otoken.underlyingAsset(),
+                otoken.strikeAsset(),
+                otoken.collateralAsset(),
+                otoken.expiryTimestamp()
+            )
         );
     }
 }
