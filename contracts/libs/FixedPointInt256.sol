@@ -31,9 +31,9 @@ library FixedPointInt256 {
      */
     function fromInt(int256 a) internal pure returns (uint256) {
         if (a < 0) {
-            uint256(-a);
+            return uint256(-a);
         } else {
-            uint256(a);
+            return uint256(a);
         }
     }
 
@@ -65,7 +65,7 @@ library FixedPointInt256 {
      * @return mul of two signed integer
      */
     function mul(int256 a, int256 b) internal pure returns (int256) {
-        return add(mul(a, b), SCALING_FACTOR / 2) / SCALING_FACTOR;
+        return (a.mul(b)).add(SCALING_FACTOR / 2) / SCALING_FACTOR;
     }
 
     /**
@@ -76,7 +76,7 @@ library FixedPointInt256 {
      * @return div of two signed integer
      */
     function div(int256 a, int256 b) internal pure returns (int256) {
-        return add(mul(a, SCALING_FACTOR), b / 2) / b;
+        return (a.mul(SCALING_FACTOR)).add(b / 2) / b;
     }
 
     /**
