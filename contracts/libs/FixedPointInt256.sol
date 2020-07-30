@@ -18,7 +18,7 @@ library FixedPointInt256 {
      * @param a uint to convert into a signed integer.
      * @return the converted signed integer.
      */
-    function fromUint(uint256 a) internal pure returns (int256) {
+    function uintToInt(uint256 a) internal pure returns (int256) {
         require(a < uint256(-1), "FixedPointInt256: out of int range");
 
         return int256(a);
@@ -29,7 +29,7 @@ library FixedPointInt256 {
      * @param a int to convert into an unsigned integer.
      * @return the converted unsigned integer.
      */
-    function fromInt(int256 a) internal pure returns (uint256) {
+    function intToUint(int256 a) internal pure returns (uint256) {
         if (a < 0) {
             return uint256(-a);
         } else {

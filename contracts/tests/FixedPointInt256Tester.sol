@@ -11,11 +11,11 @@ import "../libs/FixedPointInt256.sol";
  */
 contract FixedPointInt256Tester {
     function testFromInt(int256 a) external pure returns (uint256) {
-        return FixedPointInt256.fromInt(a);
+        return FixedPointInt256.intToUint(a);
     }
 
     function testFromUint(uint256 a) external pure returns (int256) {
-        return FixedPointInt256.fromUint(a);
+        return FixedPointInt256.uintToInt(a);
     }
 
     function testAdd(int256 a, int256 b) external pure returns (int256) {
