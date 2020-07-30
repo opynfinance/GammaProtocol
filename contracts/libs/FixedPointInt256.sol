@@ -98,4 +98,54 @@ library FixedPointInt256 {
     function max(int256 a, int256 b) internal pure returns (int256) {
         return a > b ? a : b;
     }
+
+    /**
+     * @notice Whether `a` is equal to `b`.
+     * @param a a signed integer
+     * @param b a signed integer
+     * @return True if equal, or False.
+     */
+    function isEqual(int256 a, int256 b) internal pure returns (bool) {
+        return a == b;
+    }
+
+    /**
+     * @notice Whether `a` is greater than `b`.
+     * @param a a signed integer
+     * @param b a signed integer
+     * @return True if `a > b`, or False.
+     */
+    function isGreaterThan(int256 a, int256 b) internal pure returns (bool) {
+        return a > b;
+    }
+
+    /**
+     * @notice Whether `a` is greater than or equal to `b`.
+     * @param a a signed integer
+     * @param b a signed integer
+     * @return True if `a >= b`, or False.
+     */
+    function isGreaterThanOrEqual(int256 a, int256 b) internal pure returns (bool) {
+        return a >= b;
+    }
+
+    /**
+     * @notice Whether `a` is less than `b`.
+     * @param a a signed integer
+     * @param b a signed integer
+     * @return True if `a < b`, or False.
+     */
+    function isLessThan(int256 a, int256 b) internal pure returns (bool) {
+        return a < b;
+    }
+
+    /**
+     * @notice Whether `a` is less than or equal to `b`.
+     * @param a a signed integer
+     * @param b a signed integer
+     * @return True if `a <= b`, or False.
+     */
+    function isLessThanOrEqual(int256 a, int256 b) internal pure returns (bool) {
+        return a <= b;
+    }
 }
