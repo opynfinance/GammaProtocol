@@ -5,7 +5,7 @@ const {expectRevert} = require('@openzeppelin/test-helpers')
 
 const FixedPointInt256Tester = artifacts.require('FixedPointInt256Tester.sol')
 
-contract('FixedPointInt256', () => {
+contract('FixedPointInt256 lib', () => {
   let lib: FixedPointInt256TesterInstance
 
   before('set up contracts', async () => {
