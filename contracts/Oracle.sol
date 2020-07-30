@@ -40,4 +40,44 @@ contract Oracle is Ownable {
 
         addressBook = _addressBook;
     }
+
+    /**
+     * @notice get batch price
+     * @param _batch batch hash
+     * @param _timestamp price timestamp
+     * @return price and timestap at which price submitted to this contract
+     */
+    function getBatchPrice(bytes32 _batch, uint256 _timestamp) public view returns (uint256, uint256) {
+        Price memory batchPrice = batchPriceAt[_batch][_timestamp];
+        return (batchPrice.price, batchPrice.timestamp);
+    }
+
+    /**
+     * @notice get batch oracle
+     * @param _batch batch hash
+     * @return oracle address
+     */
+    function getBatchOracle(bytes32 _batch) public view returns (address) {
+        return batchOracle[_batch];
+    }
+
+    /**
+     * @notice get oracle locking period
+     * @dev during an oracle locking period, price can not be submitted to this contract
+     * @param _oracle oracle address
+     * @return locking period
+     */
+    function getOracleLockingPeriod(address _oracle) public view returns (uint256) {
+        return oracleLockingPeriod[_oracle];
+    }
+
+    /**
+     * @notice get oracle dispute period
+     * @dev during an oracle dispute period, the owner of this contract can dispute the submitted price and modify it
+     * @param _oracle oracle address
+     * @return dispute period
+     */
+    function getOracleDisputePeriod(address _oracle) public view returns (uint256) {
+        return oracleDisputePeriod[_oracle];
+    }
 }
