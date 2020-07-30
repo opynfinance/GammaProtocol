@@ -472,8 +472,8 @@ contract('MarginAccount', ([deployer, controller]) => {
       })
 
       it('ensure that the vault is empty after clearing', async () => {
-        const vault = await marginAccountTester.getVault()
         await marginAccountTester.testClearVault()
+        const vault = await marginAccountTester.getVault()
         assert.equal(vault.shortAmounts.length, 0, 'shortAmounts.length should be 0')
         assert.equal(vault.longAmounts.length, 0, 'longAmounts.length should be 0')
         assert.equal(vault.collateralAmounts.length, 0, 'collateralAmounts.length should be 0')
