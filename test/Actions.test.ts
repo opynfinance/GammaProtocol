@@ -165,6 +165,27 @@ contract('Actions', ([owner, random]) => {
 
       const data = {
         actionType: actionType,
+        owner: owner,
+        sender: ZERO_ADDR,
+        asset: asset,
+        vaultId: vaultId,
+        amount: amount,
+        index: index,
+        data: bytesArgs,
+      }
+
+      await expectRevert(actionTester.testParseWithdrawAction(data), 'Actions: cannot withdraw to an invalid account')
+    })
+    it('should not be able to parse an invalid owner address', async () => {
+      const actionType = ActionType.WithdrawCollateral
+      const asset = ZERO_ADDR
+      const vaultId = '0'
+      const amount = '10'
+      const index = '0'
+      const bytesArgs = ZERO_ADDR
+
+      const data = {
+        actionType: actionType,
         owner: ZERO_ADDR,
         sender: owner,
         asset: asset,
@@ -174,7 +195,7 @@ contract('Actions', ([owner, random]) => {
         data: bytesArgs,
       }
 
-      await expectRevert(actionTester.testParseWithdrawAction(data), 'Actions: cannot withdraw to an invalid account')
+      await expectRevert(actionTester.testParseWithdrawAction(data), 'Actions: cannot withdraw from an invalid account')
     })
     it('should be able to parse arguments for a withdraw long action', async () => {
       const actionType = ActionType.WithdrawLongOption
