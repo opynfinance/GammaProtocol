@@ -1,71 +1,33 @@
-import {MarginAccountTesterInstance, MockERC20Instance, OtokenInstance} from '../build/types/truffle-types'
+import {MarginAccountTesterInstance, MockERC20Instance} from '../build/types/truffle-types'
 
 import {BigNumber} from 'bignumber.js'
 
 const {expectRevert} = require('@openzeppelin/test-helpers')
 
-const Otoken = artifacts.require('Otoken.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
 const MarginAccountTester = artifacts.require('MarginAccountTester.sol')
-const MockAddressBook = artifacts.require('MockAddressBook')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
-const ETH_ADDR = ZERO_ADDR
+// const ETH_ADDR = ZERO_ADDR
 
-contract('MarginAccount', ([deployer, controller]) => {
-  // ERC20 mocks
+contract('MarginAccount', ([deployer]) => {
   let weth: MockERC20Instance
-  // addressbook instance
   let marginAccountTester: MarginAccountTesterInstance
-  let otoken: OtokenInstance
-  let otoken2: OtokenInstance
+  let otoken: MockERC20Instance
+  let otoken2: MockERC20Instance
   let usdc: MockERC20Instance
-  let mockAddressBookAddr: string
-
-  // let expiry: number;
-  const strikePrice = new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18))
-  const expiry = 1601020800 // 2020/09/25 0800 UTC
-  const isPut = true
 
   const testAccount: {owner: string; vaultIds: BigNumber} = {owner: ZERO_ADDR, vaultIds: new BigNumber(0)}
   let account: {owner: string; vaultIds: BigNumber}
 
   before('Deployment', async () => {
-    // deploy WETH token
     weth = await MockERC20.new('WETH', 'WETH')
-    // deploy AddressBook token
     marginAccountTester = await MarginAccountTester.new()
-
-    const addressBook = await MockAddressBook.new()
-    mockAddressBookAddr = addressBook.address
-    await addressBook.setController(controller)
-
-    // deploy oToken with addressbook
-    otoken = await Otoken.new(addressBook.address)
-
     usdc = await MockERC20.new('USDC', 'USDC')
-
-    // deploy second otoken
-    otoken2 = await Otoken.new(addressBook.address)
-    await otoken2.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, expiry, isPut, {from: deployer})
+    otoken = await MockERC20.new('Otoken1', 'oETH')
+    otoken2 = await MockERC20.new('Otoken2', 'oETH')
   })
 
   describe('Otoken Initialization', () => {
-    it('should be able to initialize with put parameter correctly', async () => {
-      await otoken.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, expiry, isPut, {from: deployer})
-      assert.equal(await otoken.underlyingAsset(), ETH_ADDR)
-      assert.equal(await otoken.strikeAsset(), usdc.address)
-      assert.equal(await otoken.collateralAsset(), usdc.address)
-      assert.equal((await otoken.strikePrice()).toString(), strikePrice.toString())
-      assert.equal(await otoken.isPut(), isPut)
-      assert.equal((await otoken.expiry()).toNumber(), expiry)
-    })
-
-    it('should initialize the put option with valid name / symbol', async () => {
-      assert.equal(await otoken.name(), `ETHUSDC 25-September-2020 200Put USDC Collateral`)
-      assert.equal(await otoken.symbol(), `oETHUSDC-25SEP20-200P`)
-      assert.equal((await otoken.decimals()).toNumber(), 18)
-    })
-
     describe('Open new vault', () => {
       it('vaultIds should be zero, owner should be null', async () => {
         account = await marginAccountTester.getAccount({from: deployer})
@@ -472,8 +434,8 @@ contract('MarginAccount', ([deployer, controller]) => {
       })
 
       it('ensure that the vault is empty after clearing', async () => {
-        const vault = await marginAccountTester.getVault()
         await marginAccountTester.testClearVault()
+        const vault = await marginAccountTester.getVault()
         assert.equal(vault.shortAmounts.length, 0, 'shortAmounts.length should be 0')
         assert.equal(vault.longAmounts.length, 0, 'longAmounts.length should be 0')
         assert.equal(vault.collateralAmounts.length, 0, 'collateralAmounts.length should be 0')
