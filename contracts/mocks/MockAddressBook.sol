@@ -2,40 +2,40 @@
 pragma solidity 0.6.10;
 
 contract MockAddressBook {
-    address private otokenImpl;
-    address private whitelist;
-    address private factory;
-    address private controller;
-
-    function setOtokenImpl(address _newImpl) external {
-        otokenImpl = _newImpl;
-    }
-
-    function setWhitelist(address _whitelist) external {
-        whitelist = _whitelist;
-    }
-
-    function setOtokenFactory(address _otokenFactory) external {
-        factory = _otokenFactory;
-    }
-
-    function setController(address _controller) external {
-        controller = _controller;
-    }
+    address private _otokenImpl;
+    address private _whitelist;
+    address private _otokenFactoryImpl;
+    address private _controllerImpl;
 
     function getOtokenImpl() external view returns (address) {
-        return otokenImpl;
-    }
-
-    function getWhitelist() external view returns (address) {
-        return whitelist;
-    }
-
-    function getOtokenFactory() external view returns (address) {
-        return factory;
+        return _otokenImpl;
     }
 
     function getController() external view returns (address) {
-        return controller;
+        return _controllerImpl;
+    }
+
+    function getWhitelist() external view returns (address) {
+        return _whitelist;
+    }
+
+    function getOtokenFactory() external view returns (address) {
+        return _otokenFactoryImpl;
+    }
+
+    function setOtokenImpl(address _newImpl) external {
+        _otokenImpl = _newImpl;
+    }
+
+    function setWhitelist(address _newImpl) external {
+        _whitelist = _newImpl;
+    }
+
+    function setOtokenFactory(address _otokenFactory) external {
+        _otokenFactoryImpl = _otokenFactory;
+    }
+
+    function setController(address _controller) external {
+        _controllerImpl = _controller;
     }
 }
