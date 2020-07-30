@@ -27,6 +27,7 @@ contract('MarginAccount', ([deployer]) => {
     otoken2 = await MockERC20.new('Otoken2', 'oETH')
   })
 
+  // TODO: REMOVE THIS describe block
   describe('Otoken Initialization', () => {
     describe('Open new vault', () => {
       it('vaultIds should be zero, owner should be null', async () => {
