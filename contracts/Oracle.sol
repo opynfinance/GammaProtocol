@@ -6,6 +6,7 @@ pragma solidity 0.6.10;
 import "./interfaces/AggregatorInterface.sol";
 import "./interfaces/AddressBookInterface.sol";
 import "./packages/oz/Ownable.sol";
+import "./packages/oz/SafeMath.sol";
 
 /**
  * @author Opyn Team
@@ -13,6 +14,8 @@ import "./packages/oz/Ownable.sol";
  * @notice The Oracle module provide the system with on-chain prices
  */
 contract Oracle is Ownable {
+    using SafeMath for uint256;
+
     /// @dev structure that represent price, and timestamp
     struct Price {
         uint256 price;
@@ -79,6 +82,38 @@ contract Oracle is Ownable {
      */
     function getOracleDisputePeriod(address _oracle) public view returns (uint256) {
         return oracleDisputePeriod[_oracle];
+    }
+
+    /**
+     * @notice check if locking period is over
+     * @param _batch batch hash
+     * @param _expiryTimestamp batch expiry
+     * @return True if locking period is over, otherwise false
+     */
+    function isLockingPeriodOver(bytes32 _batch, uint256 _expiryTimestamp) external view returns (bool) {
+        address oracle = batchOracle[_batch];
+        uint256 lockingPeriod = oracleLockingPeriod[oracle];
+
+        return now > _expiryTimestamp.add(lockingPeriod);
+    }
+
+    /**
+     * @notice check if dispute period is over
+     * @param _batch batch hash
+     * @param _expiryTimestamp batch expiry
+     * @return True if dispute period is over, otherwise false
+     */
+    function isDisputePeriodOver(bytes32 _batch, uint256 _expiryTimestamp) external view returns (bool) {
+        address oracle = batchOracle[_batch];
+        uint256 disputePeriod = oracleDisputePeriod[oracle];
+
+        Price memory batchPrice = batchPriceAt[_batch][_expiryTimestamp];
+
+        if (batchPrice.timestamp == 0) {
+            return false;
+        }
+
+        return now > batchPrice.timestamp.add(disputePeriod);
     }
 
     /**

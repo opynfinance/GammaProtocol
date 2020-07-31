@@ -2,7 +2,7 @@ import {ethers} from 'ethers'
 import {AddressBookInstance, OracleInstance} from '../build/types/truffle-types'
 
 const BigNumber = require('bignumber.js')
-const {expectEvent, expectRevert} = require('@openzeppelin/test-helpers')
+const {expectEvent, expectRevert, time} = require('@openzeppelin/test-helpers')
 
 const AddressBook = artifacts.require('AddressBook.sol')
 const Oracle = artifacts.require('Oracle.sol')
@@ -52,6 +52,12 @@ contract('Oracle', ([owner, batchOracle, random]) => {
         'oracle locking period mismatch',
       )
     })
+
+    it('should check if locking period is over', async () => {
+      const isOver = await oracle.isLockingPeriodOver(batchOracle, await time.latest(), {from: owner})
+      const expectedResult = false
+      assert.equal(isOver, expectedResult, 'locking period check mismatch')
+    })
   })
 
   describe('Oracle dispute period', () => {
@@ -72,6 +78,12 @@ contract('Oracle', ([owner, batchOracle, random]) => {
         disputePeriod.toString(),
         'oracle dispute period mismatch',
       )
+    })
+
+    it('should check if locking period is over when price timestmap equal to zero', async () => {
+      const isOver = await oracle.isDisputePeriodOver(batchOracle, await time.latest(), {from: owner})
+      const expectedResult = false
+      assert.equal(isOver, expectedResult, 'dispute period check mismatch')
     })
   })
 })
