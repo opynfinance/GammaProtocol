@@ -36,7 +36,7 @@ contract Oracle is Ownable {
      * @param _addressBook AddressBook module address
      */
     constructor(address _addressBook) public {
-        require(_addressBook != address(0), "Invalid address book");
+        require(_addressBook != address(0), "Oracle: Invalid address book");
 
         addressBook = _addressBook;
     }
