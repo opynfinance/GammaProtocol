@@ -80,4 +80,34 @@ contract Oracle is Ownable {
     function getOracleDisputePeriod(address _oracle) public view returns (uint256) {
         return oracleDisputePeriod[_oracle];
     }
+
+    /**
+     * @notice set batch oracle
+     * @dev can only be called by owner
+     * @param _batch batch (hash of underlying, stike, collateral and expiry)
+     * @param _oracle oracle address
+     */
+    function setBatchOracle(bytes32 _batch, address _oracle) external onlyOwner {
+        batchOracle[_batch] = _oracle;
+    }
+
+    /**
+     * @notice set oracle locking period
+     * @dev can only be called by owner
+     * @param _oracle oracle address
+     * @param _lockingPeriod locking period
+     */
+    function setLockingPeriod(address _oracle, uint256 _lockingPeriod) external onlyOwner {
+        oracleLockingPeriod[_oracle] = _lockingPeriod;
+    }
+
+    /**
+     * @notice set oracle dispute period
+     * @dev can only be called by owner
+     * @param _oracle oracle address
+     * @param _disputePeriod dispute period
+     */
+    function setDisputePeriod(address _oracle, uint256 _disputePeriod) external onlyOwner {
+        oracleDisputePeriod[_oracle] = _disputePeriod;
+    }
 }
