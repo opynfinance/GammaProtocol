@@ -42,7 +42,6 @@ contract MarginCalculator is Initializable {
         OtokenInterface otoken = OtokenInterface(_otoken);
         uint256 strikePrice = otoken.strikePrice();
 
-        // OracleInterface oracle = OracleInterface(AddressBookInterface(addressBook).getOracle());
         OracleInterface oracle = OracleInterface(_oracle);
         (uint256 underlyingPrice, bool isFinalized) = oracle.getPrice(batchId, otoken.expiryTimestamp());
 
