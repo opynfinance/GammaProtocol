@@ -30,7 +30,7 @@ contract Oracle is Ownable {
 
     /**
      * @notice get batch price
-     * @param _batch batch hash
+     * @param _batch a batch is the hash of underlying, collateral, strike and expiry.
      * @param _timestamp price timestamp
      * @return price and timestap at which price submitted to this contract
      */
