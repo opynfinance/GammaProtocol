@@ -1,24 +1,19 @@
 import {ethers} from 'ethers'
-import {AddressBookInstance, OracleInstance} from '../build/types/truffle-types'
+import {OracleInstance} from '../build/types/truffle-types'
 
 const BigNumber = require('bignumber.js')
 const {expectEvent, expectRevert} = require('@openzeppelin/test-helpers')
 
-const AddressBook = artifacts.require('AddressBook.sol')
 const Oracle = artifacts.require('Oracle.sol')
 
 contract('Oracle', ([owner, batchOracle, random]) => {
   const batch = web3.utils.asciiToHex('ETHUSDCUSDC1596218762')
-  // AddressBook module
-  let addressBook: AddressBookInstance
   // Oracle module
   let oracle: OracleInstance
 
   before('Deployment', async () => {
-    // deploy AddressBook mock
-    addressBook = await AddressBook.new()
     // deploy Whitelist module
-    oracle = await Oracle.new(addressBook.address, {from: owner})
+    oracle = await Oracle.new({from: owner})
   })
 
   describe('Batch oracle', () => {
