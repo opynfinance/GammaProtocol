@@ -41,7 +41,7 @@ contract Oracle is Ownable {
 
     /**
      * @notice get batch oracle
-     * @param _batch batch hash
+     * @param _batch get the price oracle for a specific batch. A batch is the hash of underlying, collateral, strike and expiry.
      * @return oracle address
      */
     function getBatchOracle(bytes32 _batch) public view returns (address) {
