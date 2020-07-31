@@ -22,27 +22,14 @@ contract Oracle is Ownable {
         uint256 timestamp; // timestamp at which the price is pulled to this oracle
     }
 
-    /// @notice AddressBook module
-    address public addressBook;
-
     /// @dev mapping between oracle and it's locking period
     mapping(address => uint256) internal oracleLockingPeriod;
-    /// @dev mapping between oracle and it's dispute period
+    /// @dev mapping of asset price to it's dispute period
     mapping(address => uint256) internal oracleDisputePeriod;
     /// @dev mapping between batch and it's oracle
     mapping(bytes32 => address) internal batchOracle;
     /// @dev mapping between batch and it price at specific timestmap
     mapping(bytes32 => mapping(uint256 => Price)) internal batchPriceAt;
-
-    /**
-     * @dev constructor
-     * @param _addressBook AddressBook module address
-     */
-    constructor(address _addressBook) public {
-        require(_addressBook != address(0), "Invalid address book");
-
-        addressBook = _addressBook;
-    }
 
     /**
      * @notice get batch price
