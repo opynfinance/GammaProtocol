@@ -22,7 +22,7 @@ contract Oracle is Ownable {
     /// @notice AddressBook module
     address public addressBook;
 
-    /// @dev mapping between oracle and it's locking period
+    /// @dev mapping of asset price to it's locking period
     mapping(address => uint256) internal oracleLockingPeriod;
     /// @dev mapping of asset price to it's dispute period
     mapping(address => uint256) internal oracleDisputePeriod;
