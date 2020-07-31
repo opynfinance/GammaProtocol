@@ -5,6 +5,7 @@ contract MockAddressBook {
     address private _otokenImpl;
     address private _whitelist;
     address private _otokenFactoryImpl;
+    address private _oracle;
     address private _weth;
     address private _controllerImpl;
 
@@ -18,6 +19,10 @@ contract MockAddressBook {
 
     function getOtokenFactory() external view returns (address) {
         return _otokenFactoryImpl;
+    }
+
+    function getOracle() external view returns (address) {
+        return _oracle;
     }
 
     function getWeth() external view returns (address) {
@@ -42,6 +47,10 @@ contract MockAddressBook {
 
     function setWeth(address _wethAdd) external {
         _weth = _wethAdd;
+    }
+
+    function setOracle(address _oracleAddr) external {
+        _oracle = _oracleAddr;
     }
 
     function setController(address _controller) external {

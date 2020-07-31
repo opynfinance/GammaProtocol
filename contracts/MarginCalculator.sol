@@ -25,8 +25,6 @@ struct Vault {
 contract MarginCalculator is Initializable {
     using SafeMath for uint256;
     address public addressBook;
-    // TODO: remove this
-    address public _oracle;
 
     function init(address _addressBook) external initializer {
         addressBook = _addressBook;
@@ -42,7 +40,7 @@ contract MarginCalculator is Initializable {
         OtokenInterface otoken = OtokenInterface(_otoken);
         uint256 strikePrice = otoken.strikePrice();
 
-        OracleInterface oracle = OracleInterface(_oracle);
+        OracleInterface oracle = OracleInterface(AddressBookInterface(addressBook).getOracle());
         (uint256 underlyingPrice, bool isFinalized) = oracle.getPrice(batchId, otoken.expiryTimestamp());
 
         require(isFinalized, "MarginCalculator: Oracle price not finalized yet.");
