@@ -7,6 +7,7 @@ import {
   MockOracleInstance,
   MockOtokenInstance,
 } from '../build/types/truffle-types'
+const {expectRevert} = require('@openzeppelin/test-helpers')
 const MockAddressBook = artifacts.require('MockAddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const MockOtoken = artifacts.require('MockOtoken.sol')
@@ -72,6 +73,15 @@ contract('MarginCalculator', () => {
       await oracle.setMockedStatus(ethPirce, true)
       const cashedValue = await calculator.getExpiredCashValue(eth250Call.address)
       assert.equal(cashedValue.toString(), new BigNumber(50).times(1e18).toString())
+    })
+
+    it('Should revert if price is not finalized.', async () => {
+      const ethPirce = new BigNumber(200).times(1e18).toString()
+      await oracle.setMockedStatus(ethPirce, false)
+      await expectRevert(
+        calculator.getExpiredCashValue(eth250Call.address),
+        'MarginCalculator: Oracle price not finalized yet.',
+      )
     })
   })
 })
