@@ -40,6 +40,16 @@ contract('FixedPointInt256 lib', () => {
         'conversion from int to uint mismatch',
       )
     })
+    it('Should convert from positive signed integer to unsigned integer', async () => {
+      const int = new BigNumber(3)
+      const expectedUint = new BigNumber(3)
+
+      assert.equal(
+        (await lib.testFromInt(int)).toNumber(),
+        expectedUint.toNumber(),
+        'conversion from int to uint mismatch',
+      )
+    })
   })
 
   describe('Test Addition', () => {
