@@ -21,7 +21,7 @@ contract Oracle is Ownable {
 
     /// @dev mapping between oracle and it's locking period
     mapping(address => uint256) internal oracleLockingPeriod;
-    /// @dev mapping between oracle and it's dispute period
+    /// @dev mapping of asset price to it's dispute period
     mapping(address => uint256) internal oracleDisputePeriod;
     /// @dev mapping between batch and it's oracle
     mapping(bytes32 => address) internal batchOracle;
