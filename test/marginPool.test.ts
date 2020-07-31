@@ -6,7 +6,7 @@ import {
 } from '../build/types/truffle-types'
 
 const BigNumber = require('bignumber.js')
-const {expectEvent, expectRevert, ether} = require('@openzeppelin/test-helpers')
+const {expectRevert, ether} = require('@openzeppelin/test-helpers')
 
 const MockERC20 = artifacts.require('MockERC20.sol')
 const MockAddressBook = artifacts.require('MockAddressBook.sol')
@@ -49,6 +49,12 @@ contract('MarginPool', ([controllerAddress, user1, random]) => {
 
     // controller approving infinite amount of WETH to pool
     await weth.approve(marginPool.address, wethToMint, {from: controllerAddress})
+  })
+
+  describe('MarginPool initialization', () => {
+    it('shout revert if initilized with 0 addressBook address', async () => {
+      await expectRevert(MarginPool.new(ZERO_ADDR), 'Invalid address book')
+    })
   })
 
   describe('Transfer to pool', () => {
