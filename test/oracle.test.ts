@@ -1,13 +1,14 @@
+import {ethers} from 'ethers'
 import {AddressBookInstance, OracleInstance} from '../build/types/truffle-types'
 
+const BigNumber = require('bignumber.js')
 const {expectEvent, expectRevert} = require('@openzeppelin/test-helpers')
 
 const AddressBook = artifacts.require('AddressBook.sol')
 const Oracle = artifacts.require('Oracle.sol')
-// address(0)
-const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
-contract('Oracle', ([owner]) => {
+contract('Oracle', ([owner, batchOracle, random]) => {
+  const batch = web3.utils.asciiToHex('ETHUSDCUSDC1596218762')
   // AddressBook module
   let addressBook: AddressBookInstance
   // Oracle module
@@ -20,9 +21,57 @@ contract('Oracle', ([owner]) => {
     oracle = await Oracle.new(addressBook.address, {from: owner})
   })
 
-  describe('oracle', () => {
-    it('oracle', async () => {
-      //empty
+  describe('Batch oracle', () => {
+    it('should revert setting batch oracle from non-owner address', async () => {
+      await expectRevert(oracle.setBatchOracle(batch, batchOracle, {from: random}), 'Ownable: caller is not the owner')
+    })
+
+    it('should set batch oracle', async () => {
+      await oracle.setBatchOracle(batch, batchOracle, {from: owner})
+
+      assert.equal(await oracle.getBatchOracle(batch), batchOracle, 'batch oracle address mismatch')
+    })
+  })
+
+  describe('Oracle locking period', () => {
+    const lockingPeriod = new BigNumber(60 * 15) // 15min
+
+    it('should revert setting oracle locking period from non-owner address', async () => {
+      await expectRevert(
+        oracle.setLockingPeriod(batchOracle, lockingPeriod, {from: random}),
+        'Ownable: caller is not the owner',
+      )
+    })
+
+    it('should set oracle locking period', async () => {
+      await oracle.setLockingPeriod(batchOracle, lockingPeriod, {from: owner})
+
+      assert.equal(
+        (await oracle.getOracleLockingPeriod(batchOracle)).toString(),
+        lockingPeriod.toString(),
+        'oracle locking period mismatch',
+      )
+    })
+  })
+
+  describe('Oracle dispute period', () => {
+    const disputePeriod = new BigNumber(60 * 45) // 45min
+
+    it('should revert setting oracle locking period from non-owner address', async () => {
+      await expectRevert(
+        oracle.setDisputePeriod(batchOracle, disputePeriod, {from: random}),
+        'Ownable: caller is not the owner',
+      )
+    })
+
+    it('should set oracle locking period', async () => {
+      await oracle.setDisputePeriod(batchOracle, disputePeriod, {from: owner})
+
+      assert.equal(
+        (await oracle.getOracleDisputePeriod(batchOracle)).toString(),
+        disputePeriod.toString(),
+        'oracle dispute period mismatch',
+      )
     })
   })
 })
