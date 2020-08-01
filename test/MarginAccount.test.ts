@@ -395,7 +395,7 @@ contract('MarginAccount', ([deployer, controller]) => {
       })
 
       it('should add more collateral for testing', async () => {
-        await marginAccountTester.testAddShort(weth.address, 10, 0)
+        await marginAccountTester.testAddCollateral(weth.address, 10, 0)
       })
 
       it('should revert if trying to remove wrong collateral from an index', async () => {
