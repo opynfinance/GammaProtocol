@@ -27,8 +27,6 @@ contract AddressBook is Ownable {
     bytes32 private constant LIQUIDATION_MANAGER = "LIQUIDATION_MANAGER";
     /// @dev oracle key
     bytes32 private constant ORACLE = "ORACLE";
-    /// @dev weth token key
-    bytes32 private constant WETH = "WETH";
 
     /// @dev a mapping between key and address
     mapping(bytes32 => address) private addresses;
