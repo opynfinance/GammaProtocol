@@ -84,6 +84,5 @@
   },
   "homepage": "https://github.com/opynfinance/GammaProtocol#readme",
   "dependencies": {
-    "ethers": "^5.0.7"
   }
 }

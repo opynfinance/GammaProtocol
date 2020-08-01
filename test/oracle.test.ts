@@ -1,4 +1,3 @@
-import {ethers} from 'ethers'
 import {OracleInstance} from '../build/types/truffle-types'
 
 const BigNumber = require('bignumber.js')
