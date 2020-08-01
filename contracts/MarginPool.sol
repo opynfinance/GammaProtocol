@@ -6,7 +6,6 @@ pragma solidity 0.6.10;
 import {ERC20Interface} from "./interfaces/ERC20Interface.sol";
 import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
 import {SafeMath} from "./packages/oz/SafeMath.sol";
-import {WETH9} from "./packages/canonical-weth/WETH9.sol";
 
 /**
  * @author Opyn Team
@@ -43,11 +42,6 @@ contract MarginPool {
 
         _;
     }
-
-    /**
-     * @notice fallback function to reveive ETH
-     */
-    receive() external payable {}
 
     /**
      * @notice transfers asset from user to pool
