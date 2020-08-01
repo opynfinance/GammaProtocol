@@ -25,12 +25,12 @@ contract Oracle is Ownable {
     mapping(address => uint256) internal oracleDisputePeriod;
     /// @dev mapping between batch and it's oracle
     mapping(bytes32 => address) internal batchOracle;
-    /// @dev mapping between batch and it price at specific timestmap
+    /// @dev mapping between batch and it price at specific timestmap. A batch is the hash of underlying, collateral, strike and expiry.
     mapping(bytes32 => mapping(uint256 => Price)) internal batchPriceAt;
 
     /**
      * @notice get batch price
-     * @param _batch batch hash
+     * @param _batch a batch is the hash of underlying, collateral, strike and expiry.
      * @param _timestamp price timestamp
      * @return price and timestap at which price submitted to this contract
      */
