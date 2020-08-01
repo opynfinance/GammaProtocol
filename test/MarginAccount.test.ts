@@ -166,13 +166,6 @@ contract('MarginAccount', ([deployer, controller]) => {
         )
       })
 
-      //TODO: do we need to check addition overflows?
-      // //TODO: should it revert if trying to add a long otoken to an vault where the same otoken is shorted?'
-      // it('should revert if trying on the wrong vault', async () => {
-      //   // await expectRevert(marginAccountTester.testAddShort(otoken.address, 10, 5, {from: deployer}), 'revert')
-      //   // await expectRevert(await marginAccountTester.testAddShort(Otoken, 10, 3, {from: deployer}), 'revert')
-      //   // await expectRevert(await marginAccountTester.testAddShort(Otoken, 10, 100, {from: deployer}), 'revert')
-      // })
     })
 
     describe('Add collateral', () => {
