@@ -28,12 +28,19 @@ contract Oracle is Ownable {
     mapping(address => uint256) internal oracleDisputePeriod;
     /// @dev mapping between batch and it's oracle
     mapping(bytes32 => address) internal batchOracle;
-    /// @dev mapping between batch and it price at specific timestmap
+    /// @dev mapping between batch and it price at specific timestmap. A batch is the hash of underlying, collateral, strike and expiry.
     mapping(bytes32 => mapping(uint256 => Price)) internal batchPriceAt;
+
+    /// @notice emits an event when an oracle added for a specific batch
+    event BatchOracleAdded(bytes32 indexed batch, address oracle);
+    /// @notice emits an event when a locking period added for a specific oracle
+    event OracleLockingPeriodAdded(bytes32 indexed oracle, uint256 lockingPeriod);
+    /// @notice emits an event when a dispute period added for a specific oracle
+    event OracleDisputePeriodAdded(bytes32 indexed oracle, uint256 disputePeriod);
 
     /**
      * @notice get batch price
-     * @param _batch batch hash
+     * @param _batch a batch is the hash of underlying, collateral, strike and expiry.
      * @param _timestamp price timestamp
      * @return price and timestap at which price submitted to this contract
      */
@@ -43,8 +50,8 @@ contract Oracle is Ownable {
     }
 
     /**
-     * @notice get batch oracle
-     * @param _batch batch hash
+     * @notice get batch oracle. Each underlying-collateral-strike-expiry has its own oracle
+     * @param _batch get the price oracle for a specific batch. A batch is the hash of underlying, collateral, strike and expiry.
      * @return oracle address
      */
     function getBatchOracle(bytes32 _batch) public view returns (address) {
@@ -52,7 +59,7 @@ contract Oracle is Ownable {
     }
 
     /**
-     * @notice get oracle locking period
+     * @notice get oracle locking period. A locking period is a period of time after expiry where no one can push price to oracle
      * @dev during an oracle locking period, price can not be submitted to this contract
      * @param _oracle oracle address
      * @return locking period
@@ -63,7 +70,7 @@ contract Oracle is Ownable {
 
     /**
      * @notice get oracle dispute period
-     * @dev during an oracle dispute period, the owner of this contract can dispute the submitted price and modify it
+     * @dev during an oracle dispute period, the owner of this contract can dispute the submitted price and modify it. The dispute period start after submitting batch price on-chain
      * @param _oracle oracle address
      * @return dispute period
      */
@@ -111,6 +118,8 @@ contract Oracle is Ownable {
      */
     function setBatchOracle(bytes32 _batch, address _oracle) external onlyOwner {
         batchOracle[_batch] = _oracle;
+
+        emit BatchOracleAdded(_batch, _oracle);
     }
 
     /**
@@ -121,6 +130,8 @@ contract Oracle is Ownable {
      */
     function setLockingPeriod(address _oracle, uint256 _lockingPeriod) external onlyOwner {
         oracleLockingPeriod[_oracle] = _lockingPeriod;
+
+        emit OracleLockingPeriodAddress(_oracle, _lockingPeriod);
     }
 
     /**
@@ -131,5 +142,7 @@ contract Oracle is Ownable {
      */
     function setDisputePeriod(address _oracle, uint256 _disputePeriod) external onlyOwner {
         oracleDisputePeriod[_oracle] = _disputePeriod;
+
+        emit OracleDisputePeriodAddress(_oracle, _disputePeriod);
     }
 }
