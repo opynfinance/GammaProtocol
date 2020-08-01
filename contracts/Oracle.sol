@@ -28,6 +28,13 @@ contract Oracle is Ownable {
     /// @dev mapping between batch and it price at specific timestmap. A batch is the hash of underlying, collateral, strike and expiry.
     mapping(bytes32 => mapping(uint256 => Price)) internal batchPriceAt;
 
+    /// @notice emits an event when an oracle added for a specific batch
+    event BatchOracleAdded(bytes32 indexed batch, address oracle);
+    /// @notice emits an event when a locking period added for a specific oracle
+    event OracleLockingPeriodAdded(bytes32 indexed oracle, uint256 lockingPeriod);
+    /// @notice emits an event when a dispute period added for a specific oracle
+    event OracleDisputePeriodAdded(bytes32 indexed oracle, uint256 disputePeriod);
+
     /**
      * @notice get batch price
      * @param _batch a batch is the hash of underlying, collateral, strike and expiry.
@@ -76,6 +83,8 @@ contract Oracle is Ownable {
      */
     function setBatchOracle(bytes32 _batch, address _oracle) external onlyOwner {
         batchOracle[_batch] = _oracle;
+
+        emit BatchOracleAdded(_batch, _oracle);
     }
 
     /**
@@ -86,6 +95,8 @@ contract Oracle is Ownable {
      */
     function setLockingPeriod(address _oracle, uint256 _lockingPeriod) external onlyOwner {
         oracleLockingPeriod[_oracle] = _lockingPeriod;
+
+        emit OracleLockingPeriodAddress(_oracle, _lockingPeriod);
     }
 
     /**
@@ -96,5 +107,7 @@ contract Oracle is Ownable {
      */
     function setDisputePeriod(address _oracle, uint256 _disputePeriod) external onlyOwner {
         oracleDisputePeriod[_oracle] = _disputePeriod;
+
+        emit OracleDisputePeriodAddress(_oracle, _disputePeriod);
     }
 }
