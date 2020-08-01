@@ -182,10 +182,6 @@ contract('MarginAccount', ([deployer, controller]) => {
         assert.equal(vault.collateralAmounts[index], new BigNumber(amount))
       })
 
-      //TODO: understand why below doesn't work
-      // it('should revert if adding weth collateral to wrong index', async () => {
-      //   await expectRevert(marginAccountTester.testAddCollateral(weth.address, 10, 1), "MarginAccount: invalid collateral token position")
-      // })
 
       it('should add some more weth collateral', async () => {
         const beforeVault = await marginAccountTester.getVault()
