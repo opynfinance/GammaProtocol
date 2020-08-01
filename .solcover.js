@@ -20,6 +20,7 @@ module.exports = {
     'packages/oz/upgradeability/UpgradeabilityProxy.sol',
     'packages/oz/upgradeability/VersionedInitializable.sol',
     'packages/canonical-weth/WETH9.sol',
-    'packages/BokkyPooBahsDateTimeLibrary.sol'
+    'packages/BokkyPooBahsDateTimeLibrary.sol',
+    'packages/oz/SignedSafeMath.sol',
   ]
 }
