@@ -25,12 +25,12 @@ contract Oracle is Ownable {
     mapping(address => uint256) internal oracleDisputePeriod;
     /// @dev mapping between batch and it's oracle
     mapping(bytes32 => address) internal batchOracle;
-    /// @dev mapping between batch and it price at specific timestmap
+    /// @dev mapping between batch and it price at specific timestmap. A batch is the hash of underlying, collateral, strike and expiry.
     mapping(bytes32 => mapping(uint256 => Price)) internal batchPriceAt;
 
     /**
      * @notice get batch price
-     * @param _batch batch hash
+     * @param _batch a batch is the hash of underlying, collateral, strike and expiry.
      * @param _timestamp price timestamp
      * @return price and timestap at which price submitted to this contract
      */
@@ -40,8 +40,8 @@ contract Oracle is Ownable {
     }
 
     /**
-     * @notice get batch oracle
-     * @param _batch batch hash
+     * @notice get batch oracle. Each underlying-collateral-strike-expiry has its own oracle
+     * @param _batch get the price oracle for a specific batch. A batch is the hash of underlying, collateral, strike and expiry.
      * @return oracle address
      */
     function getBatchOracle(bytes32 _batch) public view returns (address) {
@@ -49,7 +49,7 @@ contract Oracle is Ownable {
     }
 
     /**
-     * @notice get oracle locking period
+     * @notice get oracle locking period. A locking period is a period of time after expiry where no one can push price to oracle
      * @dev during an oracle locking period, price can not be submitted to this contract
      * @param _oracle oracle address
      * @return locking period
@@ -60,7 +60,7 @@ contract Oracle is Ownable {
 
     /**
      * @notice get oracle dispute period
-     * @dev during an oracle dispute period, the owner of this contract can dispute the submitted price and modify it
+     * @dev during an oracle dispute period, the owner of this contract can dispute the submitted price and modify it. The dispute period start after submitting batch price on-chain
      * @param _oracle oracle address
      * @return dispute period
      */
