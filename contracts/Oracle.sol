@@ -38,6 +38,28 @@ contract Oracle is Ownable {
     /// @notice emits an event when a dispute period added for a specific oracle
     event OracleDisputePeriodAdded(address indexed oracle, uint256 disputePeriod);
 
+    /// @notice AddressBook module
+    address public addressBook;
+
+    /**
+     * @notice contructor
+     * @param _addressBook adressbook module
+     */
+    constructor(address _addressBook) public {
+        require(_addressBook != address(0), "Invalid address book");
+
+        addressBook = _addressBook;
+    }
+
+    /**
+     * @notice check if the sender is the Controller module
+     */
+    modifier onlyController() {
+        require(msg.sender == AddressBookInterface(addressBook).getController(), "Oracle: Sender is not Controller");
+
+        _;
+    }
+
     /**
      * @notice get batch price
      * @param _batch a batch is the hash of underlying, collateral, strike and expiry.
@@ -84,7 +106,7 @@ contract Oracle is Ownable {
      * @param _expiryTimestamp batch expiry
      * @return True if locking period is over, otherwise false
      */
-    function isLockingPeriodOver(bytes32 _batch, uint256 _expiryTimestamp) external view returns (bool) {
+    function isLockingPeriodOver(bytes32 _batch, uint256 _expiryTimestamp) public view returns (bool) {
         address oracle = batchOracle[_batch];
         uint256 lockingPeriod = oracleLockingPeriod[oracle];
 
@@ -144,5 +166,34 @@ contract Oracle is Ownable {
         oracleDisputePeriod[_oracle] = _disputePeriod;
 
         emit OracleDisputePeriodAdded(_oracle, _disputePeriod);
+    }
+
+    function setBatchUnderlyingPrice(
+        bytes32 _batch,
+        uint256 _expiryTimestamp,
+        uint256 _roundsBack
+    ) external onlyController {
+        AggregatorInterface oracle = AggregatorInterface(batchOracle[_batch]);
+
+        require(address(oracle) != address(0), "Oracle: no oracle for this specific batch");
+        require(isLockingPeriodOver(_batch, _expiryTimestamp), "Oracle: locking period is not over yet");
+
+        bool iterate = true;
+        uint256 roundBack = _roundsBack;
+        uint256 price;
+
+        while (iterate) {
+            uint256 roundTimestamp = oracle.getTimestamp(roundBack);
+            uint256 priorRoundTimestamp = oracle.getTimestamp(roundBack.add(1));
+
+            if ((priorRoundTimestamp <= _expiryTimestamp) && (_expiryTimestamp < roundTimestamp)) {
+                iterate = false;
+                price = uint256(oracle.getAnswer(roundBack));
+            } else {
+                roundBack++;
+            }
+        }
+
+        batchPriceAt[_batch][_expiryTimestamp] = Price(price, now);
     }
 }

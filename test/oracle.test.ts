@@ -1,18 +1,31 @@
-import {OracleInstance} from '../build/types/truffle-types'
+import {AddressBookInstance, OracleInstance} from '../build/types/truffle-types'
 
 const BigNumber = require('bignumber.js')
 const {expectEvent, expectRevert, time} = require('@openzeppelin/test-helpers')
 
+const AddressBook = artifacts.require('AddressBook.sol')
 const Oracle = artifacts.require('Oracle.sol')
+
+// address(0)
+const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
 contract('Oracle', ([owner, batchOracle, random]) => {
   const batch = web3.utils.asciiToHex('ETHUSDCUSDC1596218762')
+  // AddressBook module
+  let addressBook: AddressBookInstance
   // Oracle module
   let oracle: OracleInstance
 
   before('Deployment', async () => {
+    addressBook = await AddressBook.new({from: owner})
     // deploy Whitelist module
-    oracle = await Oracle.new({from: owner})
+    oracle = await Oracle.new(addressBook.address, {from: owner})
+  })
+
+  describe('Oracle deployment', () => {
+    it('shout revert if deployed with 0 addressBook address', async () => {
+      await expectRevert(Oracle.new(ZERO_ADDR), 'Invalid address book')
+    })
   })
 
   describe('Batch oracle', () => {
