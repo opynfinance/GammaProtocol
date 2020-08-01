@@ -11,7 +11,7 @@ import {OwnedUpgradeabilityProxy} from "./packages/oz/upgradeability/OwnedUpgrad
  * @title AddressBook Module
  */
 contract AddressBook is Ownable {
-    /// @dev  otoken implementation key
+    /// @dev otoken implementation key
     bytes32 private constant OTOKEN_IMPL = "OTOKEN_IMPL";
     /// @dev otoken factory key
     bytes32 private constant OTOKEN_FACTORY = "OTOKEN_FACTORY";
