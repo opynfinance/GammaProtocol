@@ -90,20 +90,21 @@ contract MarginCalculator is Initializable {
         // No short tokens: return collateral value.
         if (_vault.shortOtokens.length == 0) return (collateralAmount.intToUint(), true);
 
-        OtokenInterface short = OtokenInterface(_vault.shortOtokens[0]);
+        address short = _vault.shortOtokens[0];
 
         // For the currenct version, ensure denominated == short.collateral
         require(
-            short.collateralAsset() == _demonimated,
+            OtokenInterface(short).collateralAsset() == _demonimated,
             "MarginCalculator: Denomintated token should be short.collateral"
         );
 
-        bool expired = now > short.expiryTimestamp();
-        bool isPut = short.isPut();
+        bool expired = now > OtokenInterface(short).expiryTimestamp();
+        bool isPut = OtokenInterface(short).isPut();
         int256 netOtoken = 0;
         if (expired) {
-            int256 shortCashValue = FixedPointInt256.uintToInt(getExpiredCashValue(address(short)));
-            int256 longCashValue = FixedPointInt256.uintToInt(getExpiredCashValue(_vault.longOtokens[0]));
+            address long = _vault.longOtokens.length > 0 ? _vault.longOtokens[0] : address(0);
+            int256 shortCashValue = FixedPointInt256.uintToInt(getExpiredCashValue(short));
+            int256 longCashValue = FixedPointInt256.uintToInt(getExpiredCashValue(long));
 
             // Net otoken value = long cash value * long amount - short cash value * short amount;
             int256 netOtokenAfterExpiry = (longCashValue.mul(longAmount)).sub(shortCashValue.mul(shortAmount));
@@ -124,7 +125,7 @@ contract MarginCalculator is Initializable {
                 netOtoken = netOtokenAfterExpiry.div(underlyingPirceInt);
             }
         } else {
-            int256 shortStrike = FixedPointInt256.uintToInt(short.strikePrice());
+            int256 shortStrike = FixedPointInt256.uintToInt(OtokenInterface(short).strikePrice());
 
             // if not long asset, set long strike = 0
             int256 longStrike = 0;
