@@ -66,11 +66,26 @@ contract MarginCalculator is Initializable {
         // For the currect version, check lengths of short, long, ollateral <= 1.
         require(_vault.shortOtokens.length <= 1, "MarginCalculator: Too many short otokens in the vault.");
         require(_vault.longOtokens.length <= 1, "MarginCalculator: Too many long otokens in the vault.");
-        require(_vault.collateralAssets.length <= 1, "MarginCalculator: Too many collaterals in the vault.");
+        require(_vault.collateralAssets.length <= 1, "MarginCalculator: Too many collateral assets in the vault.");
 
-        int256 collateralAmount = FixedPointInt256.uintToInt(_vault.collateralAmounts[0]);
-        int256 shortAmount = FixedPointInt256.uintToInt(_vault.shortAmounts[0]);
-        int256 longAmount = FixedPointInt256.uintToInt(_vault.longAmounts[0]);
+        require(
+            _vault.shortOtokens.length == _vault.shortAmounts.length,
+            "MarginCalculator: Short asset and amount mismatch."
+        );
+        require(
+            _vault.longOtokens.length == _vault.longAmounts.length,
+            "MarginCalculator: Long asset and amount mismatch."
+        );
+        require(
+            _vault.collateralAssets.length == _vault.collateralAmounts.length,
+            "MarginCalculator: Collateral asset and amount mismatch."
+        );
+
+        int256 collateralAmount = _vault.collateralAmounts.length > 0
+            ? FixedPointInt256.uintToInt(_vault.collateralAmounts[0])
+            : 0;
+        int256 shortAmount = _vault.shortAmounts.length > 0 ? FixedPointInt256.uintToInt(_vault.shortAmounts[0]) : 0;
+        int256 longAmount = _vault.longAmounts.length > 0 ? FixedPointInt256.uintToInt(_vault.longAmounts[0]) : 0;
 
         // No short tokens: return collateral value.
         if (_vault.shortOtokens.length == 0) return (collateralAmount.intToUint(), true);

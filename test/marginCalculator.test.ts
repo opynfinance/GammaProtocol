@@ -6,6 +6,8 @@ import {
   MockOracleInstance,
   MockOtokenInstance,
 } from '../build/types/truffle-types'
+import {createVault} from './utils'
+
 const {expectRevert} = require('@openzeppelin/test-helpers')
 const MockAddressBook = artifacts.require('MockAddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
@@ -22,6 +24,7 @@ contract('MarginCalculator', () => {
   let eth250Put: MockOtokenInstance
   let eth250Call: MockOtokenInstance
   let usdc: MockERC20Instance
+  let dai: MockERC20Instance
   let weth: MockERC20Instance
 
   before('set up contracts', async () => {
@@ -35,6 +38,7 @@ contract('MarginCalculator', () => {
     await addressBook.setOracle(oracle.address)
     // setup usdc and weth
     usdc = await MockERC20.new('USDC', 'USDC')
+    dai = await MockERC20.new('DAI', 'DAI')
     weth = await MockERC20.new('WETH', 'WETH')
     // setup otoken
     eth250Put = await MockOtoken.new()
@@ -86,6 +90,77 @@ contract('MarginCalculator', () => {
         calculator.getExpiredCashValue(eth250Call.address),
         'MarginCalculator: Oracle price not finalized yet.',
       )
+    })
+  })
+
+  describe('Get excess margin tests', () => {
+    describe('Requirement checks', () => {
+      it('Should revert when vault contain more than 1 short', async () => {
+        const vault = {
+          shortOtokens: [eth250Call.address, eth250Put.address],
+          longOtokens: [],
+          collateralAssets: [],
+          shortAmounts: [],
+          longAmounts: [],
+          collateralAmounts: [],
+        }
+        await expectRevert(
+          calculator.getExcessMargin(vault, usdc.address),
+          'MarginCalculator: Too many short otokens in the vault.',
+        )
+      })
+      it('Should revert when vault contain more than 1 long asset', async () => {
+        const vault = {
+          shortOtokens: [],
+          longOtokens: [eth250Call.address, eth250Put.address],
+          collateralAssets: [],
+          shortAmounts: [],
+          longAmounts: [],
+          collateralAmounts: [],
+        }
+        await expectRevert(
+          calculator.getExcessMargin(vault, usdc.address),
+          'MarginCalculator: Too many long otokens in the vault.',
+        )
+      })
+      it('Should revert when vault contain more than 1 collateral asset', async () => {
+        const vault = {
+          shortOtokens: [],
+          longOtokens: [],
+          collateralAssets: [usdc.address, dai.address],
+          shortAmounts: [],
+          longAmounts: [],
+          collateralAmounts: [],
+        }
+        await expectRevert(
+          calculator.getExcessMargin(vault, usdc.address),
+          'MarginCalculator: Too many collateral assets in the vault.',
+        )
+      })
+      // Check amount and asset arrays length mismatch
+      it('Should revert when short assets and amounts have differenct length', async () => {
+        const vault = createVault(eth250Put.address, undefined, undefined, undefined, undefined, undefined)
+        await expectRevert(
+          calculator.getExcessMargin(vault, usdc.address),
+          'MarginCalculator: Short asset and amount mismatch',
+        )
+      })
+
+      it('Should revert when long assets and amounts have differenct length', async () => {
+        const vault = createVault(undefined, eth250Put.address, undefined, undefined, undefined, undefined)
+        await expectRevert(
+          calculator.getExcessMargin(vault, usdc.address),
+          'MarginCalculator: Long asset and amount mismatch',
+        )
+      })
+
+      it('Should revert when collateral assets and amounts have differenct length', async () => {
+        const vault = createVault(undefined, undefined, usdc.address, undefined, undefined, undefined)
+        await expectRevert(
+          calculator.getExcessMargin(vault, usdc.address),
+          'MarginCalculator: Collateral asset and amount mismatch',
+        )
+      })
     })
   })
 })
