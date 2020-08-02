@@ -28,6 +28,13 @@ contract Oracle is Ownable {
     /// @dev mapping between batch and it price at specific timestmap. A batch is the hash of underlying, collateral, strike and expiry.
     mapping(bytes32 => mapping(uint256 => Price)) internal batchPriceAt;
 
+    /// @notice emits an event when an oracle added for a specific batch
+    event BatchOracleUpdated(bytes32 indexed batch, address oracle);
+    /// @notice emits an event when a locking period added for a specific oracle
+    event OracleLockingPeriodUpdated(address indexed oracle, uint256 lockingPeriod);
+    /// @notice emits an event when a dispute period added for a specific oracle
+    event OracleDisputePeriodUpdated(address indexed oracle, uint256 disputePeriod);
+
     /**
      * @notice get batch price
      * @param _batch a batch is the hash of underlying, collateral, strike and expiry.
@@ -66,5 +73,42 @@ contract Oracle is Ownable {
      */
     function getOracleDisputePeriod(address _oracle) public view returns (uint256) {
         return oracleDisputePeriod[_oracle];
+    }
+
+    /**
+     * @notice set batch oracle
+     * @dev can only be called by owner
+     * @param _batch batch (hash of underlying, stike, collateral and expiry)
+     * @param _oracle oracle address
+     */
+    function setBatchOracle(bytes32 _batch, address _oracle) external onlyOwner {
+        batchOracle[_batch] = _oracle;
+
+        emit BatchOracleUpdated(_batch, _oracle);
+    }
+
+    /**
+     * @notice set oracle locking period
+     * @dev can only be called by owner
+     * @param _oracle oracle address
+     * @param _lockingPeriod locking period
+     */
+    function setLockingPeriod(address _oracle, uint256 _lockingPeriod) external onlyOwner {
+        oracleLockingPeriod[_oracle] = _lockingPeriod;
+
+        emit OracleLockingPeriodUpdated(_oracle, _lockingPeriod);
+    }
+
+    /**
+     * @notice set oracle dispute period
+     * @dev can only be called by owner
+     * @param _oracle oracle address
+     * @param _disputePeriod dispute period
+     */
+    function setDisputePeriod(address _oracle, uint256 _disputePeriod) external onlyOwner {
+        oracleDisputePeriod[_oracle] = _disputePeriod;
+
+        emit OracleDisputePeriodUpdated(_oracle, _disputePeriod);
+        (_oracle, _disputePeriod);
     }
 }
