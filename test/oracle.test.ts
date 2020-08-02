@@ -93,4 +93,10 @@ contract('Oracle', ([owner, batchOracle, random]) => {
       assert.equal(isOver, expectedResult, 'dispute period check mismatch')
     })
   })
+
+  describe('Set batch underlying asset price', () => {
+    it('should get price at round back equal to 1', async () => {
+      //
+    })
+  })
 })

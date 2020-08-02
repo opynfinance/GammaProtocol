@@ -3,30 +3,30 @@
  */
 pragma solidity 0.6.10;
 
-import "../interfaces/AggregatorInterface.sol";
-
 /**
  * @notice Chainlink oracle mock
  */
-contract MockChainlinkOracle is AggregatorInterface {
-    /// @dev mock for rounds timestmap
+contract MockChainlinkOracle {
+    /// @dev mock for round timestmap
     mapping(uint256 => uint256) internal roundTimestamp;
+    /// @dev mock for round price
+    mapping(uint256 => int256) internal roundAnswer;
 
-    function latestAnswer() external view returns (int256);
+    function getAnswer(uint256 _roundId) external view returns (int256) {
+        return roundAnswer[_roundId];
+    }
 
-    function latestTimestamp() external view returns (uint256);
+    function getTimestamp(uint256 _roundId) external view returns (uint256) {
+        return roundTimestamp[_roundId];
+    }
 
-    function latestRound() external view returns (uint256);
-
-    function getAnswer(uint256 roundId) external view returns (int256);
-
-    function getTimestamp(uint256 roundId) external view returns (uint256);
-
-    // function to mock round timestamp
+    /// @dev function to mock setting round timestamp
     function setRoundTimestamp(uint256 _roundId, uint256 _timestamp) external {
         roundTimestamp[_roundId] = _timestamp;
     }
 
-    //event AnswerUpdated(int256 indexed current, uint256 indexed roundId, uint256 timestamp);
-    //event NewRound(uint256 indexed roundId, address indexed startedBy, uint256 startedAt);
+    /// @dev function to mock setting round timestamp
+    function setRoundAnswer(uint256 _roundId, int256 _answer) external {
+        roundAnswer[_roundId] = _answer;
+    }
 }
