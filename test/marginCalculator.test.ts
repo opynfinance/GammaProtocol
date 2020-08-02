@@ -1,4 +1,3 @@
-import {expect} from 'chai'
 import BigNumber from 'bignumber.js'
 import {
   MockERC20Instance,
@@ -13,7 +12,7 @@ const MockOracle = artifacts.require('MockOracle.sol')
 const MockOtoken = artifacts.require('MockOtoken.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
 const MarginCalculator = artifacts.require('MarginCalculator.sol')
-
+const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 contract('MarginCalculator', () => {
   const expiryFarAway = 1898553600
 
@@ -47,6 +46,11 @@ contract('MarginCalculator', () => {
   })
 
   describe('Get cash value tests', () => {
+    it('Should return 0 when entering address(0)', async () => {
+      const cashedValue = await calculator.getExpiredCashValue(ZERO_ADDR)
+      assert.equal(cashedValue.toString(), '0')
+    })
+
     it('Should return cash value for put as strike price - eth price when strike > eth price', async () => {
       const ethPirce = new BigNumber(200).times(1e18).toString()
       await oracle.setMockedStatus(ethPirce, true)
