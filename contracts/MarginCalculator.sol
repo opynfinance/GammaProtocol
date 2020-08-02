@@ -144,19 +144,20 @@ contract MarginCalculator is Initializable {
             } else {
                 /**
                  * Net otoken value for call =
-                 * Min(amount of long option, amount of short option) *
+                 * Min(0, long amount - short amount)
+                 *   - Min(long amount, short amount) *
                  *      Max(0, long strike - short strike) / long strike)
-                 * - Min(0, long amount - short amount)
                  */
                 if (longStrike == 0) {
                     // no long otoken
                     netOtoken = -shortAmount;
                 } else {
-                    netOtoken = FixedPointInt256
-                        .min(longAmount, shortAmount)
-                        .mul(FixedPointInt256.max(0, longStrike.sub(shortStrike)))
-                        .div(longStrike)
-                        .sub(FixedPointInt256.min(0, longAmount.sub(shortAmount)));
+                    netOtoken = FixedPointInt256.min(0, longAmount.sub(shortAmount)).sub(
+                        FixedPointInt256
+                            .min(longAmount, shortAmount)
+                            .mul(FixedPointInt256.max(0, longStrike.sub(shortStrike)))
+                            .div(longStrike)
+                    );
                 }
             }
         }

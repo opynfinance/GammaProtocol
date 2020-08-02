@@ -51,17 +51,17 @@ contract('MarginCalculator', () => {
     const strikePrice200 = new BigNumber(200).times(1e18).toString()
     // setup puts
     eth300Put = await MockOtoken.new()
-    await eth300Put.init(weth.address, usdc.address, usdc.address, strikePrice300, expiryFarAway, true)
     eth250Put = await MockOtoken.new()
-    await eth250Put.init(weth.address, usdc.address, usdc.address, strikePrice250, expiryFarAway, true)
     eth200Put = await MockOtoken.new()
+    await eth300Put.init(weth.address, usdc.address, usdc.address, strikePrice300, expiryFarAway, true)
+    await eth250Put.init(weth.address, usdc.address, usdc.address, strikePrice250, expiryFarAway, true)
     await eth200Put.init(weth.address, usdc.address, usdc.address, strikePrice200, expiryFarAway, true)
     // setup calls
     eth300Call = await MockOtoken.new()
-    await eth300Call.init(weth.address, usdc.address, weth.address, strikePrice300, expiryFarAway, false)
     eth250Call = await MockOtoken.new()
-    await eth250Call.init(weth.address, usdc.address, weth.address, strikePrice250, expiryFarAway, false)
     eth200Call = await MockOtoken.new()
+    await eth300Call.init(weth.address, usdc.address, weth.address, strikePrice300, expiryFarAway, false)
+    await eth250Call.init(weth.address, usdc.address, weth.address, strikePrice250, expiryFarAway, false)
     await eth200Call.init(weth.address, usdc.address, weth.address, strikePrice200, expiryFarAway, false)
   })
 
@@ -279,10 +279,40 @@ contract('MarginCalculator', () => {
     })
 
     describe('Call vault check before expiry', () => {
-      it('Short: 250 call, collateral 1 weth, => excess: 0 ', async () => {
-        const shortAmount = new BigNumber(1).times(1e18).toString()
-        const collateralAmount = new BigNumber(1).times(1e18).toString() // need 1 weth for 1 call
-        const vault = createVault(eth250Call.address, undefined, weth.address, shortAmount, undefined, collateralAmount)
+      const amountOne = new BigNumber(1).times(1e18).toString()
+      it('Short: 200 call => need 1 weth collateral ', async () => {
+        const collateralNeeded = new BigNumber(1).times(1e18).toString() // need 1 weth for 1 call
+        const vault = createVault(eth200Call.address, undefined, weth.address, amountOne, undefined, 0)
+        const [netValue, isExcess] = await calculator.getExcessMargin(vault, weth.address)
+        assert.equal(netValue.toString(), collateralNeeded)
+        assert.equal(isExcess, false)
+      })
+
+      it('Short: 200 call, collateral 1 weth, => excess: 0 ', async () => {
+        const vault = createVault(eth200Call.address, undefined, weth.address, amountOne, undefined, amountOne)
+        const [netValue, isExcess] = await calculator.getExcessMargin(vault, weth.address)
+        assert.equal(netValue.toString(), '0')
+        assert.isTrue(isExcess)
+      })
+
+      it('Short: 200 call, long 250 call => need 0.2 eth ', async () => {
+        const vault = createVault(eth200Call.address, eth250Call.address, weth.address, amountOne, amountOne, 0)
+        const [netValue, isExcess] = await calculator.getExcessMargin(vault, weth.address)
+        const collateralNeeded = new BigNumber(0.2).times(1e18).toString()
+        assert.equal(netValue.toString(), collateralNeeded)
+        assert.equal(isExcess, false)
+      })
+
+      it('Short: 200 call, long 250 call, collateral 0.2 eth => excess:0 ', async () => {
+        const collateralAmount = new BigNumber(0.2).times(1e18).toString()
+        const vault = createVault(
+          eth200Call.address,
+          eth250Call.address,
+          weth.address,
+          amountOne,
+          amountOne,
+          collateralAmount,
+        )
         const [netValue, isExcess] = await calculator.getExcessMargin(vault, weth.address)
         assert.equal(netValue.toString(), '0')
         assert.isTrue(isExcess)
