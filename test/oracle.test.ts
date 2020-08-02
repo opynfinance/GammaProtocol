@@ -1,7 +1,7 @@
 import {OracleInstance} from '../build/types/truffle-types'
 
 const BigNumber = require('bignumber.js')
-const {expectEvent, expectRevert, time} = require('@openzeppelin/test-helpers')
+const {expectRevert, time} = require('@openzeppelin/test-helpers')
 
 const Oracle = artifacts.require('Oracle.sol')
 
