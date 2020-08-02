@@ -29,11 +29,11 @@ contract Oracle is Ownable {
     mapping(bytes32 => mapping(uint256 => Price)) internal batchPriceAt;
 
     /// @notice emits an event when an oracle added for a specific batch
-    event BatchOracleAdded(bytes32 indexed batch, address oracle);
+    event BatchOracleUpdated(bytes32 indexed batch, address oracle);
     /// @notice emits an event when a locking period added for a specific oracle
-    event OracleLockingPeriodAdded(address indexed oracle, uint256 lockingPeriod);
+    event OracleLockingPeriodUpdated(address indexed oracle, uint256 lockingPeriod);
     /// @notice emits an event when a dispute period added for a specific oracle
-    event OracleDisputePeriodAdded(address indexed oracle, uint256 disputePeriod);
+    event OracleDisputePeriodUpdated(address indexed oracle, uint256 disputePeriod);
 
     /**
      * @notice get batch price
@@ -84,7 +84,7 @@ contract Oracle is Ownable {
     function setBatchOracle(bytes32 _batch, address _oracle) external onlyOwner {
         batchOracle[_batch] = _oracle;
 
-        emit BatchOracleAdded(_batch, _oracle);
+        emit BatchOracleUpdated(_batch, _oracle);
     }
 
     /**
@@ -96,7 +96,7 @@ contract Oracle is Ownable {
     function setLockingPeriod(address _oracle, uint256 _lockingPeriod) external onlyOwner {
         oracleLockingPeriod[_oracle] = _lockingPeriod;
 
-        emit OracleLockingPeriodAdded(_oracle, _lockingPeriod);
+        emit OracleLockingPeriodUpdated(_oracle, _lockingPeriod);
     }
 
     /**
@@ -108,7 +108,7 @@ contract Oracle is Ownable {
     function setDisputePeriod(address _oracle, uint256 _disputePeriod) external onlyOwner {
         oracleDisputePeriod[_oracle] = _disputePeriod;
 
-        emit OracleDisputePeriodAdded(_oracle, _disputePeriod);
+        emit OracleDisputePeriodUpdated(_oracle, _disputePeriod);
         (_oracle, _disputePeriod);
     }
 }
