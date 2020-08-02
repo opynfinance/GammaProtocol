@@ -80,7 +80,7 @@ contract Oracle is Ownable {
 
     /**
      * @notice check if locking period is over
-     * @param _batch batch hash
+     * @param _batch A batch is the hash of underlying, collateral, strike and expiry.
      * @param _expiryTimestamp batch expiry
      * @return True if locking period is over, otherwise false
      */
