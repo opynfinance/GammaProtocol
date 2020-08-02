@@ -125,11 +125,12 @@ contract MarginCalculator is Initializable {
                 netOtoken = netOtokenAfterExpiry.div(underlyingPirceInt);
             }
         } else {
+            // If option is not expired yet.
             int256 shortStrike = FixedPointInt256.uintToInt(OtokenInterface(short).strikePrice());
 
-            // if not long asset, set long strike = 0
+            // long otoken strike price, set to 0 if there's not long assets.
             int256 longStrike = 0;
-            if (_vault.shortOtokens.length > 0)
+            if (_vault.longOtokens.length > 0)
                 longStrike = FixedPointInt256.uintToInt(OtokenInterface(_vault.longOtokens[0]).strikePrice());
 
             if (isPut) {
@@ -147,16 +148,21 @@ contract MarginCalculator is Initializable {
                  *      Max(0, long strike - short strike) / long strike)
                  * - Min(0, long amount - short amount)
                  */
-                netOtoken = FixedPointInt256
-                    .min(longAmount, shortAmount)
-                    .mul(FixedPointInt256.max(0, longStrike.sub(shortStrike)))
-                    .div(longStrike)
-                    .sub(FixedPointInt256.min(0, longAmount.sub(shortAmount)));
+                if (longStrike == 0) {
+                    // no long otoken
+                    netOtoken = -shortAmount;
+                } else {
+                    netOtoken = FixedPointInt256
+                        .min(longAmount, shortAmount)
+                        .mul(FixedPointInt256.max(0, longStrike.sub(shortStrike)))
+                        .div(longStrike)
+                        .sub(FixedPointInt256.min(0, longAmount.sub(shortAmount)));
+                }
             }
         }
 
         int256 net = collateralAmount.add(netOtoken);
-        isExcess = net > 0;
+        isExcess = net >= 0;
         netValue = net.intToUint();
     }
 

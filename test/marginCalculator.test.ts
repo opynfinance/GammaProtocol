@@ -47,7 +47,7 @@ contract('MarginCalculator', () => {
     await eth250Put.init(weth.address, usdc.address, usdc.address, strikePrice250, expiryFarAway, true)
 
     eth250Call = await MockOtoken.new()
-    await eth250Call.init(weth.address, usdc.address, usdc.address, strikePrice250, expiryFarAway, false)
+    await eth250Call.init(weth.address, usdc.address, weth.address, strikePrice250, expiryFarAway, false)
   })
 
   describe('Get cash value tests', () => {
@@ -177,6 +177,26 @@ contract('MarginCalculator', () => {
           calculator.getExcessMargin(vault, dai.address),
           'MarginCalculator: Denomintated token should be short.collateral',
         )
+      })
+    })
+
+    describe('Vault check', () => {
+      it('Should return (isExcess = true, cash value = 0) when vault have just enough collateral for put', async () => {
+        const shortAmount = new BigNumber(1).times(1e18).toString()
+        const collateralAmount = new BigNumber(250).times(1e18).toString()
+        const vault = createVault(eth250Put.address, undefined, usdc.address, shortAmount, undefined, collateralAmount)
+        const [cashValue, isExcess] = await calculator.getExcessMargin(vault, usdc.address)
+        assert.equal(cashValue.toString(), '0')
+        assert.isTrue(isExcess)
+      })
+
+      it('Should return (isExcess = true, cash value = 0) when vault have just enough collateral for call', async () => {
+        const shortAmount = new BigNumber(1).times(1e18).toString()
+        const collateralAmount = new BigNumber(1).times(1e18).toString() // need 1 weth for 1 call
+        const vault = createVault(eth250Call.address, undefined, weth.address, shortAmount, undefined, collateralAmount)
+        const [cashValue, isExcess] = await calculator.getExcessMargin(vault, weth.address)
+        assert.equal(cashValue.toString(), '0')
+        assert.isTrue(isExcess)
       })
     })
   })
