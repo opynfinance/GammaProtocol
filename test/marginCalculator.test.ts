@@ -7,6 +7,7 @@ import {
   MockOtokenInstance,
 } from '../build/types/truffle-types'
 import {createVault} from './utils'
+import {assert} from 'chai'
 
 const {expectRevert} = require('@openzeppelin/test-helpers')
 const MockAddressBook = artifacts.require('MockAddressBook.sol')
@@ -94,7 +95,7 @@ contract('MarginCalculator', () => {
   })
 
   describe('Get excess margin tests', () => {
-    describe('Requirement checks', () => {
+    describe('Vault prerequisites checks.', () => {
       it('Should revert when vault contain more than 1 short', async () => {
         const vault = {
           shortOtokens: [eth250Call.address, eth250Put.address],
@@ -145,7 +146,6 @@ contract('MarginCalculator', () => {
           'MarginCalculator: Short asset and amount mismatch',
         )
       })
-
       it('Should revert when long assets and amounts have differenct length', async () => {
         const vault = createVault(undefined, eth250Put.address, undefined, undefined, undefined, undefined)
         await expectRevert(
@@ -153,12 +153,29 @@ contract('MarginCalculator', () => {
           'MarginCalculator: Long asset and amount mismatch',
         )
       })
-
       it('Should revert when collateral assets and amounts have differenct length', async () => {
         const vault = createVault(undefined, undefined, usdc.address, undefined, undefined, undefined)
         await expectRevert(
           calculator.getExcessMargin(vault, usdc.address),
           'MarginCalculator: Collateral asset and amount mismatch',
+        )
+      })
+
+      it("Should return collateral amount if there's no short.", async () => {
+        const collateralAmount = new BigNumber(100).times(1e18).toString()
+        const vault = createVault(undefined, undefined, usdc.address, undefined, undefined, collateralAmount)
+        const [cashValue, isExcess] = await calculator.getExcessMargin(vault, usdc.address)
+        assert.equal(cashValue.toString(), collateralAmount)
+        assert.isTrue(isExcess)
+      })
+
+      it('Should revert if denominated token is different from short.collateral.', async () => {
+        const shortAmount = new BigNumber(1).times(1e18).toString()
+        const collateralAmount = new BigNumber(250).times(1e18).toString()
+        const vault = createVault(eth250Put.address, undefined, usdc.address, shortAmount, undefined, collateralAmount)
+        await expectRevert(
+          calculator.getExcessMargin(vault, dai.address),
+          'MarginCalculator: Denomintated token should be short.collateral',
         )
       })
     })
