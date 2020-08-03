@@ -37,6 +37,13 @@ contract Oracle is Ownable {
     event OracleLockingPeriodUpdated(address indexed oracle, uint256 lockingPeriod);
     /// @notice emits an event when a dispute period updated for a specific oracle
     event OracleDisputePeriodUpdated(address indexed oracle, uint256 disputePeriod);
+    /// @notice emits an event when underlying price asset updated for a specific batch
+    event BatchUnderlyingPriceUpdated(
+        bytes32 indexed batch,
+        uint256 indexed expirtyTimestamp,
+        uint256 price,
+        uint256 onchainTimestamp
+    );
 
     /// @notice AddressBook module
     address public addressBook;
@@ -168,6 +175,13 @@ contract Oracle is Ownable {
         emit OracleDisputePeriodUpdated(_oracle, _disputePeriod);
     }
 
+    /**
+     * @notice set batch underlying asset price
+     * @dev underlying price can only be set after locking period is over and before starting dispute period
+     * @param _batch (hash of underlying, stike, collateral and expiry)
+     * @param _expiryTimestamp batch expiry timestamop
+     * @param _roundsBack number of chainlink price feed roundback
+     */
     function setBatchUnderlyingPrice(
         bytes32 _batch,
         uint256 _expiryTimestamp,
@@ -195,5 +209,7 @@ contract Oracle is Ownable {
         }
 
         batchPriceAt[_batch][_expiryTimestamp] = Price(price, now);
+
+        emit BatchUnderlyingPriceUpdated(_batch, _expiryTimestamp, price, now);
     }
 }
