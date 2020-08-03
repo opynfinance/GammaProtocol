@@ -191,6 +191,7 @@ contract Oracle is Ownable {
 
         require(address(oracle) != address(0), "Oracle: no oracle for this specific batch");
         require(isLockingPeriodOver(_batch, _expiryTimestamp), "Oracle: locking period is not over yet");
+        require(batchPriceAt[_batch][_expiryTimestamp].timestamp == 0, "Oracle: dispute period started");
 
         bool iterate = true;
         uint256 roundBack = _roundsBack;

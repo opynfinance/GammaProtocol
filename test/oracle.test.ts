@@ -161,6 +161,16 @@ contract('Oracle', ([owner, controllerAddress, random]) => {
       )
     })
 
+    it('should revert setting price from controller module if dispute period already started', async () => {
+      await expectRevert(
+        oracle.setBatchUnderlyingPrice(batch, batchExpiry, roundBack, {from: controllerAddress}),
+        'Oracle: dispute period started',
+      )
+
+      // re-set oracle to zero address
+      await oracle.setBatchOracle(batch, batchOracle.address, {from: owner})
+    })
+
     it('should revert setting price if batch oracle is equal to address zero', async () => {
       // set oracle to zero address
       await oracle.setBatchOracle(batch, ZERO_ADDR, {from: owner})
