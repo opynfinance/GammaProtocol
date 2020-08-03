@@ -222,5 +222,37 @@ contract('Oracle', ([owner, controllerAddress, random]) => {
         'batch underlying price on-chain timestamp mismatch',
       )
     })
+
+    describe('Dispute price', () => {
+      it('should revert disputing price during dispute period from non-owner', async () => {
+        const disputePrice = new BigNumber(300)
+
+        await expectRevert(
+          oracle.disputeBatchPrice(batch, batchExpiry, disputePrice, {from: random}),
+          'Ownable: caller is not the owner',
+        )
+      })
+
+      it('should dispute price during dispute period', async () => {
+        const disputePrice = new BigNumber(300)
+
+        await oracle.disputeBatchPrice(batch, batchExpiry, disputePrice, {from: owner})
+
+        const price = await oracle.getBatchPrice(batch, batchExpiry)
+
+        assert.equal(price[0].toString(), disputePrice.toString(), 'batch underlying price mismatch')
+      })
+
+      it('should revert disputing price after dispute period over', async () => {
+        await time.increase(new BN(60 * 46))
+
+        const disputePrice = new BigNumber(300)
+
+        await expectRevert(
+          oracle.disputeBatchPrice(batch, batchExpiry, disputePrice, {from: owner}),
+          'Oracle: dispute period over',
+        )
+      })
+    })
   })
 })
