@@ -98,7 +98,7 @@ contract('Oracle', ([owner, controllerAddress, random]) => {
       )
     })
 
-    it('should check if locking period is over when price timestmap equal to zero', async () => {
+    it('should check if dispute period is over when price timestamp equal to zero', async () => {
       const isOver = await oracle.isDisputePeriodOver(batchOracle.address, await time.latest(), {from: owner})
       const expectedResult = false
       assert.equal(isOver, expectedResult, 'dispute period check mismatch')
