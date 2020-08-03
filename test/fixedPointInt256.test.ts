@@ -80,6 +80,13 @@ contract('FixedPointInt256 lib', () => {
 
       assert.equal((await lib.testMul(a, b)).toString(), expectedResult.toString(), 'multiplication result mismatch')
     })
+
+    it('Should return 0 for 0 * 5e18', async () => {
+      const a = new BigNumber(0)
+      const b = new BigNumber(5).multipliedBy(1e18)
+
+      assert.equal((await lib.testMul(a, b)).toString(), '0', 'multiplication result mismatch')
+    })
   })
 
   describe('Test div', () => {

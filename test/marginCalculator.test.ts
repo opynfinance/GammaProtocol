@@ -70,35 +70,30 @@ contract('MarginCalculator', () => {
       const cashedValue = await calculator.getExpiredCashValue(ZERO_ADDR)
       assert.equal(cashedValue.toString(), '0')
     })
-
     it('Should return cash value for put as strike price - eth price when strike > eth price', async () => {
       const ethPirce = createScaledNumber(200)
       await oracle.setMockedStatus(ethPirce, true)
       const cashedValue = await calculator.getExpiredCashValue(eth250Put.address)
       assert.equal(cashedValue.toString(), createScaledNumber(50))
     })
-
     it('Should return cash value for call as 0 when strike price when strike > eth price', async () => {
-      const ethPirce = createScaledNumber(200)
+      const ethPirce = createScaledNumber(150)
       await oracle.setMockedStatus(ethPirce, true)
       const cashedValue = await calculator.getExpiredCashValue(eth250Call.address)
       assert.equal(cashedValue.toString(), '0')
     })
-
     it('Should return cash value for put as 0 when strike  < eth price', async () => {
       const ethPirce = createScaledNumber(300)
       await oracle.setMockedStatus(ethPirce, true)
       const cashedValue = await calculator.getExpiredCashValue(eth250Put.address)
       assert.equal(cashedValue.toString(), '0')
     })
-
     it('Should return cash value for call as underlying - strike when strike < eth price', async () => {
       const ethPirce = createScaledNumber(300)
       await oracle.setMockedStatus(ethPirce, true)
       const cashedValue = await calculator.getExpiredCashValue(eth250Call.address)
       assert.equal(cashedValue.toString(), createScaledNumber(50))
     })
-
     it('Should revert if price is not finalized.', async () => {
       const ethPirce = createScaledNumber(200)
       await oracle.setMockedStatus(ethPirce, false)
@@ -458,12 +453,14 @@ contract('MarginCalculator', () => {
       })
     })
 
-    describe('Put vault check after expiry, ETH price = 150 USD', () => {
+    describe('Put vault check after expiry, ETH price = 150 USD (ITM)', () => {
       const amountOne = createScaledNumber(1)
 
       before(async () => {
         // let the optinos expire
-        await time.increaseTo(expiry + 2)
+        if ((await time.latest()) < expiry) {
+          await time.increaseTo(expiry + 2)
+        }
         await oracle.setMockedStatus(createScaledNumber(150), true)
       })
 
@@ -545,11 +542,13 @@ contract('MarginCalculator', () => {
       })
     })
 
-    describe('Put vault check after expiry, ETH price = 300 USD', () => {
+    describe('Put vault check after expiry, ETH price = 300 USD (OTM)', () => {
       const amountOne = createScaledNumber(1)
 
       before(async () => {
-        // let the optinos expire
+        if ((await time.latest()) < expiry) {
+          await time.increaseTo(expiry + 2)
+        }
         await oracle.setMockedStatus(createScaledNumber(300), true)
       })
 
@@ -628,6 +627,167 @@ contract('MarginCalculator', () => {
         const [netValue, isExcess] = await calculator.getExcessMargin(vault, usdc.address)
         assert.equal(isExcess, true)
         assert.equal(netValue.toString(), '0')
+      })
+    })
+
+    describe('Call vault check after expiry, ETH price = 150 (OTM)', () => {
+      before(async () => {
+        if ((await time.latest()) < expiry) {
+          await time.increaseTo(expiry + 2)
+        }
+        await oracle.setMockedStatus(createScaledNumber(150), true)
+      })
+
+      const amountOne = createScaledNumber(1)
+      it('(1) Short: 1 200 call, collateral: 1 weth, => excess: 1 ', async () => {
+        const vault = createVault(eth200Call.address, undefined, weth.address, amountOne, undefined, amountOne)
+        const [netValue, isExcess] = await calculator.getExcessMargin(vault, weth.address)
+        assert.equal(isExcess, true)
+        assert.equal(netValue.toString(), createScaledNumber(1))
+        // net = 1
+      })
+
+      it('(2) Short: 1 200 call, collateral: 2 weth, => excess: 2 ', async () => {
+        const vault = createVault(
+          eth200Call.address,
+          undefined,
+          weth.address,
+          amountOne,
+          undefined,
+          createScaledNumber(2),
+        )
+        const [netValue, isExcess] = await calculator.getExcessMargin(vault, weth.address)
+        assert.equal(isExcess, true)
+        assert.equal(netValue.toString(), createScaledNumber(2))
+      })
+
+      it('(3) Short: 1 200 call, long: 1 250 call, collateral: 0.2 weth => excess: 0.2 ', async () => {
+        const vault = createVault(
+          eth200Call.address,
+          eth250Call.address,
+          weth.address,
+          amountOne,
+          amountOne,
+          createScaledNumber(0.2),
+        )
+        const [netValue, isExcess] = await calculator.getExcessMargin(vault, weth.address)
+        assert.equal(isExcess, true)
+        assert.equal(netValue.toString(), createScaledNumber(0.2))
+      })
+
+      it('(4) Short: 1 200 call, long: 2 250 call, collateral 0.2 eth => excess: 0.2 ', async () => {
+        const vault = createVault(
+          eth200Call.address,
+          eth250Call.address,
+          weth.address,
+          amountOne,
+          createScaledNumber(2),
+          createScaledNumber(0.2),
+        )
+        const [netValue, isExcess] = await calculator.getExcessMargin(vault, weth.address)
+        assert.equal(isExcess, true)
+        assert.equal(netValue.toString(), createScaledNumber(0.2))
+      })
+
+      it('(5) Short: 1 250 call, long: 1 200 call => excess: 0 ', async () => {
+        const vault = createVault(eth250Call.address, eth200Call.address, weth.address, amountOne, amountOne, 0)
+        const [netValue, isExcess] = await calculator.getExcessMargin(vault, weth.address)
+        assert.equal(isExcess, true)
+        assert.equal(netValue.toString(), '0')
+      })
+
+      it('(6) Short: 1 250 call, long: 3 200 call => excess: 0 ', async () => {
+        const vault = createVault(
+          eth250Call.address,
+          eth200Call.address,
+          weth.address,
+          amountOne,
+          createScaledNumber(3),
+          0,
+        )
+        const [netValue, isExcess] = await calculator.getExcessMargin(vault, weth.address)
+        assert.equal(isExcess, true)
+        assert.equal(netValue.toString(), '0')
+      })
+    })
+
+    describe('Call vault check after expiry, ETH price = 300 (ITM)', () => {
+      before(async () => {
+        if ((await time.latest()) < expiry) {
+          await time.increaseTo(expiry + 2)
+        }
+        await oracle.setMockedStatus(createScaledNumber(300), true)
+      })
+
+      const amountOne = createScaledNumber(1)
+      it('(1) Short: 1 200 call, collateral: 1 weth, => excess: 0.666 ', async () => {
+        const vault = createVault(eth200Call.address, undefined, weth.address, amountOne, undefined, amountOne)
+        const [netValue, isExcess] = await calculator.getExcessMargin(vault, weth.address)
+        assert.equal(isExcess, true)
+        assert.equal(netValue.toString(), '666666666666666668')
+      })
+
+      it('(2) Short: 1 200 call, collateral: 2 weth, => excess: 1.6667 ', async () => {
+        const vault = createVault(
+          eth200Call.address,
+          undefined,
+          weth.address,
+          amountOne,
+          undefined,
+          createScaledNumber(2),
+        )
+        const [netValue, isExcess] = await calculator.getExcessMargin(vault, weth.address)
+        assert.equal(isExcess, true)
+        assert.equal(netValue.toString(), '1666666666666666668')
+      })
+
+      it('(3) Short: 1 200 call, long: 1 250 call, collateral: 0.2 weth => excess: 0.033 ', async () => {
+        const vault = createVault(
+          eth200Call.address,
+          eth250Call.address,
+          weth.address,
+          amountOne,
+          amountOne,
+          createScaledNumber(0.2),
+        )
+        const [netValue, isExcess] = await calculator.getExcessMargin(vault, weth.address)
+        assert.equal(isExcess, true)
+        assert.equal(netValue.toString(), '33333333333333334')
+      })
+
+      it('(4) Short: 1 200 call, long: 2 250 call, collateral 0.2 eth => excess: 0.2 ', async () => {
+        const vault = createVault(
+          eth200Call.address,
+          eth250Call.address,
+          weth.address,
+          amountOne,
+          createScaledNumber(2),
+          createScaledNumber(0.2),
+        )
+        const [netValue, isExcess] = await calculator.getExcessMargin(vault, weth.address)
+        assert.equal(isExcess, true)
+        assert.equal(netValue.toString(), createScaledNumber(0.2))
+      })
+
+      it('(5) Short: 1 250 call, long: 1 200 call => excess: 0.1666 ', async () => {
+        const vault = createVault(eth250Call.address, eth200Call.address, weth.address, amountOne, amountOne, 0)
+        const [netValue, isExcess] = await calculator.getExcessMargin(vault, weth.address)
+        assert.equal(isExcess, true)
+        assert.equal(netValue.toString(), '166666666666666667')
+      })
+
+      it('(6) Short: 1 250 call, long: 3 200 call => excess: 0.8333 ', async () => {
+        const vault = createVault(
+          eth250Call.address,
+          eth200Call.address,
+          weth.address,
+          amountOne,
+          createScaledNumber(3),
+          0,
+        )
+        const [netValue, isExcess] = await calculator.getExcessMargin(vault, weth.address)
+        assert.equal(isExcess, true)
+        assert.equal(netValue.toString(), '833333333333333333')
       })
     })
   })

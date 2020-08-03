@@ -112,7 +112,7 @@ contract MarginCalculator is Initializable {
             if (isPut) {
                 /*
                  * Put otoken net after expiry: same as above:
-                 * long cash value * long amount - short cash value * short amount)
+                 * (long cash value * long amount - short cash value * short amount)
                  */
                 netOtoken = netOtokenAfterExpiry;
             } else {
