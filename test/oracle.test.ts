@@ -88,7 +88,7 @@ contract('Oracle', ([owner, controllerAddress, random]) => {
       )
     })
 
-    it('should set oracle locking period', async () => {
+    it('should set oracle dispute period', async () => {
       await oracle.setDisputePeriod(batchOracle.address, disputePeriod, {from: owner})
 
       assert.equal(
