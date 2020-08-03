@@ -220,7 +220,7 @@ contract('MarginCalculator', () => {
         assert.equal(netValue.toString(), createScaledNumber(50))
       })
 
-      it('(4) ShortL 250 put, collateral: 100 USDC => need 150 collateral', async () => {
+      it('(4) Short: 1 250 put, collateral: 100 USDC => need 150 collateral', async () => {
         const collateralAmount = createScaledNumber(100)
         const vault = createVault(eth250Put.address, undefined, usdc.address, amountOne, undefined, collateralAmount)
         const [netValue, isExcess] = await calculator.getExcessMargin(vault, usdc.address)
@@ -375,7 +375,7 @@ contract('MarginCalculator', () => {
         const vault = createVault(eth200Call.address, eth250Call.address, weth.address, amountOne, amountOne, 0)
         const [netValue, isExcess] = await calculator.getExcessMargin(vault, weth.address)
         assert.equal(isExcess, false)
-        assert.equal(netValue.toString(), createScaledNumber(0.3))
+        assert.equal(netValue.toString(), createScaledNumber(0.2))
       })
 
       it('(6) Short: 1 200 call, long: 1 250 call, collateral 0.2 eth => excess: 0 ', async () => {
