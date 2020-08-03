@@ -76,6 +76,24 @@ library Actions {
         uint256 amount;
     }
 
+    struct WithdrawArgs {
+        /// @notice The address of the account owner
+        address owner;
+        /// @notice The index of the vault from which the asset will be withdrawn
+        uint256 vaultId;
+        /// @notice The address to which we transfer the asset
+        address to;
+        /// @notice The asset that is to be withdrawn
+        address asset;
+        /**
+         * @notice Each vault can hold multiple short / long / collateral assets. In this version, we are restricting the scope to only 1 of each.
+         * In future versions this would be the index of the short / long / collateral asset that needs to be modified.
+         */
+        uint256 index;
+        /// @notice The amount of asset that is to be transfered
+        uint256 amount;
+    }
+
     struct SettleVaultArgs {
         // The address of the account owner
         address owner;
@@ -114,6 +132,30 @@ library Actions {
                 owner: _args.owner,
                 vaultId: _args.vaultId,
                 from: _args.sender,
+                asset: _args.asset,
+                index: _args.index,
+                amount: _args.amount
+            });
+    }
+
+    /**
+     * @notice Parses the passed in action argmuents to get the argmuents for a withdraw action
+     * @param _args The general action arguments structure
+     * @return The arguments for a withdraw action
+     */
+    function _parseWithdrawArgs(ActionArgs memory _args) internal returns (WithdrawArgs memory) {
+        require(
+            (_args.actionType == ActionType.WithdrawLongOption) || (_args.actionType == ActionType.WithdrawCollateral),
+            "Actions: can only parse arguments for withdraw actions"
+        );
+        require(_args.owner != address(0), "Actions: cannot withdraw from an invalid account");
+        require(_args.sender != address(0), "Actions: cannot withdraw to an invalid account");
+
+        return
+            WithdrawArgs({
+                owner: _args.owner,
+                vaultId: _args.vaultId,
+                to: _args.sender,
                 asset: _args.asset,
                 index: _args.index,
                 amount: _args.amount
