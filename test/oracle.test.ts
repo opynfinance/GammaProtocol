@@ -146,7 +146,7 @@ contract('Oracle', ([owner, controllerAddress, random]) => {
       await batchOracle.setRoundAnswer(roundBack, batchUnderlyingPrice)
 
       // current timestamp at which price will be submitted to our Oracle module
-      const onchainPriceTimestmap = new BigNumber(await time.latest())
+      const onchainPriceTimestamp = new BigNumber(await time.latest())
       // set batch underlying price
       await oracle.setBatchUnderlyingPrice(batch, batchExpiry, roundBack, {from: controllerAddress})
 
