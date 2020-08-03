@@ -35,3 +35,11 @@ export const createVault = (
     collateralAmounts: collateralAmount !== undefined ? [collateralAmount] : [],
   }
 }
+
+/**
+ * Create a number string that scales numbers to 1e18
+ * @param num
+ */
+export const createScaledNumber = (num: number): string => {
+  return new BigNumber(num).times(1e18).toString()
+}
