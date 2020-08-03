@@ -66,40 +66,25 @@ contract MarginCalculator is Initializable {
         view
         returns (uint256 netValue, bool isExcess)
     {
-        // For the currect version, check lengths of short, long, ollateral <= 1.
-        require(_vault.shortOtokens.length <= 1, "MarginCalculator: Too many short otokens in the vault.");
-        require(_vault.longOtokens.length <= 1, "MarginCalculator: Too many long otokens in the vault.");
-        require(_vault.collateralAssets.length <= 1, "MarginCalculator: Too many collateral assets in the vault.");
-
-        require(
-            _vault.shortOtokens.length == _vault.shortAmounts.length,
-            "MarginCalculator: Short asset and amount mismatch."
-        );
-        require(
-            _vault.longOtokens.length == _vault.longAmounts.length,
-            "MarginCalculator: Long asset and amount mismatch."
-        );
-        require(
-            _vault.collateralAssets.length == _vault.collateralAmounts.length,
-            "MarginCalculator: Collateral asset and amount mismatch."
-        );
+        _checkAssetCount(_vault);
+        _checkLongAsset(_vault);
 
         int256 collateralAmount = _vault.collateralAmounts.length > 0
             ? FixedPointInt256.uintToInt(_vault.collateralAmounts[0])
             : 0;
-        int256 shortAmount = _vault.shortAmounts.length > 0 ? FixedPointInt256.uintToInt(_vault.shortAmounts[0]) : 0;
-        int256 longAmount = _vault.longAmounts.length > 0 ? FixedPointInt256.uintToInt(_vault.longAmounts[0]) : 0;
 
-        // No short tokens: return collateral value.
+        // Vault contains no short tokens: return collateral value.
         if (_vault.shortOtokens.length == 0) return (collateralAmount.intToUint(), true);
 
         address short = _vault.shortOtokens[0];
-
         // For the currenct version, ensure denominated == short.collateral
         require(
             OtokenInterface(short).collateralAsset() == _demonimated,
             "MarginCalculator: Denomintated token should be short.collateral"
         );
+
+        int256 shortAmount = _vault.shortAmounts.length > 0 ? FixedPointInt256.uintToInt(_vault.shortAmounts[0]) : 0;
+        int256 longAmount = _vault.longAmounts.length > 0 ? FixedPointInt256.uintToInt(_vault.longAmounts[0]) : 0;
 
         bool expired = now > OtokenInterface(short).expiryTimestamp();
         bool isPut = OtokenInterface(short).isPut();
@@ -168,6 +153,52 @@ contract MarginCalculator is Initializable {
         int256 net = collateralAmount.add(netOtoken);
         isExcess = net >= 0;
         netValue = net.intToUint();
+    }
+
+    /**
+     * @dev internal function that ensure each asset type & amout array have the same length, and length <= 1;
+     * @param _vault the vault to check.
+     */
+    function _checkAssetCount(Vault memory _vault) internal pure {
+        // For the currect version, check lengths of short, long, ollateral <= 1.
+        require(_vault.shortOtokens.length <= 1, "MarginCalculator: Too many short otokens in the vault.");
+        require(_vault.longOtokens.length <= 1, "MarginCalculator: Too many long otokens in the vault.");
+        require(_vault.collateralAssets.length <= 1, "MarginCalculator: Too many collateral assets in the vault.");
+
+        require(
+            _vault.shortOtokens.length == _vault.shortAmounts.length,
+            "MarginCalculator: Short asset and amount mismatch."
+        );
+        require(
+            _vault.longOtokens.length == _vault.longAmounts.length,
+            "MarginCalculator: Long asset and amount mismatch."
+        );
+        require(
+            _vault.collateralAssets.length == _vault.collateralAmounts.length,
+            "MarginCalculator: Collateral asset and amount mismatch."
+        );
+    }
+
+    /**
+     * @dev internal function that check the long asset is valid for the short asset
+     * @param _vault the vault to check.
+     */
+    function _checkLongAsset(Vault memory _vault) internal view {
+        if (_vault.longOtokens.length == 0 || _vault.shortOtokens.length == 0) return;
+
+        OtokenInterface long = OtokenInterface(_vault.longOtokens[0]);
+        OtokenInterface short = OtokenInterface(_vault.shortOtokens[0]);
+
+        require(long.expiryTimestamp() == short.expiryTimestamp(), "MarginCalculator: Short and Long expiry mismatch.");
+        require(
+            long.underlyingAsset() == short.underlyingAsset(),
+            "MarginCalculator: Short and Long underlying mismatch."
+        );
+        require(long.strikeAsset() == short.strikeAsset(), "MarginCalculator: Short and Long strike mismatch.");
+        require(
+            long.collateralAsset() == short.collateralAsset(),
+            "MarginCalculator: Short and Long collateral mismatch."
+        );
     }
 
     /**

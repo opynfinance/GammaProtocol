@@ -190,6 +190,74 @@ contract('MarginCalculator', () => {
           'MarginCalculator: Denomintated token should be short.collateral',
         )
       })
+
+      it('Should revert if long token has differet underlying as short.', async () => {
+        const otokenWrongUnderlying = await MockOtoken.new()
+        await otokenWrongUnderlying.init(dai.address, usdc.address, usdc.address, '0', expiry, true)
+        const vault = createVault(
+          eth250Put.address,
+          otokenWrongUnderlying.address,
+          undefined,
+          createScaledNumber(1),
+          createScaledNumber(1),
+          undefined,
+        )
+        await expectRevert(
+          calculator.getExcessMargin(vault, usdc.address),
+          'MarginCalculator: Short and Long underlying mismatch.',
+        )
+      })
+
+      it('Should revert if long token has differet strike as short.', async () => {
+        const otokenWrongStrike = await MockOtoken.new()
+        await otokenWrongStrike.init(weth.address, dai.address, usdc.address, '0', expiry, true)
+        const vault = createVault(
+          eth250Put.address,
+          otokenWrongStrike.address,
+          undefined,
+          createScaledNumber(1),
+          createScaledNumber(1),
+          undefined,
+        )
+        await expectRevert(
+          calculator.getExcessMargin(vault, usdc.address),
+          'MarginCalculator: Short and Long strike mismatch.',
+        )
+      })
+
+      it('Should revert if long token has differet collateral as short.', async () => {
+        const otokenWrongCollateral = await MockOtoken.new()
+        await otokenWrongCollateral.init(weth.address, usdc.address, dai.address, '0', expiry, true)
+        const vault = createVault(
+          eth250Put.address,
+          otokenWrongCollateral.address,
+          undefined,
+          createScaledNumber(1),
+          createScaledNumber(1),
+          undefined,
+        )
+        await expectRevert(
+          calculator.getExcessMargin(vault, dai.address),
+          'MarginCalculator: Short and Long collateral mismatch.',
+        )
+      })
+
+      it('Should revert if long token has differet expiry as short.', async () => {
+        const otokenWrongExpiry = await MockOtoken.new()
+        await otokenWrongExpiry.init(weth.address, usdc.address, usdc.address, '0', expiry + 1, true)
+        const vault = createVault(
+          eth250Put.address,
+          otokenWrongExpiry.address,
+          undefined,
+          createScaledNumber(1),
+          createScaledNumber(1),
+          undefined,
+        )
+        await expectRevert(
+          calculator.getExcessMargin(vault, usdc.address),
+          'MarginCalculator: Short and Long expiry mismatch.',
+        )
+      })
     })
 
     describe('Put vault check before expiry', () => {
