@@ -28,7 +28,7 @@ contract Oracle is Ownable {
     mapping(address => uint256) internal oracleDisputePeriod;
     /// @dev mapping between batch and it's oracle
     mapping(bytes32 => address) internal batchOracle;
-    /// @dev mapping between batch and it price at specific timestmap. A batch is the hash of underlying, collateral, strike and expiry.
+    /// @dev mapping between batch and it price at specific timestamp. A batch is the hash of underlying, collateral, strike and expiry.
     mapping(bytes32 => mapping(uint256 => Price)) internal batchPriceAt;
 
     /// @notice emits an event when an oracle updated for a specific batch
