@@ -57,6 +57,10 @@ contract MarginCalculator is Initializable {
 
     /**
      * @notice return the net value of a vault in either USDC for puts/ ETH for calls
+     * @param _vault the vault that need to be checked
+     * @param _demonimated the token to denominated the result in. Must be the same as short.collateral for now.
+     * @return netValue excess margin or margin requirement amount.
+     * @return isExcess true if there's excess margin in the vault, false if the return amount is margin requirement.
      */
     function getExcessMargin(Vault memory _vault, address _demonimated)
         public
@@ -106,13 +110,13 @@ contract MarginCalculator is Initializable {
             int256 shortCashValue = FixedPointInt256.uintToInt(getExpiredCashValue(short));
             int256 longCashValue = FixedPointInt256.uintToInt(getExpiredCashValue(long));
 
-            // Net otoken value = long cash value * long amount - short cash value * short amount;
+            // Net otoken value = (long cash value * long amount) - (short cash value * short amount)
             int256 netOtokenAfterExpiry = (longCashValue.mul(longAmount)).sub(shortCashValue.mul(shortAmount));
 
             if (isPut) {
                 /*
                  * Put otoken net after expiry: same as above:
-                 * (long cash value * long amount - short cash value * short amount)
+                 *     (long cash value * long amount) - (short cash value * short amount)
                  */
                 netOtoken = netOtokenAfterExpiry;
             } else {
@@ -136,7 +140,7 @@ contract MarginCalculator is Initializable {
             if (isPut) {
                 /**
                  * Net otoken value for put =
-                 * (longOToken.strikePrice * min (short amount, long amount)) - (short amount * short strike)
+                 *     (long strike * min (short amount, long amount)) - (short amount * short strike)
                  */
                 netOtoken = longStrike.mul(FixedPointInt256.min(shortAmount, longAmount)).sub(
                     shortAmount.mul(shortStrike)
@@ -144,9 +148,8 @@ contract MarginCalculator is Initializable {
             } else {
                 /**
                  * Net otoken value for call =
-                 * Min(0, long amount - short amount)
-                 *   - Min(long amount, short amount) *
-                 *      Max(0, long strike - short strike) / long strike)
+                 *     Min(0, long amount - short amount)
+                 *         - Min(long amount, short amount) * Max(0, long strike - short strike) / long strike)
                  */
                 if (longStrike == 0) {
                     // no long otoken
@@ -169,6 +172,7 @@ contract MarginCalculator is Initializable {
 
     /**
      * @dev internal function to get underlying price of an otoken.
+     * @param _otoken otoken address
      */
     function _getUnerlyingPrice(address _otoken) internal view returns (uint256 price, bool isFinalized) {
         OtokenInterface otoken = OtokenInterface(_otoken);
@@ -178,7 +182,7 @@ contract MarginCalculator is Initializable {
     }
 
     /**
-     * @dev internal function to hash paramters and get batch id. Each option has a unique id.
+     * @dev internal function to hash paramters and get batch id. Same batch id means same product with same expiry.
      * @param _otoken otoken address
      * @return id the batchDd of an otoken
      */
