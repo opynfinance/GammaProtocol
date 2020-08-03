@@ -7,4 +7,8 @@ contract MockERC20 is ERC20Initializable {
     constructor(string memory name, string memory symbol) public {
         __ERC20_init_unchained(name, symbol);
     }
+
+    function mint(address account, uint256 amount) public {
+        _mint(account, amount);
+    }
 }
