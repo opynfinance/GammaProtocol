@@ -154,7 +154,7 @@ contract('Oracle', ([owner, controllerAddress, random]) => {
       const price = await oracle.getBatchPrice(batch, batchExpiry)
 
       assert.equal(price[0].toString(), batchUnderlyingPrice.toString(), 'batch underlying price mismatch')
-      // checking difference between timestmap is less than 2, used this because of lack timestmap precision
+      // checking difference between timestamp is less than 2, used this because of lack timestamp precision
       assert.isAtMost(
         new BigNumber(price[1]).minus(onchainPriceTimestamp).toNumber(),
         2,
