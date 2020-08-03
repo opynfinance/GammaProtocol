@@ -8,7 +8,7 @@ interface OracleInterface {
 
     function isPriceFinalized(bytes32 _batch) external view returns (bool);
 
-    function getPrice(bytes32 _btach, uint256 _timestamp) external view returns (uint256, bool);
+    function getBatchPrice(bytes32 _btach, uint256 _timestamp) external view returns (uint256, bool);
 
     function setLockingPeriod(address _oracle, uint256 _lockingPeriod) external;
 

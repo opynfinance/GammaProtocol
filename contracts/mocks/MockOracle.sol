@@ -13,7 +13,9 @@ contract MockOracle {
         addressBook = _addressBook;
     }
 
-    function getPrice(bytes32 _btach, uint256 _timestamp) external view returns (uint256, bool) {
+    function getBatchPrice(bytes32 _batch, uint256 _timestamp) external view returns (uint256, bool) {
+        require(_batch != 0x00);
+        require(_timestamp > 0);
         return (mockedPrice, mockedFinalized);
     }
 

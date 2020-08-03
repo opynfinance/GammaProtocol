@@ -66,9 +66,11 @@ contract('MarginCalculator', () => {
   })
 
   describe('Get cash value tests', () => {
-    it('Should return 0 when entering address(0)', async () => {
-      const cashedValue = await calculator.getExpiredCashValue(ZERO_ADDR)
-      assert.equal(cashedValue.toString(), '0')
+    it('Should revert when entering address(0)', async () => {
+      await expectRevert(
+        calculator.getExpiredCashValue(ZERO_ADDR),
+        "MarginCalculator: Can't calculate cash value for non-otokens.",
+      )
     })
     it('Should return cash value for put as strike price - eth price when strike > eth price', async () => {
       const ethPirce = createScaledNumber(200)

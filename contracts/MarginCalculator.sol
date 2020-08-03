@@ -40,12 +40,11 @@ contract MarginCalculator is Initializable {
      * @param _otoken otoken address
      */
     function getExpiredCashValue(address _otoken) public view returns (uint256) {
-        // return 0 if address passed in is 0.
-        if (_otoken == address(0)) return 0;
+        require(_otoken != address(0), "MarginCalculator: Can't calculate cash value for non-otokens.");
 
         OtokenInterface otoken = OtokenInterface(_otoken);
         uint256 strikePrice = otoken.strikePrice();
-        (uint256 underlyingPrice, bool isFinalized) = _getUnerlyingPrice(_otoken);
+        (uint256 underlyingPrice, bool isFinalized) = _getUnderlyingPrice(_otoken);
         require(isFinalized, "MarginCalculator: Oracle price not finalized yet.");
 
         if (otoken.isPut()) {
@@ -106,9 +105,10 @@ contract MarginCalculator is Initializable {
         bool isPut = OtokenInterface(short).isPut();
         int256 netOtoken = 0;
         if (expired) {
-            address long = _vault.longOtokens.length > 0 ? _vault.longOtokens[0] : address(0);
             int256 shortCashValue = FixedPointInt256.uintToInt(getExpiredCashValue(short));
-            int256 longCashValue = FixedPointInt256.uintToInt(getExpiredCashValue(long));
+            int256 longCashValue = 0;
+            if (_vault.longOtokens.length > 0)
+                longCashValue = FixedPointInt256.uintToInt(getExpiredCashValue(_vault.longOtokens[0]));
 
             // Net otoken value = (long cash value * long amount) - (short cash value * short amount)
             int256 netOtokenAfterExpiry = (longCashValue.mul(longAmount)).sub(shortCashValue.mul(shortAmount));
@@ -123,7 +123,7 @@ contract MarginCalculator is Initializable {
                 /*
                  * Call otoken net after expiry: (net otoken value / underlying price)
                  */
-                (uint256 underlyingPrice, ) = _getUnerlyingPrice(address(short));
+                (uint256 underlyingPrice, ) = _getUnderlyingPrice(address(short));
                 // todo: do we need to check isFinalized?
                 int256 underlyingPirceInt = FixedPointInt256.uintToInt(underlyingPrice);
                 netOtoken = netOtokenAfterExpiry.div(underlyingPirceInt);
@@ -174,11 +174,11 @@ contract MarginCalculator is Initializable {
      * @dev internal function to get underlying price of an otoken.
      * @param _otoken otoken address
      */
-    function _getUnerlyingPrice(address _otoken) internal view returns (uint256 price, bool isFinalized) {
+    function _getUnderlyingPrice(address _otoken) internal view returns (uint256 price, bool isFinalized) {
         OtokenInterface otoken = OtokenInterface(_otoken);
         bytes32 batchId = _getBatchId(otoken);
         OracleInterface oracle = OracleInterface(AddressBookInterface(addressBook).getOracle());
-        return oracle.getPrice(batchId, otoken.expiryTimestamp());
+        return oracle.getBatchPrice(batchId, otoken.expiryTimestamp());
     }
 
     /**
