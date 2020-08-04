@@ -110,8 +110,8 @@ contract MarginCalculator is Initializable {
                  */
                 (uint256 underlyingPrice, ) = _getUnderlyingPrice(address(short));
                 // todo: do we need to check isFinalized?
-                int256 underlyingPirceInt = FixedPointInt256.uintToInt(underlyingPrice);
-                netOtoken = netOtokenAfterExpiry.div(underlyingPirceInt);
+                int256 underlyingPriceInt = FixedPointInt256.uintToInt(underlyingPrice);
+                netOtoken = netOtokenAfterExpiry.div(underlyingPriceInt);
             }
         } else {
             // If option is not expired yet.
