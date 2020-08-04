@@ -76,12 +76,9 @@ contract MarginCalculator is Initializable {
         // Vault contains no short tokens: return collateral value.
         if (_vault.shortOtokens.length == 0) return (collateralAmount.intToUint(), true);
 
-        address short = _vault.shortOtokens[0];
         // For the currenct version, ensure denominated == short.collateral
-        require(
-            OtokenInterface(short).collateralAsset() == _demonimated,
-            "MarginCalculator: Denomintated token should be short.collateral"
-        );
+        address shortCollateral = OtokenInterface(_vault.shortOtokens[0]).collateralAsset();
+        require(shortCollateral == _demonimated, "MarginCalculator: Denomintated token should be short.collateral");
 
         int256 netOtoken = _calculateOtokenNetValue(_vault);
         int256 totalValue = collateralAmount.add(netOtoken);
@@ -91,6 +88,7 @@ contract MarginCalculator is Initializable {
 
     /**
      * @dev Calculate the net value of long token + short token in a vault.
+     * @return netOtoken net worth of long otoken and short otoken
      */
     function _calculateOtokenNetValue(Vault memory _vault) internal view returns (int256 netOtoken) {
         address short = _vault.shortOtokens[0];
@@ -137,6 +135,7 @@ contract MarginCalculator is Initializable {
      *
      * Formula: net = (long strike * min (short amount, long amount)) - (short amount * short strike)
      *
+     * @return net value
      */
     function _calculateNonExpiredPutNetValue(
         int256 _shortAmount,
@@ -154,6 +153,7 @@ contract MarginCalculator is Initializable {
      *                                                                             long strike
      *
      * @dev if long strike = 0 (no long token), then return net = short amount.
+     * @return net value
      */
     function _calculateNonExpiredCallNetValue(
         int256 _shortAmount,
@@ -178,6 +178,7 @@ contract MarginCalculator is Initializable {
      *
      * Formula: net = ( long cash value * long Amount ) - (short cash value * short amount)
      *
+     * @return net value
      */
     function _calculateExpiredPutNetValue(
         int256 _shortAmount,
@@ -190,9 +191,10 @@ contract MarginCalculator is Initializable {
 
     /**
      * @dev calculate expired net call spread value.
-     *                    ( long cash value * long Amount ) - (short cash value * short amount)
-     *  Formula: net =   ------------------------------------------------------------------------
-     *                                            Underlying price
+     *                     ( long cash value * long Amount ) - (short cash value * short amount)
+     *  Formula: net =   -------------------------------------------------------------------------
+     *                                               Underlying price
+     * @return net value
      */
     function _calculateExpiredCallNetValue(
         int256 _shortAmount,
