@@ -83,76 +83,125 @@ contract MarginCalculator is Initializable {
             "MarginCalculator: Denomintated token should be short.collateral"
         );
 
+        int256 netOtoken = _calculateOtokenNetValue(_vault);
+        int256 totalValue = collateralAmount.add(netOtoken);
+        isExcess = totalValue >= 0;
+        netValue = totalValue.intToUint();
+    }
+
+    /**
+     * @dev Calculate the net value of long token + short token in a vault.
+     */
+    function _calculateOtokenNetValue(Vault memory _vault) internal view returns (int256 netOtoken) {
+        address short = _vault.shortOtokens[0];
         int256 shortAmount = _vault.shortAmounts.length > 0 ? FixedPointInt256.uintToInt(_vault.shortAmounts[0]) : 0;
         int256 longAmount = _vault.longAmounts.length > 0 ? FixedPointInt256.uintToInt(_vault.longAmounts[0]) : 0;
 
         bool expired = now > OtokenInterface(short).expiryTimestamp();
         bool isPut = OtokenInterface(short).isPut();
-        int256 netOtoken = 0;
-        if (expired) {
-            int256 shortCashValue = FixedPointInt256.uintToInt(getExpiredCashValue(short));
-            int256 longCashValue = 0;
-            if (_vault.longOtokens.length > 0)
-                longCashValue = FixedPointInt256.uintToInt(getExpiredCashValue(_vault.longOtokens[0]));
 
-            // Net otoken value = (long cash value * long amount) - (short cash value * short amount)
-            int256 netOtokenAfterExpiry = (longCashValue.mul(longAmount)).sub(shortCashValue.mul(shortAmount));
-
-            if (isPut) {
-                /*
-                 * Put otoken net after expiry: same as above:
-                 *     (long cash value * long amount) - (short cash value * short amount)
-                 */
-                netOtoken = netOtokenAfterExpiry;
-            } else {
-                /*
-                 * Call otoken net after expiry: (net otoken value / underlying price)
-                 */
-                (uint256 underlyingPrice, ) = _getUnderlyingPrice(address(short));
-                // todo: do we need to check isFinalized?
-                int256 underlyingPriceInt = FixedPointInt256.uintToInt(underlyingPrice);
-                netOtoken = netOtokenAfterExpiry.div(underlyingPriceInt);
-            }
-        } else {
-            // If option is not expired yet.
+        if (!expired) {
             int256 shortStrike = FixedPointInt256.uintToInt(OtokenInterface(short).strikePrice());
-
-            // long otoken strike price, set to 0 if there's not long assets.
             int256 longStrike = 0;
             if (_vault.longOtokens.length > 0)
                 longStrike = FixedPointInt256.uintToInt(OtokenInterface(_vault.longOtokens[0]).strikePrice());
 
             if (isPut) {
-                /**
-                 * Net otoken value for put =
-                 *     (long strike * min (short amount, long amount)) - (short amount * short strike)
-                 */
-                netOtoken = longStrike.mul(FixedPointInt256.min(shortAmount, longAmount)).sub(
-                    shortAmount.mul(shortStrike)
-                );
+                netOtoken = _calculateNonExpiredPutNetValue(shortAmount, longAmount, shortStrike, longStrike);
             } else {
-                /**
-                 * Net otoken value for call =
-                 *     Min(0, long amount - short amount)
-                 *         - Min(long amount, short amount) * Max(0, long strike - short strike) / long strike)
-                 */
-                if (longStrike == 0) {
-                    // no long otoken
-                    netOtoken = -shortAmount;
-                } else {
-                    netOtoken = FixedPointInt256.min(0, longAmount.sub(shortAmount)).sub(
-                        FixedPointInt256
-                            .min(longAmount, shortAmount)
-                            .mul(FixedPointInt256.max(0, longStrike.sub(shortStrike)))
-                            .div(longStrike)
-                    );
-                }
+                netOtoken = _calculateNonExpiredCallNetValue(shortAmount, longAmount, shortStrike, longStrike);
+            }
+        } else {
+            int256 shortCashValue = FixedPointInt256.uintToInt(getExpiredCashValue(short));
+            int256 longCashValue = 0;
+            if (_vault.longOtokens.length > 0)
+                longCashValue = FixedPointInt256.uintToInt(getExpiredCashValue(_vault.longOtokens[0]));
+            if (isPut) {
+                netOtoken = _calculateExpiredPutNetValue(shortAmount, longAmount, shortCashValue, longCashValue);
+            } else {
+                (uint256 underlyingPrice, ) = _getUnderlyingPrice(address(short));
+                int256 underlyingPriceInt = FixedPointInt256.uintToInt(underlyingPrice);
+                netOtoken = _calculateExpiredCallNetValue(
+                    shortAmount,
+                    longAmount,
+                    shortCashValue,
+                    longCashValue,
+                    underlyingPriceInt
+                );
             }
         }
+    }
 
-        int256 net = collateralAmount.add(netOtoken);
-        isExcess = net >= 0;
-        netValue = net.intToUint();
+    /**
+     * @dev calculate non-expired net put spread value.
+     *
+     * Formula: net = (long strike * min (short amount, long amount)) - (short amount * short strike)
+     *
+     */
+    function _calculateNonExpiredPutNetValue(
+        int256 _shortAmount,
+        int256 _longAmount,
+        int256 _shortStrike,
+        int256 _longStrike
+    ) internal pure returns (int256) {
+        return _longStrike.mul(FixedPointInt256.min(_shortAmount, _longAmount)).sub(_shortAmount.mul(_shortStrike));
+    }
+
+    /**
+     * @dev calculate non-expired net call spread value.
+     *                                                min (long amount, short amount) * max (0, long strike - short strike)
+     * net = min(0, long amount - short amount) -  --------------------------------------------------------------------------
+     *                                                                             long strike
+     *
+     * @dev if long strike = 0 (no long token), then return net = short amount.
+     */
+    function _calculateNonExpiredCallNetValue(
+        int256 _shortAmount,
+        int256 _longAmount,
+        int256 _shortStrike,
+        int256 _longStrike
+    ) internal pure returns (int256) {
+        if (_longStrike == 0) {
+            return -_shortAmount;
+        }
+        return
+            FixedPointInt256.min(0, _longAmount.sub(_shortAmount)).sub(
+                FixedPointInt256
+                    .min(_longAmount, _shortAmount)
+                    .mul(FixedPointInt256.max(0, _longStrike.sub(_shortStrike)))
+                    .div(_longStrike)
+            );
+    }
+
+    /**
+     * @dev calculate expired net put spread value.
+     *
+     * Formula: net = ( long cash value * long Amount ) - (short cash value * short amount)
+     *
+     */
+    function _calculateExpiredPutNetValue(
+        int256 _shortAmount,
+        int256 _longAmount,
+        int256 _shortCashValue,
+        int256 _longCashValue
+    ) internal pure returns (int256) {
+        return (_longCashValue.mul(_longAmount)).sub(_shortCashValue.mul(_shortAmount));
+    }
+
+    /**
+     * @dev calculate expired net call spread value.
+     *                    ( long cash value * long Amount ) - (short cash value * short amount)
+     *  Formula: net =   ------------------------------------------------------------------------
+     *                                            Underlying price
+     */
+    function _calculateExpiredCallNetValue(
+        int256 _shortAmount,
+        int256 _longAmount,
+        int256 _shortCashValue,
+        int256 _longCashValue,
+        int256 _underlyingPriceInt
+    ) internal pure returns (int256) {
+        return (_longCashValue.mul(_longAmount)).sub(_shortCashValue.mul(_shortAmount)).div(_underlyingPriceInt);
     }
 
     /**
