@@ -198,10 +198,8 @@ contract Oracle is Ownable {
     ) external onlyOwner {
         require(!isDisputePeriodOver(_batch, _expiryTimestamp), "Oracle: dispute period over");
 
-        uint256 oldPrice;
-
         Price storage batchPrice = batchPriceAt[_batch][_expiryTimestamp];
-        oldPrice = batchPrice.price;
+        uint256 oldPrice = batchPrice.price;
         batchPrice.price = _price;
 
         emit BatchUnderlyingPriceDisputed(_batch, _expiryTimestamp, oldPrice, _price, now);
