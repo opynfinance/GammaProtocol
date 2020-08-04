@@ -187,11 +187,11 @@ contract Oracle is Ownable {
         uint256 _expiryTimestamp,
         uint256 _roundsBack
     ) external onlyController {
-        AggregatorInterface oracle = AggregatorInterface(batchOracle[_batch]);
-
-        require(address(oracle) != address(0), "Oracle: no oracle for this specific batch");
+        require(batchOracle[_batch] != address(0), "Oracle: no oracle for this specific batch");
         require(isLockingPeriodOver(_batch, _expiryTimestamp), "Oracle: locking period is not over yet");
         require(batchPriceAt[_batch][_expiryTimestamp].timestamp == 0, "Oracle: dispute period started");
+
+        AggregatorInterface oracle = AggregatorInterface(batchOracle[_batch]);
 
         bool iterate = true;
         uint256 roundBack = _roundsBack;
