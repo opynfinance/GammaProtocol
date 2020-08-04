@@ -55,11 +55,11 @@ contract MarginCalculator is Initializable {
     }
 
     /**
-     * @notice return the net value of a vault in either USDC for puts/ ETH for calls
-     * @param _vault the vault that need to be checked
-     * @param _demonimated the token to denominated the result in. Must be the same as short.collateral for now.
-     * @return netValue excess margin or margin requirement amount.
-     * @return isExcess true if there's excess margin in the vault, false if the return amount is margin requirement.
+     * @notice returns the net value of a vault in the valid collateral asset for that vault i.e. USDC for puts/ ETH for calls
+     * @param _vault _vault the theoretical vault that needs to be checked
+     * @param _demonimated _denominated the token the result is denominated in. Must be the same as short.collateral for now.
+     * @return netValue the amount by which the margin is above or below the required amount.
+     * @return isExcess true if there's excess margin in the vault. In this case, collateral can be taken out from the vault. False if there is insufficient margin and additional collateral needs to be added to the vault to create the position.
      */
     function getExcessMargin(Vault memory _vault, address _demonimated)
         public
