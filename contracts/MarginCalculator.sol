@@ -40,7 +40,7 @@ contract MarginCalculator is Initializable {
      * @param _otoken otoken address
      */
     function getExpiredCashValue(address _otoken) public view returns (uint256) {
-        require(_otoken != address(0), "MarginCalculator: Can't calculate cash value for non-otokens.");
+        require(_otoken != address(0), "MarginCalculator: Invalid token address.");
 
         OtokenInterface otoken = OtokenInterface(_otoken);
         uint256 strikePrice = otoken.strikePrice();
