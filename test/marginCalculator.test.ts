@@ -201,7 +201,7 @@ contract('MarginCalculator', () => {
         )
         await expectRevert(
           calculator.getExcessMargin(vault, usdc.address),
-          'MarginCalculator: Short and Long underlying mismatch.',
+          'MarginCalculator: Long and short batch mismatch',
         )
       })
 
@@ -218,7 +218,7 @@ contract('MarginCalculator', () => {
         )
         await expectRevert(
           calculator.getExcessMargin(vault, usdc.address),
-          'MarginCalculator: Short and Long strike mismatch.',
+          'MarginCalculator: Long and short batch mismatch',
         )
       })
 
@@ -235,7 +235,7 @@ contract('MarginCalculator', () => {
         )
         await expectRevert(
           calculator.getExcessMargin(vault, dai.address),
-          'MarginCalculator: Short and Long collateral mismatch.',
+          'MarginCalculator: Long and short batch mismatch',
         )
       })
 
@@ -252,7 +252,7 @@ contract('MarginCalculator', () => {
         )
         await expectRevert(
           calculator.getExcessMargin(vault, usdc.address),
-          'MarginCalculator: Short and Long expiry mismatch.',
+          'MarginCalculator: Long and short batch mismatch',
         )
       })
     })

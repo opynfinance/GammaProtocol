@@ -91,15 +91,15 @@ contract MarginCalculator is Initializable {
      * @return netOtoken net worth of long otoken and short otoken
      */
     function _calculateOtokenNetValue(Vault memory _vault) internal view returns (int256 netOtoken) {
-        address short = _vault.shortOtokens[0];
+        OtokenInterface short = OtokenInterface(_vault.shortOtokens[0]);
         int256 shortAmount = _vault.shortAmounts.length > 0 ? FixedPointInt256.uintToInt(_vault.shortAmounts[0]) : 0;
         int256 longAmount = _vault.longAmounts.length > 0 ? FixedPointInt256.uintToInt(_vault.longAmounts[0]) : 0;
 
-        bool expired = now > OtokenInterface(short).expiryTimestamp();
-        bool isPut = OtokenInterface(short).isPut();
+        bool expired = now > short.expiryTimestamp();
+        bool isPut = short.isPut();
 
         if (!expired) {
-            int256 shortStrike = FixedPointInt256.uintToInt(OtokenInterface(short).strikePrice());
+            int256 shortStrike = FixedPointInt256.uintToInt(short.strikePrice());
             int256 longStrike = 0;
             if (_vault.longOtokens.length > 0)
                 longStrike = FixedPointInt256.uintToInt(OtokenInterface(_vault.longOtokens[0]).strikePrice());
@@ -110,7 +110,7 @@ contract MarginCalculator is Initializable {
                 netOtoken = _calculateNonExpiredCallNetValue(shortAmount, longAmount, shortStrike, longStrike);
             }
         } else {
-            int256 shortCashValue = FixedPointInt256.uintToInt(getExpiredCashValue(short));
+            int256 shortCashValue = FixedPointInt256.uintToInt(getExpiredCashValue(address(short)));
             int256 longCashValue = 0;
             if (_vault.longOtokens.length > 0)
                 longCashValue = FixedPointInt256.uintToInt(getExpiredCashValue(_vault.longOtokens[0]));
@@ -239,17 +239,7 @@ contract MarginCalculator is Initializable {
 
         OtokenInterface long = OtokenInterface(_vault.longOtokens[0]);
         OtokenInterface short = OtokenInterface(_vault.shortOtokens[0]);
-
-        require(long.expiryTimestamp() == short.expiryTimestamp(), "MarginCalculator: Short and Long expiry mismatch.");
-        require(
-            long.underlyingAsset() == short.underlyingAsset(),
-            "MarginCalculator: Short and Long underlying mismatch."
-        );
-        require(long.strikeAsset() == short.strikeAsset(), "MarginCalculator: Short and Long strike mismatch.");
-        require(
-            long.collateralAsset() == short.collateralAsset(),
-            "MarginCalculator: Short and Long collateral mismatch."
-        );
+        require(_getBatchId(long) == _getBatchId(short), "MarginCalculator: Long and short batch mismatch");
     }
 
     /**

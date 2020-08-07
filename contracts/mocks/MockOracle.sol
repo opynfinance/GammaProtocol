@@ -19,8 +19,8 @@ contract MockOracle {
         return (mockedPrice, mockedFinalized);
     }
 
-    function setMockedStatus(uint256 _pirce, bool _finalized) external {
-        mockedPrice = _pirce;
+    function setMockedStatus(uint256 _price, bool _finalized) external {
+        mockedPrice = _price;
         mockedFinalized = _finalized;
     }
 }
