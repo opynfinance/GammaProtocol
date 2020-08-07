@@ -88,22 +88,26 @@ contract MarginCalculator is Initializable {
 
     /**
      * @dev Calculate the net value of long token + short token in a vault.
+     * The vault passed in already pass amount array length = asset array length check.
      * @param _vault the theoretical vault that needs to be checked
      * @return netOtoken net worth of long otoken and short otoken
      */
     function _calculateOtokenNetValue(Vault memory _vault) internal view returns (int256 netOtoken) {
-        OtokenInterface short = OtokenInterface(_vault.shortOtokens[0]);
-        int256 shortAmount = _vault.shortAmounts.length > 0 ? FixedPointInt256.uintToInt(_vault.shortAmounts[0]) : 0;
-        int256 longAmount = _vault.longAmounts.length > 0 ? FixedPointInt256.uintToInt(_vault.longAmounts[0]) : 0;
+        // The vault passed in has a short array == 1, so we can just use shortAmounts[0]
+        int256 shortAmount = FixedPointInt256.uintToInt(_vault.shortAmounts[0]);
 
+        bool hasLongInVault = _vault.longOtokens.length > 0;
+        int256 longAmount = hasLongInVault ? FixedPointInt256.uintToInt(_vault.longAmounts[0]) : 0;
+
+        OtokenInterface short = OtokenInterface(_vault.shortOtokens[0]);
         bool expired = now > short.expiryTimestamp();
         bool isPut = short.isPut();
 
         if (!expired) {
             int256 shortStrike = FixedPointInt256.uintToInt(short.strikePrice());
-            int256 longStrike = 0;
-            if (_vault.longOtokens.length > 0)
-                longStrike = FixedPointInt256.uintToInt(OtokenInterface(_vault.longOtokens[0]).strikePrice());
+            int256 longStrike = hasLongInVault
+                ? FixedPointInt256.uintToInt(OtokenInterface(_vault.longOtokens[0]).strikePrice())
+                : 0;
 
             if (isPut) {
                 netOtoken = _calculateNonExpiredPutNetValue(shortAmount, longAmount, shortStrike, longStrike);
@@ -112,9 +116,10 @@ contract MarginCalculator is Initializable {
             }
         } else {
             int256 shortCashValue = FixedPointInt256.uintToInt(getExpiredCashValue(address(short)));
-            int256 longCashValue = 0;
-            if (_vault.longOtokens.length > 0)
-                longCashValue = FixedPointInt256.uintToInt(getExpiredCashValue(_vault.longOtokens[0]));
+            int256 longCashValue = hasLongInVault
+                ? FixedPointInt256.uintToInt(getExpiredCashValue(_vault.longOtokens[0]))
+                : 0;
+
             if (isPut) {
                 netOtoken = _calculateExpiredPutNetValue(shortAmount, longAmount, shortCashValue, longCashValue);
             } else {
