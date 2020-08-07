@@ -88,6 +88,7 @@ contract MarginCalculator is Initializable {
 
     /**
      * @dev Calculate the net value of long token + short token in a vault.
+     * @param _vault the theoretical vault that needs to be checked
      * @return netOtoken net worth of long otoken and short otoken
      */
     function _calculateOtokenNetValue(Vault memory _vault) internal view returns (int256 netOtoken) {
@@ -245,6 +246,8 @@ contract MarginCalculator is Initializable {
     /**
      * @dev internal function to get underlying price of an otoken.
      * @param _otoken otoken address
+     * @return price the underlying asset price with 18 decimals
+     * @return isFinalized the price is finalized by the oracle and can't be changed
      */
     function _getUnderlyingPrice(address _otoken) internal view returns (uint256 price, bool isFinalized) {
         OtokenInterface otoken = OtokenInterface(_otoken);
