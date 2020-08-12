@@ -55,6 +55,22 @@ contract MarginCalculator is Initializable {
     }
 
     /**
+     * @notice expresses if a vault is sufficiently collateralized
+     * @param _vault _vault the theoretical vault that needs to be checked
+     * @return isValid a bool which expresses if the vault has enough collateral and is otherwise well formed
+     */
+    function isValidState(Vault memory _vault) public view returns (bool isValid) {
+        //TODO: what should be the desired behavior below?
+        if (_vault.shortOtokens.length == 0 || _vault.shortAmounts.length == 0) return true;
+        // getExcessMargin's second return value, isExcess, should be equivalent to isValidState
+        (uint256 netValue, bool isExcess) = getExcessMargin(
+            _vault,
+            OtokenInterface(_vault.shortOtokens[0]).collateralAsset()
+        );
+        return isExcess;
+    }
+
+    /**
      * @notice returns the net value of a vault in the valid collateral asset for that vault i.e. USDC for puts/ ETH for calls
      * @param _vault _vault the theoretical vault that needs to be checked
      * @param _demonimated _denominated the token the result is denominated in. Must be the same as short.collateral for now.
