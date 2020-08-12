@@ -12,7 +12,7 @@ contract MockOtoken is ERC20Initializable {
     address public collateralAsset;
 
     uint256 public strikePrice;
-    uint256 public expiry;
+    uint256 public expiryTimestamp;
 
     bool public isPut;
 
@@ -28,7 +28,7 @@ contract MockOtoken is ERC20Initializable {
         strikeAsset = _strikeAsset;
         collateralAsset = _collateralAsset;
         strikePrice = _strikePrice;
-        expiry = _expiry;
+        expiryTimestamp = _expiry;
         isPut = _isPut;
         string memory name = "ETHUSDC/1597511955/200P/USDC";
         string memory symbol = "oETHUSDCP";

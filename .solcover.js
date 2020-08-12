@@ -5,6 +5,8 @@ module.exports = {
   },
   skipFiles: [
     'Migrations.sol',
+    'mocks/MockAddressBook.sol',
+    'mocks/MockOracle.sol',
     'packages/oz/SafeMath.sol',
     'packages/oz/Address.sol',
     'packages/oz/Context.sol',
@@ -19,6 +21,7 @@ module.exports = {
     'packages/oz/upgradeability/UpgradeabilityProxy.sol',
     'packages/oz/upgradeability/VersionedInitializable.sol',
     'packages/canonical-weth/WETH9.sol',
-    'packages/BokkyPooBahsDateTimeLibrary.sol'
+    'packages/BokkyPooBahsDateTimeLibrary.sol',
+    'packages/oz/SignedSafeMath.sol',
   ]
 }
