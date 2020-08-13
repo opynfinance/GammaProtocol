@@ -3,7 +3,7 @@ import {
   MockAddressBookInstance,
   WETH9Instance,
   MarginPoolInstance,
-} from '../build/types/truffle-types'
+} from '../../build/types/truffle-types'
 
 const BigNumber = require('bignumber.js')
 const {expectRevert, ether} = require('@openzeppelin/test-helpers')

@@ -1,4 +1,4 @@
-import {FixedPointInt256TesterInstance} from '../build/types/truffle-types'
+import {FixedPointInt256TesterInstance} from '../../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
 const {expectRevert} = require('@openzeppelin/test-helpers')

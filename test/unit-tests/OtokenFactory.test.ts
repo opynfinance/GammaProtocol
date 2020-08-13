@@ -4,7 +4,7 @@ import {
   MockAddressBookInstance,
   MockWhitelistModuleInstance,
   MockERC20Instance,
-} from '../build/types/truffle-types'
+} from '../../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 import {assert} from 'chai'
 const {expectEvent, expectRevert, time} = require('@openzeppelin/test-helpers')

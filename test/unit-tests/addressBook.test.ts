@@ -6,7 +6,7 @@ import {
   UpgradeableContractV2Instance,
   OwnedUpgradeabilityProxyInstance,
   AddressBookInstance,
-} from '../build/types/truffle-types'
+} from '../../build/types/truffle-types'
 
 const {expectRevert} = require('@openzeppelin/test-helpers')
 

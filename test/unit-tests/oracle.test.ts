@@ -1,4 +1,4 @@
-import {OracleInstance} from '../build/types/truffle-types'
+import {OracleInstance} from '../../build/types/truffle-types'
 
 const BigNumber = require('bignumber.js')
 const {expectRevert, time} = require('@openzeppelin/test-helpers')
