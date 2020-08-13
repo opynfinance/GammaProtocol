@@ -404,7 +404,7 @@ contract('Actions', ([owner, random]) => {
       assert.equal(depositArgs.vaultId, new BN(vaultId))
       assert.equal(depositArgs.index, new BN(index))
     })
-    it('should be able to parse arguments for a deposit collateral action', async () => {
+    it('should be able to parse arguments for a withdraw collateral action', async () => {
       const actionType = ActionType.WithdrawCollateral
       const asset = ZERO_ADDR
       const vaultId = '3'
