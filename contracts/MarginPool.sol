@@ -45,8 +45,8 @@ contract MarginPool {
 
     /**
      * @notice transfers asset from user to pool
-     * @dev all tokens are scaled to have 1e18 precision in contracts,
-     *      so amounts are scaled down to native token decimals using _calcTransferAmount().
+     * @dev all tokens are scaled to have 1e18 precision in contracts, but are scaled to native
+     *      token decimals in Controller before being passed to MarginPool
      * @param _asset address of asset to transfer
      * @param _user address of user to transfer assets from
      * @param _amount amount of token to transfer from _user, scaled to 1e18 of precision
@@ -65,8 +65,8 @@ contract MarginPool {
 
     /**
      * @notice transfers asset from pool to user
-     * @dev all tokens are scaled to have 1e18 precision in contracts,
-     *      so amounts are scaled down to native token decimals using _calcTransferAmount()
+     * @dev all tokens are scaled to have 1e18 precision in contracts, but are scaled to native
+     *      token decimals in Controller before being passed to MarginPool
      * @param _asset address of asset to transfer
      * @param _user address of user to transfer assets to
      * @param _amount amount of token to transfer to _user, scaled to 1e18 of precision
@@ -85,8 +85,8 @@ contract MarginPool {
 
     /**
      * @notice transfers multiple assets from users to pool
-     * @dev all tokens are scaled to have 1e18 precision in contracts,
-     *      so amounts are scaled down to native token decimals using _calcTransferAmount().
+     * @dev all tokens are scaled to have 1e18 precision in contracts, but are scaled to native
+     *      token decimals in Controller before being passed to MarginPool
      * @param _asset addresses of assets to transfer
      * @param _user addresses of users to transfer assets to
      * @param _amount amount of each token to transfer to _user, scaled to 1e18 of precision
@@ -109,8 +109,8 @@ contract MarginPool {
 
     /**
      * @notice transfers multiple assets from pool to users
-     * @dev all tokens are scaled to have 1e18 precision in contracts,
-     *      so amounts are scaled down to native token decimals using _calcTransferAmount()
+     * @dev all tokens are scaled to have 1e18 precision in contracts, but are scaled to native
+     *      token decimals in Controller before being passed to MarginPool
      * @param _asset addresses of assets to transfer
      * @param _user addresses of users to transfer assets to
      * @param _amount amount of each token to transfer to _user, scaled to 1e18 of precision

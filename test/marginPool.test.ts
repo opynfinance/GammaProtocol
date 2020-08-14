@@ -202,10 +202,6 @@ contract('MarginPool', ([controllerAddress, user1, random]) => {
     const usdcToTransfer = ether('250')
     const wethToTransfer = ether('25')
 
-    //const assets: string[] = [usdc.address, weth.address]
-    //const users: string[] = [user1, user1]
-    //const balances: string[] = [usdcToTransfer, wethToTransfer]
-
     it('should revert transfering an array to pool from caller other than controller address', async () => {
       // user approve USDC and WETH transfer
       await usdc.approve(marginPool.address, usdcToTransfer, {from: user1})
@@ -294,10 +290,6 @@ contract('MarginPool', ([controllerAddress, user1, random]) => {
   describe('Transfer multiple assets to user', () => {
     const usdcToTransfer = ether('250')
     const wethToTransfer = ether('25')
-
-    //const assets: string[] = [usdc.address, weth.address]
-    //const users: string[] = [user1, user1]
-    //const balances: string[] = [usdcToTransfer, wethToTransfer]
 
     it('should revert transfering to user from caller other than controller address', async () => {
       await expectRevert(
