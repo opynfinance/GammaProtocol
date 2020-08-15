@@ -77,20 +77,19 @@ library Actions {
     }
 
     struct WithdrawArgs {
-        /// @notice The address of the account owner
+        //The address of the account owner
         address owner;
-        /// @notice The index of the vault from which the asset will be withdrawn
+        // The index of the vault from which the asset will be withdrawn
         uint256 vaultId;
-        /// @notice The address to which we transfer the asset
+        // The address to which we transfer the asset
         address to;
-        /// @notice The asset that is to be withdrawn
+        // The asset that is to be withdrawn
         address asset;
-        /**
-         * @notice Each vault can hold multiple short / long / collateral assets. In this version, we are restricting the scope to only 1 of each.
-         * In future versions this would be the index of the short / long / collateral asset that needs to be modified.
-         */
+        // Each vault can hold multiple short / long / collateral assets.
+        // In this version, we are restricting the scope to only 1 of each.
+        // In future versions this would be the index of the short / long / collateral asset that needs to be modified.
         uint256 index;
-        /// @notice The amount of asset that is to be transfered
+        // The amount of asset that is to be transfered
         uint256 amount;
     }
 
@@ -143,7 +142,7 @@ library Actions {
      * @param _args The general action arguments structure
      * @return The arguments for a withdraw action
      */
-    function _parseWithdrawArgs(ActionArgs memory _args) internal returns (WithdrawArgs memory) {
+    function _parseWithdrawArgs(ActionArgs memory _args) internal pure returns (WithdrawArgs memory) {
         require(
             (_args.actionType == ActionType.WithdrawLongOption) || (_args.actionType == ActionType.WithdrawCollateral),
             "Actions: can only parse arguments for withdraw actions"
