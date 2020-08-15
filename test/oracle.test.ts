@@ -145,6 +145,20 @@ contract('Oracle', ([owner, controllerAddress, random]) => {
       // set price feed
       await batchOracle.setRoundAnswer(roundBack, batchUnderlyingPrice)
 
+      await expectRevert(
+        oracle.setBatchUnderlyingPrice(batch, batchExpiry, roundBack, {from: random}),
+        'Oracle: Sender is not Controller',
+      )
+    })
+
+    it('should set price at round back equal to 1', async () => {
+      // set round back timestamp, in this scenario price got pushed to feed 10 min after batch expiry
+      await batchOracle.setRoundTimestamp(roundBack, batchExpiry.plus(60 * 10))
+      // set prior round timestamp
+      await batchOracle.setRoundTimestamp(priorRoundTimestamp, batchExpiry.minus(60 * 10))
+      // set price feed
+      await batchOracle.setRoundAnswer(roundBack, batchUnderlyingPrice)
+
       // current timestamp at which price will be submitted to our Oracle module
       const onchainPriceTimestamp = new BigNumber(await time.latest())
       // set batch underlying price
