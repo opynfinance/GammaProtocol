@@ -134,7 +134,7 @@ contract('Oracle', ([owner, controllerAddress, random]) => {
       )
     })
 
-    it('should set price at round back equal to 1', async () => {
+    it('should revert setting price from sender other than Controller', async () => {
       // advance time to pass batch locking period (15 min)
       await time.increase(new BN(60 * 15.5))
 
