@@ -28,7 +28,7 @@ contract UpgradeableContractV1 is VersionedInitializable {
      * AddressBook.
      * @param _addressBook the address of the AddressBook
      **/
-    function initialize(address _addressBook) public initializer {
+    function initialize(address _addressBook) external initializer {
         addressBook = _addressBook;
     }
 }
