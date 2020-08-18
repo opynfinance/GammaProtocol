@@ -127,7 +127,7 @@ contract MarginPool {
 
         for (uint256 i = 0; i < _asset.length; i++) {
             // transfer val from Pool to _pool
-            transferToUser(_asset[i], _user[i], _amount[i]);
+            require(transferToUser(_asset[i], _user[i], _amount[i]), "MarginPool: Transfer to user failed");
         }
     }
 }
