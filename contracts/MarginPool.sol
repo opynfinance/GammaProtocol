@@ -119,7 +119,7 @@ contract MarginPool {
         address[] memory _asset,
         address payable[] memory _user,
         uint256[] memory _amount
-    ) public onlyController {
+    ) external onlyController {
         require(
             _asset.length == _user.length && _user.length == _amount.length,
             "MarginPool: batchTransferToUser array lengths are not equal"
