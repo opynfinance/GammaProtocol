@@ -1,4 +1,4 @@
-import {MarginAccountTesterInstance, MockErc20Instance, OtokenInstance} from '../build/types/truffle-types'
+import {MarginAccountTesterInstance, MockERC20Instance, OtokenInstance} from '../build/types/truffle-types'
 
 import {BigNumber} from 'bignumber.js'
 
@@ -13,12 +13,12 @@ const ETH_ADDR = ZERO_ADDR
 
 contract('MarginAccount', ([deployer, controller]) => {
   // ERC20 mocks
-  let weth: MockErc20Instance
+  let weth: MockERC20Instance
   // addressbook instance
   let marginAccountTester: MarginAccountTesterInstance
   let otoken: OtokenInstance
   let otoken2: OtokenInstance
-  let usdc: MockErc20Instance
+  let usdc: MockERC20Instance
   let mockAddressBookAddr: string
 
   // let expiry: number;
