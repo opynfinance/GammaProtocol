@@ -8,7 +8,7 @@ pragma solidity 0.6.10;
  */
 // solhint-disable-next-line no-empty-blocks
 library Actions {
-    /// @notice Possible actions that can be performed
+    // Possible actions that can be performed
     enum ActionType {
         OpenVault,
         MintShortOption,
@@ -23,78 +23,70 @@ library Actions {
     }
 
     struct ActionArgs {
-        /// @notice The type of action that is being performed on the system
+        // The type of action that is being performed on the system
         ActionType actionType;
-        /// @notice The address of the account owner
+        // The address of the account owner
         address owner;
-        /// @notice The address which we move assets from or to (depending on the action type)
+        // The address which we move assets from or to (depending on the action type)
         address sender;
-        /// @notice The asset that is to be transfered
+        // The asset that is to be transfered
         address asset;
-        /// @notice The index of the vault that is to be modified (if any)
+        // The index of the vault that is to be modified (if any)
         uint256 vaultId;
-        /// @notice The amount of asset that is to be transfered
+        // The amount of asset that is to be transfered
         uint256 amount;
-        /**
-         * @notice Each vault can hold multiple short / long / collateral assets. In this version, we are restricting the scope to only 1 of each.
-         * In future versions this would be the index of the short / long / collateral asset that needs to be modified.
-         */
+        // Each vault can hold multiple short / long / collateral assets. In this version, we are restricting the scope to only 1 of each.
+        // In future versions this would be the index of the short / long / collateral asset that needs to be modified.
         uint256 index;
-        /// @notice Any other data that needs to be passed in for arbitrary function calls
+        // Any other data that needs to be passed in for arbitrary function calls
         bytes data;
     }
 
     struct MintArgs {
-        /// @notice The address of the account owner
+        // The address of the account owner
         address owner;
-        /// @notice The index of the vault from which the asset will be minted
+        // The index of the vault from which the asset will be minted
         uint256 vaultId;
-        /// @notice The address to which we transfer the minted otokens
+        // The address to which we transfer the minted otokens
         address to;
-        /// @notice The otoken that is to be minted
+        // The otoken that is to be minted
         address otoken;
-        /**
-         * @notice Each vault can hold multiple short / long / collateral assets. In this version, we are restricting the scope to only 1 of each.
-         * In future versions this would be the index of the short / long / collateral asset that needs to be modified.
-         */
+        // Each vault can hold multiple short / long / collateral assets. In this version, we are restricting the scope to only 1 of each.
+        // In future versions this would be the index of the short / long / collateral asset that needs to be modified.
         uint256 index;
-        /// @notice The amount of otokens that is to be minted
+        // The amount of otokens that is to be minted
         uint256 amount;
     }
 
     struct BurnArgs {
-        /// @notice The address of the account owner
+        // The address of the account owner
         address owner;
-        /// @notice The index of the vault from which the otoken will be burned
+        // The index of the vault from which the otoken will be burned
         uint256 vaultId;
-        /// @notice The address from which we transfer the otokens
+        // The address from which we transfer the otokens
         address from;
-        /// @notice The otoken that is to be burned
+        // The otoken that is to be burned
         address otoken;
-        /**
-         * @notice Each vault can hold multiple short / long / collateral assets. In this version, we are restricting the scope to only 1 of each.
-         * In future versions this would be the index of the short / long / collateral asset that needs to be modified.
-         */
+        // Each vault can hold multiple short / long / collateral assets. In this version, we are restricting the scope to only 1 of each.
+        // In future versions this would be the index of the short / long / collateral asset that needs to be modified.
         uint256 index;
-        /// @notice The amount of otokens that is to be burned
+        // The amount of otokens that is to be burned
         uint256 amount;
     }
 
     struct DepositArgs {
-        /// @notice The address of the account owner
+        // The address of the account owner
         address owner;
-        /// @notice The index of the vault to which the asset will be added
+        // The index of the vault to which the asset will be added
         uint256 vaultId;
-        /// @notice The address from which we transfer the asset
+        // The address from which we transfer the asset
         address from;
-        /// @notice The asset that is to be deposited
+        // The asset that is to be deposited
         address asset;
-        /**
-         * @notice Each vault can hold multiple short / long / collateral assets. In this version, we are restricting the scope to only 1 of each.
-         * In future versions this would be the index of the short / long / collateral asset that needs to be modified.
-         */
+        // Each vault can hold multiple short / long / collateral assets. In this version, we are restricting the scope to only 1 of each.
+        // In future versions this would be the index of the short / long / collateral asset that needs to be modified.
         uint256 index;
-        /// @notice The amount of asset that is to be transfered
+        // The amount of asset that is to be transfered
         uint256 amount;
     }
 
@@ -103,7 +95,7 @@ library Actions {
      * @param _args The general action arguments structure
      * @return The arguments for a mint action
      */
-    function _parseMintArgs(ActionArgs memory _args) internal returns (MintArgs memory) {
+    function _parseMintArgs(ActionArgs memory _args) internal pure returns (MintArgs memory) {
         require(_args.actionType == ActionType.MintShortOption, "Actions: can only parse arguments for mint actions");
         require(_args.owner != address(0), "Actions: cannot mint from an invalid account");
 
@@ -123,7 +115,7 @@ library Actions {
      * @param _args The general action arguments structure
      * @return The arguments for a burn action
      */
-    function _parseBurnArgs(ActionArgs memory _args) internal returns (BurnArgs memory) {
+    function _parseBurnArgs(ActionArgs memory _args) internal pure returns (BurnArgs memory) {
         require(_args.actionType == ActionType.BurnShortOption, "Actions: can only parse arguments for burn actions");
         require(_args.owner != address(0), "Actions: cannot burn from an invalid account");
 
@@ -143,7 +135,7 @@ library Actions {
      * @param _args The general action arguments structure
      * @return The arguments for a deposit action
      */
-    function _parseDepositArgs(ActionArgs memory _args) internal returns (DepositArgs memory) {
+    function _parseDepositArgs(ActionArgs memory _args) internal pure returns (DepositArgs memory) {
         require(
             (_args.actionType == ActionType.DepositLongOption) || (_args.actionType == ActionType.DepositCollateral),
             "Actions: can only parse arguments for deposit actions"
