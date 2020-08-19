@@ -10,35 +10,29 @@ import {SafeMath} from "../packages/oz/SafeMath.sol";
 library MarginAccount {
     using SafeMath for uint256;
 
-    /**
-     * @dev Account is a struct corresponding to a user that describes how many vaults that user has.
-     */
+    // Account is a struct corresponding to a user that describes how many vaults that user has.
     struct Account {
-        //@dev the owner whose vaults we are looking for
+        // the owner whose vaults we are looking for
         address owner;
-        //@dev the number of vaults a user has, starting at index 0 and incrementing. vaultIds sorted chronologically.
+        // the number of vaults a user has, starting at index 0 and incrementing. vaultIds sorted chronologically.
         uint256 vaultIds;
     }
 
-    /**
-     * @dev Vault is a struct of 6 arrays that describe a position a user has. A user can have multiple vaults.
-     */
+    // Vault is a struct of 6 arrays that describe a position a user has. A user can have multiple vaults.
     struct Vault {
-        /// @dev the addresses of oTokens a user has shorted (i.e. written) against this vault, including those in spreads/combos
+        // the addresses of oTokens a user has shorted (i.e. written) against this vault, including those in spreads/combos
         address[] shortOtokens;
-        /**
-         * @dev the addresses of oTokens a user has gone long (i.e. bought) in this vault, including those in spreads/combos.
-         * Note that a user can be long oTokens without opening a vault (e.g. by buying on a DEX).
-         * Generally, long oTokens will be 'deposited' in vaults to act as collateral in order to write oTokens against (i.e. in spreads/combos).
-         */
+        // the addresses of oTokens a user has gone long (i.e. bought) in this vault, including those in spreads/combos.
+        // User can be long oTokens without opening a vault (e.g. by buying on a DEX).
+        // Generally, long oTokens will be 'deposited' in vaults to act as collateral in order to write oTokens against (i.e. in spreads/combos).
         address[] longOtokens;
-        /// @dev the addresses of other tokens a user has deposited as collateral in this vault
+        // the addresses of other tokens a user has deposited as collateral in this vault
         address[] collateralAssets;
-        /// @dev describes the quantity of options shorted for each oToken address in shortOtokens
+        // describes the quantity of options shorted for each oToken address in shortOtokens
         uint256[] shortAmounts;
-        /// @dev describes the quantity of options longed in the vault for each oToken address in longOtokens
+        // describes the quantity of options longed in the vault for each oToken address in longOtokens
         uint256[] longAmounts;
-        /// @dev describes the quantity of tokens deposited as collateral in the vault for each token address in collateralAssets
+        // describes the quantity of tokens deposited as collateral in the vault for each token address in collateralAssets
         uint256[] collateralAmounts;
     }
 
@@ -92,13 +86,17 @@ library MarginAccount {
         uint256 _amount,
         uint256 _index
     ) internal {
-        //Check that the removed short otoken exists in the vault
+        // Check that the removed short otoken exists in the vault
         require(
             (_index < _vault.shortOtokens.length) && (_vault.shortOtokens[_index] == _shortOtoken),
             "MarginAccount: short otoken address mismatch"
         );
 
         _vault.shortAmounts[_index] = _vault.shortAmounts[_index].sub(_amount);
+
+        if (_vault.shortAmounts[_index] == 0) {
+            delete _vault.shortOtokens[_index];
+        }
     }
 
     /**
@@ -143,13 +141,17 @@ library MarginAccount {
         uint256 _amount,
         uint256 _index
     ) internal {
-        //Check that the removed long token exists in the vault
+        // Check that the removed long token exists in the vault
         require(
             (_index < _vault.longOtokens.length) && (_vault.longOtokens[_index] == _longOtoken),
             "MarginAccount: long otoken address mismatch"
         );
 
         _vault.longAmounts[_index] = _vault.longAmounts[_index].sub(_amount);
+
+        if (_vault.longAmounts[_index] == 0) {
+            delete _vault.longOtokens[_index];
+        }
     }
 
     /**
@@ -195,24 +197,27 @@ library MarginAccount {
         uint256 _amount,
         uint256 _index
     ) internal {
-        //Check the token is the same as vault.collateral[idx]
+        // Check the token is the same as vault.collateral[idx]
         require(
-            ((_index < _vault.collateralAssets.length) && (_vault.collateralAssets[_index] == _collateralAsset)),
+            (_index < _vault.collateralAssets.length) && (_vault.collateralAssets[_index] == _collateralAsset),
             "MarginAccount: collateral token address mismatch"
         );
 
         _vault.collateralAmounts[_index] = _vault.collateralAmounts[_index].sub(_amount);
+
+        if (_vault.collateralAmounts[_index] == 0) {
+            delete _vault.collateralAssets[_index];
+        }
     }
 
     /**
-     * @dev remove everything in a vault. Reset short, long and collateral assets and amounts arrays to [].
+     * @dev remove everything in a vault. Reset short, long and collateral assets and amounts arrays to an empty array.
      * @param _vault The vault that the user is clearing.
      */
     function _clearVault(Vault storage _vault) internal {
         delete _vault.shortAmounts;
         delete _vault.longAmounts;
         delete _vault.collateralAmounts;
-        //TODO: are the following required?
         delete _vault.shortOtokens;
         delete _vault.longOtokens;
         delete _vault.collateralAssets;

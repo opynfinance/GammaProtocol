@@ -1,4 +1,4 @@
-import {MarginAccountTesterInstance, MockERC20Instance, OtokenInstance} from '../build/types/truffle-types'
+import {MarginAccountTesterInstance, MockErc20Instance, OtokenInstance} from '../build/types/truffle-types'
 
 import {BigNumber} from 'bignumber.js'
 
@@ -13,12 +13,12 @@ const ETH_ADDR = ZERO_ADDR
 
 contract('MarginAccount', ([deployer, controller]) => {
   // ERC20 mocks
-  let weth: MockERC20Instance
+  let weth: MockErc20Instance
   // addressbook instance
   let marginAccountTester: MarginAccountTesterInstance
   let otoken: OtokenInstance
   let otoken2: OtokenInstance
-  let usdc: MockERC20Instance
+  let usdc: MockErc20Instance
   let mockAddressBookAddr: string
 
   // let expiry: number;
@@ -165,7 +165,6 @@ contract('MarginAccount', ([deployer, controller]) => {
           'MarginAccount: invalid long otoken position',
         )
       })
-
     })
 
     describe('Add collateral', () => {
@@ -181,7 +180,6 @@ contract('MarginAccount', ([deployer, controller]) => {
         const vault = await marginAccountTester.getVault()
         assert.equal(vault.collateralAmounts[index], new BigNumber(amount))
       })
-
 
       it('should add some more weth collateral', async () => {
         const beforeVault = await marginAccountTester.getVault()
