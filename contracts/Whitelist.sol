@@ -137,7 +137,7 @@ contract Whitelist is Ownable {
      * @param _productHash product hash in bytes
      */
     function _setWhitelistedProduct(bytes32 _productHash) internal {
-        require(whitelistedProduct[_productHash] == false, "Whitelist: Product already whitelisted");
+        require(!whitelistedProduct[_productHash], "Whitelist: Product already whitelisted");
 
         whitelistedProduct[_productHash] = true;
     }
@@ -147,7 +147,7 @@ contract Whitelist is Ownable {
      * @param _collateral collateral address
      */
     function _setWhitelistedCollateral(address _collateral) internal {
-        require(whitelistedCollateral[_collateral] == false, "Whitelist: Collateral already whitelisted");
+        require(!whitelistedCollateral[_collateral], "Whitelist: Collateral already whitelisted");
 
         whitelistedCollateral[_collateral] = true;
     }
@@ -157,7 +157,7 @@ contract Whitelist is Ownable {
      * @param _otokenAddress address of the oToken that is being whitelisted
      */
     function _setWhitelistedOtoken(address _otokenAddress) internal {
-        require(whitelistedOtoken[_otokenAddress] == false, "Whitelist: Otoken already whitelisted");
+        require(!whitelistedOtoken[_otokenAddress], "Whitelist: Otoken already whitelisted");
 
         whitelistedOtoken[_otokenAddress] = true;
     }
