@@ -29,8 +29,11 @@ jobs:
           name: Deploy Contracts
           command: npm run deploy:development
       - run:
+          name: Test Contract Size
+          command: npm run deploy:development
+      - run:
           name: Test Contracts
-          command: npm run test
+          command: npm run contract-size
       - run: 
           name: Gas Reporter
           command: npx codechecks
