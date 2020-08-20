@@ -28,9 +28,6 @@ contract('MarginAccount', ([deployer, vaultOwner1, controller]) => {
   const expiry = 1601020800 // 2020/09/25 0800 UTC
   const isPut = true
 
-  const testAccount: {owner: string; vaultCounter: BigNumber} = {owner: ZERO_ADDR, vaultCounter: new BigNumber(0)}
-  let account: {owner: string; vaultCounter: BigNumber}
-
   before('Deployment', async () => {
     // deploy WETH token
     weth = await MockERC20.new('WETH', 'WETH')
