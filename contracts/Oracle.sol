@@ -195,7 +195,7 @@ contract Oracle is Ownable {
 
         bool iterate = true;
         uint256 roundBack = _roundsBack;
-        uint256 price;
+        uint256 price = 0;
 
         while (iterate) {
             uint256 roundTimestamp = oracle.getTimestamp(roundBack);
