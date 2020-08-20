@@ -30,8 +30,8 @@ contract MockOtoken is ERC20Initializable {
         strikePrice = _strikePrice;
         expiryTimestamp = _expiry;
         isPut = _isPut;
-        string memory name = "ETHUSDC/1597511955/200P/USDC";
-        string memory symbol = "oETHUSDCP";
-        __ERC20_init_unchained(name, symbol);
+        string memory tokenName = "ETHUSDC/1597511955/200P/USDC";
+        string memory tokenSymbol = "oETHUSDCP";
+        __ERC20_init_unchained(tokenName, tokenSymbol);
     }
 }
