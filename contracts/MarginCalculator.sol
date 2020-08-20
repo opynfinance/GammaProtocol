@@ -10,16 +10,7 @@ import {OtokenInterface} from "./interfaces/OtokenInterface.sol";
 import {OracleInterface} from "./interfaces/OracleInterface.sol";
 import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
 import {FixedPointInt256} from "./libs/FixedPointInt256.sol";
-
-// TODO: use this from libs/MarginAccout
-struct Vault {
-    uint256[] shortAmounts;
-    uint256[] longAmounts;
-    uint256[] collateralAmounts;
-    address[] shortOtokens;
-    address[] longOtokens;
-    address[] collateralAssets;
-}
+import {MarginAccount} from "./libs/MarginAccount.sol";
 
 /**
  *
@@ -61,7 +52,7 @@ contract MarginCalculator is Initializable {
      * @return netValue the amount by which the margin is above or below the required amount.
      * @return isExcess true if there's excess margin in the vault. In this case, collateral can be taken out from the vault. False if there is insufficient margin and additional collateral needs to be added to the vault to create the position.
      */
-    function getExcessMargin(Vault memory _vault, address _demonimated)
+    function getExcessMargin(MarginAccount.Vault memory _vault, address _demonimated)
         public
         view
         returns (uint256 netValue, bool isExcess)
@@ -92,7 +83,7 @@ contract MarginCalculator is Initializable {
      * @param _vault the theoretical vault that needs to be checked
      * @return netOtoken net worth of long otoken and short otoken
      */
-    function _calculateOtokenNetValue(Vault memory _vault) internal view returns (int256 netOtoken) {
+    function _calculateOtokenNetValue(MarginAccount.Vault memory _vault) internal view returns (int256 netOtoken) {
         // The vault passed in has a short array == 1, so we can just use shortAmounts[0]
         int256 shortAmount = FixedPointInt256.uintToInt(_vault.shortAmounts[0]);
 
@@ -216,7 +207,7 @@ contract MarginCalculator is Initializable {
      * @dev internal function that ensure each asset type & amout array have the same length, and length <= 1;
      * @param _vault the vault to check.
      */
-    function _checkAssetCount(Vault memory _vault) internal pure {
+    function _checkAssetCount(MarginAccount.Vault memory _vault) internal pure {
         // For the currect version, check lengths of short, long, ollateral <= 1.
         require(_vault.shortOtokens.length <= 1, "MarginCalculator: Too many short otokens in the vault.");
         require(_vault.longOtokens.length <= 1, "MarginCalculator: Too many long otokens in the vault.");
@@ -240,7 +231,7 @@ contract MarginCalculator is Initializable {
      * @dev internal function that check the long asset is valid for the short asset
      * @param _vault the vault to check.
      */
-    function _checkLongAsset(Vault memory _vault) internal view {
+    function _checkLongAsset(MarginAccount.Vault memory _vault) internal view {
         if (_vault.longOtokens.length == 0 || _vault.shortOtokens.length == 0) return;
 
         OtokenInterface long = OtokenInterface(_vault.longOtokens[0]);
