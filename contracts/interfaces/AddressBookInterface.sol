@@ -14,6 +14,8 @@ interface AddressBookInterface {
 
     function getController() external view returns (address);
 
+    function getOracle() external view returns (address);
+
     function getMarginPool() external view returns (address);
 
     function getMarginCalculator() external view returns (address);
@@ -29,6 +31,8 @@ interface AddressBookInterface {
     function setOtokenImpl(address _otokenImpl) external;
 
     function setOtokenFactory(address _factory) external;
+
+    function setOracleImpl(address _otokenImpl) external;
 
     function setWhitelist(address _whitelist) external;
 

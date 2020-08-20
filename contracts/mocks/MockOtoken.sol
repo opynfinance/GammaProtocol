@@ -1,12 +1,12 @@
 pragma solidity =0.6.10;
 
-// import {ERC20Initializable} from "../packages/oz/upgradeability/ERC20Initializable.sol";
+import {ERC20Initializable} from "../packages/oz/upgradeability/ERC20Initializable.sol";
 
 /**
  * SPDX-License-Identifier: UNLICENSED
  * @dev The Otoken inherits ERC20Initializable because we need to use the init instead of constructor.
  */
-contract MockOtoken {
+contract MockOtoken is ERC20Initializable {
     address public addressBook;
     address public underlyingAsset;
     address public strikeAsset;
@@ -36,5 +36,8 @@ contract MockOtoken {
         strikePrice = _strikePrice;
         expiry = _expiry;
         isPut = _isPut;
+        string memory tokenName = "ETHUSDC/1597511955/200P/USDC";
+        string memory tokenSymbol = "oETHUSDCP";
+        __ERC20_init_unchained(tokenName, tokenSymbol);
     }
 }

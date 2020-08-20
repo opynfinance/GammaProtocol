@@ -2,17 +2,17 @@
 pragma solidity 0.6.10;
 
 interface OtokenInterface {
-    function underlyingAsset() external returns (address);
+    function underlyingAsset() external view returns (address);
 
-    function strikeAsset() external returns (address);
+    function strikeAsset() external view returns (address);
 
-    function collateralAsset() external returns (address);
+    function collateralAsset() external view returns (address);
 
-    function strikePrice() external returns (uint256);
+    function strikePrice() external view returns (uint256);
 
-    function expiryTimestamp() external returns (uint256);
+    function expiryTimestamp() external view returns (uint256);
 
-    function isPut() external returns (bool);
+    function isPut() external view returns (bool);
 
     function init(
         address _addressBook,
