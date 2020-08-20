@@ -1,5 +1,5 @@
 {
   "detectors_to_exclude": "timestamp,naming-convention,pragma,solc-version",
   "filter_paths": "Migrations.sol|packages|mocks|tests",
-  "exclude_informational": false
+  "exclude_informational": true
 }
