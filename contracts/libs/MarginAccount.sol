@@ -14,8 +14,8 @@ library MarginAccount {
     struct Account {
         // the owner whose vaults we are looking for
         address owner;
-        // the number of vaults a user has, starting at index 0 and incrementing. vaultIds sorted chronologically.
-        uint256 vaultIds;
+        // the number of vaults a user has, starting at index 0 and incrementing. vaultCounter sorted chronologically.
+        uint256 vaultCounter;
     }
 
     // Vault is a struct of 6 arrays that describe a position a user has. A user can have multiple vaults.
@@ -41,7 +41,7 @@ library MarginAccount {
      * @param _account The account relating to the user for whom the protocol is opening the new vault.
      */
     function _openNewVault(Account storage _account) internal {
-        _account.vaultIds = _account.vaultIds.add(1);
+        _account.vaultCounter = _account.vaultCounter.add(1);
     }
 
     /**
