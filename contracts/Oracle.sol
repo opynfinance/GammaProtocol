@@ -210,6 +210,10 @@ contract Oracle is Ownable {
      * @dev underlying price can only be set after locking period is over and before starting dispute period
      * @param _batch (hash of underlying, stike, collateral and expiry)
      * @param _expiryTimestamp batch expiry timestamp
+     * @notice set batch underlying asset price
+     * @dev underlying price can only be set after locking period is over and before starting dispute period
+     * @param _batch (hash of underlying, stike, collateral and expiry)
+     * @param _expiryTimestamp batch expiry timestamop
      * @param _roundsBack number of chainlink price feed roundback
      */
     function setBatchUnderlyingPrice(
@@ -217,11 +221,11 @@ contract Oracle is Ownable {
         uint256 _expiryTimestamp,
         uint256 _roundsBack
     ) external onlyController {
-        AggregatorInterface oracle = AggregatorInterface(batchOracle[_batch]);
-
-        require(address(oracle) != address(0), "Oracle: no oracle for this specific batch");
+        require(batchOracle[_batch] != address(0), "Oracle: no oracle for this specific batch");
         require(isLockingPeriodOver(_batch, _expiryTimestamp), "Oracle: locking period is not over yet");
         require(batchPriceAt[_batch][_expiryTimestamp].timestamp == 0, "Oracle: dispute period started");
+
+        AggregatorInterface oracle = AggregatorInterface(batchOracle[_batch]);
 
         bool iterate = true;
         uint256 roundBack = _roundsBack;
