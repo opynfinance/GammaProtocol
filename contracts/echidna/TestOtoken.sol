@@ -4,7 +4,7 @@ import {ERC20Initializable} from "../packages/oz/upgradeability/ERC20Initializab
 import {SafeMath} from "../packages/oz/SafeMath.sol";
 import {Strings} from "../packages/oz/Strings.sol";
 import {BokkyPooBahsDateTimeLibrary} from "../packages/BokkyPooBahsDateTimeLibrary.sol";
-import {MockAddressBook} from "./mocks/MockAddressBook.sol";
+import {EchidnaMockAddressBook} from "./mocks/EchidnaMockAddressBook.sol";
 
 /**
  * @title Otoken
@@ -39,7 +39,7 @@ abstract contract TestOtoken is ERC20Initializable {
     uint256 private constant STRIKE_PRICE_DIGITS = 1e18;
 
     constructor() public {
-        addressBook = address(new MockAddressBook());
+        addressBook = address(new EchidnaMockAddressBook());
     }
 
     /**
@@ -228,12 +228,12 @@ abstract contract TestOtoken is ERC20Initializable {
     ) internal override {
         if (from == address(0)) {
             require(
-                msg.sender == MockAddressBook(addressBook).getController(),
+                msg.sender == EchidnaMockAddressBook(addressBook).getController(),
                 "Otoken: Only Controller can mint Otokens."
             );
         } else if (to == address(0)) {
             require(
-                msg.sender == MockAddressBook(addressBook).getController(),
+                msg.sender == EchidnaMockAddressBook(addressBook).getController(),
                 "Otoken: Only Controller can burn Otokens."
             );
         }
