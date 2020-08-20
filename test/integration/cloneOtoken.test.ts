@@ -19,7 +19,7 @@ const MockOtoken = artifacts.require('MockOtoken.sol')
 
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
-contract('OTokenFactory + Otoken', ([deployer, user1, user2, random]) => {
+contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([deployer, user1, user2, random]) => {
   let otokenImpl: OtokenInstance
   let otoken1: OtokenInstance
   let otoken2: OtokenInstance
