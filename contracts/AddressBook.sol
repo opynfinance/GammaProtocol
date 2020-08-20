@@ -224,9 +224,9 @@ contract AddressBook is Ownable {
 
         if (proxyAddress == address(0)) {
             OwnedUpgradeabilityProxy proxy = new OwnedUpgradeabilityProxy();
-            proxy.upgradeToAndCall(_newAddress, params);
             setAddress(_id, address(proxy));
             emit ProxyCreated(_id, address(proxy));
+            proxy.upgradeToAndCall(_newAddress, params);
         } else {
             OwnedUpgradeabilityProxy proxy = OwnedUpgradeabilityProxy(proxyAddress);
             proxy.upgradeToAndCall(_newAddress, params);
