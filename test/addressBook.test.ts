@@ -12,7 +12,6 @@ const {expectRevert} = require('@openzeppelin/test-helpers')
 
 const MockERC20 = artifacts.require('MockERC20.sol')
 const OtokenFactory = artifacts.require('OtokenFactory.sol')
-const MarginPool = artifacts.require('MarginPool.sol')
 const UpgradeableContractV1 = artifacts.require('UpgradeableContractV1.sol')
 const UpgradeableContractV2 = artifacts.require('UpgradeableContractV2.sol')
 const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy.sol')
