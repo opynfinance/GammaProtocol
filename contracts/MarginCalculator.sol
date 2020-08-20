@@ -59,9 +59,12 @@ contract MarginCalculator is Initializable {
         view
         returns (uint256 netValue, bool isExcess)
     {
+        // ensure the # asset in collateral, long and short array is valid.
         _checkAssetCount(_vault);
+        // ensure the long asset is valid for the short asset.
         _checkLongAsset(_vault);
 
+        // collateral amount is always positive.
         int256 collateralAmount = _vault.collateralAmounts.length > 0
             ? FixedPointInt256.uintToInt(_vault.collateralAmounts[0])
             : 0;
@@ -74,16 +77,21 @@ contract MarginCalculator is Initializable {
         require(shortCollateral == _demonimated, "MarginCalculator: Denomintated token should be short.collateral");
 
         int256 netOtoken = _calculateOtokenNetValue(_vault);
+        // if netOtoken < 0, the long assets cannot cover the max loss of short assets in the vault.
+        // will need to check if collateral + netOtoken is greater than 0.
         int256 totalValue = collateralAmount.add(netOtoken);
         isExcess = totalValue >= 0;
         netValue = totalValue.intToUint();
     }
 
     /**
-     * @dev Calculate the net value of long token + short token in a vault.
-     * The vault passed in already pass amount array length = asset array length check.
+     * @notice Calculate the net value of long token + short token in a vault, denominated in collateral asset.
+     * @dev The vault passed in already pass amount array length = asset array length check.
      * @param _vault the theoretical vault that needs to be checked
-     * @return netOtoken net worth of long otoken and short otoken
+     * @return netOtoken net worth of long otoken and short otoken, denominated in collateral asset.
+     * Positive: long asset covers the max loss of short asset. Can potentially remove collateral.
+     * Negative: long asset cannot cover the max loss of short asset, will take collateral assets amount into consideration
+     *           to see if the vault is valid.
      */
     function _calculateOtokenNetValue(MarginAccount.Vault memory _vault) internal view returns (int256 netOtoken) {
         // The vault passed in has a short array == 1, so we can just use shortAmounts[0]
@@ -210,7 +218,7 @@ contract MarginCalculator is Initializable {
      * @param _vault the vault to check.
      */
     function _checkAssetCount(MarginAccount.Vault memory _vault) internal pure {
-        // For the currect version, check lengths of short, long, ollateral <= 1.
+        // For the current version, check lengths of short, long, collateral <= 1.
         require(_vault.shortOtokens.length <= 1, "MarginCalculator: Too many short otokens in the vault.");
         require(_vault.longOtokens.length <= 1, "MarginCalculator: Too many long otokens in the vault.");
         require(_vault.collateralAssets.length <= 1, "MarginCalculator: Too many collateral assets in the vault.");
