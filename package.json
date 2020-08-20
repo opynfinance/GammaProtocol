@@ -52,7 +52,7 @@
     "lint:tests:prettier:fix": "prettier --write \"test/**/*.ts\"",
     "test": "CI=true truffle test",
     "coverage": "truffle run coverage",
-    "contract-size": "truffle run contract-size --checkMaxSize 48"
+    "contract-size": "truffle run contract-size --checkMaxSize 2"
   },
   "husky": {
     "hooks": {

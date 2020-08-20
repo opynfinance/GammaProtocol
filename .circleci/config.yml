@@ -2,11 +2,17 @@ version: 2.1
 orbs:
   coveralls: coveralls/coveralls@1.0.6
   node: circleci/node@1.1.6
+
 workflows:
-  env-vars:
+  build-test-report:
     jobs:
-      - build:
-          context: COVERALLS_REPO_TOKEN
+      - build
+      - size-check:
+          requires:
+            - build
+      - test:
+          requires:
+            - build
 jobs:
   build:
     working_directory: ~/gammaprotocol
@@ -26,14 +32,38 @@ jobs:
           name: Lint Contracts
           command: npm run lint:sol
       - run:
-          name: Deploy Contracts
-          command: npm run deploy:development
-      - run:
-          name: Test Contract Size
-          command: npm run deploy:development
+          name: Build Contracts
+          command: npm run build
+      - save_cache: 
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - node_modules
+  
+  size-check:
+    working_directory: ~/optionsprotocol
+    docker:
+      - image: circleci/node:10.18.0
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
       - run:
           name: Test Contracts
           command: npm run contract-size
+
+  test:
+    working_directory: ~/optionsprotocol
+    docker:
+      - image: circleci/node:10.18.0
+      - image: trufflesuite/ganache-cli:v6.7.0
+        command: ganache-cli --deterministic -e 300 -p 8545 -m 'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat' --accounts 30 --allowUnlimitedContractSize
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: Test 
+          command: npm run test
       - run: 
           name: Gas Reporter
           command: npx codechecks
@@ -52,4 +82,3 @@ jobs:
           path: /coverage.json
       - store_artifacts:
           path: test-results.xml
-          prefix: tests
