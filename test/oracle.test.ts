@@ -1,7 +1,7 @@
 import {MockChainlinkOracleInstance, MockAddressBookInstance, OracleInstance} from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
-const {expectEvent, expectRevert, time, BN} = require('@openzeppelin/test-helpers')
+const {expectRevert, time, BN} = require('@openzeppelin/test-helpers')
 
 const MockChainlinkOracle = artifacts.require('MockChainlinkOracle.sol')
 const MockAddressBook = artifacts.require('MockAddressBook.sol')
@@ -72,7 +72,7 @@ contract('Oracle', ([owner, controllerAddress, random]) => {
     })
 
     it('should check if locking period is over', async () => {
-      const isOver = await oracle.isLockingPeriodOver(batchOracle.address, await time.latest(), {from: owner})
+      const isOver = await oracle.isLockingPeriodOver(batch, await time.latest(), {from: owner})
       const expectedResult = false
       assert.equal(isOver, expectedResult, 'locking period check mismatch')
     })
@@ -99,7 +99,7 @@ contract('Oracle', ([owner, controllerAddress, random]) => {
     })
 
     it('should check if dispute period is over when price timestamp equal to zero', async () => {
-      const isOver = await oracle.isDisputePeriodOver(batchOracle.address, await time.latest(), {from: owner})
+      const isOver = await oracle.isDisputePeriodOver(batch, await time.latest(), {from: owner})
       const expectedResult = false
       assert.equal(isOver, expectedResult, 'dispute period check mismatch')
     })
@@ -131,6 +131,13 @@ contract('Oracle', ([owner, controllerAddress, random]) => {
       await expectRevert(
         oracle.setBatchUnderlyingPrice(batch, batchExpiry, roundBack, {from: controllerAddress}),
         'Oracle: locking period is not over yet',
+      )
+    })
+
+    it('should revert setting price if caller is not controller', async () => {
+      await expectRevert(
+        oracle.setBatchUnderlyingPrice(batch, batchExpiry, roundBack, {from: random}),
+        'Oracle: Sender is not Controller',
       )
     })
 
@@ -181,7 +188,7 @@ contract('Oracle', ([owner, controllerAddress, random]) => {
         'Oracle: no oracle for this specific batch',
       )
 
-      // re-set oracle to zero address
+      // re-set oracle to non-zero address
       await oracle.setBatchOracle(batch, batchOracle.address, {from: owner})
     })
 
@@ -221,6 +228,19 @@ contract('Oracle', ([owner, controllerAddress, random]) => {
         2,
         'batch underlying price on-chain timestamp mismatch',
       )
+    })
+
+    it('isDisputePeriodOver should retun false when batch price timestamp is not updated', async () => {
+      const isOver = await oracle.isDisputePeriodOver(batch, batchExpiry)
+      const expectedResult = false
+      assert.equal(isOver, expectedResult, 'dispute period check mismatch')
+    })
+
+    it('isDisputePeriodOver should retun true when now >  updateTimestamp + disputePeriod', async () => {
+      await time.increase(60 * 60)
+      const isOver = await oracle.isDisputePeriodOver(batch, batchExpiry)
+      const expectedResult = true
+      assert.equal(isOver, expectedResult, 'dispute period check mismatch')
     })
   })
 })
