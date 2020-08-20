@@ -40,7 +40,7 @@ jobs:
             - node_modules
   
   size-check:
-    working_directory: ~/optionsprotocol
+    working_directory: ~/gammaprotocol
     docker:
       - image: circleci/node:10.18.0
     steps:
@@ -48,11 +48,11 @@ jobs:
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
       - run:
-          name: Test Contracts
+          name: Check Contract Size
           command: npm run contract-size
 
   test:
-    working_directory: ~/optionsprotocol
+    working_directory: ~/gammaprotocol
     docker:
       - image: circleci/node:10.18.0
       - image: trufflesuite/ganache-cli:v6.7.0
@@ -62,7 +62,7 @@ jobs:
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
       - run:
-          name: Test 
+          name: Test Contracts 
           command: npm run test
       - run: 
           name: Gas Reporter
