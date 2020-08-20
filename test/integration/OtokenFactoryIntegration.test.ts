@@ -5,10 +5,10 @@ import {
   MockAddressBookInstance,
   MockERC20Instance,
   TestControllerInstance,
-} from '../build/types/truffle-types'
+} from '../../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 import {assert} from 'chai'
-import {setupContracts} from './utils'
+import {setupContracts} from '../utils'
 const {expectRevert} = require('@openzeppelin/test-helpers')
 
 const TestController = artifacts.require('TestController.sol')
