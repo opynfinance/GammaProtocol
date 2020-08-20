@@ -1,4 +1,4 @@
 {
   "filter_paths": "packages|mocks|tests",
-  "exclude_low": true
+  "exclude_informational": true
 }
