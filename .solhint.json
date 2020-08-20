@@ -8,6 +8,7 @@
     "compiler-version":["error", "0.6.10"],
     "not-rely-on-time": "off",
     "no-complex-fallback": "off",
-    "no-inline-assembly": "off"
+    "no-inline-assembly": "off",
+    "reason-string": "off"
   }
 }
