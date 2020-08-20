@@ -2,10 +2,21 @@
 A Decentralized Options Protocol built on Ethereum. It supports capital efficient put and call options.
 
 ## Installation
+For Installing the unit and integration test environment: 
 Run `npm i`
 
+For installing the property tests 
+Run `docker pull trailofbits/eth-security-toolbox`
+
+
 ## Testing
-Run `npm test`
+### Unit Tests
+Run `npm test` 
+
+### Property Tests
+Run `docker run -it -v "$PWD":/Users/username trailofbits/eth-security-toolbox` to get the docker environment up and running
+Run `solc-select 0.6.10` in the running docker container to switch to the current version of solidity being used
+Run `echidna-test file --config file.yaml` to run the echidna test for that file 
 
 ## Security
 Security is a top priority for us at Opyn. As an insurance platform, we care most about furthering the trust users have in DeFi. This code is still in development and has not been finalized, hence we anticipate there will be issues. We would love to learn about them while we are still in the development phases of the project! 

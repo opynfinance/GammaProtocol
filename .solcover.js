@@ -22,5 +22,6 @@ module.exports = {
     'packages/canonical-weth/WETH9.sol',
     'packages/BokkyPooBahsDateTimeLibrary.sol',
     'packages/oz/SignedSafeMath.sol',
+    'echidna/'
   ]
 }
