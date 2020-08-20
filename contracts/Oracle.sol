@@ -73,7 +73,7 @@ contract Oracle is Ownable {
      * @param _timestamp price timestamp
      * @return price and timestap at which price submitted to this contract
      */
-    function getBatchPrice(bytes32 _batch, uint256 _timestamp) public view returns (uint256, uint256) {
+    function getBatchPrice(bytes32 _batch, uint256 _timestamp) external view returns (uint256, uint256) {
         Price memory batchPrice = batchPriceAt[_batch][_timestamp];
         return (batchPrice.price, batchPrice.timestamp);
     }
@@ -83,7 +83,7 @@ contract Oracle is Ownable {
      * @param _batch get the price oracle for a specific batch. A batch is the hash of underlying, collateral, strike and expiry.
      * @return oracle address
      */
-    function getBatchOracle(bytes32 _batch) public view returns (address) {
+    function getBatchOracle(bytes32 _batch) external view returns (address) {
         return batchOracle[_batch];
     }
 
@@ -93,7 +93,7 @@ contract Oracle is Ownable {
      * @param _oracle oracle address
      * @return locking period
      */
-    function getOracleLockingPeriod(address _oracle) public view returns (uint256) {
+    function getOracleLockingPeriod(address _oracle) external view returns (uint256) {
         return oracleLockingPeriod[_oracle];
     }
 
@@ -103,7 +103,7 @@ contract Oracle is Ownable {
      * @param _oracle oracle address
      * @return dispute period
      */
-    function getOracleDisputePeriod(address _oracle) public view returns (uint256) {
+    function getOracleDisputePeriod(address _oracle) external view returns (uint256) {
         return oracleDisputePeriod[_oracle];
     }
 

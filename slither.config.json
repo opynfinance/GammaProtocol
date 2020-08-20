@@ -1,4 +1,4 @@
 {
-  "filter_paths": "packages|mocks|tests",
+  "filter_paths": "Migrations.sol|packages|mocks|tests",
   "exclude_informational": true
 }
