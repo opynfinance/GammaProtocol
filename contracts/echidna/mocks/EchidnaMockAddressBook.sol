@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.6.10;
 
-contract MockAddressBook {
+contract EchidnaMockAddressBook {
     constructor() public {}
 
     function getController() external view returns (address) {
