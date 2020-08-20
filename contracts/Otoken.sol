@@ -66,8 +66,8 @@ contract Otoken is ERC20Initializable {
         strikePrice = _strikePrice;
         expiry = _expiry;
         isPut = _isPut;
-        (string memory name, string memory symbol) = _getNameAndSymbol();
-        __ERC20_init_unchained(name, symbol);
+        (string memory tokenName, string memory tokenSymbol) = _getNameAndSymbol();
+        __ERC20_init_unchained(tokenName, tokenSymbol);
     }
 
     /**
@@ -92,10 +92,10 @@ contract Otoken is ERC20Initializable {
 
     /**
      * @notice generate name and symbol for an option
-     * @return name ETHUSDC 05-September-2020 200 Put USDC Collateral
-     * @return symbol oETHUSDC-05SEP20-200P
+     * @return tokenName ETHUSDC 05-September-2020 200 Put USDC Collateral
+     * @return tokenSymbol oETHUSDC-05SEP20-200P
      */
-    function _getNameAndSymbol() internal view returns (string memory name, string memory symbol) {
+    function _getNameAndSymbol() internal view returns (string memory tokenName, string memory tokenSymbol) {
         string memory underlying = _getTokenSymbol(underlyingAsset);
         string memory strike = _getTokenSymbol(strikeAsset);
         string memory collateral = _getTokenSymbol(collateralAsset);
@@ -109,7 +109,7 @@ contract Otoken is ERC20Initializable {
         (string memory monthSymbol, string memory monthFull) = _getMonth(month);
 
         // concat name string: ETHUSDC 05-September-2020 200 Put USDC Collateral
-        name = string(
+        tokenName = string(
             abi.encodePacked(
                 underlying,
                 strike,
@@ -129,7 +129,7 @@ contract Otoken is ERC20Initializable {
         );
 
         // concat symbol string: oETHUSDC-05SEP20-200P
-        symbol = string(
+        tokenSymbol = string(
             abi.encodePacked(
                 "o",
                 underlying,
@@ -170,10 +170,10 @@ contract Otoken is ERC20Initializable {
 
     /**
      * @dev return string of option type
-     * @return symbol P or C
-     * @return full Put or Call
+     * @return shortString P or C
+     * @return longString Put or Call
      */
-    function _getOptionType(bool _isPut) internal pure returns (string memory symbol, string memory full) {
+    function _getOptionType(bool _isPut) internal pure returns (string memory shortString, string memory longString) {
         if (_isPut) {
             return ("P", "Put");
         } else {
@@ -183,10 +183,10 @@ contract Otoken is ERC20Initializable {
 
     /**
      * @dev return string of month.
-     * @return symbol SEP, DEC ...etc
-     * @return full September, December ...etc
+     * @return shortString SEP, DEC ...etc
+     * @return longString September, December ...etc
      */
-    function _getMonth(uint256 _month) internal pure returns (string memory symbol, string memory full) {
+    function _getMonth(uint256 _month) internal pure returns (string memory shortString, string memory longString) {
         if (_month == 1) {
             return ("JAN", "January");
         } else if (_month == 2) {
