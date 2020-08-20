@@ -29,11 +29,13 @@ contract MarginCalculator is Initializable {
      * @dev For call return = Max (0, ETH Price - oToken.strike)
      * @dev For put return Max(0, oToken.strike - ETH Price)
      * @param _otoken otoken address
+     * @return the cash value of an expired otoken
      */
     function getExpiredCashValue(address _otoken) public view returns (uint256) {
         require(_otoken != address(0), "MarginCalculator: Invalid token address.");
-
         OtokenInterface otoken = OtokenInterface(_otoken);
+        require(now > otoken.expiryTimestamp(), "MarginCalculator: Otoken not expired yet.");
+
         uint256 strikePrice = otoken.strikePrice();
         (uint256 underlyingPrice, bool isFinalized) = _getUnderlyingPrice(_otoken);
         require(isFinalized, "MarginCalculator: Oracle price not finalized yet.");

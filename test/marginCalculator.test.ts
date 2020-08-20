@@ -16,7 +16,7 @@ const MockERC20 = artifacts.require('MockERC20.sol')
 const MarginCalculator = artifacts.require('MarginCalculator.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 contract('MarginCalculator', () => {
-  let expiry: number // = 1898553600
+  let expiry: number
 
   let calculator: MarginCalculatorInstance
   let addressBook: MockAddressBookInstance
@@ -66,38 +66,55 @@ contract('MarginCalculator', () => {
   })
 
   describe('Get cash value tests', () => {
+    let closeExpiry: number
+    let put: MockOtokenInstance
+    let call: MockOtokenInstance
+    before('create calls and puts for getExpiredCashValue test', async () => {
+      const now = (await time.latest()).toNumber()
+      closeExpiry = now + time.duration.days(1).toNumber()
+      put = await MockOtoken.new()
+      call = await MockOtoken.new()
+      await put.init(weth.address, usdc.address, usdc.address, createScaledNumber(250), closeExpiry, true)
+      await call.init(weth.address, usdc.address, usdc.address, createScaledNumber(250), closeExpiry, false)
+    })
+
     it('Should revert when entering address(0)', async () => {
       await expectRevert(calculator.getExpiredCashValue(ZERO_ADDR), 'MarginCalculator: Invalid token address.')
+    })
+    it('Should revert if option is not expired yet.', async () => {
+      await expectRevert(calculator.getExpiredCashValue(put.address), 'MarginCalculator: Otoken not expired yet')
+      // let the otoken expire!
+      await time.increaseTo(closeExpiry + 2)
     })
     it('Should return cash value for put as strike price - eth price when strike > eth price', async () => {
       const ethPirce = createScaledNumber(200)
       await oracle.setMockedStatus(ethPirce, true)
-      const cashedValue = await calculator.getExpiredCashValue(eth250Put.address)
+      const cashedValue = await calculator.getExpiredCashValue(put.address)
       assert.equal(cashedValue.toString(), createScaledNumber(50))
     })
     it('Should return cash value for call as 0 when strike price when strike > eth price', async () => {
       const ethPirce = createScaledNumber(150)
       await oracle.setMockedStatus(ethPirce, true)
-      const cashedValue = await calculator.getExpiredCashValue(eth250Call.address)
+      const cashedValue = await calculator.getExpiredCashValue(call.address)
       assert.equal(cashedValue.toString(), '0')
     })
     it('Should return cash value for put as 0 when strike  < eth price', async () => {
       const ethPirce = createScaledNumber(300)
       await oracle.setMockedStatus(ethPirce, true)
-      const cashedValue = await calculator.getExpiredCashValue(eth250Put.address)
+      const cashedValue = await calculator.getExpiredCashValue(put.address)
       assert.equal(cashedValue.toString(), '0')
     })
     it('Should return cash value for call as underlying - strike when strike < eth price', async () => {
       const ethPirce = createScaledNumber(300)
       await oracle.setMockedStatus(ethPirce, true)
-      const cashedValue = await calculator.getExpiredCashValue(eth250Call.address)
+      const cashedValue = await calculator.getExpiredCashValue(call.address)
       assert.equal(cashedValue.toString(), createScaledNumber(50))
     })
     it('Should revert if price is not finalized.', async () => {
       const ethPirce = createScaledNumber(200)
       await oracle.setMockedStatus(ethPirce, false)
       await expectRevert(
-        calculator.getExpiredCashValue(eth250Call.address),
+        calculator.getExpiredCashValue(call.address),
         'MarginCalculator: Oracle price not finalized yet.',
       )
     })
