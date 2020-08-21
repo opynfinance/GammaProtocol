@@ -1,67 +1,45 @@
+/**
+ * SPDX-License-Identifier: UNLICENSED
+ */
 pragma solidity =0.6.10;
 
 import {Ownable} from "./packages/oz/Ownable.sol";
 import {SafeMath} from "./packages/oz/SafeMath.sol";
 
 /**
- * SPDX-License-Identifier: UNLICENSED
- * @dev The Controller is...
- * @author Opyn
+ * @author Opyn Team
+ * @title Controller
+ * @notice contract that
  */
-// solhint-disable-next-line no-empty-blocks
 contract Controller is Ownable {
-    //WHAT DOES OWNABLE DO?
     using SafeMath for uint256;
 
     address internal addressBook;
 
     bool internal systemPaused;
-    //TODO: should this be internal? also do we need setters and getters for the two above?
 
-    mapping (address  => MarginAccount.Account) internal accounts;
-    mapping (address  => mapping (uint256  => MarginAccount.Vault)) internal vaults;
-    mapping (address => mapping(address => bool)) internal operators;
+    mapping(address => MarginAccount.Account) internal accounts;
+    mapping(address => mapping(uint256 => MarginAccount.Vault)) internal vaults;
+    mapping(address => mapping(address => bool)) internal operators;
 
-    event NewOperatorSet(address newOperator);
-
-    modifier isPaused {
-        require(
-            throw
-            //TODO: write this logic
-        );
-        _;
+    constructor(address _addressBook) public {
+        addressBook = _addressBook;
     }
 
-    //TODO: is the following even neeeded if the above exists?
-    modifier isNotPaused {
-        require(
-        throw
-        //TODO: write this logic
-        );
+    modifier isPaused {
         _;
     }
 
     modifier isExpired(asset) {
-        require(
-        throw
-        //TODO: write this logic
-        );
         _;
     }
-
 
     //High level: Check if the msg sender is the vault owner or is the operator of the owner.
     modifier isAuthorized(owner) {
-        require(
-        throw
-        //TODO: write this logic
-        );
         _;
     }
 
-    constructor (address _addressBook) external {
-        addressBook = _addressBook;
-    }
+    event NewOperatorSet(address newOperator);
 
     /**
      * @dev allows admin to toggle pause / emergency shutdown
@@ -76,86 +54,67 @@ contract Controller is Ownable {
      * @param _operator The operator that msg.sender wants to give privileges to or revoke them from.
      * @param _isOperator The new boolean value that expresses if msg.sender is giving or revoking privileges from _operator.
      */
-    function setOperator (address _operator, bool _isOperator) external {
-        operators[msg.sender][_operator]  = _isOperator;
+    function setOperator(address _operator, bool _isOperator) external {
+        operators[msg.sender][_operator] = _isOperator;
         emit NewOperatorSet(_operator);
     }
 
-   /**
-    * @dev Iterate through a collateral array of the vault and payout collateral assets.
-    * @param _owner The owner of the vault we will clear.
-    * @param _id The vaultId for the vault we will clear, within the user's MarginAccount.Account struct.
-    */
+    /**
+     * @dev Iterate through a collateral array of the vault and payout collateral assets.
+     * @param _owner The owner of the vault we will clear.
+     * @param _id The vaultId for the vault we will clear, within the user's MarginAccount.Account struct.
+     */
     function redeemForEmergency(address _owner, vaultId _id) external isPaused isAuthorized(args.owner) {
         //TODO: isn't the second param supposed to be a uint256?
         Vault v = getVault(owner, id);
         v.clearVault();
     }
 
-   /**
-    * @dev Return a specific vault from memory.
-    * @param _owner The owner of the relevant vault.
-    * @param _id The vaultId for the relevant vault, within the user's MarginAccount.Account struct.
-    * @return the desired vault
-    */
-    function getVault(address owner, uint256 vaultId) internal view returns (Vault memory) {
+    /**
+     * @dev Return a specific vault from memory.
+     * @param _owner The owner of the relevant vault.
+     * @param _vaultId The vaultId for the relevant vault, within the user's MarginAccount.Account struct.
+     * @return the desired vault
+     */
+    function getVault(address _owner, uint256 _vaultId) internal view returns (Vault memory) {
         //return Vault vault = vaults[owner][id] OR  //return accounts[owner].vault[vaultId]
         //todo: which one of the above is it?
     }
 
-    //    /**
-    //   * @dev Return a specific vault from memory.?? this is the same as above what?
-    //   * @param _owner The owner of the relevant vault.
-    //   * @param _id The vaultId for the relevant vault, within the user's MarginAccount.Account struct.
-    //   * @return the desired vault
-    //   */
-    function getVaultBalances(address owner, uint256 vaultId) external view returns (Vault memory) {
-        Vault vault = getVault(owner, vaultId);
-
-        //if the vault has no short oToken, return the vault
-        if (vault.shortAmount.length == 0) {
-            return vault;
-        } else {
-            if (before Expiry) {
-                return vault;
-            } else {
-                collateralAmount = getExcessMargin(vault, vault.short.collateral);
-                return Vault{long, short, collateral: collateralAmount};
-                //        Returns format {
-                //        longAmounts:[10000000000000000],
-                //        shortAmounts:[10000000000000000],
-                //        collateralAmounts:[10000000]
-            }
-        }
-    }
+    /**
+     * @dev Return a specific vault from memory.?? this is the same as above what?
+     * @param _owner The owner of the relevant vault.
+     * @param _vaultId The vaultId for the relevant vault, within the user's MarginAccount.Account struct.
+     * @return the desired vault
+     */
+    function getVaultBalances(address _owner, uint256 _vaultId) external view returns (Vault memory) {}
 
     function operate(Action[] actions) external isNotPaused {
         //        Call vault = _runActions (actions) and get the vault
         //        Call Calculator.isValidState(vault)
     }
 
-   /**
-    * @dev return if an expired oToken contract’s price has been finalized. Returns true if the contract has expired AND the oraclePrice at the expiry timestamp has been finalized.
-    * @param _oToken The address of the relevant oToken.
-    * @return A boolean which is true if and only if the price is finalized.
-    */
-    function isPriceFinalized(address _oToken) external view returns (type bool) {
-    //Returns true if the contract has expired AND the oraclePrice at the expiry timestamp has been finalized.
-    //Calls the Oracle to know if the price has been finalized
+    /**
+     * @dev return if an expired oToken contract’s price has been finalized. Returns true if the contract has expired AND the oraclePrice at the expiry timestamp has been finalized.
+     * @param _otoken The address of the relevant oToken.
+     * @return A boolean which is true if and only if the price is finalized.
+     */
+    function isPriceFinalized(address _otoken) external view returns (bool) {
+        //Returns true if the contract has expired AND the oraclePrice at the expiry timestamp has been finalized.
+        //Calls the Oracle to know if the price has been finalized
     }
 
     /**
-    * @dev For each action in the action Array, run the corresponding action
-    * @param _actions An array of type Actions.ActionsArgs[] which expresses which actions the user wishes to take.
-    * @return vault The new vault that has been modified (or null vault if no action affected any vault)
-    */
-    function _runActions(Actions.ActionsArgs[] _actions) internal return (Vault memory vault) {
+     * @dev For each action in the action Array, run the corresponding action
+     * @param _actions An array of type Actions.ActionsArgs[] which expresses which actions the user wishes to take.
+     * @return vault The new vault that has been modified (or null vault if no action affected any vault)
+     */
+    function _runActions(Actions.ActionsArgs[] _actions) internal returns (Vault memory vault) {
         //        Iterate through all the actions
         //        For each action (except settleVault), make sure it’s not manipulating more than 1 vault before expiry
         //        we allow users to pass in multiple settleVault actions
         //        Depending on the type of the action, call the corresponding parse function followed by the action function on the parsed arguments
         //        Return the  vault that has been modified (or null vault if no action affected any vault)
-
     }
 
     //    High Level: Only vault operator / user should be able to open a new vault
@@ -166,7 +125,7 @@ contract Controller is Ownable {
     //    High Level: Anyone should be able to deposit a valid option into a vault
     //    Example Input for amounts:
     //    uint256 amount 1000000000000000000;  // 1 * 10^18
-    function _depositLong (Actions.DepositArgs args) internal {
+    function _depositLong(Actions.DepositArgs args) internal {
         //    Check that not depositing 0 Long options
         //    Check that args.long is WhitelistModule._isValidOToken (args.long)
         //    Check that the long has not expired
@@ -178,7 +137,7 @@ contract Controller is Ownable {
     }
 
     //High Level: Only vault operator / user should be able to withdraw long
-    function _withdrawLong (Actions.WithdrawArgs args) internal isAuthorized(args.owner) {
+    function _withdrawLong(Actions.WithdrawArgs args) internal isAuthorized(args.owner) {
         //Check that not withdrawing 0 Long options
         //Cannot withdraw expired option
         //Run updateOnWithdrawLong(Vault storage _vault, Account storage _account,  address longOtoken, uint256 amount, uint256 index)
@@ -186,7 +145,7 @@ contract Controller is Ownable {
     }
 
     //    High Level: Anyone should be able to deposit collateral into a vault
-    function _depositCollateral (Actions.DepositArgs args) internal {
+    function _depositCollateral(Actions.DepositArgs args) internal {
         //    Ensure that the collateral deposited is a valid collateral type
         //    Check args.from == msg.sender for this version
         //    Check that not depositing 0 Collateral
@@ -200,7 +159,7 @@ contract Controller is Ownable {
     }
 
     //High Level: Only vault operator / user  should be able to withdraw collateral into a vault
-    function _withdrawCollateral (Actions.WithdrawArgs args) internal isAuthorized(args.owner) {
+    function _withdrawCollateral(Actions.WithdrawArgs args) internal isAuthorized(args.owner) {
         //Check that not depositing 0 Collateral
         //Ensure that the vault doesn’t have a short oToken which has expired
         //run updateOnWithdrawCollateral(vault, args.asset, args.amount, args.index)
@@ -216,21 +175,17 @@ contract Controller is Ownable {
     //amount: 1000000000000000000 (no need to scale)
     //Call Otoken(args.asset).mint(args.from, args.amount)
     //amount: 1000000000000000000 (no need to scale)
-    function _mintOtoken (Actions.MintArgs args) internal isAuthorized(args.owner) {
-
-    }
+    function _mintOtoken(Actions.MintArgs args) internal isAuthorized(args.owner) {}
 
     //High Level: anyone should be able to burn oTokens
     //Check args.from == msg.sender for this version
     //Check that not burning 0 tokens
     //Check that updateOnBurnShort(vault, args.asset, args.amount, args.index) has no error, if not fail and return an error
     //Call Otoken(args.asset).burn(msg.sender, args.amount)
-    function _burnOtoken (Actions.BurnArgs args) internal {
-
-    }
+    function _burnOtoken(Actions.BurnArgs args) internal {}
 
     //High Level: Otoken holders can withdraw cash value with their oToken
-    function _exercise (Actions.ExerciseArgs args) internal {
+    function _exercise(Actions.ExerciseArgs args) internal {
         //Ensure the option has expired
         //Check priceIsFinalized()
         //Check oToken.isLocked is false
@@ -249,7 +204,7 @@ contract Controller is Ownable {
     }
 
     //High Level: Clean up a vault and get back collateral after expiry.
-    function _settleVault (Actions.SettleVaultArg args) internal {
+    function _settleVault(Actions.SettleVaultArg args) internal {
         //Ensure the short oToken has expired
         //Check priceIsFinalized()
         //Check oToken.isLocked is false
@@ -259,20 +214,19 @@ contract Controller is Ownable {
         //MarginPool.transferToUser(collateral, payout)
     }
 
-
     //High Level: call arbitrary smart contract
-    function _call (Actions.CallArgs args) internal {
+    function _call(Actions.CallArgs args) internal {
         //Check whitelistModule.isWhitelistCallDestination(args.address)
         //Call args.address with args.data
     }
 
     /**
-    * @dev High Level: Checks if the transaction sender is the operator of the owner’s vault
-    * @param _owner The owner of the relevant vault.
-    * @param _sender DO WE NEED THIS?
-    * @return A boolean which is true if and only if the sender is the operator of the owner's vault.
-    */
-    function isOperator (address _owner, address _sender) public view returns (type bool) {
+     * @dev High Level: Checks if the transaction sender is the operator of the owner’s vault
+     * @param _owner The owner of the relevant vault.
+     * @param _sender DO WE NEED THIS?
+     * @return A boolean which is true if and only if the sender is the operator of the owner's vault.
+     */
+    function isOperator(address _owner, address _sender) public view returns (bool) {
         //TODO: do we need the second arg, shouldn't it be msg.sender?!
         //    Return operators[owner][sender]
         //    setProductUnderlyingPrice (address _otoken, uint256 _roundsBack, ) external
@@ -283,8 +237,8 @@ contract Controller is Ownable {
     * @dev the oracle sets the price of the underlying of an otoken.
     //TODO: why are we setting price of individual otokens, shouldn't we set for an entire batch at once?
     */
-    function setProductUnderlyingPrice (address _otoken, uint256 _roundsBack, ) external {
-    //TODO: IS THERE SUPPOSED TO BE ANOTHER param?
+    function setProductUnderlyingPrice(address _otoken, uint256 _roundsBack) external {
+        //TODO: IS THERE SUPPOSED TO BE ANOTHER param?
         //TODO: why are we setting price of individual otokens, shouldn't we set for an entire batch at once?
         //    Get oToken.strike, oToken.underlying
         //    Get oToken.expiry (expiryTimestamp = oToken.expiry)
