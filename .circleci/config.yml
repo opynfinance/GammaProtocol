@@ -43,7 +43,7 @@ jobs:
           paths:
             - node_modules
       - save_cache:
-          key: gamma-contracts-build-{{ .Environment.CIRCLE_SHA1 }}
+          key: gamma-{{ .Environment.CIRCLE_SHA1 }}
           paths:
             - ~/gammaprotocol
   lint:
@@ -53,7 +53,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
+          key: gamma-{{ .Environment.CIRCLE_SHA1 }}
       - run:
           name: Lint Contracts
           command: npm run lint:sol
@@ -68,7 +68,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
+          key: gamma-{{ .Environment.CIRCLE_SHA1 }}
       - run:
           name: Install packages
           command: npm install
@@ -85,7 +85,6 @@ jobs:
     docker:
       - image: circleci/node:10.18.0
     steps:
-      - checkout
       - restore_cache:
           key: gamma-contracts-build-{{ .Environment.CIRCLE_SHA1 }}
       - run:
@@ -112,8 +111,8 @@ jobs:
     working_directory: ~/gammaprotocol
     docker:
       - image: circleci/node:10.18.0
-      - image: trufflesuite/ganache-cli:v6.10.1
     steps:
+      - checkout
       - restore_cache:
           key: gamma-contracts-build-{{ .Environment.CIRCLE_SHA1 }}
       - run:
