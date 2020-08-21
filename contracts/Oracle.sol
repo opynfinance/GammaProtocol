@@ -22,9 +22,10 @@ contract Oracle is Ownable {
         uint256 timestamp; // timestamp at which the price is pulled to this oracle
     }
 
-    /// @dev mapping between oracle and it's locking period
+    /// @dev mapping between oracle and it's locking period.
+    /// locking period is a period of time after batch expiry timestamp, that preventing from pushing batch underlying asset price.
     mapping(address => uint256) internal oracleLockingPeriod;
-    /// @dev mapping of asset price to it's dispute period
+    /// @dev mapping of asset price to it's dispute period. Dispute period start from the timestamp of pushing batch underyling price
     mapping(address => uint256) internal oracleDisputePeriod;
     /// @dev mapping between batch and it's oracle
     mapping(bytes32 => address) internal batchOracle;
@@ -43,6 +44,14 @@ contract Oracle is Ownable {
         uint256 indexed expirtyTimestamp,
         uint256 price,
         uint256 onchainTimestamp
+    );
+    /// @notice emits an event when owner dispute a batch price during dispute period
+    event BatchUnderlyingPriceDisputed(
+        bytes32 indexed batch,
+        uint256 indexed expiryTimestamp,
+        uint256 disputedPrice,
+        uint256 newPrice,
+        uint256 disputeTimestamp
     );
 
     /// @notice AddressBook module
@@ -126,7 +135,7 @@ contract Oracle is Ownable {
      * @param _expiryTimestamp batch expiry
      * @return True if dispute period is over, otherwise false
      */
-    function isDisputePeriodOver(bytes32 _batch, uint256 _expiryTimestamp) external view returns (bool) {
+    function isDisputePeriodOver(bytes32 _batch, uint256 _expiryTimestamp) public view returns (bool) {
         address oracle = batchOracle[_batch];
         uint256 disputePeriod = oracleDisputePeriod[oracle];
 
@@ -176,6 +185,31 @@ contract Oracle is Ownable {
     }
 
     /**
+     * @notice dispute batch underlying price by owner during dispute period
+     * @dev only owner can dispute underlying price at specific timestamp during the dispute period, by setting a new one.
+     * @param _batch hash of underlying, stike, collateral and expiry
+     * @param _expiryTimestamp batch expiry timestamp
+     * @param _price batch underlying asset price
+     */
+    function disputeBatchPrice(
+        bytes32 _batch,
+        uint256 _expiryTimestamp,
+        uint256 _price
+    ) external onlyOwner {
+        require(!isDisputePeriodOver(_batch, _expiryTimestamp), "Oracle: dispute period over");
+
+        Price storage batchPrice = batchPriceAt[_batch][_expiryTimestamp];
+        uint256 oldPrice = batchPrice.price;
+        batchPrice.price = _price;
+
+        emit BatchUnderlyingPriceDisputed(_batch, _expiryTimestamp, oldPrice, _price, now);
+    }
+
+    /**
+     * @notice set batch underlying asset price
+     * @dev underlying price can only be set after locking period is over and before starting dispute period
+     * @param _batch (hash of underlying, stike, collateral and expiry)
+     * @param _expiryTimestamp batch expiry timestamp
      * @notice set batch underlying asset price
      * @dev underlying price can only be set after locking period is over and before starting dispute period
      * @param _batch (hash of underlying, stike, collateral and expiry)
