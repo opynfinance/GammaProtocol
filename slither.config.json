@@ -1,3 +1,8 @@
 {
-  "filter_paths": "packages|mocks|tests"
+  "detectors_to_exclude": "timestamp,naming-convention,pragma,solc-version,constable-states,calls-loop",
+  "filter_paths": "Migrations.sol|packages|mocks|tests",
+  "truffle_version": "5.1.32",
+  "exclude_optimization": true,
+  "exclude_informational": true,
+  "exclude_low": true
 }
