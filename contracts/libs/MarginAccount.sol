@@ -12,8 +12,6 @@ library MarginAccount {
 
     // Account is a struct corresponding to a user that describes how many vaults that user has.
     struct Account {
-        // the owner whose vaults we are looking for
-        address owner;
         // the number of vaults a user has, starting at index 0 and incrementing. vaultCounter sorted chronologically.
         uint256 vaultCounter;
     }
