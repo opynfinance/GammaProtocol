@@ -9,6 +9,8 @@ contract ActionTester {
     Actions.OpenVaultArgs private openVaultArgs;
     Actions.DepositArgs private depositArgs;
     Actions.WithdrawArgs private withdrawArgs;
+    Actions.MintArgs private mintArgs;
+    Actions.BurnArgs private burnArgs;
     Actions.ExerciseArgs private exerciseArgs;
     Actions.SettleVaultArgs private settleVaultArgs;
 
@@ -50,5 +52,21 @@ contract ActionTester {
 
     function getSettleVaultArgs() external view returns (Actions.SettleVaultArgs memory) {
         return settleVaultArgs;
+    }
+
+    function testParseMintAction(Actions.ActionArgs memory _args) external {
+        mintArgs = Actions._parseMintArgs(_args);
+    }
+
+    function getMintArgs() external view returns (Actions.MintArgs memory) {
+        return mintArgs;
+    }
+
+    function testParseBurnAction(Actions.ActionArgs memory _args) external {
+        burnArgs = Actions._parseBurnArgs(_args);
+    }
+
+    function getBurnArgs() external view returns (Actions.BurnArgs memory) {
+        return burnArgs;
     }
 }

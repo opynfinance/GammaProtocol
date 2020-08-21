@@ -1,14 +1,10 @@
 import {WETH9Instance} from '../build/types/truffle-types'
 const BigNumber = require('bignumber.js')
-const {expectEvent, expectRevert} = require('@openzeppelin/test-helpers')
+const {expectEvent} = require('@openzeppelin/test-helpers')
 const WETH9 = artifacts.require('WETH9.sol')
-// address(0)
-const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
 contract('WETH9', ([sender]) => {
   let weth: WETH9Instance
-
-  const underlyingAsset = ZERO_ADDR
 
   before('Deployment', async () => {
     // deploy USDC token
@@ -16,13 +12,6 @@ contract('WETH9', ([sender]) => {
   })
 
   describe('Send ETH', () => {
-    /*it('should revert whitelisting a product from non-owner address', async () => {
-        await expectRevert(
-            whitelist.whitelistProduct(underlyingAsset, usdc.address, usdc.address, {from: random}),
-            'Ownable: caller is not the owner',
-        )
-        })*/
-
     it('should increase WETH balance and total supply when sending a transaction to contract', async () => {
       const balanceBefore = new BigNumber(await weth.balanceOf(sender))
       const totalSuppluBefore = new BigNumber(await weth.totalSupply())
