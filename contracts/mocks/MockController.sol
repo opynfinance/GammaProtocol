@@ -8,9 +8,9 @@ import "../interfaces/OtokenInterface.sol";
 
 /**
  * @author Opyn Team
- * @notice Upgradeable Controller testing contract
+ * @notice Upgradeable Controller that can mock minting and burning calls from controller.
  */
-contract TestController {
+contract MockController {
     /// @notice addressbook address
     address public addressBook;
 
@@ -35,7 +35,7 @@ contract TestController {
     }
 
     /**
-     * @dev this function is used to test if controller can mint otokens
+     * @dev this function is used to test if controller can burn otokens
      */
     function testBurnOtoken(
         address _otoken,

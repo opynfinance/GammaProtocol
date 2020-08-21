@@ -4,14 +4,15 @@ import {
   MockOtokenInstance,
   MockAddressBookInstance,
   MockERC20Instance,
-  TestControllerInstance,
+  MockControllerInstance,
+  WhitelistInstance,
 } from '../../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 import {assert} from 'chai'
 import {setupContracts} from '../utils'
 const {expectRevert} = require('@openzeppelin/test-helpers')
 
-const TestController = artifacts.require('TestController.sol')
+const MockController = artifacts.require('MockController.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
 const Otoken = artifacts.require('Otoken.sol')
 // used for testing change of Otoken impl address in AddressBook
@@ -25,12 +26,12 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([deployer
   let otoken2: OtokenInstance
   let addressBook: MockAddressBookInstance
   let otokenFactory: OtokenFactoryInstance
-
+  let whitelist: WhitelistInstance
   let usdc: MockERC20Instance
   let dai: MockERC20Instance
   let randomERC20: MockERC20Instance
 
-  let testController: TestControllerInstance
+  let testController: MockControllerInstance
 
   const ethAddress = ZERO_ADDR
   const strikePrice = new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18))
@@ -42,25 +43,43 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([deployer
     dai = await MockERC20.new('DAI', 'DAI')
     randomERC20 = await MockERC20.new('RANDOM', 'RAM')
 
-    const {factory: _factory, addressBook: _addressBook, whitelist, otokenImpl: _otokenImpl} = await setupContracts(
-      deployer,
-    )
+    const {
+      factory: _factory,
+      addressBook: _addressBook,
+      whitelist: _whitelist,
+      otokenImpl: _otokenImpl,
+    } = await setupContracts(deployer)
 
-    testController = await TestController.new()
+    // deploy the controller instance
+    testController = await MockController.new()
 
+    whitelist = _whitelist
     otokenFactory = _factory
     otokenImpl = _otokenImpl
     addressBook = _addressBook
 
     // set the testController as controller (so it has access to minting tokens)
     await addressBook.setController(testController.address)
-    await whitelist.whitelistProduct(ethAddress, usdc.address, usdc.address)
-    await whitelist.whitelistProduct(ethAddress, dai.address, dai.address)
-
-    testController = await TestController.at(await addressBook.getController())
+    testController = await MockController.at(await addressBook.getController())
   })
 
-  describe('Init process on minimal proxy', () => {
+  describe('Market Creation before whitelisting', () => {
+    it('Should revert before admin whitelist any product', async () => {
+      await expectRevert(
+        otokenFactory.createOtoken(ethAddress, usdc.address, usdc.address, strikePrice, expiry, isPut, {
+          from: user1,
+        }),
+        'OtokenFactory: Unsupported Product',
+      )
+    })
+  })
+
+  describe('Market Creation after whitelisting products', () => {
+    before('Whitelist product from admin', async () => {
+      await whitelist.whitelistProduct(ethAddress, usdc.address, usdc.address, {from: deployer})
+      await whitelist.whitelistProduct(ethAddress, dai.address, dai.address, {from: deployer})
+    })
+
     it('Should init otoken1 with correct name and symbol', async () => {
       // otoken1: eth-usdc option
       const targetAddress1 = await otokenFactory.getTargetOtokenAddress(
@@ -78,6 +97,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([deployer
       assert.equal(await otoken1.name(), 'ETHUSDC 29-July-2025 200Put USDC Collateral')
       assert.equal(await otoken1.symbol(), 'oETHUSDC-29JUL25-200P')
     })
+
     it('Should init otoken2 with correct name and symbol', async () => {
       // otoken2: eth-dai option
       const targetAddress2 = await otokenFactory.getTargetOtokenAddress(
