@@ -84,5 +84,6 @@
   },
   "homepage": "https://github.com/opynfinance/GammaProtocol#readme",
   "dependencies": {
+    "json5": "^2.1.3"
   }
 }
