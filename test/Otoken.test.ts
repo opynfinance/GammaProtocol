@@ -65,22 +65,22 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
     })
 
     it('should set the right name for calls', async () => {
-      const call = await Otoken.new(addressBookAddr)
-      await call.init(addressBookAddr, ETH_ADDR, usdc.address, usdc.address, strikePrice, expiry, false, {
+      const callOption = await Otoken.new(addressBookAddr)
+      await callOption.init(addressBookAddr, ETH_ADDR, usdc.address, usdc.address, strikePrice, expiry, false, {
         from: deployer,
       })
-      assert.equal(await call.name(), `ETHUSDC 25-September-2020 200Call USDC Collateral`)
-      assert.equal(await call.symbol(), `oETHUSDC-25SEP20-200C`)
+      assert.equal(await callOption.name(), `ETHUSDC 25-September-2020 200Call USDC Collateral`)
+      assert.equal(await callOption.symbol(), `oETHUSDC-25SEP20-200C`)
     })
 
     it('should set the right name for non-eth options', async () => {
       const weth = await MockERC20.new('WETH', 'WETH')
-      const put = await Otoken.new(addressBookAddr)
-      await put.init(addressBookAddr, weth.address, usdc.address, usdc.address, strikePrice, expiry, isPut, {
+      const putOption = await Otoken.new(addressBookAddr)
+      await putOption.init(addressBookAddr, weth.address, usdc.address, usdc.address, strikePrice, expiry, isPut, {
         from: deployer,
       })
-      assert.equal(await put.name(), `WETHUSDC 25-September-2020 200Put USDC Collateral`)
-      assert.equal(await put.symbol(), `oWETHUSDC-25SEP20-200P`)
+      assert.equal(await putOption.name(), `WETHUSDC 25-September-2020 200Put USDC Collateral`)
+      assert.equal(await putOption.symbol(), `oWETHUSDC-25SEP20-200P`)
     })
 
     it('should revert when init asset with non-erc20 address', async () => {

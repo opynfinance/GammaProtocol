@@ -193,18 +193,18 @@ contract('OTokenFactory', ([user1, user2]) => {
     it('Should be able to create a new Otoken by another user', async () => {
       const _strikePrice = new BigNumber(250).times(new BigNumber(10).exponentiatedBy(18))
       const targetAddress = await otokenFactory.getTargetOtokenAddress(
+        ethAddress,
         usdc.address,
-        ethAddress,
-        ethAddress,
+        usdc.address,
         _strikePrice,
         expiry,
         isPut,
       )
 
       const txResponse = await otokenFactory.createOtoken(
+        ethAddress,
         usdc.address,
-        ethAddress,
-        ethAddress,
+        usdc.address,
         _strikePrice,
         expiry,
         isPut,
@@ -212,9 +212,9 @@ contract('OTokenFactory', ([user1, user2]) => {
       )
       expectEvent(txResponse, 'OtokenCreated', {
         creator: user2,
-        underlying: usdc.address,
-        strike: ethAddress,
-        collateral: ethAddress,
+        underlying: ethAddress,
+        strike: usdc.address,
+        collateral: usdc.address,
         strikePrice: _strikePrice.toString(),
         expiry: expiry.toString(),
         isPut: isPut,
