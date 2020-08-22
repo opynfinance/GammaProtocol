@@ -18,34 +18,55 @@ import {Actions} from "./libs/Actions.sol";
 contract Controller is Ownable {
     using SafeMath for uint256;
 
+    /// @dev AddressBook module
     address internal addressBook;
 
+    /// @dev the protocol state, if true, then all protocol functionality are paused.
     bool internal systemPaused;
 
+    /// @dev mapping between owner address and account structure
     mapping(address => MarginAccount.Account) internal accounts;
+    /// @dev mapping between owner address and specific vault using vaultId
     mapping(address => mapping(uint256 => MarginAccount.Vault)) internal vaults;
+    /// @dev mapping between account owner and account operator
     mapping(address => mapping(address => bool)) internal operators;
 
+    /**
+     * @notice contructor
+     * @param _addressBook adressbook module
+     */
     constructor(address _addressBook) public {
         addressBook = _addressBook;
     }
 
-    modifier isPaused {
+    /// @notice emits an event when a account operator updated for a specific account owner
+    event AccountOperatorUpdated(address indexed accountOwner, address indexed operator, bool isSet);
+
+    /**
+     * @notice modifier check if protocol is not paused
+     */
+    modifier isNotPaused {
         _;
     }
 
+    /**
+     * @notice modifier to check if otoken is expired
+     * @param _otoken otoken address
+     */
     modifier isExpired(address _otoken) {
         _;
     }
 
-    modifier isAuthorized(address _owner) {
+    /**
+     * @notice modifier to check if sender is an authorized vault operator
+     * @param _sender sender address
+     */
+    modifier isAuthorized(address _sender) {
         _;
     }
 
-    event NewOperatorSet(address newOperator);
-
     /**
-     * @dev allows admin to toggle pause / emergency shutdown
+     * @notice allows admin to toggle pause / emergency shutdown
      * @param _paused The new boolean value to set systemPaused to.
      */
     function setSystemPaused(bool _paused) external onlyOwner {
@@ -53,43 +74,47 @@ contract Controller is Ownable {
     }
 
     /**
-     * @dev allows a user to set and unset an operate which can act on their behalf on their vaults. Could be used for rollovers, and more. Only the vault owner can update the operator privileges.
-     * @param _operator The operator that msg.sender wants to give privileges to or revoke them from.
-     * @param _isOperator The new boolean value that expresses if msg.sender is giving or revoking privileges from _operator.
+     * @notice allows a user to set and unset an operate which can act on their behalf on their vaults. Only the vault owner can update the operator privileges.
+     * @param _operator The operator that sender wants to give privileges to or revoke them from.
+     * @param _isOperator The new boolean value that expresses if sender is giving or revoking privileges from _operator.
      */
     function setOperator(address _operator, bool _isOperator) external {
         operators[msg.sender][_operator] = _isOperator;
-        emit NewOperatorSet(_operator);
+
+        emit AccountOperatorUpdated(msg.sender, _operator, _isOperator);
     }
 
     /**
-     * @dev Iterate through a collateral array of the vault and payout collateral assets.
-     * @param _owner The owner of the vault we will clear.
-     * @param _vaultId The vaultId for the vault we will clear, within the user's MarginAccount.Account struct.
+     * @notice execute a different number of actions on a specific vaults
+     * @dev can only be called when system is not paused
+     * @param _actions array of actions arguments
      */
-    //function redeemForEmergency(address _owner, uint256 _vaultId) external isPaused isAuthorized(args.owner) {
+    function operate(Actions.ActionArgs[] memory _actions) external isNotPaused {}
+
+    /**
+     * @notice Iterate through a collateral array of the vault and payout collateral assets
+     * @dev can only be called when system is not paused and from an authorized address
+     * @param _owner The owner of the vault we will clear
+     * @param _vaultId The vaultId for the vault we will clear, within the user's MarginAccount.Account struct
+     */
+    //function redeemForEmergency(address _owner, uint256 _vaultId) external isNotPaused isAuthorized(args.owner) {
     //}
 
     /**
-     * @dev Return a specific vault from memory.
-     * @param _owner The owner of the relevant vault.
-     * @param _vaultId The vaultId for the relevant vault, within the user's MarginAccount.Account struct.
-     * @return the desired vault
+     * @notice set batch underlying asset price
+     * @param _otoken otoken address
+     * @param _roundsBack chainlink round number relative to specific timestamp
      */
-    function getVault(address _owner, uint256 _vaultId) internal view returns (MarginAccount.Vault memory) {}
+    function setBatchUnderlyingPrice(address _otoken, uint256 _roundsBack) external {}
 
     /**
-     * @dev Return a specific vault from memory.?? this is the same as above what?
-     * @param _owner The owner of the relevant vault.
-     * @param _vaultId The vaultId for the relevant vault, within the user's MarginAccount.Account struct.
-     * @return the desired vault
+     * @notice Return a vault balances, depend of the short option expiry
+     * @dev if vault have no short option or issued option is not expired yet, return vault, else get excess margin and return it as collateral amount inside Vault struct.
+     * @param _owner vault owner.
+     * @param _vaultId vault.
+     * @return Vault struct
      */
     function getVaultBalances(address _owner, uint256 _vaultId) external view returns (MarginAccount.Vault memory) {}
-
-    function operate(Actions.ActionArgs[] memory _actions) external isPaused {
-        //        Call vault = _runActions (actions) and get the vault
-        //        Call Calculator.isValidState(vault)
-    }
 
     /**
      * @dev return if an expired oToken contract’s price has been finalized. Returns true if the contract has expired AND the oraclePrice at the expiry timestamp has been finalized.
@@ -102,69 +127,91 @@ contract Controller is Ownable {
     }
 
     /**
+     * @notice Return a specific vault.
+     * @param _owner vault owner.
+     * @param _vaultId vault.
+     * @return Vault struct
+     */
+    function getVault(address _owner, uint256 _vaultId) public view returns (MarginAccount.Vault memory) {}
+
+    /**
+     * @notice Checks if the sender is the operator of the owner’s account
+     * @param _owner The owner of the account
+     * @param _operator account operator
+     * @return true if it is an account operator, otherwise false
+     */
+    function isOperator(address _owner, address _operator) public view returns (bool) {}
+
+    /**
+     * @notice Execute actions on a certain vault
      * @dev For each action in the action Array, run the corresponding action
-     * @param _actions An array of type Actions.ActionArgs[] which expresses which actions the user wishes to take.
-     * @return vault The new vault that has been modified (or null vault if no action affected any vault)
+     * @param _actions An array of type Actions.ActionArgs[] which expresses which actions the user want to execute.
+     * @return Vault strcut. The new vault data that has been modified (or null vault if no action affected any vault)
      */
     function _runActions(Actions.ActionArgs[] memory _actions) internal returns (MarginAccount.Vault memory vault) {}
 
-    //    High Level: Only vault operator / user should be able to open a new vault
-    function _openVault(Actions.OpenVaultArgs memory args) internal isAuthorized(args.owner) {}
+    /**
+     * @notice open new vault inside an account
+     * @dev Only account owner or operator can open a vault
+     * @param _args OpenVaultArgs structure
+     */
+    function _openVault(Actions.OpenVaultArgs memory _args) internal isAuthorized(_args.owner) {}
 
-    //    High Level: Anyone should be able to deposit a valid option into a vault
-    //    Example Input for amounts:
-    //    uint256 amount 1000000000000000000;  // 1 * 10^18
-    function _depositLong(Actions.DepositArgs memory args) internal {}
+    /**
+     * @notice deposit long option into vault
+     * @param _args DepositArgs structure
+     */
+    function _depositLong(Actions.DepositArgs memory _args) internal {}
 
-    //High Level: Only vault operator / user should be able to withdraw long
-    function _withdrawLong(Actions.WithdrawArgs memory args) internal isAuthorized(args.owner) {}
+    /**
+     * @notice withdraw long option from vault
+     * @dev Only account owner or operator can withdraw long option from vault
+     * @param _args WithdrawArgs structure
+     */
+    function _withdrawLong(Actions.WithdrawArgs memory _args) internal isAuthorized(_args.owner) {}
 
-    //    High Level: Anyone should be able to deposit collateral into a vault
-    function _depositCollateral(Actions.DepositArgs memory args) internal {}
+    /**
+     * @notice deposit collateral asset into vault
+     * @param _args DepositArgs structure
+     */
+    function _depositCollateral(Actions.DepositArgs memory _args) internal {}
 
-    //High Level: Only vault operator / user  should be able to withdraw collateral into a vault
-    function _withdrawCollateral(Actions.WithdrawArgs memory args) internal isAuthorized(args.owner) {}
+    /**
+     * @notice withdraw collateral asset from vault
+     * @dev only account owner or operator can withdraw long option from vault
+     * @param _args WithdrawArgs structure
+     */
+    function _withdrawCollateral(Actions.WithdrawArgs memory _args) internal isAuthorized(_args.owner) {}
 
-    //High Level: Only vault operator / user  should be able to mint a new oToken. Add token balance to the vault account, also call Otoken.mint
-    //Check that not minting 0 tokens
-    //Ensure that the oToken has not expired
-    //Example Input for amounts:
-    //uint256 amount 1000000000000000000;  // 1 * 10^18
-    //call updateOnMintShort(vault, args.asset, args.amount, args.index)
-    //amount: 1000000000000000000 (no need to scale)
-    //Call Otoken(args.asset).mint(args.from, args.amount)
-    //amount: 1000000000000000000 (no need to scale)
-    function _mintOtoken(Actions.MintArgs memory args) internal isAuthorized(args.owner) {}
+    /**
+     * @notice mint option into vault
+     * @dev only account owner or operator can withdraw long option from vault
+     * @param _args MintArgs structure
+     */
+    function _mintOtoken(Actions.MintArgs memory _args) internal isAuthorized(_args.owner) {}
 
-    //High Level: anyone should be able to burn oTokens
-    //Check args.from == msg.sender for this version
-    //Check that not burning 0 tokens
-    //Check that updateOnBurnShort(vault, args.asset, args.amount, args.index) has no error, if not fail and return an error
-    //Call Otoken(args.asset).burn(msg.sender, args.amount)
-    function _burnOtoken(Actions.BurnArgs memory args) internal {}
+    /**
+     * @notice burn option
+     * @dev only account owner or operator can withdraw long option from vault
+     * @param _args MintArgs structure
+     */
+    function _burnOtoken(Actions.BurnArgs memory _args) internal {}
 
-    //High Level: Otoken holders can withdraw cash value with their oToken
-    function _exercise(Actions.ExerciseArgs memory args) internal {}
+    /**
+     * @notice exercise option
+     * @param _args ExerciseArgs structure
+     */
+    function _exercise(Actions.ExerciseArgs memory _args) internal {}
 
-    //High Level: Clean up a vault and get back collateral after expiry.
-    function _settleVault(Actions.SettleVaultArgs memory args) internal {}
+    /**
+     * @notice settle vault option
+     * @param _args SettleVaultArgs structure
+     */
+    function _settleVault(Actions.SettleVaultArgs memory _args) internal {}
 
     //High Level: call arbitrary smart contract
     //function _call(Actions.CallArgs args) internal {
     //    //Check whitelistModule.isWhitelistCallDestination(args.address)
     //    //Call args.address with args.data
     //}
-
-    /**
-     * @dev High Level: Checks if the transaction sender is the operator of the owner’s vault
-     * @param _owner The owner of the relevant vault.
-     * @param _sender DO WE NEED THIS?
-     * @return A boolean which is true if and only if the sender is the operator of the owner's vault.
-     */
-    function isOperator(address _owner, address _sender) public view returns (bool) {}
-
-    /**
-     * @dev the oracle sets the price of the underlying of an otoken.
-     */
-    function setProductUnderlyingPrice(address _otoken, uint256 _roundsBack) external {}
 }
