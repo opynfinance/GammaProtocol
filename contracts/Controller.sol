@@ -148,7 +148,7 @@ contract Controller is Ownable {
      * @param _actions An array of type Actions.ActionArgs[] which expresses which actions the user want to execute.
      * @return Vault strcut. The new vault data that has been modified (or null vault if no action affected any vault)
      */
-    function _runActions(Actions.ActionArgs[] memory _actions) internal returns (MarginAccount.Vault memory vault) {}
+    function _runActions(Actions.ActionArgs[] memory _actions) internal returns (MarginAccount.Vault memory) {}
 
     /**
      * @notice open new vault inside an account
