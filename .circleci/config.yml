@@ -2,19 +2,35 @@ version: 2.1
 orbs:
   coveralls: coveralls/coveralls@1.0.6
   node: circleci/node@1.1.6
+
 workflows:
-  env-vars:
+  build-test-report:
     jobs:
+      - checkout_and_install
       - build:
+          requires:
+            - checkout_and_install
+      - lint:
+          requires:
+            - checkout_and_install
+      - size-check:
+          requires:
+            - build
+      - test:
           context: COVERALLS_REPO_TOKEN
+          requires:
+            - build
+      - coverage:
+          context: COVERALLS_REPO_TOKEN
+          requires:
+            - build
 jobs:
-  build:
+
+  checkout_and_install:
     working_directory: ~/gammaprotocol
     docker:
       - image: circleci/node:10.18.0
-      - image: trufflesuite/ganache-cli:v6.9.1
-        command: ganache-cli --deterministic -e 300 -p 8545 -m 'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat' --accounts 30 --allowUnlimitedContractSize
-    
+      
     steps:
       - checkout
       - restore_cache:
@@ -22,22 +38,83 @@ jobs:
       - run:
           name: Install packages
           command: npm install
+      - save_cache: 
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - node_modules
+      - save_cache:
+          key: gamma-{{ .Environment.CIRCLE_SHA1 }}
+          paths:
+            - ~/gammaprotocol
+  lint:
+    working_directory: ~/gammaprotocol
+    docker:
+      - image: circleci/node:10.18.0
+    steps:
+      - checkout
+      - restore_cache:
+          key: gamma-{{ .Environment.CIRCLE_SHA1 }}
       - run:
           name: Lint Contracts
           command: npm run lint:sol
       - run:
-          name: Deploy Contracts
-          command: npm run deploy:development
+          name: Lint typescript
+          command: npm run lint:tests
+
+  build:
+    working_directory: ~/gammaprotocol
+    docker:
+      - image: circleci/node:10.18.0
+    steps:
+      - checkout
+      - restore_cache:
+          key: gamma-{{ .Environment.CIRCLE_SHA1 }}
       - run:
-          name: Test Contracts
+          name: Install packages
+          command: npm install
+      - run:
+          name: Build Contracts
+          command: npm run build
+      - save_cache:
+          key: gamma-contracts-build-{{ .Environment.CIRCLE_SHA1 }}
+          paths:
+            - ~/gammaprotocol
+  
+  size-check:
+    working_directory: ~/gammaprotocol
+    docker:
+      - image: circleci/node:10.18.0
+    steps:
+      - restore_cache:
+          key: gamma-contracts-build-{{ .Environment.CIRCLE_SHA1 }}
+      - run:
+          name: Check Contract Size
+          command: npm run contract-size
+
+  test:
+    working_directory: ~/gammaprotocol
+    docker:
+      - image: circleci/node:10.18.0
+      - image: trufflesuite/ganache-cli:v6.10.1
+        command: ganache-cli -d -l 4294967295 --allowUnlimitedContractSize
+    steps:
+      - restore_cache:
+          key: gamma-contracts-build-{{ .Environment.CIRCLE_SHA1 }}
+      - run:
+          name: Test Contracts 
           command: npm run test
       - run: 
           name: Gas Reporter
           command: npx codechecks
-      - save_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
-          paths:
-            - node_modules
+  
+  coverage:
+    working_directory: ~/gammaprotocol
+    docker:
+      - image: circleci/node:10.18.0
+    steps:
+      - checkout
+      - restore_cache:
+          key: gamma-contracts-build-{{ .Environment.CIRCLE_SHA1 }}
       - run:
           name: Produce Coverage Report
           command: npm run coverage
@@ -49,4 +126,3 @@ jobs:
           path: /coverage.json
       - store_artifacts:
           path: test-results.xml
-          prefix: tests

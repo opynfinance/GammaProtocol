@@ -92,7 +92,7 @@ module.exports = {
     },
   },
 
-  plugins: ['solidity-coverage'],
+  plugins: ['solidity-coverage', 'truffle-contract-size'],
 
   // Configure your compilers
   compilers: {
