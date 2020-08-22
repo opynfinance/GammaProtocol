@@ -2,19 +2,24 @@ import {
   OtokenFactoryInstance,
   OtokenInstance,
   MockOtokenInstance,
-  MockAddressBookInstance,
+  AddressBookInstance,
   MockERC20Instance,
   MockControllerInstance,
   WhitelistInstance,
 } from '../../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 import {assert} from 'chai'
-import {setupContracts} from '../utils'
+
 const {expectRevert} = require('@openzeppelin/test-helpers')
 
 const MockController = artifacts.require('MockController.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
+// real contract instances for Testing
 const Otoken = artifacts.require('Otoken.sol')
+const OTokenFactory = artifacts.require('OtokenFactory.sol')
+const AddressBook = artifacts.require('AddressBook.sol')
+const Whitelist = artifacts.require('Whitelist.sol')
+
 // used for testing change of Otoken impl address in AddressBook
 const MockOtoken = artifacts.require('MockOtoken.sol')
 
@@ -24,7 +29,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([deployer
   let otokenImpl: OtokenInstance
   let otoken1: OtokenInstance
   let otoken2: OtokenInstance
-  let addressBook: MockAddressBookInstance
+  let addressBook: AddressBookInstance
   let otokenFactory: OtokenFactoryInstance
   let whitelist: WhitelistInstance
   let usdc: MockERC20Instance
@@ -43,20 +48,20 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([deployer
     dai = await MockERC20.new('DAI', 'DAI')
     randomERC20 = await MockERC20.new('RANDOM', 'RAM')
 
-    const {
-      factory: _factory,
-      addressBook: _addressBook,
-      whitelist: _whitelist,
-      otokenImpl: _otokenImpl,
-    } = await setupContracts(deployer)
+    // Setup AddresBook
+    addressBook = await AddressBook.new({from: deployer})
+
+    otokenImpl = await Otoken.new({from: deployer})
+    whitelist = await Whitelist.new(addressBook.address, {from: deployer})
+    otokenFactory = await OTokenFactory.new(addressBook.address, {from: deployer})
+
+    // setup addressBook
+    await addressBook.setOtokenImpl(otokenImpl.address, {from: deployer})
+    await addressBook.setWhitelist(whitelist.address, {from: deployer})
+    await addressBook.setOtokenFactory(otokenFactory.address, {from: deployer})
 
     // deploy the controller instance
     testController = await MockController.new()
-
-    whitelist = _whitelist
-    otokenFactory = _factory
-    otokenImpl = _otokenImpl
-    addressBook = _addressBook
 
     // set the testController as controller (so it has access to minting tokens)
     await addressBook.setController(testController.address)
