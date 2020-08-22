@@ -5,7 +5,6 @@ import {
   MarginPoolInstance,
 } from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
-import {stringify} from 'json5'
 
 const {expectRevert, ether} = require('@openzeppelin/test-helpers')
 
