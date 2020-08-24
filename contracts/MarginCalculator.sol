@@ -49,17 +49,17 @@ contract MarginCalculator is Initializable {
 
     /**
      * @notice returns the net value of a vault in the valid collateral asset for that vault i.e. USDC for puts/ ETH for calls
-     * @param _vault _vault the theoretical vault that needs to be checked
-     * @param _demonimated _denominated the token the result is denominated in. Must be the same as short.collateral for now.
+     * @param _vault the theoretical vault that needs to be checked
+     * @param _denominated the token the result is denominated in. Must be the same as short.collateral for now.
      * @return netValue the amount by which the margin is above or below the required amount.
      * @return isExcess true if there's excess margin in the vault. In this case, collateral can be taken out from the vault. False if there is insufficient margin and additional collateral needs to be added to the vault to create the position.
      */
-    function getExcessMargin(MarginAccount.Vault memory _vault, address _demonimated)
+    function getExcessMargin(MarginAccount.Vault memory _vault, address _denominated)
         public
         view
         returns (uint256 netValue, bool isExcess)
     {
-        // ensure the # asset in collateral, long and short array is valid.
+        // ensure the number of collateral, long and short array is valid.
         _checkAssetCount(_vault);
         // ensure the long asset is valid for the short asset.
         _checkLongAsset(_vault);
@@ -74,7 +74,7 @@ contract MarginCalculator is Initializable {
 
         // For the currenct version, ensure denominated == short.collateral
         address shortCollateral = OtokenInterface(_vault.shortOtokens[0]).collateralAsset();
-        require(shortCollateral == _demonimated, "MarginCalculator: Denomintated token should be short.collateral");
+        require(shortCollateral == _denominated, "MarginCalculator: Denomintated token should be short.collateral");
 
         int256 netOtoken = _calculateOtokenNetValue(_vault);
         // if netOtoken < 0, the long assets cannot cover the max loss of short assets in the vault.
@@ -214,11 +214,12 @@ contract MarginCalculator is Initializable {
     }
 
     /**
-     * @dev internal function that ensure each asset type & amout array have the same length, and length <= 1;
+     * @dev internal ensure the there is at most 1 asset type used as collateral,
+     * at most 1 series of option used as the long option and
+     * at most 1 series of option used as the short option.
      * @param _vault the vault to check.
      */
     function _checkAssetCount(MarginAccount.Vault memory _vault) internal pure {
-        // For the current version, check lengths of short, long, collateral <= 1.
         require(_vault.shortOtokens.length <= 1, "MarginCalculator: Too many short otokens in the vault.");
         require(_vault.longOtokens.length <= 1, "MarginCalculator: Too many long otokens in the vault.");
         require(_vault.collateralAssets.length <= 1, "MarginCalculator: Too many collateral assets in the vault.");
