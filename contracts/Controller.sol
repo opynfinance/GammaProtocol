@@ -18,11 +18,11 @@ import {Actions} from "./libs/Actions.sol";
 contract Controller is Ownable {
     using SafeMath for uint256;
 
+    /// @notice the protocol state, if true, then all protocol functionality are paused.
+    bool public systemPaused;
+
     /// @dev AddressBook module
     address internal addressBook;
-
-    /// @dev the protocol state, if true, then all protocol functionality are paused.
-    bool internal systemPaused;
 
     /// @dev mapping between owner address and account structure
     mapping(address => MarginAccount.Account) internal accounts;
@@ -36,6 +36,8 @@ contract Controller is Ownable {
      * @param _addressBook adressbook module
      */
     constructor(address _addressBook) public {
+        require(_addressBook != address(0), "Invalid address book");
+
         addressBook = _addressBook;
     }
 
@@ -121,10 +123,7 @@ contract Controller is Ownable {
      * @param _otoken The address of the relevant oToken.
      * @return A boolean which is true if and only if the price is finalized.
      */
-    function isPriceFinalized(address _otoken) external view returns (bool) {
-        //Returns true if the contract has expired AND the oraclePrice at the expiry timestamp has been finalized.
-        //Calls the Oracle to know if the price has been finalized
-    }
+    function isPriceFinalized(address _otoken) external view returns (bool) {}
 
     /**
      * @notice Return a specific vault.
