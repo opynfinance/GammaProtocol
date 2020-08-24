@@ -13,7 +13,9 @@ import {FixedPointInt256} from "./libs/FixedPointInt256.sol";
 import {MarginAccount} from "./libs/MarginAccount.sol";
 
 /**
- *
+ * @title MarginCalculator
+ * @author Opyn
+ * @notice Calculator module that check if a given vault is valid.
  */
 contract MarginCalculator is Initializable {
     using SafeMath for uint256;
@@ -214,9 +216,10 @@ contract MarginCalculator is Initializable {
     }
 
     /**
-     * @dev internal ensure the there is at most 1 asset type used as collateral,
-     * at most 1 series of option used as the long option and
-     * at most 1 series of option used as the short option.
+     * @dev ensure that there is
+     * a) at most 1 asset type used as collateral,
+     * b) at most 1 series of option used as the long option and
+     * c) at most 1 series of option used as the short option.
      * @param _vault the vault to check.
      */
     function _checkAssetCount(MarginAccount.Vault memory _vault) internal pure {
@@ -239,7 +242,7 @@ contract MarginCalculator is Initializable {
     }
 
     /**
-     * @dev internal function that check the long asset is valid for the short asset
+     * @dev if there is a short option in the vault, ensure that the long option series being used is a valid margin.
      * @param _vault the vault to check.
      */
     function _checkLongAsset(MarginAccount.Vault memory _vault) internal view {
