@@ -91,7 +91,8 @@ contract Controller is Ownable {
      * @dev can only be called when system is not paused
      * @param _actions array of actions arguments
      */
-    function operate(Actions.ActionArgs[] memory _actions) external isNotPaused {}
+    // function operate(Actions.ActionArgs[] memory _actions) external isNotPaused {
+    // }
 
     /**
      * @notice Iterate through a collateral array of the vault and payout collateral assets
@@ -107,7 +108,8 @@ contract Controller is Ownable {
      * @param _otoken otoken address
      * @param _roundsBack chainlink round number relative to specific timestamp
      */
-    function setBatchUnderlyingPrice(address _otoken, uint256 _roundsBack) external {}
+    // function setBatchUnderlyingPrice(address _otoken, uint256 _roundsBack) external {
+    // }
 
     /**
      * @notice Return a vault balances, depend of the short option expiry
@@ -116,14 +118,16 @@ contract Controller is Ownable {
      * @param _vaultId vault.
      * @return Vault struct
      */
-    function getVaultBalances(address _owner, uint256 _vaultId) external view returns (MarginAccount.Vault memory) {}
+    // function getVaultBalances(address _owner, uint256 _vaultId) external view returns (MarginAccount.Vault memory) {
+    // }
 
     /**
      * @dev return if an expired oToken contract’s price has been finalized. Returns true if the contract has expired AND the oraclePrice at the expiry timestamp has been finalized.
      * @param _otoken The address of the relevant oToken.
      * @return A boolean which is true if and only if the price is finalized.
      */
-    function isPriceFinalized(address _otoken) external view returns (bool) {}
+    // function isPriceFinalized(address _otoken) external view returns (bool) {
+    // }
 
     /**
      * @notice Return a specific vault.
@@ -131,7 +135,8 @@ contract Controller is Ownable {
      * @param _vaultId vault.
      * @return Vault struct
      */
-    function getVault(address _owner, uint256 _vaultId) public view returns (MarginAccount.Vault memory) {}
+    // function getVault(address _owner, uint256 _vaultId) public view returns (MarginAccount.Vault memory) {
+    // }
 
     /**
      * @notice Checks if the sender is the operator of the owner’s account
@@ -139,7 +144,8 @@ contract Controller is Ownable {
      * @param _operator account operator
      * @return true if it is an account operator, otherwise false
      */
-    function isOperator(address _owner, address _operator) public view returns (bool) {}
+    // function isOperator(address _owner, address _operator) public view returns (bool) {
+    // }
 
     /**
      * @notice Execute actions on a certain vault
@@ -147,66 +153,68 @@ contract Controller is Ownable {
      * @param _actions An array of type Actions.ActionArgs[] which expresses which actions the user want to execute.
      * @return Vault strcut. The new vault data that has been modified (or null vault if no action affected any vault)
      */
-    function _runActions(Actions.ActionArgs[] memory _actions) internal returns (MarginAccount.Vault memory) {}
+    // function _runActions(Actions.ActionArgs[] memory _actions) internal returns (MarginAccount.Vault memory) {
+    // }
 
     /**
      * @notice open new vault inside an account
      * @dev Only account owner or operator can open a vault
      * @param _args OpenVaultArgs structure
      */
-    function _openVault(Actions.OpenVaultArgs memory _args) internal isAuthorized(_args.owner) {}
+    // function _openVault(Actions.OpenVaultArgs memory _args) internal isAuthorized(_args.owner) {
+    // }
 
     /**
      * @notice deposit long option into vault
      * @param _args DepositArgs structure
      */
-    function _depositLong(Actions.DepositArgs memory _args) internal {}
+    // function _depositLong(Actions.DepositArgs memory _args) internal {}
 
     /**
      * @notice withdraw long option from vault
      * @dev Only account owner or operator can withdraw long option from vault
      * @param _args WithdrawArgs structure
      */
-    function _withdrawLong(Actions.WithdrawArgs memory _args) internal isAuthorized(_args.owner) {}
+    // function _withdrawLong(Actions.WithdrawArgs memory _args) internal isAuthorized(_args.owner) {}
 
     /**
      * @notice deposit collateral asset into vault
      * @param _args DepositArgs structure
      */
-    function _depositCollateral(Actions.DepositArgs memory _args) internal {}
+    // function _depositCollateral(Actions.DepositArgs memory _args) internal {}
 
     /**
      * @notice withdraw collateral asset from vault
      * @dev only account owner or operator can withdraw long option from vault
      * @param _args WithdrawArgs structure
      */
-    function _withdrawCollateral(Actions.WithdrawArgs memory _args) internal isAuthorized(_args.owner) {}
+    // function _withdrawCollateral(Actions.WithdrawArgs memory _args) internal isAuthorized(_args.owner) {}
 
     /**
      * @notice mint option into vault
      * @dev only account owner or operator can withdraw long option from vault
      * @param _args MintArgs structure
      */
-    function _mintOtoken(Actions.MintArgs memory _args) internal isAuthorized(_args.owner) {}
+    // function _mintOtoken(Actions.MintArgs memory _args) internal isAuthorized(_args.owner) {}
 
     /**
      * @notice burn option
      * @dev only account owner or operator can withdraw long option from vault
      * @param _args MintArgs structure
      */
-    function _burnOtoken(Actions.BurnArgs memory _args) internal {}
+    // function _burnOtoken(Actions.BurnArgs memory _args) internal {}
 
     /**
      * @notice exercise option
      * @param _args ExerciseArgs structure
      */
-    function _exercise(Actions.ExerciseArgs memory _args) internal {}
+    // function _exercise(Actions.ExerciseArgs memory _args) internal {}
 
     /**
      * @notice settle vault option
      * @param _args SettleVaultArgs structure
      */
-    function _settleVault(Actions.SettleVaultArgs memory _args) internal {}
+    // function _settleVault(Actions.SettleVaultArgs memory _args) internal {}
 
     //High Level: call arbitrary smart contract
     //function _call(Actions.CallArgs args) internal {
