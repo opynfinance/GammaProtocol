@@ -156,9 +156,9 @@ contract Controller is Ownable {
      * @return A boolean which is true if and only if the price is finalized.
      */
     function isPriceFinalized(address _otoken) external view returns (bool) {
-        address oracleModule = AddressBookInterface(addressBook).getMarginCalculator();
-
+        address oracleModule = AddressBookInterface(addressBook).getOracle();
         OracleInterface oracle = OracleInterface(oracleModule);
+
         OtokenInterface otoken = OtokenInterface(_otoken);
 
         address otokenUnderlyingAsset = otoken.underlyingAsset();
@@ -171,6 +171,26 @@ contract Controller is Ownable {
         );
 
         return oracle.isDisputePeriodOver(batch, otokenExpiryTimestamp);
+    }
+
+    /**
+     * @notice get batch for a specific otoken address
+     * @dev batch is the hash of option underlying, strike, collateral assets and the expiry timestamp
+     * @param _otoken otoken address
+     * @return batch hash in bytes32
+     */
+    function getBatch(address _otoken) external view returns (bytes32) {
+        OtokenInterface otoken = OtokenInterface(_otoken);
+
+        return
+            keccak256(
+                abi.encode(
+                    otoken.underlyingAsset(),
+                    otoken.strikeAsset(),
+                    otoken.collateralAsset(),
+                    otoken.expiryTimestamp()
+                )
+            );
     }
 
     /**
