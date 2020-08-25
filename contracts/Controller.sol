@@ -135,17 +135,17 @@ contract Controller is Ownable {
     function getVaultBalances(address _owner, uint256 _vaultId) external view returns (MarginAccount.Vault memory) {
         MarginAccount.Vault memory vault = getVault(_owner, _vaultId);
 
-        if ((vault.shortOtokens.length != 0) && (isExpired(vault.shortOtokens[0]))) {
-            address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
-            MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
-
-            (uint256 netValue, ) = calculator.getExcessMargin(vault, vault.shortOtokens[0]);
-            vault.collateralAmounts[0] = netValue;
-
+        if ((vault.shortOtokens.length == 0) || (!isExpired(vault.shortOtokens[0]))) 
             return vault;
-        }
+        
+        // if there's short and it's expired 
+        address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
+        MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
+       (uint256 netValue, ) = calculator.getExcessMargin(vault, vault.shortOtokens[0]);
+        vault.collateralAmounts[0] = netValue;
 
-        return vault;
+       return vault;
+        }        
     }
 
     /**
