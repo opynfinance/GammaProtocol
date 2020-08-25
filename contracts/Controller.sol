@@ -9,6 +9,10 @@ import {Ownable} from "./packages/oz/Ownable.sol";
 import {SafeMath} from "./packages/oz/SafeMath.sol";
 import {MarginAccount} from "./libs/MarginAccount.sol";
 import {Actions} from "./libs/Actions.sol";
+import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
+import {OtokenInterface} from "./interfaces/OtokenInterface.sol";
+import {MarginCalculatorInterface} from "./interfaces/MarginCalculatorInterface.sol";
+import {OracleInterface} from "./interfaces/OracleInterface.sol";
 
 /**
  * @author Opyn Team
@@ -36,7 +40,7 @@ contract Controller is Ownable {
      * @param _addressBook adressbook module
      */
     constructor(address _addressBook) public {
-        require(_addressBook != address(0), "Invalid address book");
+        require(_addressBook != address(0), "Controller: Invalid address book");
 
         addressBook = _addressBook;
     }
@@ -47,25 +51,27 @@ contract Controller is Ownable {
     /**
      * @notice modifier check if protocol is not paused
      */
-    // modifier isNotPaused {
-    //     _;
-    // }
+    modifier isNotPaused {
+        require(!systemPaused, "Controller: system is paused");
+
+        _;
+    }
 
     /**
-     * @notice modifier to check if otoken is expired
-     * @param _otoken otoken address
-     */
-    // modifier isExpired(address _otoken) {
-    //     _;
-    // }
-
-    /**
-     * @notice modifier to check if sender is an authorized vault operator
+     * @notice modifier to check if sender is an account owner or an authorized account operator
      * @param _sender sender address
+     * @param _accountOwner account owner address
      */
-    // modifier isAuthorized(address _sender) {
-    //     _;
-    // }
+    modifier isAuthorized(address _sender, address _accountOwner) {
+        MarginAccount.Account memory senderAccount = accounts[_sender];
+
+        require(
+            (senderAccount.vaultCounter != 0) || (operators[_accountOwner][_sender]),
+            "Controller: msg.sender is not authorized to run action"
+        );
+
+        _;
+    }
 
     /**
      * @notice allows admin to toggle pause / emergency shutdown
@@ -124,38 +130,69 @@ contract Controller is Ownable {
     /**
      * @notice Return a vault balances, depend of the short option expiry
      * @dev if vault have no short option or issued option is not expired yet, return vault, else get excess margin and return it as collateral amount inside Vault struct.
-     * @param _owner vault owner.
+     * @param _owner account owner.
      * @param _vaultId vault.
      * @return Vault struct
      */
-    // function getVaultBalances(address _owner, uint256 _vaultId) external view returns (MarginAccount.Vault memory) {
-    // }
+    function getVaultBalances(address _owner, uint256 _vaultId) external view returns (MarginAccount.Vault memory) {
+        MarginAccount.Vault memory vault = getVault(_owner, _vaultId);
+
+        if ((vault.shortOtokens.length != 0) && (isExpired(vault.shortOtokens[0]))) {
+            address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
+            MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
+
+            (uint256 netValue, ) = calculator.getExcessMargin(vault, vault.shortOtokens[0]);
+            vault.collateralAmounts[0] = netValue;
+
+            return vault;
+        }
+
+        return vault;
+    }
 
     /**
      * @dev return if an expired oToken contract’s price has been finalized. Returns true if the contract has expired AND the oraclePrice at the expiry timestamp has been finalized.
      * @param _otoken The address of the relevant oToken.
      * @return A boolean which is true if and only if the price is finalized.
      */
-    // function isPriceFinalized(address _otoken) external view returns (bool) {
-    // }
+    function isPriceFinalized(address _otoken) external view returns (bool) {
+        address oracleModule = AddressBookInterface(addressBook).getMarginCalculator();
+
+        OracleInterface oracle = OracleInterface(oracleModule);
+        OtokenInterface otoken = OtokenInterface(_otoken);
+
+        address otokenUnderlyingAsset = otoken.underlyingAsset();
+        address otokenStrikeAsset = otoken.strikeAsset();
+        address otokenCollateralAsset = otoken.collateralAsset();
+        uint256 otokenExpiryTimestamp = otoken.expiryTimestamp();
+
+        bytes32 batch = keccak256(
+            abi.encode(otokenUnderlyingAsset, otokenStrikeAsset, otokenCollateralAsset, otokenExpiryTimestamp)
+        );
+
+        return oracle.isDisputePeriodOver(batch, otokenExpiryTimestamp);
+    }
+
+    /**
+     * @notice function to check if otoken is expired
+     * @param _otoken otoken address
+     * @return true if otoken is expired, else return false
+     */
+    function isExpired(address _otoken) public view returns (bool) {
+        uint256 otokenExpiryTimestamp = OtokenInterface(_otoken).expiryTimestamp();
+
+        return otokenExpiryTimestamp > now;
+    }
 
     /**
      * @notice Return a specific vault.
-     * @param _owner vault owner.
+     * @param _owner account owner.
      * @param _vaultId vault.
      * @return Vault struct
      */
-    // function getVault(address _owner, uint256 _vaultId) public view returns (MarginAccount.Vault memory) {
-    // }
-
-    /**
-     * @notice Checks if the sender is the operator of the owner’s account
-     * @param _owner The owner of the account
-     * @param _operator account operator
-     * @return true if it is an account operator, otherwise false
-     */
-    // function isOperator(address _owner, address _operator) public view returns (bool) {
-    // }
+    function getVault(address _owner, uint256 _vaultId) public view returns (MarginAccount.Vault memory) {
+        return vaults[_owner][_vaultId];
+    }
 
     /**
      * @notice Execute actions on a certain vault
