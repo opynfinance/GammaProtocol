@@ -63,10 +63,8 @@ contract Controller is Ownable {
      * @param _accountOwner account owner address
      */
     modifier isAuthorized(address _sender, address _accountOwner) {
-        MarginAccount.Account memory senderAccount = accounts[_sender];
-
         require(
-            (senderAccount.vaultCounter != 0) || (operators[_accountOwner][_sender]),
+            (_sender == _accountOwner) || (operators[_accountOwner][_sender]),
             "Controller: msg.sender is not authorized to run action"
         );
 
