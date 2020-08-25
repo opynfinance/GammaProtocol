@@ -10,6 +10,7 @@ import {OtokenInterface} from "./interfaces/OtokenInterface.sol";
 import {OracleInterface} from "./interfaces/OracleInterface.sol";
 import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
 import {FixedPointInt256} from "./libs/FixedPointInt256.sol";
+import {SignedConverter} from "./libs/SignedConverter.sol";
 import {MarginAccount} from "./libs/MarginAccount.sol";
 
 /**
@@ -19,7 +20,7 @@ import {MarginAccount} from "./libs/MarginAccount.sol";
  */
 contract MarginCalculator is Initializable {
     using SafeMath for uint256;
-    using FixedPointInt256 for int256;
+    using FixedPointInt256 for FixedPointInt256.FixedPointInt;
     address public addressBook;
 
     function init(address _addressBook) external initializer {
@@ -67,23 +68,23 @@ contract MarginCalculator is Initializable {
         _checkLongAsset(_vault);
 
         // collateral amount is always positive.
-        int256 collateralAmount = _vault.collateralAmounts.length > 0
-            ? FixedPointInt256.uintToInt(_vault.collateralAmounts[0])
-            : 0;
+        FixedPointInt256.FixedPointInt memory collateralAmount = _vault.collateralAmounts.length > 0
+            ? _uint256ToFixedPointInt(_vault.collateralAmounts[0])
+            : _uint256ToFixedPointInt(0);
 
         // Vault contains no short tokens: return collateral value.
-        if (_vault.shortOtokens.length == 0) return (collateralAmount.intToUint(), true);
+        if (_vault.shortOtokens.length == 0) return (SignedConverter.intToUint(collateralAmount.value), true);
 
         // For the currenct version, ensure denominated == short.collateral
         address shortCollateral = OtokenInterface(_vault.shortOtokens[0]).collateralAsset();
         require(shortCollateral == _denominated, "MarginCalculator: Denomintated token should be short.collateral");
 
-        int256 netOtoken = _calculateOtokenNetValue(_vault);
+        FixedPointInt256.FixedPointInt memory netOtoken = _calculateOtokenNetValue(_vault);
         // if netOtoken < 0, the long assets cannot cover the max loss of short assets in the vault.
         // will need to check if collateral + netOtoken is greater than 0.
-        int256 totalValue = collateralAmount.add(netOtoken);
-        isExcess = totalValue >= 0;
-        netValue = totalValue.intToUint();
+        FixedPointInt256.FixedPointInt memory totalValue = collateralAmount.add(netOtoken);
+        isExcess = totalValue.isGreaterThanOrEqual(_uint256ToFixedPointInt(0));
+        netValue = SignedConverter.intToUint(totalValue.value);
     }
 
     /**
@@ -95,22 +96,28 @@ contract MarginCalculator is Initializable {
      * Negative: long asset cannot cover the max loss of short asset, will take collateral assets amount into consideration
      *           to see if the vault is valid.
      */
-    function _calculateOtokenNetValue(MarginAccount.Vault memory _vault) internal view returns (int256 netOtoken) {
+    function _calculateOtokenNetValue(MarginAccount.Vault memory _vault)
+        internal
+        view
+        returns (FixedPointInt256.FixedPointInt memory netOtoken)
+    {
         // The vault passed in has a short array == 1, so we can just use shortAmounts[0]
-        int256 shortAmount = FixedPointInt256.uintToInt(_vault.shortAmounts[0]);
+        FixedPointInt256.FixedPointInt memory shortAmount = _uint256ToFixedPointInt(_vault.shortAmounts[0]);
 
         bool hasLongInVault = _vault.longOtokens.length > 0;
-        int256 longAmount = hasLongInVault ? FixedPointInt256.uintToInt(_vault.longAmounts[0]) : 0;
+        FixedPointInt256.FixedPointInt memory longAmount = hasLongInVault
+            ? _uint256ToFixedPointInt(_vault.longAmounts[0])
+            : _uint256ToFixedPointInt(0);
 
         OtokenInterface short = OtokenInterface(_vault.shortOtokens[0]);
         bool expired = now > short.expiryTimestamp();
         bool isPut = short.isPut();
 
         if (!expired) {
-            int256 shortStrike = FixedPointInt256.uintToInt(short.strikePrice());
-            int256 longStrike = hasLongInVault
-                ? FixedPointInt256.uintToInt(OtokenInterface(_vault.longOtokens[0]).strikePrice())
-                : 0;
+            FixedPointInt256.FixedPointInt memory shortStrike = _uint256ToFixedPointInt(short.strikePrice());
+            FixedPointInt256.FixedPointInt memory longStrike = hasLongInVault
+                ? _uint256ToFixedPointInt(OtokenInterface(_vault.longOtokens[0]).strikePrice())
+                : _uint256ToFixedPointInt(0);
 
             if (isPut) {
                 netOtoken = _calculateNonExpiredPutNetValue(shortAmount, longAmount, shortStrike, longStrike);
@@ -118,16 +125,18 @@ contract MarginCalculator is Initializable {
                 netOtoken = _calculateNonExpiredCallNetValue(shortAmount, longAmount, shortStrike, longStrike);
             }
         } else {
-            int256 shortCashValue = FixedPointInt256.uintToInt(getExpiredCashValue(address(short)));
-            int256 longCashValue = hasLongInVault
-                ? FixedPointInt256.uintToInt(getExpiredCashValue(_vault.longOtokens[0]))
-                : 0;
+            FixedPointInt256.FixedPointInt memory shortCashValue = _uint256ToFixedPointInt(
+                getExpiredCashValue(address(short))
+            );
+            FixedPointInt256.FixedPointInt memory longCashValue = hasLongInVault
+                ? _uint256ToFixedPointInt(getExpiredCashValue(_vault.longOtokens[0]))
+                : _uint256ToFixedPointInt(0);
 
             if (isPut) {
                 netOtoken = _calculateExpiredPutNetValue(shortAmount, longAmount, shortCashValue, longCashValue);
             } else {
                 (uint256 underlyingPrice, ) = _getUnderlyingPrice(address(short));
-                int256 underlyingPriceInt = FixedPointInt256.uintToInt(underlyingPrice);
+                FixedPointInt256.FixedPointInt memory underlyingPriceInt = _uint256ToFixedPointInt(underlyingPrice);
                 netOtoken = _calculateExpiredCallNetValue(
                     shortAmount,
                     longAmount,
@@ -147,11 +156,11 @@ contract MarginCalculator is Initializable {
      * @return net value
      */
     function _calculateNonExpiredPutNetValue(
-        int256 _shortAmount,
-        int256 _longAmount,
-        int256 _shortStrike,
-        int256 _longStrike
-    ) internal pure returns (int256) {
+        FixedPointInt256.FixedPointInt memory _shortAmount,
+        FixedPointInt256.FixedPointInt memory _longAmount,
+        FixedPointInt256.FixedPointInt memory _shortStrike,
+        FixedPointInt256.FixedPointInt memory _longStrike
+    ) internal pure returns (FixedPointInt256.FixedPointInt memory) {
         return _longStrike.mul(FixedPointInt256.min(_shortAmount, _longAmount)).sub(_shortAmount.mul(_shortStrike));
     }
 
@@ -165,19 +174,21 @@ contract MarginCalculator is Initializable {
      * @return net value
      */
     function _calculateNonExpiredCallNetValue(
-        int256 _shortAmount,
-        int256 _longAmount,
-        int256 _shortStrike,
-        int256 _longStrike
-    ) internal pure returns (int256) {
-        if (_longStrike == 0) {
-            return -_shortAmount;
+        FixedPointInt256.FixedPointInt memory _shortAmount,
+        FixedPointInt256.FixedPointInt memory _longAmount,
+        FixedPointInt256.FixedPointInt memory _shortStrike,
+        FixedPointInt256.FixedPointInt memory _longStrike
+    ) internal pure returns (FixedPointInt256.FixedPointInt memory) {
+        FixedPointInt256.FixedPointInt memory zero = FixedPointInt256.FixedPointInt(0);
+        // if long strike == 0, return -1 * short amount
+        if (_longStrike.isEqual(zero)) {
+            return zero.sub(_shortAmount);
         }
         return
-            FixedPointInt256.min(0, _longAmount.sub(_shortAmount)).sub(
+            FixedPointInt256.min(zero, _longAmount.sub(_shortAmount)).sub(
                 FixedPointInt256
                     .min(_longAmount, _shortAmount)
-                    .mul(FixedPointInt256.max(0, _longStrike.sub(_shortStrike)))
+                    .mul(FixedPointInt256.max(zero, _longStrike.sub(_shortStrike)))
                     .div(_longStrike)
             );
     }
@@ -190,11 +201,11 @@ contract MarginCalculator is Initializable {
      * @return net value
      */
     function _calculateExpiredPutNetValue(
-        int256 _shortAmount,
-        int256 _longAmount,
-        int256 _shortCashValue,
-        int256 _longCashValue
-    ) internal pure returns (int256) {
+        FixedPointInt256.FixedPointInt memory _shortAmount,
+        FixedPointInt256.FixedPointInt memory _longAmount,
+        FixedPointInt256.FixedPointInt memory _shortCashValue,
+        FixedPointInt256.FixedPointInt memory _longCashValue
+    ) internal pure returns (FixedPointInt256.FixedPointInt memory) {
         return (_longCashValue.mul(_longAmount)).sub(_shortCashValue.mul(_shortAmount));
     }
 
@@ -206,12 +217,12 @@ contract MarginCalculator is Initializable {
      * @return net value
      */
     function _calculateExpiredCallNetValue(
-        int256 _shortAmount,
-        int256 _longAmount,
-        int256 _shortCashValue,
-        int256 _longCashValue,
-        int256 _underlyingPriceInt
-    ) internal pure returns (int256) {
+        FixedPointInt256.FixedPointInt memory _shortAmount,
+        FixedPointInt256.FixedPointInt memory _longAmount,
+        FixedPointInt256.FixedPointInt memory _shortCashValue,
+        FixedPointInt256.FixedPointInt memory _longCashValue,
+        FixedPointInt256.FixedPointInt memory _underlyingPriceInt
+    ) internal pure returns (FixedPointInt256.FixedPointInt memory) {
         return (_longCashValue.mul(_longAmount)).sub(_shortCashValue.mul(_shortAmount)).div(_underlyingPriceInt);
     }
 
@@ -280,5 +291,9 @@ contract MarginCalculator is Initializable {
                 _otoken.expiryTimestamp()
             )
         );
+    }
+
+    function _uint256ToFixedPointInt(uint256 _num) internal pure returns (FixedPointInt256.FixedPointInt memory) {
+        return FixedPointInt256.FixedPointInt(SignedConverter.uintToInt(_num));
     }
 }
