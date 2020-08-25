@@ -117,7 +117,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
   })
 
   describe('Expiry', () => {
-    it('check if otoken expired', async () => {
+    it('should check if otoken expired', async () => {
       assert.equal(await controller.isExpired(otoken.address), false, 'Otoken expiry check mismatch')
     })
   })

@@ -201,7 +201,7 @@ contract Controller is Ownable {
     function isExpired(address _otoken) public view returns (bool) {
         uint256 otokenExpiryTimestamp = OtokenInterface(_otoken).expiryTimestamp();
 
-        return otokenExpiryTimestamp > now;
+        return now > otokenExpiryTimestamp;
     }
 
     /**
