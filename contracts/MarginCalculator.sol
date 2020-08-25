@@ -120,9 +120,9 @@ contract MarginCalculator is Initializable {
                 : _uint256ToFixedPointInt(0);
 
             if (isPut) {
-                netOtoken = _calculateNonExpiredPutNetValue(shortAmount, longAmount, shortStrike, longStrike);
+                netOtoken = _getCallMarginRequirement(shortAmount, longAmount, shortStrike, longStrike);
             } else {
-                netOtoken = _calculateNonExpiredCallNetValue(shortAmount, longAmount, shortStrike, longStrike);
+                netOtoken = _getPutMarginRequirement(shortAmount, longAmount, shortStrike, longStrike);
             }
         } else {
             FixedPointInt256.FixedPointInt memory shortCashValue = _uint256ToFixedPointInt(
@@ -133,11 +133,11 @@ contract MarginCalculator is Initializable {
                 : _uint256ToFixedPointInt(0);
 
             if (isPut) {
-                netOtoken = _calculateExpiredPutNetValue(shortAmount, longAmount, shortCashValue, longCashValue);
+                netOtoken = _getPutSpreadCashValue(shortAmount, longAmount, shortCashValue, longCashValue);
             } else {
                 (uint256 underlyingPrice, ) = _getUnderlyingPrice(address(short));
                 FixedPointInt256.FixedPointInt memory underlyingPriceInt = _uint256ToFixedPointInt(underlyingPrice);
-                netOtoken = _calculateExpiredCallNetValue(
+                netOtoken = _getCallSpreadCashValue(
                     shortAmount,
                     longAmount,
                     shortCashValue,
@@ -149,13 +149,13 @@ contract MarginCalculator is Initializable {
     }
 
     /**
-     * @dev calculate non-expired net put spread value.
-     *
+     * @dev calculate spread margin requirement.
+     * @dev this value is used
      * Formula: net = (long strike * min (short amount, long amount)) - (short amount * short strike)
      *
      * @return net value
      */
-    function _calculateNonExpiredPutNetValue(
+    function _getCallMarginRequirement(
         FixedPointInt256.FixedPointInt memory _shortAmount,
         FixedPointInt256.FixedPointInt memory _longAmount,
         FixedPointInt256.FixedPointInt memory _shortStrike,
@@ -165,7 +165,7 @@ contract MarginCalculator is Initializable {
     }
 
     /**
-     * @dev calculate non-expired net call spread value.
+     * @dev calculate call spread marigin requirement.
      *                                                min (long amount, short amount) * max (0, long strike - short strike)
      * net = min(0, long amount - short amount) -  --------------------------------------------------------------------------
      *                                                                             long strike
@@ -173,7 +173,7 @@ contract MarginCalculator is Initializable {
      * @dev if long strike = 0 (no long token), then return net = short amount.
      * @return net value
      */
-    function _calculateNonExpiredCallNetValue(
+    function _getPutMarginRequirement(
         FixedPointInt256.FixedPointInt memory _shortAmount,
         FixedPointInt256.FixedPointInt memory _longAmount,
         FixedPointInt256.FixedPointInt memory _shortStrike,
@@ -194,13 +194,13 @@ contract MarginCalculator is Initializable {
     }
 
     /**
-     * @dev calculate expired net put spread value.
+     * @dev calculate cash value for an expired put spread vault.
      *
      * Formula: net = ( long cash value * long Amount ) - (short cash value * short amount)
      *
      * @return net value
      */
-    function _calculateExpiredPutNetValue(
+    function _getPutSpreadCashValue(
         FixedPointInt256.FixedPointInt memory _shortAmount,
         FixedPointInt256.FixedPointInt memory _longAmount,
         FixedPointInt256.FixedPointInt memory _shortCashValue,
@@ -210,13 +210,13 @@ contract MarginCalculator is Initializable {
     }
 
     /**
-     * @dev calculate expired net call spread value.
+     * @dev calculate cash value for an expired call spread vault.
      *                     ( long cash value * long Amount ) - (short cash value * short amount)
      *  Formula: net =   -------------------------------------------------------------------------
      *                                               Underlying price
      * @return net value
      */
-    function _calculateExpiredCallNetValue(
+    function _getCallSpreadCashValue(
         FixedPointInt256.FixedPointInt memory _shortAmount,
         FixedPointInt256.FixedPointInt memory _longAmount,
         FixedPointInt256.FixedPointInt memory _shortCashValue,
