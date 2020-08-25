@@ -116,6 +116,12 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
     })
   })
 
+  describe('Expiry', () => {
+    it('check if otoken expired', async () => {
+      assert.equal(await controller.isExpired(otoken.address), false, 'Otoken expiry check mismatch')
+    })
+  })
+
   describe('Pause system', () => {
     it('should revert when pausing the system from non-owner', async () => {
       await expectRevert(controller.setSystemPaused(true, {from: random}), 'Ownable: caller is not the owner')
