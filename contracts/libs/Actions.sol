@@ -3,11 +3,15 @@
  */
 pragma solidity 0.6.10;
 
+import {SafeMath} from "../packages/oz/SafeMath.sol";
+
 /**
  *
  */
 // solhint-disable-next-line no-empty-blocks
 library Actions {
+    using SafeMath for uint256;
+
     // Possible actions that can be performed
     enum ActionType {
         OpenVault,
@@ -75,8 +79,10 @@ library Actions {
     }
 
     struct OpenVaultArgs {
-        // The address of the account owner
+        // address of the account that the vault belong to
         address owner;
+        // the number of vaults in a specific account.
+        uint256 vaultCounter;
     }
 
     struct DepositArgs {
@@ -139,7 +145,7 @@ library Actions {
         require(_args.actionType == ActionType.OpenVault, "Actions: can only parse arguments for open vault actions");
         require(_args.owner != address(0), "Actions: cannot open vault for an invalid account");
 
-        return OpenVaultArgs({owner: _args.owner});
+        return OpenVaultArgs({owner: _args.owner, vaultCounter: _args.vaultId.add(1)});
     }
 
     /**

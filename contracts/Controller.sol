@@ -7,6 +7,7 @@ pragma experimental ABIEncoderV2;
 
 import {Ownable} from "./packages/oz/Ownable.sol";
 import {SafeMath} from "./packages/oz/SafeMath.sol";
+import {ReentrancyGuard} from "./packages/oz/ReentrancyGuard.sol";
 import {MarginAccount} from "./libs/MarginAccount.sol";
 import {Actions} from "./libs/Actions.sol";
 import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
@@ -19,7 +20,9 @@ import {OracleInterface} from "./interfaces/OracleInterface.sol";
  * @title Controller
  * @notice contract that
  */
-contract Controller is Ownable {
+contract Controller is ReentrancyGuard, Ownable {
+    using MarginAccount for MarginAccount.Account;
+    using MarginAccount for MarginAccount.Vault;
     using SafeMath for uint256;
 
     /// @notice the protocol state, if true, then all protocol functionality are paused.
@@ -29,7 +32,8 @@ contract Controller is Ownable {
     address internal addressBook;
 
     /// @dev mapping between owner address and account structure
-    mapping(address => MarginAccount.Account) internal accounts;
+    //mapping(address => MarginAccount.Account) internal accounts;
+    mapping(address => uint256) internal accountVaultCounter;
     /// @dev mapping between owner address and specific vault using vaultId
     mapping(address => mapping(uint256 => MarginAccount.Vault)) internal vaults;
     /// @dev mapping between account owner and account operator
@@ -95,8 +99,14 @@ contract Controller is Ownable {
      * @dev can only be called when system is not paused
      * @param _actions array of actions arguments
      */
-    // function operate(Actions.ActionArgs[] memory _actions) external isNotPaused {
-    // }
+    function operate(Actions.ActionArgs[] memory _actions) external isNotPaused nonReentrant {
+        MarginAccount.Vault memory vault = _runActions(_actions);
+
+        address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
+        MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
+
+        calculator.isValidState(vault, vault.shortOtokens[0]);
+    }
 
     /**
      * @notice Iterate through a collateral array of the vault and payout collateral assets
@@ -191,6 +201,15 @@ contract Controller is Ownable {
     }
 
     /**
+     * @notice get number of vaults in a specific account
+     * @param _accountOwner account owner address
+     * @return number of vaults
+     */
+    function getAccountVaultCounter(address _accountOwner) external view returns (uint256) {
+        return accountVaultCounter[_accountOwner];
+    }
+
+    /**
      * @notice function to check if otoken is expired
      * @param _otoken otoken address
      * @return true if otoken is expired, else return false
@@ -217,16 +236,54 @@ contract Controller is Ownable {
      * @param _actions An array of type Actions.ActionArgs[] which expresses which actions the user want to execute.
      * @return Vault strcut. The new vault data that has been modified (or null vault if no action affected any vault)
      */
-    // function _runActions(Actions.ActionArgs[] memory _actions) internal returns (MarginAccount.Vault memory) {
-    // }
+    function _runActions(Actions.ActionArgs[] memory _actions) internal returns (MarginAccount.Vault memory) {
+        for (uint256 i = 0; i < _actions.length; i++) {
+            Actions.ActionArgs memory action = _actions[i];
+            Actions.ActionType actionType = action.actionType;
+
+            uint256 actionVaultId;
+            bool isActionVaultStored;
+
+            if (actionType == Actions.ActionType.OpenVault) {
+                // check if this action is manipulating the same vault as all other actions, other than SettleVault
+                (actionVaultId, isActionVaultStored) = _checkActionVault(
+                    actionVaultId,
+                    action.vaultId,
+                    isActionVaultStored
+                );
+                _openVault(Actions._parseOpenVaultArgs(action));
+            }
+        }
+    }
+
+    /**
+     * @dev check if two vault ids are the same
+     * @param _prevActionVaultId vault id related to a previous action
+     * @param _currActionVaultId vault id related to current action
+     * @param _isActionVaultStored a boolean to indicate if a first check is done or not
+     * @return _currActionVaultId and true to indicate that a check is done
+     */
+    function _checkActionVault(
+        uint256 _prevActionVaultId,
+        uint256 _currActionVaultId,
+        bool _isActionVaultStored
+    ) internal returns (uint256, bool) {
+        if (_isActionVaultStored) {
+            require(_prevActionVaultId == _currActionVaultId, "Controller: can not run actions on different vaults");
+        }
+        return (_currActionVaultId, true);
+    }
 
     /**
      * @notice open new vault inside an account
      * @dev Only account owner or operator can open a vault
      * @param _args OpenVaultArgs structure
      */
-    // function _openVault(Actions.OpenVaultArgs memory _args) internal isAuthorized(_args.owner) {
-    // }
+    function _openVault(Actions.OpenVaultArgs memory _args) internal isAuthorized(msg.sender, _args.owner) {
+        accountVaultCounter[_args.owner].add(1);
+
+        require(accountVaultCounter[_args.owner] == _args.vaultCounter);
+    }
 
     /**
      * @notice deposit long option into vault
