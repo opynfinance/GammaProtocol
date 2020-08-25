@@ -6,6 +6,7 @@ module.exports = {
   skipFiles: [
     'Migrations.sol',
     'mocks/MockAddressBook.sol',
+    'mocks/MockOracle.sol',
     'packages/oz/SafeMath.sol',
     'packages/oz/Address.sol',
     'packages/oz/Context.sol',
