@@ -8,7 +8,7 @@ const Controller = artifacts.require('Controller.sol')
 // address(0)
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
-contract('Controller', () => {
+contract('Controller', ([owner1, operator1, random]) => {
   // addressbook module mock
   let addressBook: MockAddressBookInstance
   // controller module
@@ -22,7 +22,7 @@ contract('Controller', () => {
     assert.equal(await controller.systemPaused(), false, 'System is paused')
   })
 
-  describe('MarginPool initialization', () => {
+  describe('Controller initialization', () => {
     it('should revert if initilized with 0 addressBook address', async () => {
       await expectRevert(Controller.new(ZERO_ADDR), 'Invalid address book')
     })
@@ -30,19 +30,25 @@ contract('Controller', () => {
 
   describe('Account operator', () => {
     it('should set operator', async () => {
-      //
-    })
-  })
+      await controller.setOperator(operator1, true, {from: owner1})
 
-  describe('Batch underlyig price', () => {
-    it('should set batch udnerlying price', async () => {
-      //
+      assert.equal(await controller.isOperator(owner1, operator1), true, 'Operator address mismatch')
     })
   })
 
   describe('Pause system', () => {
+    it('should revert when pausing the system from non-owner', async () => {
+      await expectRevert(controller.setSystemPaused(true, {from: random}), 'Ownable: caller is not the owner')
+    })
+
     it('should pause system', async () => {
-      //
+      const stateBefore = await controller.systemPaused()
+      assert.equal(stateBefore, false, 'System already paused')
+
+      await controller.setSystemPaused(true)
+
+      const stateAfter = await controller.systemPaused()
+      assert.equal(stateAfter, true, 'System not paused')
     })
   })
 })

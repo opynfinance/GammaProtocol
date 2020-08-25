@@ -47,25 +47,25 @@ contract Controller is Ownable {
     /**
      * @notice modifier check if protocol is not paused
      */
-    modifier isNotPaused {
-        _;
-    }
+    // modifier isNotPaused {
+    //     _;
+    // }
 
     /**
      * @notice modifier to check if otoken is expired
      * @param _otoken otoken address
      */
-    modifier isExpired(address _otoken) {
-        _;
-    }
+    // modifier isExpired(address _otoken) {
+    //     _;
+    // }
 
     /**
      * @notice modifier to check if sender is an authorized vault operator
      * @param _sender sender address
      */
-    modifier isAuthorized(address _sender) {
-        _;
-    }
+    // modifier isAuthorized(address _sender) {
+    //     _;
+    // }
 
     /**
      * @notice allows admin to toggle pause / emergency shutdown
@@ -110,6 +110,16 @@ contract Controller is Ownable {
      */
     // function setBatchUnderlyingPrice(address _otoken, uint256 _roundsBack) external {
     // }
+
+    /**
+     * @notice check if a specific address is an operator for an owner account
+     * @param _owner account owner address
+     * @param _operator account operator address
+     * @return true if operator, else false
+     */
+    function isOperator(address _owner, address _operator) external view returns (bool) {
+        return operators[_owner][_operator];
+    }
 
     /**
      * @notice Return a vault balances, depend of the short option expiry
