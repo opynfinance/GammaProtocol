@@ -1,8 +1,6 @@
 import {FixedPointInt256TesterInstance} from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
-const {expectRevert} = require('@openzeppelin/test-helpers')
-
 const FixedPointInt256Tester = artifacts.require('FixedPointInt256Tester.sol')
 
 contract('FixedPointInt256 lib', () => {
@@ -42,8 +40,8 @@ contract('FixedPointInt256 lib', () => {
     })
 
     it('Should return 0 for 0 * 5e18', async () => {
-      const a = new BigNumber(0)
-      const b = new BigNumber(5).multipliedBy(1e18)
+      const a = await lib.testFromUnscaledInt(new BigNumber(0))
+      const b = await lib.testFromUnscaledInt(new BigNumber(5))
 
       assert.equal((await lib.testMul(a, b)).toString(), '0', 'multiplication result mismatch')
     })
