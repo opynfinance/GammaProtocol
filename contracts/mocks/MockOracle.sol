@@ -78,7 +78,6 @@ contract MockOracle {
         require(!isDisputePeriodOver(_batch, _expiryTimestamp), "Oracle: dispute period over");
 
         Price storage batchPrice = batchPriceAt[_batch][_expiryTimestamp];
-        uint256 oldPrice = batchPrice.price;
         batchPrice.price = _price;
     }
 
