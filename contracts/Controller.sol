@@ -99,11 +99,10 @@ contract Controller is ReentrancyGuard, Ownable {
      * @param _actions array of actions arguments
      */
     function operate(Actions.ActionArgs[] memory _actions) external isNotPaused nonReentrant {
-        _runActions(_actions);
-        // MarginAccount.Vault memory vault = _runActions(_actions);
+        MarginAccount.Vault memory vault = _runActions(_actions);
 
-        // address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
-        // MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
+        address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
+        MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
 
         // need to fix this
         //calculator.isValidState(vault, vault.shortOtokens[0]);
@@ -137,8 +136,8 @@ contract Controller is ReentrancyGuard, Ownable {
     }
 
     /**
-     * @notice Return a vault balances, depend of the short option expiry
-     * @dev if vault have no short option or issued option is not expired yet, return vault, else get excess margin and return it as collateral amount inside Vault struct.
+     * @notice Return a vault's balances. If the vault doesn't have a short option or the short option has not expired, then the vault's collateral balances are returned. If the short option has expired, the collateral balance the vault has is dependent on if the option expired ITM or OTM.
+     * @dev if vault has no short option or the issued option is not expired yet, return the vault, else call get excess margin and return it as collateral amount inside Vault struct.
      * @param _owner account owner.
      * @param _vaultId vault.
      * @return Vault struct
@@ -146,10 +145,10 @@ contract Controller is ReentrancyGuard, Ownable {
     function getVaultBalances(address _owner, uint256 _vaultId) external view returns (MarginAccount.Vault memory) {
         MarginAccount.Vault memory vault = getVault(_owner, _vaultId);
 
-        // if there is no minted option or option not expired yet
+        // if there is no minted short option or the short option has not expired yet
         if ((vault.shortOtokens.length == 0) || (!isExpired(vault.shortOtokens[0]))) return vault;
 
-        // if there's short and it's expired
+        // if there is a short option and it has expired
         address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
         MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
         OtokenInterface otoken = OtokenInterface(vault.shortOtokens[0]);
@@ -239,6 +238,8 @@ contract Controller is ReentrancyGuard, Ownable {
      * @return Vault strcut. The new vault data that has been modified (or null vault if no action affected any vault)
      */
     function _runActions(Actions.ActionArgs[] memory _actions) internal returns (MarginAccount.Vault memory) {
+        MarginAccount.Vault memory vault;
+
         for (uint256 i = 0; i < _actions.length; i++) {
             Actions.ActionArgs memory action = _actions[i];
             Actions.ActionType actionType = action.actionType;
@@ -256,6 +257,8 @@ contract Controller is ReentrancyGuard, Ownable {
                 _openVault(Actions._parseOpenVaultArgs(action));
             }
         }
+
+        return vault;
     }
 
     /**
