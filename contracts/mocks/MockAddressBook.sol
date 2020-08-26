@@ -8,6 +8,7 @@ contract MockAddressBook {
     address private _weth;
     address private _controllerImpl;
     address private _oracleImpl;
+    address private _calculatorImpl;
 
     function setOtokenImpl(address _newImpl) external {
         _otokenImpl = _newImpl;
@@ -33,6 +34,10 @@ contract MockAddressBook {
         _oracleImpl = _oracle;
     }
 
+    function setMarginCalculator(address _calculator) external {
+        _calculatorImpl = _calculator;
+    }
+
     function getOtokenImpl() external view returns (address) {
         return _otokenImpl;
     }
@@ -55,5 +60,9 @@ contract MockAddressBook {
 
     function getOracle() external view returns (address) {
         return _oracleImpl;
+    }
+
+    function getMarginCalculator() external view returns (address) {
+        return _calculatorImpl;
     }
 }

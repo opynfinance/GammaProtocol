@@ -100,12 +100,14 @@ contract Controller is ReentrancyGuard, Ownable {
      * @param _actions array of actions arguments
      */
     function operate(Actions.ActionArgs[] memory _actions) external isNotPaused nonReentrant {
-        MarginAccount.Vault memory vault = _runActions(_actions);
+        _runActions(_actions);
+        // MarginAccount.Vault memory vault = _runActions(_actions);
 
-        address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
-        MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
+        // address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
+        // MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
 
-        calculator.isValidState(vault, vault.shortOtokens[0]);
+        // need to fix this
+        //calculator.isValidState(vault, vault.shortOtokens[0]);
     }
 
     /**
@@ -151,8 +153,9 @@ contract Controller is ReentrancyGuard, Ownable {
         // if there's short and it's expired
         address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
         MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
+        OtokenInterface otoken = OtokenInterface(vault.shortOtokens[0]);
 
-        (uint256 netValue, ) = calculator.getExcessMargin(vault, vault.shortOtokens[0]);
+        (uint256 netValue, ) = calculator.getExcessMargin(vault, otoken.collateralAsset());
         vault.collateralAmounts[0] = netValue;
         return vault;
     }
@@ -280,9 +283,7 @@ contract Controller is ReentrancyGuard, Ownable {
      * @param _args OpenVaultArgs structure
      */
     function _openVault(Actions.OpenVaultArgs memory _args) internal isAuthorized(msg.sender, _args.owner) {
-        accountVaultCounter[_args.owner].add(1);
-
-        require(accountVaultCounter[_args.owner] == _args.vaultCounter);
+        accountVaultCounter[_args.owner] = accountVaultCounter[_args.owner].add(1);
     }
 
     /**

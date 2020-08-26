@@ -1,4 +1,5 @@
 import {
+  MockMarginCalculatorInstance,
   MockOtokenInstance,
   MockERC20Instance,
   MockOracleInstance,
@@ -14,11 +15,25 @@ const MockERC20 = artifacts.require('MockERC20.sol')
 const MockOtoken = artifacts.require('MockOtoken.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const MockChainlinkOracle = artifacts.require('MockChainlinkOracle.sol')
+const MockMarginCalculator = artifacts.require('MockMarginCalculator.sol')
 const MockAddressBook = artifacts.require('MockAddressBook.sol')
 const Controller = artifacts.require('Controller.sol')
 
 // address(0)
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
+
+enum ActionType {
+  OpenVault,
+  MintShortOption,
+  BurnShortOption,
+  DepositLongOption,
+  WithdrawLongOption,
+  DepositCollateral,
+  WithdrawCollateral,
+  SettleVault,
+  Exercise,
+  Call,
+}
 
 contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
   const batch = web3.utils.asciiToHex('ETHUSDCUSDC1596218762')
@@ -31,6 +46,8 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
   let batchOracle: MockChainlinkOracleInstance
   // Oracle module
   let oracle: MockOracleInstance
+  // calculator moduel
+  let calculator: MockMarginCalculatorInstance
   // addressbook module mock
   let addressBook: MockAddressBookInstance
   // controller module
@@ -57,6 +74,10 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
     batchOracle = await MockChainlinkOracle.new({from: owner})
     // deploy Oracle module
     oracle = await MockOracle.new(addressBook.address, {from: owner})
+    // calculator deployment
+    calculator = await MockMarginCalculator.new()
+    // set calculator in addressbook
+    await addressBook.setMarginCalculator(calculator.address)
     // set oracle in AddressBook
     await addressBook.setOracle(oracle.address)
     // deploy Controller module
@@ -92,6 +113,30 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
     it('should get vault balance', async () => {
       const vaultId = new BigNumber(0)
       await controller.getVaultBalances(accountOwner1, vaultId)
+    })
+  })
+
+  describe('Open vault', () => {
+    it('should open vault', async () => {
+      const vaultCounterBefore = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+      assert.equal(vaultCounterBefore.toString(), '0', 'vault counter before mismatch')
+
+      const actionArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: accountOwner1,
+          sender: accountOwner1,
+          asset: ZERO_ADDR,
+          vaultId: '0',
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+      await controller.operate(actionArgs, {from: accountOwner1})
+
+      const vaultCounterAfter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+      assert.equal(vaultCounterAfter.minus(vaultCounterBefore).toString(), '1', 'vault counter before mismatch')
     })
   })
 

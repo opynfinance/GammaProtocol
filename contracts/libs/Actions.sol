@@ -81,8 +81,6 @@ library Actions {
     struct OpenVaultArgs {
         // address of the account that the vault belong to
         address owner;
-        // the number of vaults in a specific account.
-        uint256 vaultCounter;
     }
 
     struct DepositArgs {
@@ -145,7 +143,7 @@ library Actions {
         require(_args.actionType == ActionType.OpenVault, "Actions: can only parse arguments for open vault actions");
         require(_args.owner != address(0), "Actions: cannot open vault for an invalid account");
 
-        return OpenVaultArgs({owner: _args.owner, vaultCounter: _args.vaultId.add(1)});
+        return OpenVaultArgs({owner: _args.owner});
     }
 
     /**
