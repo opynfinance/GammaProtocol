@@ -4,7 +4,7 @@
 pragma solidity 0.6.10;
 
 /**
- * @dev Interface of the ERC20 standard as defined in the EIP.
+ * @dev Contract interface that can be called from Controller as a call action.
  */
 interface CalleeInterface {
     /**
