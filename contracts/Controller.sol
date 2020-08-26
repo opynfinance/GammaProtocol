@@ -135,7 +135,7 @@ contract Controller is Ownable {
     function getVaultBalances(address _owner, uint256 _vaultId) external view returns (MarginAccount.Vault memory) {
         MarginAccount.Vault memory vault = getVault(_owner, _vaultId);
 
-        // if there is no minted option or option not expired yet
+        // if there is no minted short option or the short option has not expired yet
         if ((vault.shortOtokens.length == 0) || (!isExpired(vault.shortOtokens[0]))) return vault;
 
         // if there is a short option and it has expired
