@@ -7,6 +7,7 @@ module.exports = {
     'Migrations.sol',
     'mocks/MockAddressBook.sol',
     'mocks/MockOracle.sol',
+    'mocks/MockMarginCalculator.sol',
     'packages/oz/SafeMath.sol',
     'packages/oz/Address.sol',
     'packages/oz/Context.sol',

@@ -117,6 +117,25 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
   })
 
   describe('Open vault', () => {
+    it('should revert opening a vault an an account from random address', async () => {
+      const actionArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: accountOwner1,
+          sender: random,
+          asset: ZERO_ADDR,
+          vaultId: '0',
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+      await expectRevert(
+        controller.operate(actionArgs, {from: random}),
+        'Controller: msg.sender is not authorized to run action',
+      )
+    })
+
     it('should open vault', async () => {
       const vaultCounterBefore = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
       assert.equal(vaultCounterBefore.toString(), '0', 'vault counter before mismatch')
