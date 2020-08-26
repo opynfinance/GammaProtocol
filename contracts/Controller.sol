@@ -138,7 +138,7 @@ contract Controller is Ownable {
         // if there is no minted option or option not expired yet
         if ((vault.shortOtokens.length == 0) || (!isExpired(vault.shortOtokens[0]))) return vault;
 
-        // if there's short and it's expired
+        // if there is a short option and it has expired
         address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
         MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
 
