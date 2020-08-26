@@ -155,7 +155,30 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
       await controller.operate(actionArgs, {from: accountOwner1})
 
       const vaultCounterAfter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
-      assert.equal(vaultCounterAfter.minus(vaultCounterBefore).toString(), '1', 'vault counter before mismatch')
+      assert.equal(vaultCounterAfter.minus(vaultCounterBefore).toString(), '1', 'vault counter after mismatch')
+    })
+
+    it('should open vault from account operator', async () => {
+      assert.equal(await controller.isOperator(accountOwner1, accountOperator1), true, 'Operator address mismatch')
+
+      const vaultCounterBefore = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+
+      const actionArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: accountOwner1,
+          sender: accountOperator1,
+          asset: ZERO_ADDR,
+          vaultId: '0',
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+      await controller.operate(actionArgs, {from: accountOperator1})
+
+      const vaultCounterAfter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+      assert.equal(vaultCounterAfter.minus(vaultCounterBefore).toString(), '1', 'vault counter after mismatch')
     })
   })
 
