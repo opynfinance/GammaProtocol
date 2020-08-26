@@ -91,7 +91,7 @@ contract MarginCalculator is Initializable {
      * @notice Calculate the amount of collateral needed for a spread vault.
      * @dev The vault passed in already pass amount array length = asset array length check.
      * @param _vault the theoretical vault that needs to be checked
-     * @return collateralNeeded the minimal amount of collateral needed in a vault.
+     * @return marginRequired the minimal amount of collateral needed in a vault.
      */
     function _getMarginRequired(MarginAccount.Vault memory _vault)
         internal
