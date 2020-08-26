@@ -79,27 +79,24 @@ contract MarginCalculator is Initializable {
         address shortCollateral = OtokenInterface(_vault.shortOtokens[0]).collateralAsset();
         require(shortCollateral == _denominated, "MarginCalculator: Denomintated token should be short.collateral");
 
-        FixedPointInt256.FixedPointInt memory netOtoken = _calculateOtokenNetValue(_vault);
-        // if netOtoken < 0, the long assets cannot cover the max loss of short assets in the vault.
-        // will need to check if collateral + netOtoken is greater than 0.
-        FixedPointInt256.FixedPointInt memory totalValue = collateralAmount.add(netOtoken);
-        isExcess = totalValue.isGreaterThanOrEqual(_uint256ToFixedPointInt(0));
-        netValue = SignedConverter.intToUint(totalValue.value);
+        FixedPointInt256.FixedPointInt memory marginRequirement = _getMarginRequired(_vault);
+        // if marginRequirement > 0, the long assets cannot cover the max loss of short assets in the vault.
+        // will need to check if collateral - marginRequirement is greater than 0.
+        FixedPointInt256.FixedPointInt memory excessMargin = collateralAmount.sub(marginRequirement);
+        isExcess = excessMargin.isGreaterThanOrEqual(_uint256ToFixedPointInt(0));
+        netValue = SignedConverter.intToUint(excessMargin.value);
     }
 
     /**
-     * @notice Calculate the net value of long token + short token in a vault, denominated in collateral asset.
+     * @notice Calculate the amount of collateral needed for a spread vault.
      * @dev The vault passed in already pass amount array length = asset array length check.
      * @param _vault the theoretical vault that needs to be checked
-     * @return netOtoken net worth of long otoken and short otoken, denominated in collateral asset.
-     * Positive: long asset covers the max loss of short asset. Can potentially remove collateral.
-     * Negative: long asset cannot cover the max loss of short asset, will take collateral assets amount into consideration
-     *           to see if the vault is valid.
+     * @return collateralNeeded the minimal amount of collateral needed in a vault.
      */
-    function _calculateOtokenNetValue(MarginAccount.Vault memory _vault)
+    function _getMarginRequired(MarginAccount.Vault memory _vault)
         internal
         view
-        returns (FixedPointInt256.FixedPointInt memory netOtoken)
+        returns (FixedPointInt256.FixedPointInt memory marginRequired)
     {
         // The vault passed in has a short array == 1, so we can just use shortAmounts[0]
         FixedPointInt256.FixedPointInt memory shortAmount = _uint256ToFixedPointInt(_vault.shortAmounts[0]);
@@ -120,9 +117,9 @@ contract MarginCalculator is Initializable {
                 : _uint256ToFixedPointInt(0);
 
             if (isPut) {
-                netOtoken = _getPutSpreadMarginRequired(shortAmount, longAmount, shortStrike, longStrike);
+                marginRequired = _getPutSpreadMarginRequired(shortAmount, longAmount, shortStrike, longStrike);
             } else {
-                netOtoken = _getCallSpreadMarginRequired(shortAmount, longAmount, shortStrike, longStrike);
+                marginRequired = _getCallSpreadMarginRequired(shortAmount, longAmount, shortStrike, longStrike);
             }
         } else {
             FixedPointInt256.FixedPointInt memory shortCashValue = _uint256ToFixedPointInt(
@@ -133,11 +130,11 @@ contract MarginCalculator is Initializable {
                 : _uint256ToFixedPointInt(0);
 
             if (isPut) {
-                netOtoken = _getExpiredPutSpreadCashValue(shortAmount, longAmount, shortCashValue, longCashValue);
+                marginRequired = _getExpiredPutSpreadCashValue(shortAmount, longAmount, shortCashValue, longCashValue);
             } else {
                 (uint256 underlyingPrice, ) = _getUnderlyingPrice(address(short));
                 FixedPointInt256.FixedPointInt memory underlyingPriceInt = _uint256ToFixedPointInt(underlyingPrice);
-                netOtoken = _getExpiredCallSpreadCashValue(
+                marginRequired = _getExpiredCallSpreadCashValue(
                     shortAmount,
                     longAmount,
                     shortCashValue,
@@ -151,7 +148,7 @@ contract MarginCalculator is Initializable {
     /**
      * @dev calculate spread margin requirement.
      * @dev this value is used
-     * Formula: net = (long strike * min (short amount, long amount)) - (short amount * short strike)
+     * Formula: net = (short amount * short strike) - (long strike * min (short amount, long amount))
      *
      * @return net value
      */
@@ -161,14 +158,14 @@ contract MarginCalculator is Initializable {
         FixedPointInt256.FixedPointInt memory _shortStrike,
         FixedPointInt256.FixedPointInt memory _longStrike
     ) internal pure returns (FixedPointInt256.FixedPointInt memory) {
-        return _longStrike.mul(FixedPointInt256.min(_shortAmount, _longAmount)).sub(_shortAmount.mul(_shortStrike));
+        return _shortAmount.mul(_shortStrike).sub(_longStrike.mul(FixedPointInt256.min(_shortAmount, _longAmount)));
     }
 
     /**
      * @dev calculate call spread marigin requirement.
-     *                                                min (long amount, short amount) * max (0, long strike - short strike)
-     * net = min(0, long amount - short amount) -  --------------------------------------------------------------------------
-     *                                                                             long strike
+     *          min (long amount, short amount) * max (0, long strike - short strike)
+     * net =  -------------------------------------------------------------------------- - min(0, long amount - short amount)
+     *                                     long strike
      *
      * @dev if long strike = 0 (no long token), then return net = short amount.
      * @return net value
@@ -180,23 +177,22 @@ contract MarginCalculator is Initializable {
         FixedPointInt256.FixedPointInt memory _longStrike
     ) internal pure returns (FixedPointInt256.FixedPointInt memory) {
         FixedPointInt256.FixedPointInt memory zero = FixedPointInt256.FixedPointInt(0);
-        // if long strike == 0, return -1 * short amount
+        // if long strike == 0, return short amount
         if (_longStrike.isEqual(zero)) {
-            return zero.sub(_shortAmount);
+            return _shortAmount;
         }
         return
-            FixedPointInt256.min(zero, _longAmount.sub(_shortAmount)).sub(
-                FixedPointInt256
-                    .min(_longAmount, _shortAmount)
-                    .mul(FixedPointInt256.max(zero, _longStrike.sub(_shortStrike)))
-                    .div(_longStrike)
-            );
+            FixedPointInt256
+                .min(_longAmount, _shortAmount)
+                .mul(FixedPointInt256.max(zero, _longStrike.sub(_shortStrike)))
+                .div(_longStrike)
+                .sub(FixedPointInt256.min(zero, _longAmount.sub(_shortAmount)));
     }
 
     /**
      * @dev calculate cash value for an expired put spread vault.
      *
-     * Formula: net = ( long cash value * long Amount ) - (short cash value * short amount)
+     * Formula: net = (short cash value * short amount) - ( long cash value * long Amount )
      *
      * @return net value
      */
@@ -206,12 +202,12 @@ contract MarginCalculator is Initializable {
         FixedPointInt256.FixedPointInt memory _shortCashValue,
         FixedPointInt256.FixedPointInt memory _longCashValue
     ) internal pure returns (FixedPointInt256.FixedPointInt memory) {
-        return (_longCashValue.mul(_longAmount)).sub(_shortCashValue.mul(_shortAmount));
+        return _shortCashValue.mul(_shortAmount).sub(_longCashValue.mul(_longAmount));
     }
 
     /**
      * @dev calculate cash value for an expired call spread vault.
-     *                     ( long cash value * long Amount ) - (short cash value * short amount)
+     *                     (short cash value * short amount) - ( long cash value * long Amount )
      *  Formula: net =   -------------------------------------------------------------------------
      *                                               Underlying price
      * @return net value
@@ -223,7 +219,7 @@ contract MarginCalculator is Initializable {
         FixedPointInt256.FixedPointInt memory _longCashValue,
         FixedPointInt256.FixedPointInt memory _underlyingPriceInt
     ) internal pure returns (FixedPointInt256.FixedPointInt memory) {
-        return (_longCashValue.mul(_longAmount)).sub(_shortCashValue.mul(_shortAmount)).div(_underlyingPriceInt);
+        return _shortCashValue.mul(_shortAmount).sub((_longCashValue.mul(_longAmount))).div(_underlyingPriceInt);
     }
 
     /**
