@@ -127,7 +127,7 @@ contract Controller is Ownable {
 
     /**
      * @notice Return a vault's balances. If the vault doesn't have a short option or the short option has not expired, then the vault's collateral balances are returned. If the short option has expired, the collateral balance the vault has is dependent on if the option expired ITM or OTM. 
-     * @dev if vault have no short option or issued option is not expired yet, return vault, else get excess margin and return it as collateral amount inside Vault struct.
+     * @dev if vault has no short option or the issued option is not expired yet, return the vault, else call get excess margin and return it as collateral amount inside Vault struct.
      * @param _owner account owner.
      * @param _vaultId vault.
      * @return Vault struct
