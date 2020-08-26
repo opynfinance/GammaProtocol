@@ -4,7 +4,7 @@ const {BN, expectRevert} = require('@openzeppelin/test-helpers')
 
 const ActionTester = artifacts.require('ActionTester.sol')
 
-contract('Actions', ([owner, random]) => {
+contract('Actions', ([owner, random, random2, random3]) => {
   // actionTester mock instance
   let actionTester: ActionTesterInstance
   enum ActionType {
@@ -632,6 +632,56 @@ contract('Actions', ([owner, random]) => {
       assert.equal(burnArgs.from, owner)
       assert.equal(burnArgs.vaultId, new BN(vaultId))
       assert.equal(burnArgs.index, new BN(index))
+    })
+  })
+
+  describe('Parse Call Arguments', () => {
+    it('should not be able to parse a non Call action', async () => {
+      const data = {
+        actionType: ActionType.OpenVault,
+        owner: owner,
+        sender: owner,
+        data: random,
+        asset: ZERO_ADDR,
+        vaultId: 0,
+        amount: 0,
+        index: 0,
+      }
+
+      await expectRevert(actionTester.testParseCallAction(data), 'Actions: can only parse arguments for call actions')
+    })
+    it('should not be able to parse an invalid sender address (call target address)', async () => {
+      const data = {
+        actionType: ActionType.Call,
+        owner: ZERO_ADDR,
+        sender: ZERO_ADDR,
+        data: ZERO_ADDR,
+        asset: ZERO_ADDR,
+        vaultId: 0,
+        amount: 0,
+        index: 0,
+      }
+
+      await expectRevert(actionTester.testParseCallAction(data), 'Actions: target address cannot be address(0)')
+    })
+    it('should be able to parse arguments for a burn short action', async () => {
+      const data = {
+        actionType: ActionType.Call,
+        owner: random,
+        sender: random2,
+        data: random3,
+        asset: ZERO_ADDR,
+        vaultId: 0,
+        amount: 0,
+        index: 0,
+      }
+
+      await actionTester.testParseCallAction(data)
+
+      const callArgs = await actionTester.getCallArgs()
+      assert.equal(callArgs.owner, random)
+      assert.equal(callArgs.callee, random2)
+      assert.equal(callArgs.data.toLowerCase(), random3.toLowerCase())
     })
   })
 })
