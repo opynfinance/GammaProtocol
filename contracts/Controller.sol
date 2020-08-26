@@ -21,7 +21,6 @@ import {OracleInterface} from "./interfaces/OracleInterface.sol";
  * @notice contract that
  */
 contract Controller is ReentrancyGuard, Ownable {
-    using MarginAccount for MarginAccount.Account;
     using MarginAccount for MarginAccount.Vault;
     using SafeMath for uint256;
 

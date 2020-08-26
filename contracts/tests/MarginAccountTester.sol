@@ -6,22 +6,12 @@ pragma experimental ABIEncoderV2;
 import {MarginAccount} from "../libs/MarginAccount.sol";
 
 contract MarginAccountTester {
-    using MarginAccount for MarginAccount.Account;
     using MarginAccount for MarginAccount.Vault;
 
-    mapping(address => MarginAccount.Account) private account;
     mapping(address => mapping(uint256 => MarginAccount.Vault)) private vault;
 
     function getVault(uint256 _vaultIndex) external view returns (MarginAccount.Vault memory) {
         return vault[msg.sender][_vaultIndex];
-    }
-
-    function getAccount() external view returns (MarginAccount.Account memory) {
-        return account[msg.sender];
-    }
-
-    function testOpenNewVault() external {
-        MarginAccount._openNewVault(account[msg.sender]);
     }
 
     function testAddShort(
