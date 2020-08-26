@@ -120,9 +120,9 @@ contract MarginCalculator is Initializable {
                 : _uint256ToFixedPointInt(0);
 
             if (isPut) {
-                netOtoken = _getCallMarginRequirement(shortAmount, longAmount, shortStrike, longStrike);
+                netOtoken = _getPutSpreadMarginRequired(shortAmount, longAmount, shortStrike, longStrike);
             } else {
-                netOtoken = _getPutMarginRequirement(shortAmount, longAmount, shortStrike, longStrike);
+                netOtoken = _getCallSpreadMarginRequired(shortAmount, longAmount, shortStrike, longStrike);
             }
         } else {
             FixedPointInt256.FixedPointInt memory shortCashValue = _uint256ToFixedPointInt(
@@ -133,11 +133,11 @@ contract MarginCalculator is Initializable {
                 : _uint256ToFixedPointInt(0);
 
             if (isPut) {
-                netOtoken = _getPutSpreadCashValue(shortAmount, longAmount, shortCashValue, longCashValue);
+                netOtoken = _getExpiredPutSpreadCashValue(shortAmount, longAmount, shortCashValue, longCashValue);
             } else {
                 (uint256 underlyingPrice, ) = _getUnderlyingPrice(address(short));
                 FixedPointInt256.FixedPointInt memory underlyingPriceInt = _uint256ToFixedPointInt(underlyingPrice);
-                netOtoken = _getCallSpreadCashValue(
+                netOtoken = _getExpiredCallSpreadCashValue(
                     shortAmount,
                     longAmount,
                     shortCashValue,
@@ -155,7 +155,7 @@ contract MarginCalculator is Initializable {
      *
      * @return net value
      */
-    function _getCallMarginRequirement(
+    function _getPutSpreadMarginRequired(
         FixedPointInt256.FixedPointInt memory _shortAmount,
         FixedPointInt256.FixedPointInt memory _longAmount,
         FixedPointInt256.FixedPointInt memory _shortStrike,
@@ -173,7 +173,7 @@ contract MarginCalculator is Initializable {
      * @dev if long strike = 0 (no long token), then return net = short amount.
      * @return net value
      */
-    function _getPutMarginRequirement(
+    function _getCallSpreadMarginRequired(
         FixedPointInt256.FixedPointInt memory _shortAmount,
         FixedPointInt256.FixedPointInt memory _longAmount,
         FixedPointInt256.FixedPointInt memory _shortStrike,
@@ -200,7 +200,7 @@ contract MarginCalculator is Initializable {
      *
      * @return net value
      */
-    function _getPutSpreadCashValue(
+    function _getExpiredPutSpreadCashValue(
         FixedPointInt256.FixedPointInt memory _shortAmount,
         FixedPointInt256.FixedPointInt memory _longAmount,
         FixedPointInt256.FixedPointInt memory _shortCashValue,
@@ -216,7 +216,7 @@ contract MarginCalculator is Initializable {
      *                                               Underlying price
      * @return net value
      */
-    function _getCallSpreadCashValue(
+    function _getExpiredCallSpreadCashValue(
         FixedPointInt256.FixedPointInt memory _shortAmount,
         FixedPointInt256.FixedPointInt memory _longAmount,
         FixedPointInt256.FixedPointInt memory _shortCashValue,
