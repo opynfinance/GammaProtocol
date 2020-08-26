@@ -104,8 +104,9 @@ contract Controller is ReentrancyGuard, Ownable {
         address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
         MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
 
-        // need to fix this
-        //calculator.isValidState(vault, vault.shortOtokens[0]);
+        if (vault.shortOtokens.length > 0) {
+            calculator.isValidState(vault, vault.shortOtokens[0]);
+        }
     }
 
     /**
