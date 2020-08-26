@@ -142,7 +142,9 @@ contract Controller is Ownable {
         address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
         MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
 
-        (uint256 netValue, ) = calculator.getExcessMargin(vault, vault.shortOtokens[0]);
+        OtokenInterface otoken = OtokenInterface(vault.shortOtokens[0]);
+
+        (uint256 netValue, ) = calculator.getExcessMargin(vault, otoken.collateralAsset());
         vault.collateralAmounts[0] = netValue;
         return vault;
     }
