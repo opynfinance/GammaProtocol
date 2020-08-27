@@ -112,7 +112,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
       const lockingPeriod = new BigNumber(60) // 1min
       const disputePeriod = new BigNumber(60) // 1min
 
-      const batch = await controller.getBatch(otoken.address)
+      const batch = (await controller.getBatchDetails(otoken.address))[0]
       // set batch oracle
       await oracle.setBatchOracle(batch, batchOracle.address)
       // set locking and dispute period
@@ -132,7 +132,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
       const expiryTimestampMock = new BigNumber(await time.latest())
       const priceMock = new BigNumber('200')
 
-      const batch = await controller.getBatch(otoken.address)
+      const batch = (await controller.getBatchDetails(otoken.address))[0]
       // increase time after locking period
       await time.increase(61)
       await oracle.setBatchUnderlyingPrice(batch, expiryTimestampMock, priceMock)
@@ -149,7 +149,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
       const expiryTimestampMock = new BigNumber(await time.latest())
       const priceMock = new BigNumber('200')
 
-      const batch = await controller.getBatch(otoken.address)
+      const batch = (await controller.getBatchDetails(otoken.address))[0]
       // increase time after locking period
       await time.increase(61)
       await oracle.setBatchUnderlyingPrice(batch, expiryTimestampMock, priceMock)
