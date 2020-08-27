@@ -31,7 +31,6 @@ contract Controller is ReentrancyGuard, Ownable {
     address internal addressBook;
 
     /// @dev mapping between owner address and account structure
-    //mapping(address => MarginAccount.Account) internal accounts;
     mapping(address => uint256) internal accountVaultCounter;
     /// @dev mapping between owner address and specific vault using vaultId
     mapping(address => mapping(uint256 => MarginAccount.Vault)) internal vaults;
