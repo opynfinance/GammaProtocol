@@ -78,12 +78,27 @@ contract Oracle is Ownable {
     }
 
     /**
+     * @notice get the underlying price at expiry for a otoken.
+     * @param _otoken the otoken address
+     * @return price denominated in USD, scaled 10e18
+     * @return isFinalized if the price is finalized or not.
+     */
+    function getUnderlyingPriceAtExpiry(address _otoken) external view returns (uint256, bool) {
+        OtokenInterface otoken = OtokenInterface(_otoken);
+        uint256 expiryTimestamp = otoken.expiryTimestamp();
+        bytes32 batch = getBatchId(otoken);
+        (uint256 price, ) = getBatchPrice(batch, expiryTimestamp);
+        bool isFinalized = isDisputePeriodOver(batch, expiryTimestamp);
+        return (price, isFinalized);
+    }
+
+    /**
      * @notice get batch price
      * @param _batch a batch is the hash of underlying, collateral, strike and expiry.
      * @param _timestamp price timestamp
      * @return price and timestap at which price submitted to this contract
      */
-    function getBatchPrice(bytes32 _batch, uint256 _timestamp) external view returns (uint256, uint256) {
+    function getBatchPrice(bytes32 _batch, uint256 _timestamp) public view returns (uint256, uint256) {
         Price memory batchPrice = batchPriceAt[_batch][_timestamp];
         return (batchPrice.price, batchPrice.timestamp);
     }
