@@ -117,8 +117,24 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
   })
 
   describe('Expiry', () => {
-    it('should check if otoken expired', async () => {
+    it('should return false for non expired otoken', async () => {
       assert.equal(await controller.isExpired(otoken.address), false, 'Otoken expiry check mismatch')
+    })
+
+    it('should return true for  expired otoken', async () => {
+      // Otoken deployment
+      const expiredOtoken = await MockOtoken.new()
+      // init otoken
+      await expiredOtoken.init(
+        weth.address,
+        usdc.address,
+        usdc.address,
+        new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+        1219835219,
+        true,
+      )
+
+      assert.equal(await controller.isExpired(expiredOtoken.address), true, 'Otoken expiry check mismatch')
     })
   })
 
