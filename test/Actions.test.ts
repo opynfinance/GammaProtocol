@@ -664,7 +664,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
 
       await expectRevert(actionTester.testParseCallAction(data), 'Actions: target address cannot be address(0)')
     })
-    it('should be able to parse arguments for a burn short action', async () => {
+    it('should be able to parse arguments for a call action', async () => {
       const data = {
         actionType: ActionType.Call,
         owner: random,
