@@ -8,7 +8,7 @@ import {
 } from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
-const {expectRevert} = require('@openzeppelin/test-helpers')
+const {expectRevert, time} = require('@openzeppelin/test-helpers')
 
 const MockERC20 = artifacts.require('MockERC20.sol')
 const MockOtoken = artifacts.require('MockOtoken.sol')
@@ -95,23 +95,56 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
     })
   })
 
-  describe('Price', () => {
+  describe('Check if price is finalized', () => {
     before(async () => {
-      const batch = await controller.getBatch(otoken.address)
-      const expiryTimestampMock = new BigNumber('1598374220')
-      const priceMock = new BigNumber('200')
+      const lockingPeriod = new BigNumber(60) // 1min
       const disputePeriod = new BigNumber(60) // 1min
 
+      const batch = await controller.getBatch(otoken.address)
+      // set batch oracle
       await oracle.setBatchOracle(batch, batchOracle.address)
+      // set locking and dispute period
+      await oracle.setLockingPeriod(batchOracle.address, lockingPeriod)
       await oracle.setDisputePeriod(batchOracle.address, disputePeriod)
-      await oracle.setBatchUnderlyingPrice(batch, expiryTimestampMock, priceMock)
     })
 
-    it('should check if price is finalized or not', async () => {
-      const batch = await controller.getBatch(otoken.address)
-      const otokenExpiryTimestamp = new BigNumber('1598374220')
+    it('should return false when price is not pushed to Oracle yet', async () => {
+      assert.equal(
+        await controller.isPriceFinalized(otoken.address),
+        false,
+        'Price is not finalized because it is not stored yet',
+      )
+    })
 
-      const expectedResutl = await oracle.isDisputePeriodOver(batch, otokenExpiryTimestamp)
+    it('should return false when price is pushed and dispute period not over yet', async () => {
+      const expiryTimestampMock = new BigNumber(await time.latest())
+      const priceMock = new BigNumber('200')
+
+      const batch = await controller.getBatch(otoken.address)
+      // increase time after locking period
+      await time.increase(61)
+      await oracle.setBatchUnderlyingPrice(batch, expiryTimestampMock, priceMock)
+
+      const expectedResutl = await oracle.isDisputePeriodOver(batch, expiryTimestampMock)
+      assert.equal(
+        await controller.isPriceFinalized(otoken.address),
+        expectedResutl,
+        'Price is not finalized because dispute period is not over yet',
+      )
+    })
+
+    it('should return true when price is finalized', async () => {
+      const expiryTimestampMock = new BigNumber(await time.latest())
+      const priceMock = new BigNumber('200')
+
+      const batch = await controller.getBatch(otoken.address)
+      // increase time after locking period
+      await time.increase(61)
+      await oracle.setBatchUnderlyingPrice(batch, expiryTimestampMock, priceMock)
+      // increase time after dispute period
+      await time.increase(60)
+
+      const expectedResutl = await oracle.isDisputePeriodOver(batch, expiryTimestampMock)
       assert.equal(await controller.isPriceFinalized(otoken.address), expectedResutl, 'Price is not finalized')
     })
   })
@@ -121,7 +154,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
       assert.equal(await controller.isExpired(otoken.address), false, 'Otoken expiry check mismatch')
     })
 
-    it('should return true for  expired otoken', async () => {
+    it('should return true for expired otoken', async () => {
       // Otoken deployment
       const expiredOtoken = await MockOtoken.new()
       // init otoken
