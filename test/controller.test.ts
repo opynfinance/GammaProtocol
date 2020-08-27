@@ -112,7 +112,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
       const otokenExpiryTimestamp = new BigNumber('1598374220')
 
       const expectedResutl = await oracle.isDisputePeriodOver(batch, otokenExpiryTimestamp)
-      assert.equal(await controller.isPriceFinalized(otoken.address), expectedResult, 'Price is not finalized')
+      assert.equal(await controller.isPriceFinalized(otoken.address), expectedResutl, 'Price is not finalized')
     })
   })
 
