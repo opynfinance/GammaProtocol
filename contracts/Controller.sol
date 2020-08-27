@@ -161,17 +161,7 @@ contract Controller is ReentrancyGuard, Ownable {
         address oracleModule = AddressBookInterface(addressBook).getOracle();
         OracleInterface oracle = OracleInterface(oracleModule);
 
-        OtokenInterface otoken = OtokenInterface(_otoken);
-
-        address otokenUnderlyingAsset = otoken.underlyingAsset();
-        address otokenStrikeAsset = otoken.strikeAsset();
-        address otokenCollateralAsset = otoken.collateralAsset();
-        uint256 otokenExpiryTimestamp = otoken.expiryTimestamp();
-
-        bytes32 batch = keccak256(
-            abi.encode(otokenUnderlyingAsset, otokenStrikeAsset, otokenCollateralAsset, otokenExpiryTimestamp)
-        );
-
+        (bytes32 batch, , , , uint256 otokenExpiryTimestamp) = getBatchDetails(_otoken);
         return oracle.isDisputePeriodOver(batch, otokenExpiryTimestamp);
     }
 
@@ -179,20 +169,35 @@ contract Controller is ReentrancyGuard, Ownable {
      * @notice get batch for a specific otoken address
      * @dev batch is the hash of option underlying, strike, collateral assets and the expiry timestamp
      * @param _otoken otoken address
-     * @return batch hash in bytes32
+     * @return batch hash in bytes32, batch underlying asset, batch strike asset, batch collateral asset, batch expiry timestamp
      */
-    function getBatch(address _otoken) external view returns (bytes32) {
+    function getBatchDetails(address _otoken)
+        public
+        view
+        returns (
+            bytes32,
+            address,
+            address,
+            address,
+            uint256
+        )
+    {
         OtokenInterface otoken = OtokenInterface(_otoken);
 
-        return
+        address otokenUnderlyingAsset = otoken.underlyingAsset();
+        address otokenStrikeAsset = otoken.strikeAsset();
+        address otokenCollateralAsset = otoken.collateralAsset();
+        uint256 otokenExpiryTimestamp = otoken.expiryTimestamp();
+
+        return (
             keccak256(
-                abi.encode(
-                    otoken.underlyingAsset(),
-                    otoken.strikeAsset(),
-                    otoken.collateralAsset(),
-                    otoken.expiryTimestamp()
-                )
-            );
+                abi.encode(otokenUnderlyingAsset, otokenStrikeAsset, otokenCollateralAsset, otokenExpiryTimestamp)
+            ),
+            otokenUnderlyingAsset,
+            otokenStrikeAsset,
+            otokenCollateralAsset,
+            otokenExpiryTimestamp
+        );
     }
 
     /**
