@@ -262,7 +262,7 @@ contract Controller is ReentrancyGuard, Ownable {
             address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
             MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
 
-            calculator.isValidState(vault, vault.shortOtokens[0]);
+            require(calculator.isValidState(vault, vault.shortOtokens[0]), "Controller: invalid final vault state");
         }
     }
 
