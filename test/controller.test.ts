@@ -75,9 +75,21 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
 
   describe('Account operator', () => {
     it('should set operator', async () => {
+      assert.equal(
+        await controller.isOperator(accountOwner1, accountOperator1),
+        false,
+        'Address is already an operator',
+      )
+
       await controller.setOperator(accountOperator1, true, {from: accountOwner1})
 
       assert.equal(await controller.isOperator(accountOwner1, accountOperator1), true, 'Operator address mismatch')
+    })
+
+    it('should be able to remove operator', async () => {
+      await controller.setOperator(accountOperator1, false, {from: accountOwner1})
+
+      assert.equal(await controller.isOperator(accountOwner1, accountOperator1), false, 'Operator address mismatch')
     })
   })
 
