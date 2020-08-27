@@ -108,11 +108,24 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
   })
 
   describe('Check if price is finalized', () => {
+    let expiredOtoken: MockOtokenInstance
+
     before(async () => {
       const lockingPeriod = new BigNumber(60) // 1min
       const disputePeriod = new BigNumber(60) // 1min
 
-      const batch = (await controller.getBatchDetails(otoken.address))[0]
+      expiredOtoken = await MockOtoken.new()
+      // init otoken
+      await expiredOtoken.init(
+        weth.address,
+        usdc.address,
+        usdc.address,
+        new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+        new BigNumber(await time.latest()),
+        true,
+      )
+
+      const batch = (await controller.getBatchDetails(expiredOtoken.address))[0]
       // set batch oracle
       await oracle.setBatchOracle(batch, batchOracle.address)
       // set locking and dispute period
@@ -122,42 +135,63 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
 
     it('should return false when price is not pushed to Oracle yet', async () => {
       assert.equal(
-        await controller.isPriceFinalized(otoken.address),
+        await controller.isPriceFinalized(expiredOtoken.address),
         false,
         'Price is not finalized because it is not stored yet',
       )
     })
 
     it('should return false when price is pushed and dispute period not over yet', async () => {
-      const expiryTimestampMock = new BigNumber(await time.latest())
+      //const expiryTimestampMock = new BigNumber(await time.latest())
       const priceMock = new BigNumber('200')
+      const batch = (await controller.getBatchDetails(expiredOtoken.address))[0]
+      const expiryTimestampMock = (await controller.getBatchDetails(expiredOtoken.address))[4]
 
-      const batch = (await controller.getBatchDetails(otoken.address))[0]
       // increase time after locking period
       await time.increase(61)
       await oracle.setBatchUnderlyingPrice(batch, expiryTimestampMock, priceMock)
 
-      const expectedResutl = await oracle.isDisputePeriodOver(batch, expiryTimestampMock)
+      const expectedResutl = false
       assert.equal(
-        await controller.isPriceFinalized(otoken.address),
+        await controller.isPriceFinalized(expiredOtoken.address),
         expectedResutl,
         'Price is not finalized because dispute period is not over yet',
       )
     })
 
-    it('should return true when price is finalized', async () => {
-      const expiryTimestampMock = new BigNumber(await time.latest())
-      const priceMock = new BigNumber('200')
+    describe('Finalized price', () => {
+      it('should return true when price is finalized', async () => {
+        expiredOtoken = await MockOtoken.new()
+        // init otoken
+        await expiredOtoken.init(
+          weth.address,
+          usdc.address,
+          usdc.address,
+          new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+          new BigNumber(await time.latest()),
+          true,
+        )
 
-      const batch = (await controller.getBatchDetails(otoken.address))[0]
-      // increase time after locking period
-      await time.increase(61)
-      await oracle.setBatchUnderlyingPrice(batch, expiryTimestampMock, priceMock)
-      // increase time after dispute period
-      await time.increase(60)
+        const batch = (await controller.getBatchDetails(expiredOtoken.address))[0]
+        // set batch oracle
+        await oracle.setBatchOracle(batch, batchOracle.address)
+        // set locking and dispute period
+        await oracle.setLockingPeriod(batchOracle.address, new BigNumber(60))
+        await oracle.setDisputePeriod(batchOracle.address, new BigNumber(60))
 
-      const expectedResutl = true
-      assert.equal(await controller.isPriceFinalized(otoken.address), expectedResutl, 'Price is not finalized')
+        //const expiryTimestampMock = new BigNumber(await time.latest())
+        const priceMock = new BigNumber('200')
+        const expiryTimestampMock = (await controller.getBatchDetails(expiredOtoken.address))[4]
+
+        // increase time after locking period
+        await time.increase(61)
+        await oracle.setBatchUnderlyingPrice(batch, expiryTimestampMock, priceMock)
+        // increase time after dispute period
+        await time.increase(100)
+
+        const expectedResutl = true
+        assert.equal(await controller.isPriceFinalized(expiredOtoken.address), expectedResutl, 'Price is not finalized')
+      })
     })
   })
 
