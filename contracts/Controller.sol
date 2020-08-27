@@ -280,8 +280,8 @@ contract Controller is ReentrancyGuard, Ownable {
         accountVaultCounter[_args.owner] = accountVaultCounter[_args.owner].add(1);
 
         require(
-            accountVaultCounter[_args.owner] == _args.vaultId,
-            "Controller: can not run actions on different vaults"
+            _args.vaultId < accountVaultCounter[_args.owner],
+            "Controller: can not run actions on inexistent vault"
         );
     }
 
