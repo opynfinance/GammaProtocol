@@ -36,6 +36,8 @@ export const createVault = (
   }
 }
 
+BigNumber.config({EXPONENTIAL_AT: 30})
+
 /**
  * Create a number string that scales numbers to 1e18
  * @param num

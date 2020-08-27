@@ -148,7 +148,7 @@ contract MarginCalculator is Initializable {
     /**
      * @dev calculate spread margin requirement.
      * @dev this value is used
-     * Formula: net = (short amount * short strike) - (long strike * min (short amount, long amount))
+     * marginRequired = min( (short amount * short strike) - (long strike * min (short amount, long amount)) , 0 )
      *
      * @return net value
      */
@@ -158,14 +158,18 @@ contract MarginCalculator is Initializable {
         FixedPointInt256.FixedPointInt memory _shortStrike,
         FixedPointInt256.FixedPointInt memory _longStrike
     ) internal pure returns (FixedPointInt256.FixedPointInt memory) {
-        return _shortAmount.mul(_shortStrike).sub(_longStrike.mul(FixedPointInt256.min(_shortAmount, _longAmount)));
+        return
+            FixedPointInt256.max(
+                _shortAmount.mul(_shortStrike).sub(_longStrike.mul(FixedPointInt256.min(_shortAmount, _longAmount))),
+                FixedPointInt256.FixedPointInt(0)
+            );
     }
 
     /**
      * @dev calculate call spread marigin requirement.
-     *          min (long amount, short amount) * max (0, long strike - short strike)
-     * net =  -------------------------------------------------------------------------- - min(0, long amount - short amount)
-     *                                     long strike
+     *                           (long strike - short strike) * short amount
+     * marginRequired =  max( ------------------------------------------------- , max ( short amount - long amount , 0) )
+     *                                           long strike
      *
      * @dev if long strike = 0 (no long token), then return net = short amount.
      * @return net value
@@ -181,12 +185,22 @@ contract MarginCalculator is Initializable {
         if (_longStrike.isEqual(zero)) {
             return _shortAmount;
         }
-        return
-            FixedPointInt256
-                .min(_longAmount, _shortAmount)
-                .mul(FixedPointInt256.max(zero, _longStrike.sub(_shortStrike)))
-                .div(_longStrike)
-                .sub(FixedPointInt256.min(zero, _longAmount.sub(_shortAmount)));
+
+        /**
+         *             (long strike - short strike) * short amount
+         * calculate  ----------------------------------------------
+         *                             long strike
+         */
+        FixedPointInt256.FixedPointInt memory firstPart = _longStrike.sub(_shortStrike).mul(_shortAmount).div(
+            _longStrike
+        );
+
+        /**
+         * calculate max ( short amount - long amount , 0)
+         */
+        FixedPointInt256.FixedPointInt memory secondPart = FixedPointInt256.max(_shortAmount.sub(_longAmount), zero);
+
+        return FixedPointInt256.max(firstPart, secondPart);
     }
 
     /**
