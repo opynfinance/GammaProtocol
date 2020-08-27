@@ -98,14 +98,8 @@ contract Controller is ReentrancyGuard, Ownable {
      * @param _actions array of actions arguments
      */
     function operate(Actions.ActionArgs[] memory _actions) external isNotPaused nonReentrant {
-        MarginAccount.Vault memory vault = _runActions(_actions);
-
-        address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
-        MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
-
-        if (vault.shortOtokens.length > 0) {
-            calculator.isValidState(vault, vault.shortOtokens[0]);
-        }
+        _runActions(_actions);
+        _verifyFinalState(_actions[0].owner, _actions[0].vaultId);
     }
 
     /**
@@ -235,11 +229,8 @@ contract Controller is ReentrancyGuard, Ownable {
      * @notice Execute actions on a certain vault
      * @dev For each action in the action Array, run the corresponding action
      * @param _actions An array of type Actions.ActionArgs[] which expresses which actions the user want to execute.
-     * @return Vault strcut. The new vault data that has been modified (or null vault if no action affected any vault)
      */
-    function _runActions(Actions.ActionArgs[] memory _actions) internal returns (MarginAccount.Vault memory) {
-        MarginAccount.Vault memory vault;
-
+    function _runActions(Actions.ActionArgs[] memory _actions) internal {
         for (uint256 i = 0; i < _actions.length; i++) {
             Actions.ActionArgs memory action = _actions[i];
             Actions.ActionType actionType = action.actionType;
@@ -257,8 +248,22 @@ contract Controller is ReentrancyGuard, Ownable {
                 _openVault(Actions._parseOpenVaultArgs(action));
             }
         }
+    }
 
-        return vault;
+    /**
+     * @notice verify vault final state after executing all actions
+     * @param _accountOwner account owner address
+     * @param _vaultId vault id related to the vault that will be checked
+     */
+    function _verifyFinalState(address _accountOwner, uint256 _vaultId) internal {
+        MarginAccount.Vault memory vault = vaults[_accountOwner][_vaultId];
+
+        if (vault.shortOtokens.length > 0) {
+            address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
+            MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
+
+            calculator.isValidState(vault, vault.shortOtokens[0]);
+        }
     }
 
     /**
