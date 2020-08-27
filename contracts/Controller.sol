@@ -262,24 +262,6 @@ contract Controller is ReentrancyGuard, Ownable {
     }
 
     /**
-     * @dev check if two vault ids are the same
-     * @param _prevActionVaultId vault id related to a previous action
-     * @param _currActionVaultId vault id related to current action
-     * @param _isActionVaultStored a boolean to indicate if a first check is done or not
-     * @return _currActionVaultId and true to indicate that a check is done
-     */
-    function _checkActionVault(
-        uint256 _prevActionVaultId,
-        uint256 _currActionVaultId,
-        bool _isActionVaultStored
-    ) internal returns (uint256, bool) {
-        if (_isActionVaultStored) {
-            require(_prevActionVaultId == _currActionVaultId, "Controller: can not run actions on different vaults");
-        }
-        return (_currActionVaultId, true);
-    }
-
-    /**
      * @notice open new vault inside an account
      * @dev Only account owner or operator can open a vault
      * @param _args OpenVaultArgs structure
