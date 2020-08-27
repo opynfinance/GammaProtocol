@@ -156,7 +156,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
       // increase time after dispute period
       await time.increase(60)
 
-      const expectedResutl = await oracle.isDisputePeriodOver(batch, expiryTimestampMock)
+      const expectedResutl = true
       assert.equal(await controller.isPriceFinalized(otoken.address), expectedResutl, 'Price is not finalized')
     })
   })
