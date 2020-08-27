@@ -131,6 +131,15 @@ library Actions {
         address to;
     }
 
+    struct CallArgs {
+        // The address of the account owner
+        address owner;
+        // The address of the callee contract
+        address callee;
+        // The data field for external calls
+        bytes data;
+    }
+
     /**
      * @notice Parses the passed in action argmuents to get the argmuents for an open vault action
      * @param _args The general action arguments structure
@@ -254,5 +263,17 @@ library Actions {
         require(_args.owner != address(0), "Actions: cannot settle vault for an invalid account");
 
         return SettleVaultArgs({owner: _args.owner, vaultId: _args.vaultId, to: _args.sender});
+    }
+
+    /**
+     * @notice Parses the passed in action argmuents to get the argmuents for a call action
+     * @param _args The general action arguments structure
+     * @return The arguments for a call action
+     */
+    function _parseCallArgs(ActionArgs memory _args) internal pure returns (CallArgs memory) {
+        require(_args.actionType == ActionType.Call, "Actions: can only parse arguments for call actions");
+        require(_args.sender != address(0), "Actions: target address cannot be address(0)");
+
+        return CallArgs({owner: _args.owner, callee: _args.sender, data: _args.data});
     }
 }
