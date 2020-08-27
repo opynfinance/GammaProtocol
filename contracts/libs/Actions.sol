@@ -3,15 +3,10 @@
  */
 pragma solidity 0.6.10;
 
-import {SafeMath} from "../packages/oz/SafeMath.sol";
-
 /**
  *
  */
-// solhint-disable-next-line no-empty-blocks
 library Actions {
-    using SafeMath for uint256;
-
     // Possible actions that can be performed
     enum ActionType {
         OpenVault,
