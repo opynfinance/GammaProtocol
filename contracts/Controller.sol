@@ -99,14 +99,8 @@ contract Controller is ReentrancyGuard, Ownable {
      * @param _actions array of actions arguments
      */
     function operate(Actions.ActionArgs[] memory _actions) external isNotPaused nonReentrant {
-        MarginAccount.Vault memory vault = _runActions(_actions);
-
-        address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
-        MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
-
-        if (vault.shortOtokens.length > 0) {
-            calculator.isValidState(vault, vault.shortOtokens[0]);
-        }
+        _runActions(_actions);
+        _verifyFinalState(_actions[0].owner, _actions[0].vaultId);
     }
 
     /**
@@ -236,25 +230,22 @@ contract Controller is ReentrancyGuard, Ownable {
      * @notice Execute actions on a certain vault
      * @dev For each action in the action Array, run the corresponding action
      * @param _actions An array of type Actions.ActionArgs[] which expresses which actions the user want to execute.
-     * @return Vault strcut. The new vault data that has been modified (or null vault if no action affected any vault)
      */
-    function _runActions(Actions.ActionArgs[] memory _actions) internal returns (MarginAccount.Vault memory) {
-        MarginAccount.Vault memory vault;
-
+    function _runActions(Actions.ActionArgs[] memory _actions) internal {
         for (uint256 i = 0; i < _actions.length; i++) {
             Actions.ActionArgs memory action = _actions[i];
             Actions.ActionType actionType = action.actionType;
 
-            uint256 actionVaultId;
-            bool isActionVaultStored;
+            uint256 prevActionVaultId;
 
             if (actionType == Actions.ActionType.OpenVault) {
                 // check if this action is manipulating the same vault as all other actions, other than SettleVault
-                (actionVaultId, isActionVaultStored) = _checkActionVault(
-                    actionVaultId,
-                    action.vaultId,
-                    isActionVaultStored
+                require(
+                    prevActionVaultId == 0 || action.vaultId == prevActionVaultId,
+                    "Controller: can not run actions on different vaults"
                 );
+                prevActionVaultId = action.vaultId;
+
                 _openVault(Actions._parseOpenVaultArgs(action));
             }
             if (actionType == Actions.ActionType.DepositLongOption) {
@@ -266,26 +257,22 @@ contract Controller is ReentrancyGuard, Ownable {
                 // _depositLong(Actions._parseDepositArgs(action));
             }
         }
-
-        return vault;
     }
 
     /**
-     * @dev check if two vault ids are the same
-     * @param _prevActionVaultId vault id related to a previous action
-     * @param _currActionVaultId vault id related to current action
-     * @param _isActionVaultStored a boolean to indicate if a first check is done or not
-     * @return _currActionVaultId and true to indicate that a check is done
+     * @notice verify vault final state after executing all actions
+     * @param _accountOwner account owner address
+     * @param _vaultId vault id related to the vault that will be checked
      */
-    function _checkActionVault(
-        uint256 _prevActionVaultId,
-        uint256 _currActionVaultId,
-        bool _isActionVaultStored
-    ) internal returns (uint256, bool) {
-        if (_isActionVaultStored) {
-            require(_prevActionVaultId == _currActionVaultId, "Controller: can not run actions on different vaults");
+    function _verifyFinalState(address _accountOwner, uint256 _vaultId) internal view {
+        MarginAccount.Vault memory vault = vaults[_accountOwner][_vaultId];
+
+        if (vault.shortOtokens.length > 0) {
+            address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
+            MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
+
+            require(calculator.isValidState(vault, vault.shortOtokens[0]), "Controller: invalid final vault state");
         }
-        return (_currActionVaultId, true);
     }
 
     /**
@@ -295,6 +282,11 @@ contract Controller is ReentrancyGuard, Ownable {
      */
     function _openVault(Actions.OpenVaultArgs memory _args) internal isAuthorized(msg.sender, _args.owner) {
         accountVaultCounter[_args.owner] = accountVaultCounter[_args.owner].add(1);
+
+        require(
+            accountVaultCounter[_args.owner] == _args.vaultId,
+            "Controller: can not run actions on different vaults"
+        );
     }
 
     /**
