@@ -14,6 +14,7 @@ import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
 import {OtokenInterface} from "./interfaces/OtokenInterface.sol";
 import {MarginCalculatorInterface} from "./interfaces/MarginCalculatorInterface.sol";
 import {OracleInterface} from "./interfaces/OracleInterface.sol";
+import {WhitelistInterface} from "./interfaces/WhitelistInterface.sol";
 
 /**
  * @author Opyn Team
@@ -255,6 +256,14 @@ contract Controller is ReentrancyGuard, Ownable {
                     isActionVaultStored
                 );
                 _openVault(Actions._parseOpenVaultArgs(action));
+            }
+            if (actionType == Actions.ActionType.DepositLongOption) {
+                (actionVaultId, isActionVaultStored) = _checkActionVault(
+                    actionVaultId,
+                    action.vaultId,
+                    isActionVaultStored
+                );
+                // _depositLong(Actions._parseDepositArgs(action));
             }
         }
 
