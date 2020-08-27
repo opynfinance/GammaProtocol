@@ -1,23 +1,33 @@
-import {MockChainlinkOracleInstance, MockAddressBookInstance, OracleInstance} from '../build/types/truffle-types'
+import {
+  MockChainlinkOracleInstance,
+  MockAddressBookInstance,
+  OracleInstance,
+  MockOtokenInstance,
+} from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
 const {expectRevert, time, BN} = require('@openzeppelin/test-helpers')
 
 const MockChainlinkOracle = artifacts.require('MockChainlinkOracle.sol')
 const MockAddressBook = artifacts.require('MockAddressBook.sol')
+const Otoken = artifacts.require('MockOtoken.sol')
 const Oracle = artifacts.require('Oracle.sol')
 
 // address(0)
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
-contract('Oracle', ([owner, controllerAddress, random]) => {
-  const batch = web3.utils.asciiToHex('ETHUSDCUSDC1596218762')
+contract('Oracle', ([owner, controllerAddress, random, collateral, strike, underlying]) => {
+  // const batch = web3.utils.asciiToHex('ETHUSDCUSDC1596218762')
   // Chainlink mock instance
   let batchOracle: MockChainlinkOracleInstance
   // AddressBook module
   let addressBook: MockAddressBookInstance
   // Oracle module
   let oracle: OracleInstance
+  // otoken
+  let otoken: MockOtokenInstance
+  let batch: string
+  let batchExpiry: BigNumber
 
   before('Deployment', async () => {
     // deploy price feed mock
@@ -28,6 +38,12 @@ contract('Oracle', ([owner, controllerAddress, random]) => {
     await addressBook.setController(controllerAddress, {from: owner})
     // deploy Whitelist module
     oracle = await Oracle.new(addressBook.address, {from: owner})
+
+    otoken = await Otoken.new()
+    batchExpiry = new BigNumber((await time.latest()).toNumber() + time.duration.days(30).toNumber())
+    await otoken.init(underlying, strike, collateral, '200', batchExpiry, true)
+
+    batch = await oracle.getBatchId(otoken.address)
   })
 
   describe('Oracle deployment', () => {
@@ -76,6 +92,12 @@ contract('Oracle', ([owner, controllerAddress, random]) => {
       const expectedResult = false
       assert.equal(isOver, expectedResult, 'locking period check mismatch')
     })
+
+    it('should check isOtokenLockingPeriodOver is not over', async () => {
+      const isOver = await oracle.isOtokenLockingPeriodOver(otoken.address)
+      const expectedResult = false
+      assert.equal(isOver, expectedResult, 'otoken locking period check mismatch')
+    })
   })
 
   describe('Oracle dispute period', () => {
@@ -106,14 +128,13 @@ contract('Oracle', ([owner, controllerAddress, random]) => {
   })
 
   describe('Set batch underlying asset price', () => {
-    let batchExpiry: BigNumber
     let roundBack: BigNumber
     let priorRoundTimestamp: BigNumber
     // expected underlying price at that timestamp
     let batchUnderlyingPrice: BigNumber
 
     before(async () => {
-      batchExpiry = new BigNumber(await time.latest())
+      await time.increaseTo(batchExpiry.toNumber())
       roundBack = new BigNumber(1)
       priorRoundTimestamp = roundBack.plus(1)
       // expected underlying price at that timestamp
@@ -167,6 +188,12 @@ contract('Oracle', ([owner, controllerAddress, random]) => {
         2,
         'batch underlying price on-chain timestamp mismatch',
       )
+    })
+
+    it('getUnderlyingPriceAtExpiry should retun price', async () => {
+      const [price, isFinzalized] = await oracle.getUnderlyingPriceAtExpiry(otoken.address)
+      assert.equal(batchUnderlyingPrice.toString(), price.toString())
+      assert.equal(isFinzalized, false, 'getUnderlyingPriceAtExpiry check mismatch')
     })
 
     it('should revert setting price from controller module if dispute period already started', async () => {
@@ -239,6 +266,12 @@ contract('Oracle', ([owner, controllerAddress, random]) => {
     it('isDisputePeriodOver should retun true when now >  updateTimestamp + disputePeriod', async () => {
       await time.increase(60 * 60)
       const isOver = await oracle.isDisputePeriodOver(batch, batchExpiry)
+      const expectedResult = true
+      assert.equal(isOver, expectedResult, 'dispute period check mismatch')
+    })
+
+    it('isOtokenDisputePeriodOver should retun true when now >  updateTimestamp + disputePeriod', async () => {
+      const isOver = await oracle.isOtokenDisputePeriodOver(otoken.address)
       const expectedResult = true
       assert.equal(isOver, expectedResult, 'dispute period check mismatch')
     })
