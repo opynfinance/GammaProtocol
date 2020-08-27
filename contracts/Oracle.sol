@@ -5,6 +5,7 @@ pragma solidity 0.6.10;
 
 import "./interfaces/AggregatorInterface.sol";
 import "./interfaces/AddressBookInterface.sol";
+import "./interfaces/OtokenInterface.sol";
 import "./packages/oz/Ownable.sol";
 import "./packages/oz/SafeMath.sol";
 
@@ -117,6 +118,18 @@ contract Oracle is Ownable {
     }
 
     /**
+     * @notice check if locking period is over for an otoken
+     * @param _otoken otoken address
+     * @return True if locking period is over, otherwise false
+     */
+    function isOtokenLockingPeriodOver(address _otoken) public view returns (bool) {
+        OtokenInterface otoken = OtokenInterface(_otoken);
+        uint256 expiryTimestamp = otoken.expiryTimestamp();
+        bytes32 batch = getBatchId(otoken);
+        return isLockingPeriodOver(batch, expiryTimestamp);
+    }
+
+    /**
      * @notice check if locking period is over
      * @param _batch A batch is the hash of underlying, collateral, strike and expiry.
      * @param _expiryTimestamp batch expiry
@@ -127,6 +140,18 @@ contract Oracle is Ownable {
         uint256 lockingPeriod = oracleLockingPeriod[oracle];
 
         return now > _expiryTimestamp.add(lockingPeriod);
+    }
+
+    /**
+     * @notice check if dispute period is over
+     * @param _otoken otoken address
+     * @return True if dispute period is over, otherwise false
+     */
+    function isOtokenDisputePeriodOver(address _otoken) external view returns (bool) {
+        OtokenInterface otoken = OtokenInterface(_otoken);
+        uint256 expiryTimestamp = otoken.expiryTimestamp();
+        bytes32 batch = getBatchId(otoken);
+        return isDisputePeriodOver(batch, expiryTimestamp);
     }
 
     /**
@@ -144,7 +169,6 @@ contract Oracle is Ownable {
         if (batchPrice.timestamp == 0) {
             return false;
         }
-
         return now > batchPrice.timestamp.add(disputePeriod);
     }
 
@@ -246,5 +270,21 @@ contract Oracle is Ownable {
         batchPriceAt[_batch][_expiryTimestamp] = Price(price, now);
 
         emit BatchUnderlyingPriceUpdated(_batch, _expiryTimestamp, price, now);
+    }
+
+    /**
+     * @dev hash paramters and get batch id. Same batch id means same product with same expiry.
+     * @param _otoken otoken address
+     * @return id the batchDd of an otoken
+     */
+    function getBatchId(OtokenInterface _otoken) public view returns (bytes32 id) {
+        id = keccak256(
+            abi.encodePacked(
+                _otoken.underlyingAsset(),
+                _otoken.strikeAsset(),
+                _otoken.collateralAsset(),
+                _otoken.expiryTimestamp()
+            )
+        );
     }
 }
