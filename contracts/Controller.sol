@@ -255,7 +255,7 @@ contract Controller is ReentrancyGuard, Ownable {
      * @param _accountOwner account owner address
      * @param _vaultId vault id related to the vault that will be checked
      */
-    function _verifyFinalState(address _accountOwner, uint256 _vaultId) internal {
+    function _verifyFinalState(address _accountOwner, uint256 _vaultId) internal view {
         MarginAccount.Vault memory vault = vaults[_accountOwner][_vaultId];
 
         if (vault.shortOtokens.length > 0) {
