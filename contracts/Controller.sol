@@ -15,6 +15,7 @@ import {OtokenInterface} from "./interfaces/OtokenInterface.sol";
 import {MarginCalculatorInterface} from "./interfaces/MarginCalculatorInterface.sol";
 import {OracleInterface} from "./interfaces/OracleInterface.sol";
 import {WhitelistInterface} from "./interfaces/WhitelistInterface.sol";
+import {MarginPoolInterface} from "./interfaces/MarginPoolInterface.sol";
 
 /**
  * @author Opyn Team
@@ -240,23 +241,26 @@ contract Controller is ReentrancyGuard, Ownable {
 
             if (actionType == Actions.ActionType.OpenVault) {
                 // check if this action is manipulating the same vault as all other actions, other than SettleVault
-                require(
-                    prevActionVaultId == 0 || action.vaultId == prevActionVaultId,
-                    "Controller: can not run actions on different vaults"
-                );
-                prevActionVaultId = action.vaultId;
+                prevActionVaultId = checkActionsVaultId(prevActionVaultId, action.vaultId);
 
                 _openVault(Actions._parseOpenVaultArgs(action));
             }
             if (actionType == Actions.ActionType.DepositLongOption) {
-                (actionVaultId, isActionVaultStored) = _checkActionVault(
-                    actionVaultId,
-                    action.vaultId,
-                    isActionVaultStored
-                );
-                // _depositLong(Actions._parseDepositArgs(action));
+                // check if this action is manipulating the same vault as all other actions, other than SettleVault
+                prevActionVaultId = checkActionsVaultId(prevActionVaultId, action.vaultId);
+
+                _depositLong(Actions._parseDepositArgs(action));
             }
         }
+    }
+
+    function checkActionsVaultId(uint256 _prevActionVaultId, uint256 _actionVaultid) internal view returns (uint256) {
+        require(
+            _prevActionVaultId == 0 || _actionVaultid == _prevActionVaultId,
+            "Controller: can not run actions on different vaults"
+        );
+
+        return _actionVaultid;
     }
 
     /**
@@ -293,7 +297,28 @@ contract Controller is ReentrancyGuard, Ownable {
      * @notice deposit long option into vault
      * @param _args DepositArgs structure
      */
-    // function _depositLong(Actions.DepositArgs memory _args) internal {}
+    function _depositLong(Actions.DepositArgs memory _args) internal {
+        require(_args.from == msg.sender, "Controller: depositor address and msg.sender address mismatch");
+
+        address whitelistModule = AddressBookInterface(addressBook).getWhitelist();
+        WhitelistInterface whitelist = WhitelistInterface(whitelistModule);
+
+        require(
+            whitelist.isWhitelistedOtoken(_args.asset),
+            "Controller: otoken is not whitelisted to be used as collateral"
+        );
+
+        OtokenInterface otoken = OtokenInterface(_args.asset);
+
+        require(now > otoken.expiryTimestamp(), "Controller: otoken used as collateral is already expired");
+
+        vaults[_args.owner][_args.vaultId]._addLong(address(otoken), _args.amount, _args.index);
+
+        address marginPoolModule = AddressBookInterface(addressBook).getMarginPool();
+        MarginPoolInterface marginPool = MarginPoolInterface(marginPoolModule);
+
+        marginPool.transferToPool(address(otoken), _args.from, _args.amount);
+    }
 
     /**
      * @notice withdraw long option from vault
