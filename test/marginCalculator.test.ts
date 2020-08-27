@@ -28,6 +28,7 @@ contract('MarginCalculator', () => {
   let eth300Call: MockOtokenInstance
   let eth250Call: MockOtokenInstance
   let eth200Call: MockOtokenInstance
+  let eth100Call: MockOtokenInstance
   let usdc: MockERC20Instance
   let dai: MockERC20Instance
   let weth: MockERC20Instance
@@ -60,9 +61,11 @@ contract('MarginCalculator', () => {
     eth300Call = await MockOtoken.new()
     eth250Call = await MockOtoken.new()
     eth200Call = await MockOtoken.new()
+    eth100Call = await MockOtoken.new()
     await eth300Call.init(weth.address, usdc.address, weth.address, createScaledNumber(300), expiry, false)
     await eth250Call.init(weth.address, usdc.address, weth.address, createScaledNumber(250), expiry, false)
     await eth200Call.init(weth.address, usdc.address, weth.address, createScaledNumber(200), expiry, false)
+    await eth100Call.init(weth.address, usdc.address, weth.address, createScaledNumber(100), expiry, false)
   })
 
   describe('Get cash value tests', () => {
@@ -562,6 +565,76 @@ contract('MarginCalculator', () => {
         const [netValue, isExcess] = await calculator.getExcessMargin(vault, weth.address)
         assert.equal(isExcess, false)
         assert.equal(netValue.toString(), createScaledNumber(2))
+      })
+
+      it('(10) Short: 1 200 call, long: 1 200 call => need 0.5 weth ', async () => {
+        const vault = createVault(
+          eth200Call.address,
+          eth200Call.address,
+          weth.address,
+          createScaledNumber(1),
+          createScaledNumber(1),
+          createScaledNumber(0.5),
+        )
+        const [netValue, isExcess] = await calculator.getExcessMargin(vault, weth.address)
+        assert.equal(isExcess, true)
+        assert.equal(netValue.toString(), createScaledNumber(0.5))
+      })
+
+      it('(11) Short: 4 100 call, long: 1 300 call => need 3 weth ', async () => {
+        const vault = createVault(
+          eth100Call.address,
+          eth300Call.address,
+          weth.address,
+          createScaledNumber(4),
+          amountOne,
+          0,
+        )
+        const [netValue, isExcess] = await calculator.getExcessMargin(vault, weth.address)
+        assert.equal(isExcess, false)
+        assert.equal(netValue.toString(), createScaledNumber(3))
+      })
+
+      it('(12) Short: 2 200 call, long: 1 250 call => need 1 weth ', async () => {
+        const vault = createVault(
+          eth200Call.address,
+          eth250Call.address,
+          weth.address,
+          createScaledNumber(2),
+          amountOne,
+          0,
+        )
+        const [netValue, isExcess] = await calculator.getExcessMargin(vault, weth.address)
+        assert.equal(isExcess, false)
+        assert.equal(netValue.toString(), createScaledNumber(1))
+      })
+
+      it('(13) Short: 3 200 call, long: 1 250 call => need 2 weth ', async () => {
+        const vault = createVault(
+          eth200Call.address,
+          eth250Call.address,
+          weth.address,
+          createScaledNumber(3),
+          amountOne,
+          0,
+        )
+        const [netValue, isExcess] = await calculator.getExcessMargin(vault, weth.address)
+        assert.equal(isExcess, false)
+        assert.equal(netValue.toString(), createScaledNumber(2))
+      })
+
+      it('(14) Short: 3 250 call, long: 1 200 call => need 1 weth ', async () => {
+        const vault = createVault(
+          eth100Call.address,
+          eth200Call.address,
+          weth.address,
+          createScaledNumber(2),
+          amountOne,
+          0,
+        )
+        const [netValue, isExcess] = await calculator.getExcessMargin(vault, weth.address)
+        assert.equal(isExcess, false)
+        assert.equal(netValue.toString(), createScaledNumber(1))
       })
     })
 
