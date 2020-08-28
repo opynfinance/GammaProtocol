@@ -101,7 +101,7 @@ contract Controller is ReentrancyGuard, Ownable {
      */
     function operate(Actions.ActionArgs[] memory _actions) external isNotPaused nonReentrant {
         MarginAccount.Vault memory vault = _runActions(_actions);
-        //_verifyFinalState(vault);
+        _verifyFinalState(vault);
     }
 
     /**
