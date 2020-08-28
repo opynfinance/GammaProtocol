@@ -20,6 +20,11 @@ contract ChainLinkPricer is OpynPricerInterface, Ownable {
         oracle = OracleInterface(_oracle);
     }
 
+    /**
+     * @notice set aggregator address for an asset
+     * @param _asset asset address
+     * @param _aggregator chainlink aggregator address
+     */
     function setAggregator(address _asset, address _aggregator) external onlyOwner {
         require(_aggregator != address(0), "ChainLinkPricer: Cannot set 0 address");
         assetAggregator[_asset] = _aggregator;
@@ -27,6 +32,7 @@ contract ChainLinkPricer is OpynPricerInterface, Ownable {
 
     /**
      * @notice get live price for a asset.
+     * @dev ovverides the getPrice function in OpynPricerInterface.
      * @param _asset the address of the asset
      */
     function getPrice(address _asset) external override view returns (uint256) {
