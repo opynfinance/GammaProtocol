@@ -148,7 +148,7 @@ contract MarginCalculator is Initializable {
     /**
      * @dev calculate spread margin requirement.
      * @dev this value is used
-     * marginRequired = min( (short amount * short strike) - (long strike * min (short amount, long amount)) , 0 )
+     * marginRequired = max( (short amount * short strike) - (long strike * min (short amount, long amount)) , 0 )
      *
      * @return net value
      */
