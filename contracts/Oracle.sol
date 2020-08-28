@@ -3,10 +3,7 @@
  */
 pragma solidity 0.6.10;
 
-import "./interfaces/AggregatorInterface.sol";
 import "./interfaces/AddressBookInterface.sol";
-import "./interfaces/OtokenInterface.sol";
-import "./interfaces/OpynPricerInterface.sol";
 import "./packages/oz/Ownable.sol";
 import "./packages/oz/SafeMath.sol";
 
