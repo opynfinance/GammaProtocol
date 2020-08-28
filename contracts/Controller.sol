@@ -238,12 +238,12 @@ contract Controller is ReentrancyGuard, Ownable {
     function _runActions(Actions.ActionArgs[] memory _actions) internal returns (MarginAccount.Vault memory) {
         MarginAccount.Vault memory vault;
 
+        uint256 prevActionVaultId;
+        bool isActionVaultStored;
+
         for (uint256 i = 0; i < _actions.length; i++) {
             Actions.ActionArgs memory action = _actions[i];
             Actions.ActionType actionType = action.actionType;
-
-            uint256 prevActionVaultId;
-            bool isActionVaultStored;
 
             if (actionType == Actions.ActionType.OpenVault) {
                 // check if this action is manipulating the same vault as all other actions, other than SettleVault
@@ -288,6 +288,7 @@ contract Controller is ReentrancyGuard, Ownable {
         if (_isActionVaultStored) {
             require(_prevActionVaultId == _currActionVaultId, "Controller: can not run actions on different vaults");
         }
+
         return (_currActionVaultId, true);
     }
 
