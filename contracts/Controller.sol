@@ -100,8 +100,8 @@ contract Controller is ReentrancyGuard, Ownable {
      * @param _actions array of actions arguments
      */
     function operate(Actions.ActionArgs[] memory _actions) external isNotPaused nonReentrant {
-        _runActions(_actions);
-        _verifyFinalState(_actions[0].owner, _actions[0].vaultId);
+        MarginAccount.Vault memory vault = _runActions(_actions);
+        _verifyFinalState(vault);
     }
 
     /**
@@ -163,17 +163,7 @@ contract Controller is ReentrancyGuard, Ownable {
         address oracleModule = AddressBookInterface(addressBook).getOracle();
         OracleInterface oracle = OracleInterface(oracleModule);
 
-        OtokenInterface otoken = OtokenInterface(_otoken);
-
-        address otokenUnderlyingAsset = otoken.underlyingAsset();
-        address otokenStrikeAsset = otoken.strikeAsset();
-        address otokenCollateralAsset = otoken.collateralAsset();
-        uint256 otokenExpiryTimestamp = otoken.expiryTimestamp();
-
-        bytes32 batch = keccak256(
-            abi.encode(otokenUnderlyingAsset, otokenStrikeAsset, otokenCollateralAsset, otokenExpiryTimestamp)
-        );
-
+        (bytes32 batch, , , , uint256 otokenExpiryTimestamp) = getBatchDetails(_otoken);
         return oracle.isDisputePeriodOver(batch, otokenExpiryTimestamp);
     }
 
@@ -181,20 +171,35 @@ contract Controller is ReentrancyGuard, Ownable {
      * @notice get batch for a specific otoken address
      * @dev batch is the hash of option underlying, strike, collateral assets and the expiry timestamp
      * @param _otoken otoken address
-     * @return batch hash in bytes32
+     * @return batch hash in bytes32, batch underlying asset, batch strike asset, batch collateral asset, batch expiry timestamp
      */
-    function getBatch(address _otoken) external view returns (bytes32) {
+    function getBatchDetails(address _otoken)
+        public
+        view
+        returns (
+            bytes32,
+            address,
+            address,
+            address,
+            uint256
+        )
+    {
         OtokenInterface otoken = OtokenInterface(_otoken);
 
-        return
+        address otokenUnderlyingAsset = otoken.underlyingAsset();
+        address otokenStrikeAsset = otoken.strikeAsset();
+        address otokenCollateralAsset = otoken.collateralAsset();
+        uint256 otokenExpiryTimestamp = otoken.expiryTimestamp();
+
+        return (
             keccak256(
-                abi.encode(
-                    otoken.underlyingAsset(),
-                    otoken.strikeAsset(),
-                    otoken.collateralAsset(),
-                    otoken.expiryTimestamp()
-                )
-            );
+                abi.encode(otokenUnderlyingAsset, otokenStrikeAsset, otokenCollateralAsset, otokenExpiryTimestamp)
+            ),
+            otokenUnderlyingAsset,
+            otokenStrikeAsset,
+            otokenCollateralAsset,
+            otokenExpiryTimestamp
+        );
     }
 
     /**
@@ -232,16 +237,23 @@ contract Controller is ReentrancyGuard, Ownable {
      * @dev For each action in the action Array, run the corresponding action
      * @param _actions An array of type Actions.ActionArgs[] which expresses which actions the user want to execute.
      */
-    function _runActions(Actions.ActionArgs[] memory _actions) internal {
+    function _runActions(Actions.ActionArgs[] memory _actions) internal returns (MarginAccount.Vault memory) {
+        MarginAccount.Vault memory vault;
+
         for (uint256 i = 0; i < _actions.length; i++) {
             Actions.ActionArgs memory action = _actions[i];
             Actions.ActionType actionType = action.actionType;
 
             uint256 prevActionVaultId;
+            bool isActionVaultStored;
 
             if (actionType == Actions.ActionType.OpenVault) {
                 // check if this action is manipulating the same vault as all other actions, other than SettleVault
-                prevActionVaultId = checkActionsVaultId(prevActionVaultId, action.vaultId);
+                (prevActionVaultId, isActionVaultStored) = _checkActionsVaults(
+                    prevActionVaultId,
+                    action.vaultId,
+                    isActionVaultStored
+                );
 
                 _openVault(Actions._parseOpenVaultArgs(action));
             }
@@ -252,6 +264,8 @@ contract Controller is ReentrancyGuard, Ownable {
                 _depositLong(Actions._parseDepositArgs(action));
             }
         }
+
+        return vault;
     }
 
     function checkActionsVaultId(uint256 _prevActionVaultId, uint256 _actionVaultid) internal view returns (uint256) {
@@ -265,18 +279,33 @@ contract Controller is ReentrancyGuard, Ownable {
 
     /**
      * @notice verify vault final state after executing all actions
-     * @param _accountOwner account owner address
-     * @param _vaultId vault id related to the vault that will be checked
+     * @param _vault final vault state
      */
-    function _verifyFinalState(address _accountOwner, uint256 _vaultId) internal view {
-        MarginAccount.Vault memory vault = vaults[_accountOwner][_vaultId];
-
-        if (vault.shortOtokens.length > 0) {
+    function _verifyFinalState(MarginAccount.Vault memory _vault) internal view {
+        if (_vault.shortOtokens.length > 0) {
             address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
             MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
 
-            require(calculator.isValidState(vault, vault.shortOtokens[0]), "Controller: invalid final vault state");
+            require(calculator.isValidState(_vault, _vault.shortOtokens[0]), "Controller: invalid final vault state");
         }
+    }
+
+    /**
+     * @dev check that prev vault id is equal to current vault id
+     * @param _prevActionVaultId previous vault id
+     * @param _currActionVaultId current vault id
+     * @param _isActionVaultStored a bool to indicate if a first check is done or not
+     * @return current vault id and true as first check is done
+     */
+    function _checkActionsVaults(
+        uint256 _prevActionVaultId,
+        uint256 _currActionVaultId,
+        bool _isActionVaultStored
+    ) internal pure returns (uint256, bool) {
+        if (_isActionVaultStored) {
+            require(_prevActionVaultId == _currActionVaultId, "Controller: can not run actions on different vaults");
+        }
+        return (_currActionVaultId, true);
     }
 
     /**
@@ -288,8 +317,8 @@ contract Controller is ReentrancyGuard, Ownable {
         accountVaultCounter[_args.owner] = accountVaultCounter[_args.owner].add(1);
 
         require(
-            accountVaultCounter[_args.owner] == _args.vaultId,
-            "Controller: can not run actions on different vaults"
+            _args.vaultId == accountVaultCounter[_args.owner],
+            "Controller: can not run actions on inexistent vault"
         );
     }
 

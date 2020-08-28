@@ -9,7 +9,7 @@ import {
 } from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
-const {expectRevert} = require('@openzeppelin/test-helpers')
+const {expectRevert, time} = require('@openzeppelin/test-helpers')
 
 const MockERC20 = artifacts.require('MockERC20.sol')
 const MockOtoken = artifacts.require('MockOtoken.sol')
@@ -96,9 +96,21 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
 
   describe('Account operator', () => {
     it('should set operator', async () => {
+      assert.equal(
+        await controller.isOperator(accountOwner1, accountOperator1),
+        false,
+        'Address is already an operator',
+      )
+
       await controller.setOperator(accountOperator1, true, {from: accountOwner1})
 
       assert.equal(await controller.isOperator(accountOwner1, accountOperator1), true, 'Operator address mismatch')
+    })
+
+    it('should be able to remove operator', async () => {
+      await controller.setOperator(accountOperator1, false, {from: accountOwner1})
+
+      assert.equal(await controller.isOperator(accountOwner1, accountOperator1), false, 'Operator address mismatch')
     })
   })
 
@@ -124,7 +136,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
           owner: accountOwner1,
           sender: random,
           asset: ZERO_ADDR,
-          vaultId: '0',
+          vaultId: '1',
           amount: '0',
           index: '0',
           data: ZERO_ADDR,
@@ -133,6 +145,25 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
       await expectRevert(
         controller.operate(actionArgs, {from: random}),
         'Controller: msg.sender is not authorized to run action',
+      )
+    })
+
+    it('should revert opening a vault a vault with id equal to zero', async () => {
+      const actionArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: accountOwner1,
+          sender: accountOwner1,
+          asset: ZERO_ADDR,
+          vaultId: '0',
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+      await expectRevert(
+        controller.operate(actionArgs, {from: accountOwner1}),
+        'Controller: can not run actions on inexistent vault',
       )
     })
 
@@ -146,7 +177,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
           owner: accountOwner1,
           sender: accountOwner1,
           asset: ZERO_ADDR,
-          vaultId: '1',
+          vaultId: vaultCounterBefore.toNumber() + 1,
           amount: '0',
           index: '0',
           data: ZERO_ADDR,
@@ -159,6 +190,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
     })
 
     it('should open vault from account operator', async () => {
+      await controller.setOperator(accountOperator1, true, {from: accountOwner1})
       assert.equal(await controller.isOperator(accountOwner1, accountOperator1), true, 'Operator address mismatch')
 
       const vaultCounterBefore = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
@@ -169,7 +201,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
           owner: accountOwner1,
           sender: accountOperator1,
           asset: ZERO_ADDR,
-          vaultId: '2',
+          vaultId: vaultCounterBefore.toNumber() + 1,
           amount: '0',
           index: '0',
           data: ZERO_ADDR,
@@ -182,30 +214,113 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
     })
   })
 
-  describe('Price', () => {
+  describe('Check if price is finalized', () => {
+    let expiredOtoken: MockOtokenInstance
+
     before(async () => {
-      const batch = await controller.getBatch(otoken.address)
-      const expiryTimestampMock = new BigNumber('1598374220')
-      const priceMock = new BigNumber('200')
+      const lockingPeriod = new BigNumber(60) // 1min
       const disputePeriod = new BigNumber(60) // 1min
 
+      expiredOtoken = await MockOtoken.new()
+      // init otoken
+      await expiredOtoken.init(
+        weth.address,
+        usdc.address,
+        usdc.address,
+        new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+        new BigNumber(await time.latest()),
+        true,
+      )
+
+      const batch = (await controller.getBatchDetails(expiredOtoken.address))[0]
+      // set batch oracle
       await oracle.setBatchOracle(batch, batchOracle.address)
+      // set locking and dispute period
+      await oracle.setLockingPeriod(batchOracle.address, lockingPeriod)
       await oracle.setDisputePeriod(batchOracle.address, disputePeriod)
-      await oracle.setBatchUnderlyingPrice(batch, expiryTimestampMock, priceMock)
     })
 
-    it('should check if price is finalized or not', async () => {
-      const batch = await controller.getBatch(otoken.address)
-      const otokenExpiryTimestamp = new BigNumber('1598374220')
+    it('should return false when price is not pushed to Oracle yet', async () => {
+      assert.equal(
+        await controller.isPriceFinalized(expiredOtoken.address),
+        false,
+        'Price is not finalized because it is not stored yet',
+      )
+    })
 
-      const expectedResutl = await oracle.isDisputePeriodOver(batch, otokenExpiryTimestamp)
-      assert.equal(await controller.isPriceFinalized(otoken.address), expectedResutl, 'Price is not finalized')
+    it('should return false when price is pushed and dispute period not over yet', async () => {
+      //const expiryTimestampMock = new BigNumber(await time.latest())
+      const priceMock = new BigNumber('200')
+      const batch = (await controller.getBatchDetails(expiredOtoken.address))[0]
+      const expiryTimestampMock = (await controller.getBatchDetails(expiredOtoken.address))[4]
+
+      // increase time after locking period
+      await time.increase(61)
+      await oracle.setBatchUnderlyingPrice(batch, expiryTimestampMock, priceMock)
+
+      const expectedResutl = false
+      assert.equal(
+        await controller.isPriceFinalized(expiredOtoken.address),
+        expectedResutl,
+        'Price is not finalized because dispute period is not over yet',
+      )
+    })
+
+    describe('Finalized price', () => {
+      it('should return true when price is finalized', async () => {
+        expiredOtoken = await MockOtoken.new()
+        // init otoken
+        await expiredOtoken.init(
+          weth.address,
+          usdc.address,
+          usdc.address,
+          new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+          new BigNumber(await time.latest()),
+          true,
+        )
+
+        const batch = (await controller.getBatchDetails(expiredOtoken.address))[0]
+        // set batch oracle
+        await oracle.setBatchOracle(batch, batchOracle.address)
+        // set locking and dispute period
+        await oracle.setLockingPeriod(batchOracle.address, new BigNumber(60))
+        await oracle.setDisputePeriod(batchOracle.address, new BigNumber(60))
+
+        //const expiryTimestampMock = new BigNumber(await time.latest())
+        const priceMock = new BigNumber('200')
+        const expiryTimestampMock = (await controller.getBatchDetails(expiredOtoken.address))[4]
+
+        // increase time after locking period
+        await time.increase(61)
+        await oracle.setBatchUnderlyingPrice(batch, expiryTimestampMock, priceMock)
+        // increase time after dispute period
+        await time.increase(100)
+
+        const expectedResutl = true
+        assert.equal(await controller.isPriceFinalized(expiredOtoken.address), expectedResutl, 'Price is not finalized')
+      })
     })
   })
 
   describe('Expiry', () => {
-    it('should check if otoken expired', async () => {
+    it('should return false for non expired otoken', async () => {
       assert.equal(await controller.isExpired(otoken.address), false, 'Otoken expiry check mismatch')
+    })
+
+    it('should return true for expired otoken', async () => {
+      // Otoken deployment
+      const expiredOtoken = await MockOtoken.new()
+      // init otoken
+      await expiredOtoken.init(
+        weth.address,
+        usdc.address,
+        usdc.address,
+        new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+        1219835219,
+        true,
+      )
+
+      assert.equal(await controller.isExpired(expiredOtoken.address), true, 'Otoken expiry check mismatch')
     })
   })
 
