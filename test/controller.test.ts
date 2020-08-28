@@ -136,7 +136,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
           owner: accountOwner1,
           sender: random,
           asset: ZERO_ADDR,
-          vaultId: '0',
+          vaultId: '1',
           amount: '0',
           index: '0',
           data: ZERO_ADDR,
@@ -145,6 +145,25 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
       await expectRevert(
         controller.operate(actionArgs, {from: random}),
         'Controller: msg.sender is not authorized to run action',
+      )
+    })
+
+    it('should revert opening a vault a vault with id equal to zero', async () => {
+      const actionArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: accountOwner1,
+          sender: accountOwner1,
+          asset: ZERO_ADDR,
+          vaultId: '0',
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+      await expectRevert(
+        controller.operate(actionArgs, {from: accountOwner1}),
+        'Controller: can not run actions on inexistent vault',
       )
     })
 
@@ -158,7 +177,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
           owner: accountOwner1,
           sender: accountOwner1,
           asset: ZERO_ADDR,
-          vaultId: vaultCounterBefore.toNumber(),
+          vaultId: vaultCounterBefore.toNumber() + 1,
           amount: '0',
           index: '0',
           data: ZERO_ADDR,
@@ -182,7 +201,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
           owner: accountOwner1,
           sender: accountOperator1,
           asset: ZERO_ADDR,
-          vaultId: vaultCounterBefore.toNumber(),
+          vaultId: vaultCounterBefore.toNumber() + 1,
           amount: '0',
           index: '0',
           data: ZERO_ADDR,

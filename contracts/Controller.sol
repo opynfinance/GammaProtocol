@@ -241,14 +241,15 @@ contract Controller is ReentrancyGuard, Ownable {
             Actions.ActionType actionType = action.actionType;
 
             uint256 prevActionVaultId;
+            bool isActionVaultStored;
 
             if (actionType == Actions.ActionType.OpenVault) {
                 // check if this action is manipulating the same vault as all other actions, other than SettleVault
-                require(
-                    prevActionVaultId == 0 || action.vaultId == prevActionVaultId,
-                    "Controller: can not run actions on different vaults"
+                (prevActionVaultId, isActionVaultStored) = _checkActionsVaults(
+                    prevActionVaultId,
+                    action.vaultId,
+                    isActionVaultStored
                 );
-                prevActionVaultId = action.vaultId;
 
                 _openVault(Actions._parseOpenVaultArgs(action));
             }
@@ -272,6 +273,24 @@ contract Controller is ReentrancyGuard, Ownable {
     }
 
     /**
+     * @dev check that prev vault id is equal to current vault id
+     * @param _prevActionVaultId previous vault id
+     * @param _currActionVaultId current vault id
+     * @param _isActionVaultStored a bool to indicate if a first check is done or not
+     * @return current vault id and true as first check is done
+     */
+    function _checkActionsVaults(
+        uint256 _prevActionVaultId,
+        uint256 _currActionVaultId,
+        bool _isActionVaultStored
+    ) internal pure returns (uint256, bool) {
+        if (_isActionVaultStored) {
+            require(_prevActionVaultId == _currActionVaultId, "Controller: can not run actions on different vaults");
+        }
+        return (_currActionVaultId, true);
+    }
+
+    /**
      * @notice open new vault inside an account
      * @dev Only account owner or operator can open a vault
      * @param _args OpenVaultArgs structure
@@ -280,7 +299,7 @@ contract Controller is ReentrancyGuard, Ownable {
         accountVaultCounter[_args.owner] = accountVaultCounter[_args.owner].add(1);
 
         require(
-            _args.vaultId < accountVaultCounter[_args.owner],
+            _args.vaultId == accountVaultCounter[_args.owner],
             "Controller: can not run actions on inexistent vault"
         );
     }
