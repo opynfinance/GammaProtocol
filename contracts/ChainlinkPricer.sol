@@ -42,7 +42,7 @@ contract ChainLinkPricer is OpynPricerInterface, Ownable {
         require(assetAggregator[_asset] != address(0), "ChainLinkPricer: aggregator for the asset not set.");
         int256 answer = AggregatorInterface(assetAggregator[_asset]).latestAnswer();
         require(answer > 0, "ChainLinkPricer: price is lower than 0");
-        // todo: scaled to 10e18 // 39010460929
+        // Scaled to 1e18 from 1e8
         return uint256(answer * 1e10);
     }
 
