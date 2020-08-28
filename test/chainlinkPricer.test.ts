@@ -6,7 +6,7 @@ import {
 } from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
-const {expectRevert, time, BN} = require('@openzeppelin/test-helpers')
+const {expectRevert, time} = require('@openzeppelin/test-helpers')
 
 const ChainlinkPricer = artifacts.require('ChainLinkPricer.sol')
 const MockOracle = artifacts.require('MockOracle.sol')

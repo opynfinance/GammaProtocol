@@ -67,15 +67,6 @@ contract Oracle is Ownable {
     }
 
     /**
-     * @notice check if the sender is the Controller module
-     */
-    modifier onlyController() {
-        require(msg.sender == AddressBookInterface(addressBook).getController(), "Oracle: Sender is not Controller");
-
-        _;
-    }
-
-    /**
      * @notice get the asset price at specific expiry timestamp.
      * @param _asset the asset want to get price at.
      * @param _expiryTimestamp expiry timestamp
@@ -138,15 +129,14 @@ contract Oracle is Ownable {
      * @return True if dispute period is over, otherwise false
      */
     function isDisputePeriodOver(address _asset, uint256 _expiryTimestamp) public view returns (bool) {
-        address pricer = assetPricer[_asset];
-        uint256 disputePeriod = pricerDisputePeriod[pricer];
-
-        // check if someone has submit the price at this tiestamp
+        // check if the pricer has submitted the price at this tiestamp
         Price memory price = storedPrice[_asset][_expiryTimestamp];
-
         if (price.timestamp == 0) {
             return false;
         }
+
+        address pricer = assetPricer[_asset];
+        uint256 disputePeriod = pricerDisputePeriod[pricer];
         return now > price.timestamp.add(disputePeriod);
     }
 
@@ -157,6 +147,7 @@ contract Oracle is Ownable {
      * @param _pricer pricer address
      */
     function setAssetPricer(address _asset, address _pricer) external onlyOwner {
+        require(_pricer != address(0), "Oracle: cannot set pricer to address(0)");
         assetPricer[_asset] = _pricer;
 
         emit PricerUpdated(_asset, _asset);
@@ -219,7 +210,7 @@ contract Oracle is Ownable {
         uint256 _expiryTimestamp,
         uint256 _price
     ) external {
-        require(msg.sender == assetPricer[_asset]);
+        require(msg.sender == assetPricer[_asset], "Oracle: caller is not the pricer");
         require(isLockingPeriodOver(_asset, _expiryTimestamp), "Oracle: locking period is not over yet");
         require(storedPrice[_asset][_expiryTimestamp].timestamp == 0, "Oracle: dispute period started");
 
