@@ -63,9 +63,9 @@ contract MarginCalculator is Initializable {
         returns (uint256 netValue, bool isExcess)
     {
         // ensure the number of collateral, long and short array is valid.
-        _checkAssetCount(_vault);
+        _checkIsValidSpread(_vault);
         // ensure the long asset is valid for the short asset.
-        _checkLongAsset(_vault);
+        _checkIsMarginableLong(_vault);
 
         // collateral amount is always positive.
         FixedPointInt256.FixedPointInt memory collateralAmount = _vault.collateralAmounts.length > 0
@@ -237,13 +237,13 @@ contract MarginCalculator is Initializable {
     }
 
     /**
-     * @dev ensure that there is
+     * @dev ensure that the vault contains
      * a) at most 1 asset type used as collateral,
      * b) at most 1 series of option used as the long option and
      * c) at most 1 series of option used as the short option.
      * @param _vault the vault to check.
      */
-    function _checkAssetCount(MarginAccount.Vault memory _vault) internal pure {
+    function _checkIsValidSpread(MarginAccount.Vault memory _vault) internal pure {
         require(_vault.shortOtokens.length <= 1, "MarginCalculator: Too many short otokens in the vault.");
         require(_vault.longOtokens.length <= 1, "MarginCalculator: Too many long otokens in the vault.");
         require(_vault.collateralAssets.length <= 1, "MarginCalculator: Too many collateral assets in the vault.");
@@ -266,7 +266,7 @@ contract MarginCalculator is Initializable {
      * @dev if there is a short option in the vault, ensure that the long option series being used is a valid margin.
      * @param _vault the vault to check.
      */
-    function _checkLongAsset(MarginAccount.Vault memory _vault) internal view {
+    function _checkIsMarginableLong(MarginAccount.Vault memory _vault) internal view {
         if (_vault.longOtokens.length == 0 || _vault.shortOtokens.length == 0) return;
 
         OtokenInterface long = OtokenInterface(_vault.longOtokens[0]);
