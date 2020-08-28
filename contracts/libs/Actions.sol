@@ -6,7 +6,6 @@ pragma solidity 0.6.10;
 /**
  *
  */
-// solhint-disable-next-line no-empty-blocks
 library Actions {
     // Possible actions that can be performed
     enum ActionType {
@@ -75,8 +74,10 @@ library Actions {
     }
 
     struct OpenVaultArgs {
-        // The address of the account owner
+        // address of the account that the vault belong to
         address owner;
+        // vault id
+        uint256 vaultId;
     }
 
     struct DepositArgs {
@@ -148,7 +149,7 @@ library Actions {
         require(_args.actionType == ActionType.OpenVault, "Actions: can only parse arguments for open vault actions");
         require(_args.owner != address(0), "Actions: cannot open vault for an invalid account");
 
-        return OpenVaultArgs({owner: _args.owner});
+        return OpenVaultArgs({owner: _args.owner, vaultId: _args.vaultId});
     }
 
     /**

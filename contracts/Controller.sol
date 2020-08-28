@@ -7,15 +7,21 @@ pragma experimental ABIEncoderV2;
 
 import {Ownable} from "./packages/oz/Ownable.sol";
 import {SafeMath} from "./packages/oz/SafeMath.sol";
+import {ReentrancyGuard} from "./packages/oz/ReentrancyGuard.sol";
 import {MarginAccount} from "./libs/MarginAccount.sol";
 import {Actions} from "./libs/Actions.sol";
+import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
+import {OtokenInterface} from "./interfaces/OtokenInterface.sol";
+import {MarginCalculatorInterface} from "./interfaces/MarginCalculatorInterface.sol";
+import {OracleInterface} from "./interfaces/OracleInterface.sol";
 
 /**
  * @author Opyn Team
  * @title Controller
  * @notice contract that
  */
-contract Controller is Ownable {
+contract Controller is ReentrancyGuard, Ownable {
+    using MarginAccount for MarginAccount.Vault;
     using SafeMath for uint256;
 
     /// @notice the protocol state, if true, then all protocol functionality are paused.
@@ -25,7 +31,7 @@ contract Controller is Ownable {
     address internal addressBook;
 
     /// @dev mapping between owner address and account structure
-    mapping(address => MarginAccount.Account) internal accounts;
+    mapping(address => uint256) internal accountVaultCounter;
     /// @dev mapping between owner address and specific vault using vaultId
     mapping(address => mapping(uint256 => MarginAccount.Vault)) internal vaults;
     /// @dev mapping between account owner and account operator
@@ -36,7 +42,7 @@ contract Controller is Ownable {
      * @param _addressBook adressbook module
      */
     constructor(address _addressBook) public {
-        require(_addressBook != address(0), "Invalid address book");
+        require(_addressBook != address(0), "Controller: Invalid address book");
 
         addressBook = _addressBook;
     }
@@ -47,25 +53,25 @@ contract Controller is Ownable {
     /**
      * @notice modifier check if protocol is not paused
      */
-    // modifier isNotPaused {
-    //     _;
-    // }
+    modifier isNotPaused {
+        require(!systemPaused, "Controller: system is paused");
+
+        _;
+    }
 
     /**
-     * @notice modifier to check if otoken is expired
-     * @param _otoken otoken address
-     */
-    // modifier isExpired(address _otoken) {
-    //     _;
-    // }
-
-    /**
-     * @notice modifier to check if sender is an authorized vault operator
+     * @notice modifier to check if sender is an account owner or an authorized account operator
      * @param _sender sender address
+     * @param _accountOwner account owner address
      */
-    // modifier isAuthorized(address _sender) {
-    //     _;
-    // }
+    modifier isAuthorized(address _sender, address _accountOwner) {
+        require(
+            (_sender == _accountOwner) || (operators[_accountOwner][_sender]),
+            "Controller: msg.sender is not authorized to run action"
+        );
+
+        _;
+    }
 
     /**
      * @notice allows admin to toggle pause / emergency shutdown
@@ -91,8 +97,10 @@ contract Controller is Ownable {
      * @dev can only be called when system is not paused
      * @param _actions array of actions arguments
      */
-    // function operate(Actions.ActionArgs[] memory _actions) external isNotPaused {
-    // }
+    function operate(Actions.ActionArgs[] memory _actions) external isNotPaused nonReentrant {
+        MarginAccount.Vault memory vault = _runActions(_actions);
+        _verifyFinalState(vault);
+    }
 
     /**
      * @notice Iterate through a collateral array of the vault and payout collateral assets
@@ -122,57 +130,181 @@ contract Controller is Ownable {
     }
 
     /**
-     * @notice Return a vault balances, depend of the short option expiry
-     * @dev if vault have no short option or issued option is not expired yet, return vault, else get excess margin and return it as collateral amount inside Vault struct.
-     * @param _owner vault owner.
+     * @notice Return a vault's balances. If the vault doesn't have a short option or the short option has not expired, then the vault's collateral balances are returned. If the short option has expired, the collateral balance the vault has is dependent on if the option expired ITM or OTM.
+     * @dev if vault has no short option or the issued option is not expired yet, return the vault, else call get excess margin and return it as collateral amount inside Vault struct.
+     * @param _owner account owner.
      * @param _vaultId vault.
      * @return Vault struct
      */
-    // function getVaultBalances(address _owner, uint256 _vaultId) external view returns (MarginAccount.Vault memory) {
-    // }
+    function getVaultBalances(address _owner, uint256 _vaultId) external view returns (MarginAccount.Vault memory) {
+        MarginAccount.Vault memory vault = getVault(_owner, _vaultId);
+
+        // if there is no minted short option or the short option has not expired yet
+        if ((vault.shortOtokens.length == 0) || (!isExpired(vault.shortOtokens[0]))) return vault;
+
+        // if there is a short option and it has expired
+        address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
+        MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
+        OtokenInterface otoken = OtokenInterface(vault.shortOtokens[0]);
+
+        (uint256 netValue, ) = calculator.getExcessMargin(vault, otoken.collateralAsset());
+        vault.collateralAmounts[0] = netValue;
+        return vault;
+    }
 
     /**
      * @dev return if an expired oToken contract’s price has been finalized. Returns true if the contract has expired AND the oraclePrice at the expiry timestamp has been finalized.
      * @param _otoken The address of the relevant oToken.
      * @return A boolean which is true if and only if the price is finalized.
      */
-    // function isPriceFinalized(address _otoken) external view returns (bool) {
-    // }
+    function isPriceFinalized(address _otoken) external view returns (bool) {
+        address oracleModule = AddressBookInterface(addressBook).getOracle();
+        OracleInterface oracle = OracleInterface(oracleModule);
+
+        (bytes32 batch, , , , uint256 otokenExpiryTimestamp) = getBatchDetails(_otoken);
+        return oracle.isDisputePeriodOver(batch, otokenExpiryTimestamp);
+    }
+
+    /**
+     * @notice get batch for a specific otoken address
+     * @dev batch is the hash of option underlying, strike, collateral assets and the expiry timestamp
+     * @param _otoken otoken address
+     * @return batch hash in bytes32, batch underlying asset, batch strike asset, batch collateral asset, batch expiry timestamp
+     */
+    function getBatchDetails(address _otoken)
+        public
+        view
+        returns (
+            bytes32,
+            address,
+            address,
+            address,
+            uint256
+        )
+    {
+        OtokenInterface otoken = OtokenInterface(_otoken);
+
+        address otokenUnderlyingAsset = otoken.underlyingAsset();
+        address otokenStrikeAsset = otoken.strikeAsset();
+        address otokenCollateralAsset = otoken.collateralAsset();
+        uint256 otokenExpiryTimestamp = otoken.expiryTimestamp();
+
+        return (
+            keccak256(
+                abi.encode(otokenUnderlyingAsset, otokenStrikeAsset, otokenCollateralAsset, otokenExpiryTimestamp)
+            ),
+            otokenUnderlyingAsset,
+            otokenStrikeAsset,
+            otokenCollateralAsset,
+            otokenExpiryTimestamp
+        );
+    }
+
+    /**
+     * @notice get number of vaults in a specific account
+     * @param _accountOwner account owner address
+     * @return number of vaults
+     */
+    function getAccountVaultCounter(address _accountOwner) external view returns (uint256) {
+        return accountVaultCounter[_accountOwner];
+    }
+
+    /**
+     * @notice function to check if otoken is expired
+     * @param _otoken otoken address
+     * @return true if otoken is expired, else return false
+     */
+    function isExpired(address _otoken) public view returns (bool) {
+        uint256 otokenExpiryTimestamp = OtokenInterface(_otoken).expiryTimestamp();
+
+        return now > otokenExpiryTimestamp;
+    }
 
     /**
      * @notice Return a specific vault.
-     * @param _owner vault owner.
+     * @param _owner account owner.
      * @param _vaultId vault.
      * @return Vault struct
      */
-    // function getVault(address _owner, uint256 _vaultId) public view returns (MarginAccount.Vault memory) {
-    // }
-
-    /**
-     * @notice Checks if the sender is the operator of the owner’s account
-     * @param _owner The owner of the account
-     * @param _operator account operator
-     * @return true if it is an account operator, otherwise false
-     */
-    // function isOperator(address _owner, address _operator) public view returns (bool) {
-    // }
+    function getVault(address _owner, uint256 _vaultId) public view returns (MarginAccount.Vault memory) {
+        return vaults[_owner][_vaultId];
+    }
 
     /**
      * @notice Execute actions on a certain vault
      * @dev For each action in the action Array, run the corresponding action
      * @param _actions An array of type Actions.ActionArgs[] which expresses which actions the user want to execute.
-     * @return Vault strcut. The new vault data that has been modified (or null vault if no action affected any vault)
      */
-    // function _runActions(Actions.ActionArgs[] memory _actions) internal returns (MarginAccount.Vault memory) {
-    // }
+    function _runActions(Actions.ActionArgs[] memory _actions) internal returns (MarginAccount.Vault memory) {
+        MarginAccount.Vault memory vault;
+
+        uint256 prevActionVaultId;
+        bool isActionVaultStored;
+
+        for (uint256 i = 0; i < _actions.length; i++) {
+            Actions.ActionArgs memory action = _actions[i];
+            Actions.ActionType actionType = action.actionType;
+
+            if (actionType == Actions.ActionType.OpenVault) {
+                // check if this action is manipulating the same vault as all other actions, other than SettleVault
+                (prevActionVaultId, isActionVaultStored) = _checkActionsVaults(
+                    prevActionVaultId,
+                    action.vaultId,
+                    isActionVaultStored
+                );
+
+                _openVault(Actions._parseOpenVaultArgs(action));
+            }
+        }
+
+        return vault;
+    }
+
+    /**
+     * @notice verify vault final state after executing all actions
+     * @param _vault final vault state
+     */
+    function _verifyFinalState(MarginAccount.Vault memory _vault) internal view {
+        if (_vault.shortOtokens.length > 0) {
+            address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
+            MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
+
+            require(calculator.isValidState(_vault, _vault.shortOtokens[0]), "Controller: invalid final vault state");
+        }
+    }
+
+    /**
+     * @dev check that prev vault id is equal to current vault id
+     * @param _prevActionVaultId previous vault id
+     * @param _currActionVaultId current vault id
+     * @param _isActionVaultStored a bool to indicate if a first check is done or not
+     * @return current vault id and true as first check is done
+     */
+    function _checkActionsVaults(
+        uint256 _prevActionVaultId,
+        uint256 _currActionVaultId,
+        bool _isActionVaultStored
+    ) internal pure returns (uint256, bool) {
+        if (_isActionVaultStored) {
+            require(_prevActionVaultId == _currActionVaultId, "Controller: can not run actions on different vaults");
+        }
+
+        return (_currActionVaultId, true);
+    }
 
     /**
      * @notice open new vault inside an account
      * @dev Only account owner or operator can open a vault
      * @param _args OpenVaultArgs structure
      */
-    // function _openVault(Actions.OpenVaultArgs memory _args) internal isAuthorized(_args.owner) {
-    // }
+    function _openVault(Actions.OpenVaultArgs memory _args) internal isAuthorized(msg.sender, _args.owner) {
+        accountVaultCounter[_args.owner] = accountVaultCounter[_args.owner].add(1);
+
+        require(
+            _args.vaultId == accountVaultCounter[_args.owner],
+            "Controller: can not run actions on inexistent vault"
+        );
+    }
 
     /**
      * @notice deposit long option into vault
