@@ -18,7 +18,7 @@ contract Oracle is Ownable {
     /// @dev structure that represent price, and timestamp
     struct Price {
         uint256 price;
-        uint256 timestamp; // timestamp at which the price is pulled to this oracle
+        uint256 timestamp; // timestamp at which the price is pushed to this oracle
     }
 
     /// @dev mapping between pricer and it's locking period.

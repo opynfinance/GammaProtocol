@@ -37,7 +37,7 @@ contract('Oracle', ([owner, controllerAddress, random, collateral, strike]) => {
     addressBook = await MockAddressBook.new({from: owner})
     // set controller address in AddressBook
     await addressBook.setController(controllerAddress, {from: owner})
-    // deploy Whitelist module
+    // deploy Oracle module
     oracle = await Oracle.new(addressBook.address, {from: owner})
 
     // deply mock pricer (to get live price and set expiry price)

@@ -129,9 +129,10 @@ contract('ChainlinkPricer', ([owner, nonOwner, random]) => {
     it('should set the correct price to the oracle', async () => {
       const expiryTimestamp = (t0 + t1) / 2 // between t0 and t1
       const roundId = 0
+
       await pricer.setExpiryPriceToOralce(weth.address, expiryTimestamp, roundId)
       const priceFromOracle = await oracle.getExpiryPrice(weth.address, expiryTimestamp)
-      assert.equal(p0.toString(), priceFromOracle.toString())
+      assert.equal(p0.toString(), priceFromOracle[0].toString())
     })
 
     it('everyone can set an price oracle', async () => {
@@ -139,7 +140,7 @@ contract('ChainlinkPricer', ([owner, nonOwner, random]) => {
       const roundId = 1
       await pricer.setExpiryPriceToOralce(weth.address, expiryTimestamp, roundId)
       const priceFromOracle = await oracle.getExpiryPrice(weth.address, expiryTimestamp)
-      assert.equal(p1.toString(), priceFromOracle.toString())
+      assert.equal(p1.toString(), priceFromOracle[0].toString())
     })
 
     it('should revert if round ID is incorrect: price[roundId].timestamp > expiry', async () => {
