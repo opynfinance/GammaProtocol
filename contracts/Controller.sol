@@ -101,7 +101,7 @@ contract Controller is ReentrancyGuard, Ownable {
      */
     function operate(Actions.ActionArgs[] memory _actions) external isNotPaused nonReentrant {
         MarginAccount.Vault memory vault = _runActions(_actions);
-        _verifyFinalState(vault);
+        //_verifyFinalState(vault);
     }
 
     /**
@@ -265,7 +265,7 @@ contract Controller is ReentrancyGuard, Ownable {
                     isActionVaultStored
                 );
 
-                _depositLong(Actions._parseDepositArgs(action));
+                vault = _depositLong(Actions._parseDepositArgs(action));
             }
         }
 
@@ -321,7 +321,7 @@ contract Controller is ReentrancyGuard, Ownable {
      * @notice deposit long option into vault
      * @param _args DepositArgs structure
      */
-    function _depositLong(Actions.DepositArgs memory _args) internal {
+    function _depositLong(Actions.DepositArgs memory _args) internal returns (MarginAccount.Vault memory) {
         require(_args.from == msg.sender, "Controller: depositor address and msg.sender address mismatch");
 
         address whitelistModule = AddressBookInterface(addressBook).getWhitelist();
@@ -334,7 +334,7 @@ contract Controller is ReentrancyGuard, Ownable {
 
         OtokenInterface otoken = OtokenInterface(_args.asset);
 
-        require(now > otoken.expiryTimestamp(), "Controller: otoken used as collateral is already expired");
+        require(now <= otoken.expiryTimestamp(), "Controller: otoken used as collateral is already expired");
 
         vaults[_args.owner][_args.vaultId]._addLong(address(otoken), _args.amount, _args.index);
 
@@ -342,6 +342,8 @@ contract Controller is ReentrancyGuard, Ownable {
         MarginPoolInterface marginPool = MarginPoolInterface(marginPoolModule);
 
         marginPool.transferToPool(address(otoken), _args.from, _args.amount);
+
+        return vaults[_args.owner][_args.vaultId];
     }
 
     /**
