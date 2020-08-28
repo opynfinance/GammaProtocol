@@ -128,23 +128,23 @@ contract('ChainlinkPricer', ([owner, nonOwner, random]) => {
 
     it('should set the correct price to the oracle', async () => {
       const expiryTimestamp = (t0 + t1) / 2 // between t0 and t1
-      const roundId = 0
-
-      await pricer.setExpiryPriceToOralce(weth.address, expiryTimestamp, roundId)
-      const priceFromOracle = await oracle.getExpiryPrice(weth.address, expiryTimestamp)
-      assert.equal(p0.toString(), priceFromOracle[0].toString())
-    })
-
-    it('everyone can set an price oracle', async () => {
-      const expiryTimestamp = (t1 + t2) / 2 // between t1 and t2
       const roundId = 1
+
       await pricer.setExpiryPriceToOralce(weth.address, expiryTimestamp, roundId)
       const priceFromOracle = await oracle.getExpiryPrice(weth.address, expiryTimestamp)
       assert.equal(p1.toString(), priceFromOracle[0].toString())
     })
 
-    it('should revert if round ID is incorrect: price[roundId].timestamp > expiry', async () => {
-      const expiryTimestamp = (t0 + t1) / 2 // between t0 and t1
+    it('everyone can set an price oracle', async () => {
+      const expiryTimestamp = (t1 + t2) / 2 // between t1 and t2
+      const roundId = 2
+      await pricer.setExpiryPriceToOralce(weth.address, expiryTimestamp, roundId)
+      const priceFromOracle = await oracle.getExpiryPrice(weth.address, expiryTimestamp)
+      assert.equal(p2.toString(), priceFromOracle[0].toString())
+    })
+
+    it('should revert if round ID is incorrect: price[roundId].timestamp < expiry', async () => {
+      const expiryTimestamp = (t1 + t2) / 2 // between t0 and t1
       const roundId = 1
       await expectRevert(
         pricer.setExpiryPriceToOralce(weth.address, expiryTimestamp, roundId),
@@ -152,9 +152,9 @@ contract('ChainlinkPricer', ([owner, nonOwner, random]) => {
       )
     })
 
-    it('should revert if round ID is incorrect: price[roundId + 1].timestamp < expiry', async () => {
-      const expiryTimestamp = (t3 + t4) / 2 // between t2 and t3
-      const roundId = 2
+    it('should revert if round ID is incorrect: price[roundId-1].timestamp > expiry', async () => {
+      const expiryTimestamp = (t1 + t2) / 2 // between t2 and t3
+      const roundId = 3
       await expectRevert(
         pricer.setExpiryPriceToOralce(weth.address, expiryTimestamp, roundId),
         'ChainLinkPricer: invalid roundId',

@@ -50,7 +50,7 @@ contract ChainLinkPricer is OpynPricerInterface, Ownable {
      * Set the expiry price to the oracle
      * @param _asset asset address
      * @param _expiryTimestamp the expiry want to send
-     * @param _roundId roundId for the chainlink
+     * @param _roundId the first roundId after expiry
      */
     function setExpiryPriceToOralce(
         address _asset,
@@ -60,11 +60,11 @@ contract ChainLinkPricer is OpynPricerInterface, Ownable {
         require(assetAggregator[_asset] != address(0), "ChainLinkPricer: aggregator for the asset not set.");
         AggregatorInterface aggregator = AggregatorInterface(assetAggregator[_asset]);
 
-        uint256 roundTimestamp = aggregator.getTimestamp(_roundId);
-        require(roundTimestamp <= _expiryTimestamp, "ChainLinkPricer: invalid roundId");
+        uint256 previousRoundTimestamp = aggregator.getTimestamp(_roundId.sub(1));
+        require(previousRoundTimestamp < _expiryTimestamp, "ChainLinkPricer: invalid roundId");
 
-        uint256 nextRoundTimestamp = aggregator.getTimestamp(_roundId.add(1));
-        require(_expiryTimestamp < nextRoundTimestamp, "ChainLinkPricer: invalid roundId");
+        uint256 roundTimestamp = aggregator.getTimestamp(_roundId);
+        require(_expiryTimestamp <= roundTimestamp, "ChainLinkPricer: invalid roundId");
 
         uint256 price = uint256(aggregator.getAnswer(_roundId));
         oracle.setExpiryPrice(_asset, _expiryTimestamp, price);
