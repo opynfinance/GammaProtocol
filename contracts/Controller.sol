@@ -259,22 +259,17 @@ contract Controller is ReentrancyGuard, Ownable {
             }
             if (actionType == Actions.ActionType.DepositLongOption) {
                 // check if this action is manipulating the same vault as all other actions, other than SettleVault
-                prevActionVaultId = checkActionsVaultId(prevActionVaultId, action.vaultId);
+                (prevActionVaultId, isActionVaultStored) = _checkActionsVaults(
+                    prevActionVaultId,
+                    action.vaultId,
+                    isActionVaultStored
+                );
 
                 _depositLong(Actions._parseDepositArgs(action));
             }
         }
 
         return vault;
-    }
-
-    function checkActionsVaultId(uint256 _prevActionVaultId, uint256 _actionVaultid) internal view returns (uint256) {
-        require(
-            _prevActionVaultId == 0 || _actionVaultid == _prevActionVaultId,
-            "Controller: can not run actions on different vaults"
-        );
-
-        return _actionVaultid;
     }
 
     /**
