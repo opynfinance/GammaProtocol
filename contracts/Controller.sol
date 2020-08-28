@@ -98,8 +98,8 @@ contract Controller is ReentrancyGuard, Ownable {
      * @param _actions array of actions arguments
      */
     function operate(Actions.ActionArgs[] memory _actions) external isNotPaused nonReentrant {
-        _runActions(_actions);
-        _verifyFinalState(_actions[0].owner, _actions[0].vaultId);
+        MarginAccount.Vault memory vault = _runActions(_actions);
+        _verifyFinalState(vault);
     }
 
     /**
@@ -235,7 +235,9 @@ contract Controller is ReentrancyGuard, Ownable {
      * @dev For each action in the action Array, run the corresponding action
      * @param _actions An array of type Actions.ActionArgs[] which expresses which actions the user want to execute.
      */
-    function _runActions(Actions.ActionArgs[] memory _actions) internal {
+    function _runActions(Actions.ActionArgs[] memory _actions) internal returns (MarginAccount.Vault memory) {
+        MarginAccount.Vault memory vault;
+
         for (uint256 i = 0; i < _actions.length; i++) {
             Actions.ActionArgs memory action = _actions[i];
             Actions.ActionType actionType = action.actionType;
@@ -254,21 +256,20 @@ contract Controller is ReentrancyGuard, Ownable {
                 _openVault(Actions._parseOpenVaultArgs(action));
             }
         }
+
+        return vault;
     }
 
     /**
      * @notice verify vault final state after executing all actions
-     * @param _accountOwner account owner address
-     * @param _vaultId vault id related to the vault that will be checked
+     * @param _vault final vault state
      */
-    function _verifyFinalState(address _accountOwner, uint256 _vaultId) internal view {
-        MarginAccount.Vault memory vault = vaults[_accountOwner][_vaultId];
-
-        if (vault.shortOtokens.length > 0) {
+    function _verifyFinalState(MarginAccount.Vault memory _vault) internal view {
+        if (_vault.shortOtokens.length > 0) {
             address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
             MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
 
-            require(calculator.isValidState(vault, vault.shortOtokens[0]), "Controller: invalid final vault state");
+            require(calculator.isValidState(_vault, _vault.shortOtokens[0]), "Controller: invalid final vault state");
         }
     }
 
