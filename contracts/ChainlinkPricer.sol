@@ -16,7 +16,10 @@ contract ChainLinkPricer is OpynPricerInterface, Ownable {
     /// @notice the aggregator for an asset
     mapping(address => address) public assetAggregator;
 
+    /// @notice the mapping of price
+
     constructor(address _oracle) public {
+        require(_oracle != address(0), "ChainLinkPricer: Cannot set 0 address as oracle");
         oracle = OracleInterface(_oracle);
     }
 
@@ -26,7 +29,7 @@ contract ChainLinkPricer is OpynPricerInterface, Ownable {
      * @param _aggregator chainlink aggregator address
      */
     function setAggregator(address _asset, address _aggregator) external onlyOwner {
-        require(_aggregator != address(0), "ChainLinkPricer: Cannot set 0 address");
+        require(_aggregator != address(0), "ChainLinkPricer: Cannot set 0 address as aggregator");
         assetAggregator[_asset] = _aggregator;
     }
 
@@ -38,39 +41,32 @@ contract ChainLinkPricer is OpynPricerInterface, Ownable {
     function getPrice(address _asset) external override view returns (uint256) {
         require(assetAggregator[_asset] != address(0), "ChainLinkPricer: aggregator for the asset not set.");
         int256 answer = AggregatorInterface(assetAggregator[_asset]).latestAnswer();
+        require(answer > 0, "ChainLinkPricer: price is lower than 0");
         // todo: scaled to 10e18 // 39010460929
         return uint256(answer * 1e10);
     }
 
     /**
+     * Set the expiry price to the oracle
      * @param _asset asset address
      * @param _expiryTimestamp the expiry want to send
-     * @param _roundsBack number of roundback for chainlink
+     * @param _roundId roundId for the chainlink
      */
-    function setExpiryPrice(
+    function setExpiryPriceToOralce(
         address _asset,
         uint256 _expiryTimestamp,
-        uint256 _roundsBack
-    ) external returns (uint256) {
+        uint256 _roundId
+    ) external {
         require(assetAggregator[_asset] != address(0), "ChainLinkPricer: aggregator for the asset not set.");
         AggregatorInterface aggregator = AggregatorInterface(assetAggregator[_asset]);
-        bool iterate = true;
-        uint256 roundBack = _roundsBack;
-        uint256 price = 0;
 
-        while (iterate) {
-            uint256 roundTimestamp = aggregator.getTimestamp(roundBack);
-            uint256 priorRoundTimestamp = aggregator.getTimestamp(roundBack.add(1));
+        uint256 roundTimestamp = aggregator.getTimestamp(_roundId);
+        require(roundTimestamp <= _expiryTimestamp, "ChainLinkPricer: invalid roundId");
 
-            if ((priorRoundTimestamp <= _expiryTimestamp) && (_expiryTimestamp < roundTimestamp)) {
-                iterate = false;
-                price = uint256(aggregator.getAnswer(roundBack));
-            } else {
-                roundBack++;
-            }
-        }
+        uint256 nextRoundTimestamp = aggregator.getTimestamp(_roundId.add(1));
+        require(_expiryTimestamp < nextRoundTimestamp, "ChainLinkPricer: invalid roundId");
 
-        // set price to oracle
+        uint256 price = uint256(aggregator.getAnswer(_roundId));
         oracle.setExpiryPrice(_asset, _expiryTimestamp, price);
     }
 }
