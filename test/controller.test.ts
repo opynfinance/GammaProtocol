@@ -368,6 +368,61 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
         )
       })
 
+      it('should execute depositing long otoken into vault in multiple actions', async () => {
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        const collateralToDeposit = new BigNumber('20')
+        const actionArgs = [
+          {
+            actionType: ActionType.DepositLongOption,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: longOtoken.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToDeposit.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.DepositLongOption,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: longOtoken.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToDeposit.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+        const marginPoolBalanceBefore = new BigNumber(await longOtoken.balanceOf(marginPool.address))
+        const senderBalanceBefore = new BigNumber(await longOtoken.balanceOf(accountOwner1))
+        const vaultBefore = await controller.getVault(accountOwner1, vaultCounter)
+
+        await longOtoken.approve(marginPool.address, collateralToDeposit.multipliedBy(2), {from: accountOwner1})
+        await controller.operate(actionArgs, {from: accountOwner1})
+
+        const marginPoolBalanceAfter = new BigNumber(await longOtoken.balanceOf(marginPool.address))
+        const senderBalanceAfter = new BigNumber(await longOtoken.balanceOf(accountOwner1))
+        const vaultAfter = await controller.getVault(accountOwner1, vaultCounter)
+
+        assert.equal(
+          marginPoolBalanceAfter.minus(marginPoolBalanceBefore).toString(),
+          collateralToDeposit.multipliedBy(2).toString(),
+          'Margin pool balance long otoken balance mismatch',
+        )
+        assert.equal(
+          senderBalanceBefore.minus(senderBalanceAfter).toString(),
+          collateralToDeposit.multipliedBy(2).toString(),
+          'Sender balance long otoken balance mismatch',
+        )
+        assert.equal(vaultAfter.longOtokens.length, 1, 'Vault long otoken array length mismatch')
+        assert.equal(vaultAfter.longOtokens[0], longOtoken.address, 'Long otoken address deposited into vault mismatch')
+        assert.equal(
+          new BigNumber(vaultAfter.longAmounts[0]).minus(new BigNumber(vaultBefore.longAmounts[0])).toString(),
+          collateralToDeposit.multipliedBy(2).toString(),
+          'Long otoken amount deposited into vault mismatch',
+        )
+      })
+
       it('should revert depositing long otoken from a sender different than arg.from', async () => {
         const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
         const collateralToDeposit = new BigNumber('20')
