@@ -355,7 +355,24 @@ contract Controller is ReentrancyGuard, Ownable {
      * @dev Only account owner or operator can withdraw long option from vault
      * @param _args WithdrawArgs structure
      */
-    function _withdrawLong(Actions.WithdrawArgs memory _args) internal isAuthorized(_args.owner) {}
+    function _withdrawLong(Actions.WithdrawArgs memory _args)
+        internal
+        isAuthorized(msg.sender, _args.owner)
+        returns (MarginAccount.Vault memory)
+    {
+        OtokenInterface otoken = OtokenInterface(_args.asset);
+
+        require(now <= otoken.expiryTimestamp(), "Controller: can not withdraw an expired otoken");
+
+        vaults[_args.owner][_args.vaultId]._removeLong(address(otoken), _args.amount, _args.index);
+
+        address marginPoolModule = AddressBookInterface(addressBook).getMarginPool();
+        MarginPoolInterface marginPool = MarginPoolInterface(marginPoolModule);
+
+        marginPool.transferToUser(address(otoken), _args.to, _args.amount);
+
+        return vaults[_args.owner][_args.vaultId];
+    }
 
     /**
      * @notice deposit collateral asset into vault
