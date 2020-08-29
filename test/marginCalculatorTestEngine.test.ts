@@ -7,7 +7,7 @@ import {
 } from '../build/types/truffle-types'
 import {createVault, createScaledNumber} from './utils'
 import {assert} from 'chai'
-import {testCaseGenerator, Test} from './testCaseGenerator'
+import {testCaseGenerator, Tests, Test} from './testCaseGenerator'
 
 const {expectRevert, time} = require('@openzeppelin/test-helpers')
 const MockAddressBook = artifacts.require('MockAddressBook.sol')
@@ -47,8 +47,16 @@ contract('MarginCalculator', () => {
   })
 
   describe('Excess Margin Test', () => {
-    it('test the various excess margin scenarios', async () => {
-      const tests: Test[] = testCaseGenerator()
+    let testPutsBeforeExpiry: Test[]
+    let testPutsAfterExpiry: Test[]
+
+    before('generate all the tests', () => {
+      const tests: Tests = testCaseGenerator()
+      testPutsBeforeExpiry = tests.beforeExpiryPuts
+      testPutsAfterExpiry = tests.afterExpiryPuts
+    })
+    it('test the various excess margin scenarios for puts before expiry', async () => {
+      const tests: Test[] = testPutsBeforeExpiry
 
       for (let i = 0; i < tests.length; i++) {
         const longStrike = tests[i].longStrike
@@ -63,6 +71,50 @@ contract('MarginCalculator', () => {
         const expectedIsExcess = tests[i].isExcess
 
         console.log(tests[i])
+
+        longPut = await MockOtoken.new()
+        await longPut.init(weth.address, usdc.address, usdc.address, createScaledNumber(longStrike), expiry, true)
+        shortPut = await MockOtoken.new()
+        await shortPut.init(weth.address, usdc.address, usdc.address, createScaledNumber(shortStrike), expiry, true)
+
+        const vaultWithCollateral = createVault(
+          shortPut.address,
+          longPut.address,
+          usdc.address,
+          createScaledNumber(shortAmount),
+          createScaledNumber(longAmount),
+          createScaledNumber(collateral),
+        )
+
+        const [netValue, isExcess] = await calculator.getExcessMargin(vaultWithCollateral, usdc.address)
+        assert.equal(isExcess, expectedIsExcess)
+        assert.equal(netValue.toString(), createScaledNumber(expectedNetValue))
+      }
+    })
+    it('test the various excess margin scenarios for puts after expiry', async () => {
+      const tests: Test[] = testPutsAfterExpiry
+
+      if ((await time.latest()) < expiry) {
+        await time.increaseTo(expiry + 2)
+      }
+
+      for (let i = 0; i < tests.length; i++) {
+        const longStrike = tests[i].longStrike
+        const shortStrike = tests[i].shortStrike
+
+        const longAmount = tests[i].longAmount
+        const shortAmount = tests[i].shortAmount
+
+        const collateral = tests[i].collateral
+
+        const expectedNetValue = tests[i].netValue
+        const expectedIsExcess = tests[i].isExcess
+
+        const spotPrice = tests[i].oraclePrice
+
+        console.log(tests[i])
+
+        await oracle.setMockedStatus(createScaledNumber(spotPrice), true)
 
         longPut = await MockOtoken.new()
         await longPut.init(weth.address, usdc.address, usdc.address, createScaledNumber(longStrike), expiry, true)
