@@ -35,7 +35,7 @@ contract ChainLinkPricer is OpynPricerInterface, Ownable {
 
     /**
      * @notice get live price for an asset.
-     * @dev ovverides the getPrice function in OpynPricerInterface.
+     * @dev overides the getPrice function in OpynPricerInterface.
      * @param _asset the address of the asset
      */
     function getPrice(address _asset) external override view returns (uint256) {
