@@ -22,6 +22,8 @@ enum amountRule {
   longLessThanShort,
   shortLessThanLong,
   shortEqualLong,
+  shortNoLong,
+  longNoShort,
 }
 
 enum collateralRules {
@@ -77,13 +79,18 @@ function strikePriceGenerator(rule: strikePriceRule): StrikePrices {
 
 function amountGenerator(rule: amountRule): Amounts {
   let longAmount = 0
-  const shortAmount = getRandomInt(maxStrikePrice)
+  let shortAmount = getRandomInt(maxStrikePrice)
   const strikeWidth = getRandomInt(maxStrikeWidth)
 
   if (rule == amountRule.longLessThanShort) {
     longAmount = Math.max(shortAmount - strikeWidth, minAmount)
   } else if (rule == amountRule.shortLessThanLong) {
     longAmount = Math.min(shortAmount + strikeWidth, maxAmount)
+  } else if (rule == amountRule.shortNoLong) {
+    longAmount = 0
+  } else if (rule == amountRule.longNoShort) {
+    longAmount = shortAmount
+    shortAmount = 0
   } else {
     longAmount = shortAmount
   }
