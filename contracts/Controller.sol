@@ -101,7 +101,7 @@ contract Controller is ReentrancyGuard, Ownable {
      */
     function operate(Actions.ActionArgs[] memory _actions) external isNotPaused nonReentrant {
         MarginAccount.Vault memory vault = _runActions(_actions);
-        //_verifyFinalState(vault);
+        _verifyFinalState(vault);
     }
 
     /**
@@ -240,6 +240,9 @@ contract Controller is ReentrancyGuard, Ownable {
     function _runActions(Actions.ActionArgs[] memory _actions) internal returns (MarginAccount.Vault memory) {
         MarginAccount.Vault memory vault;
 
+        uint256 prevActionVaultId;
+        bool isActionVaultStored;
+
         for (uint256 i = 0; i < _actions.length; i++) {
             Actions.ActionArgs memory action = _actions[i];
             Actions.ActionType actionType = action.actionType;
@@ -262,11 +265,9 @@ contract Controller is ReentrancyGuard, Ownable {
 
             if (actionType == Actions.ActionType.OpenVault) {
                 _openVault(Actions._parseOpenVaultArgs(action));
-            }
-            if (actionType == Actions.ActionType.DepositLongOption) {
+            } else if (actionType == Actions.ActionType.DepositLongOption) {
                 vault = _depositLong(Actions._parseDepositArgs(action));
-            }
-            if (actionType == Actions.ActionType.WithdrawLongOption) {
+            } else if (actionType == Actions.ActionType.WithdrawLongOption) {
                 vault = _withdrawLong(Actions._parseWithdrawArgs(action));
             }
         }
@@ -302,6 +303,7 @@ contract Controller is ReentrancyGuard, Ownable {
         if (_isActionVaultStored) {
             require(_prevActionVaultId == _currActionVaultId, "Controller: can not run actions on different vaults");
         }
+
         return (_currActionVaultId, true);
     }
 
