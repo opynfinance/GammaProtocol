@@ -6,25 +6,23 @@ import {OracleInterface} from "../interfaces/OracleInterface.sol";
 contract MockPricer {
     OracleInterface public oracle;
 
-    mapping(address => uint256) internal price;
+    uint256 internal price;
+    address public asset;
 
-    constructor(address _oracle) public {
+    constructor(address _asset, address _oracle) public {
+        asset = _asset;
         oracle = OracleInterface(_oracle);
     }
 
-    function setPrice(address _asset, uint256 _price) external {
-        price[_asset] = _price;
+    function setPrice(uint256 _price) external {
+        price = _price;
     }
 
-    function getPrice(address _asset) external view returns (uint256) {
-        return price[_asset];
+    function getPrice() external view returns (uint256) {
+        return price;
     }
 
-    function setExpiryPriceToOralce(
-        address _asset,
-        uint256 _expiryTimestamp,
-        uint256 _price
-    ) external {
-        oracle.setExpiryPrice(_asset, _expiryTimestamp, _price);
+    function setExpiryPriceToOralce(uint256 _expiryTimestamp, uint256 _price) external {
+        oracle.setExpiryPrice(asset, _expiryTimestamp, _price);
     }
 }
