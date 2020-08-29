@@ -247,25 +247,27 @@ contract Controller is ReentrancyGuard, Ownable {
             uint256 prevActionVaultId;
             bool isActionVaultStored;
 
-            if (actionType == Actions.ActionType.OpenVault) {
+            if (
+                (actionType != Actions.ActionType.SettleVault) ||
+                (actionType != Actions.ActionType.Exercise) ||
+                (actionType != Actions.ActionType.Call)
+            ) {
                 // check if this action is manipulating the same vault as all other actions, other than SettleVault
                 (prevActionVaultId, isActionVaultStored) = _checkActionsVaults(
                     prevActionVaultId,
                     action.vaultId,
                     isActionVaultStored
                 );
+            }
 
+            if (actionType == Actions.ActionType.OpenVault) {
                 _openVault(Actions._parseOpenVaultArgs(action));
             }
             if (actionType == Actions.ActionType.DepositLongOption) {
-                // check if this action is manipulating the same vault as all other actions, other than SettleVault
-                (prevActionVaultId, isActionVaultStored) = _checkActionsVaults(
-                    prevActionVaultId,
-                    action.vaultId,
-                    isActionVaultStored
-                );
-
                 vault = _depositLong(Actions._parseDepositArgs(action));
+            }
+            if (actionType == Actions.ActionType.WithdrawLongOption) {
+                vault = _withdrawLong(Actions._parseWithdrawArgs(action));
             }
         }
 
@@ -351,7 +353,7 @@ contract Controller is ReentrancyGuard, Ownable {
      * @dev Only account owner or operator can withdraw long option from vault
      * @param _args WithdrawArgs structure
      */
-    // function _withdrawLong(Actions.WithdrawArgs memory _args) internal isAuthorized(_args.owner) {}
+    function _withdrawLong(Actions.WithdrawArgs memory _args) internal isAuthorized(_args.owner) {}
 
     /**
      * @notice deposit collateral asset into vault
