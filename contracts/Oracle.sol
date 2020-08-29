@@ -3,9 +3,10 @@
  */
 pragma solidity 0.6.10;
 
-import "./interfaces/AddressBookInterface.sol";
-import "./packages/oz/Ownable.sol";
-import "./packages/oz/SafeMath.sol";
+import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
+import {OpynPricerInterface} from "./interfaces/OpynPricerInterface.sol";
+import {Ownable} from "./packages/oz/Ownable.sol";
+import {SafeMath} from "./packages/oz/SafeMath.sol";
 
 /**
  * @author Opyn Team
@@ -64,6 +65,17 @@ contract Oracle is Ownable {
         require(_addressBook != address(0), "Oracle: Invalid address book");
 
         addressBook = _addressBook;
+    }
+
+    /**
+     * @notice get the live price from oracle
+     * @param _asset the asset address
+     * @return price scaled in 1e18, denominated in USD
+     * e.g. 173689000000000000000 => 175.689 USD
+     */
+    function getPrice(address _asset) external view returns (uint256) {
+        require(assetPricer[_asset] != address(0), "Oracle: Pricer for this asset not set.");
+        return OpynPricerInterface(assetPricer[_asset]).getPrice();
     }
 
     /**
