@@ -2,5 +2,5 @@
 pragma solidity 0.6.10;
 
 interface OpynPricerInterface {
-    function getPrice(address _otoken) external view returns (uint256);
+    function getPrice() external view returns (uint256);
 }
