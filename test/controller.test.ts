@@ -501,6 +501,44 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
           'Controller: otoken used as collateral is already expired',
         )
       })
+
+      /*it('should revert when vault have more than 1 long otoken', async () => {
+        const expiryTime = new BigNumber(60 * 60) // after 1 hour
+        const collateralToDeposit = new BigNumber('20')
+        // deploy second Otoken
+        const secondLongOtoken: MockOtokenInstance = await MockOtoken.new()
+        // init otoken
+        await secondLongOtoken.init(
+          weth.address,
+          usdc.address,
+          usdc.address,
+          new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+          new BigNumber(await time.latest()).plus(expiryTime),
+          true,
+        )
+        await secondLongOtoken.mint(accountOwner1, collateralToDeposit)
+        // whitelist otoken
+        await whitelist.whitelistOtoken(secondLongOtoken.address)
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        const actionArgs = [
+          {
+            actionType: ActionType.DepositLongOption,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: secondLongOtoken.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToDeposit.toNumber(),
+            index: '1',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        await secondLongOtoken.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
+        await expectRevert(
+          controller.operate(actionArgs, {from: accountOwner1}),
+          'MarginCalculator: Too many long otokens in the vault.',
+        )
+      })*/
     })
 
     describe('withdraw long otoken', () => {
