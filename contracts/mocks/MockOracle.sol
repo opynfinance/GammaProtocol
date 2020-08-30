@@ -1,95 +1,104 @@
-/**
- * SPDX-License-Identifier: UNLICENSED
- */
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.6.10;
 
 import "../packages/oz/SafeMath.sol";
 
-/**
- * @notice Chainlink oracle mock
- */
 contract MockOracle {
     using SafeMath for uint256;
 
     struct Price {
         uint256 price;
-        uint256 timestamp;
+        uint256 timestamp; // timestamp at which the price is pushed to this oracle
     }
 
-    mapping(address => uint256) internal oracleLockingPeriod;
-    mapping(address => uint256) internal oracleDisputePeriod;
-    mapping(bytes32 => address) internal batchOracle;
-    mapping(bytes32 => mapping(uint256 => Price)) internal batchPriceAt;
+    mapping(address => mapping(uint256 => uint256)) public storedPrice;
+    mapping(address => mapping(uint256 => bool)) public isFinalized;
 
-    function getBatchPrice(bytes32 _batch, uint256 _timestamp) external view returns (uint256, uint256) {
-        Price memory batchPrice = batchPriceAt[_batch][_timestamp];
-        return (batchPrice.price, batchPrice.timestamp);
-    }
+    mapping(address => uint256) internal pricerLockingPeriod;
+    mapping(address => uint256) internal pricerDisputePeriod;
+    mapping(address => address) internal assetPricer;
 
-    function getBatchOracle(bytes32 _batch) external view returns (address) {
-        return batchOracle[_batch];
-    }
+    // asset => expiry => bool
+    mapping(address => mapping(uint256 => bool)) private _isDisputePeriodOver;
+    mapping(address => mapping(uint256 => bool)) private _isLockingPeriodOver;
 
-    function getOracleLockingPeriod(address _oracle) external view returns (uint256) {
-        return oracleLockingPeriod[_oracle];
-    }
-
-    function getOracleDisputePeriod(address _oracle) external view returns (uint256) {
-        return oracleDisputePeriod[_oracle];
-    }
-
-    function isLockingPeriodOver(bytes32 _batch, uint256 _expiryTimestamp) public view returns (bool) {
-        address oracle = batchOracle[_batch];
-        uint256 lockingPeriod = oracleLockingPeriod[oracle];
-
-        return now > _expiryTimestamp.add(lockingPeriod);
-    }
-
-    function isDisputePeriodOver(bytes32 _batch, uint256 _expiryTimestamp) public view returns (bool) {
-        address oracle = batchOracle[_batch];
-        uint256 disputePeriod = oracleDisputePeriod[oracle];
-
-        Price memory batchPrice = batchPriceAt[_batch][_expiryTimestamp];
-
-        if (batchPrice.timestamp == 0) {
-            return false;
-        }
-
-        return now > batchPrice.timestamp.add(disputePeriod);
-    }
-
-    function setBatchOracle(bytes32 _batch, address _oracle) external {
-        batchOracle[_batch] = _oracle;
-    }
-
-    function setLockingPeriod(address _oracle, uint256 _lockingPeriod) external {
-        oracleLockingPeriod[_oracle] = _lockingPeriod;
-    }
-
-    function setDisputePeriod(address _oracle, uint256 _disputePeriod) external {
-        oracleDisputePeriod[_oracle] = _disputePeriod;
-    }
-
-    function disputeBatchPrice(
-        bytes32 _batch,
+    // let the pricer set expiry price to oracle.
+    function setExpiryPrice(
+        address _asset,
         uint256 _expiryTimestamp,
         uint256 _price
     ) external {
-        require(!isDisputePeriodOver(_batch, _expiryTimestamp), "Oracle: dispute period over");
-
-        Price storage batchPrice = batchPriceAt[_batch][_expiryTimestamp];
-        batchPrice.price = _price;
+        storedPrice[_asset][_expiryTimestamp] = _price;
     }
 
-    function setBatchUnderlyingPrice(
-        bytes32 _batch,
+    function setIsFinalized(
+        address _asset,
         uint256 _expiryTimestamp,
-        uint256 _price
+        bool _isFinalized
     ) external {
-        require(batchOracle[_batch] != address(0), "Oracle: no oracle for this specific batch");
-        require(isLockingPeriodOver(_batch, _expiryTimestamp), "Oracle: locking period is not over yet");
-        require(batchPriceAt[_batch][_expiryTimestamp].timestamp == 0, "Oracle: dispute period started");
+        isFinalized[_asset][_expiryTimestamp] = _isFinalized;
+    }
 
-        batchPriceAt[_batch][_expiryTimestamp] = Price(_price, now);
+    function getExpiryPrice(address _asset, uint256 _expiryTimestamp) external view returns (uint256, bool) {
+        return (storedPrice[_asset][_expiryTimestamp], isFinalized[_asset][_expiryTimestamp]);
+    }
+
+    /**
+     * @notice get asset pricer
+     * @param _asset get the pricer for a specific asset.
+     * @return pricer address
+     */
+    function getPricer(address _asset) external view returns (address) {
+        return assetPricer[_asset];
+    }
+
+    /**
+     * @notice get pricer locking period. A locking period is a period of time after expiry where no one can push price to oracle
+     * @dev during locking period, price can not be submitted to this contract
+     * @param _pricer pricer address
+     * @return locking period
+     */
+    function getPricerLockingPeriod(address _pricer) external view returns (uint256) {
+        return pricerLockingPeriod[_pricer];
+    }
+
+    function getPricerDisputePeriod(address _pricer) external view returns (uint256) {
+        return pricerDisputePeriod[_pricer];
+    }
+
+    function isLockingPeriodOver(address _asset, uint256 _expiryTimestamp) public view returns (bool) {
+        return _isLockingPeriodOver[_asset][_expiryTimestamp];
+    }
+
+    function setIsLockingPeriodOver(
+        address _asset,
+        uint256 _expiryTimestamp,
+        bool _result
+    ) external {
+        _isLockingPeriodOver[_asset][_expiryTimestamp] = _result;
+    }
+
+    function isDisputePeriodOver(address _asset, uint256 _expiryTimestamp) external view returns (bool) {
+        return _isDisputePeriodOver[_asset][_expiryTimestamp];
+    }
+
+    function setIsDisputePeriodOver(
+        address _asset,
+        uint256 _expiryTimestamp,
+        bool _result
+    ) external {
+        _isDisputePeriodOver[_asset][_expiryTimestamp] = _result;
+    }
+
+    function setAssetPricer(address _asset, address _pricer) external {
+        assetPricer[_asset] = _pricer;
+    }
+
+    function setLockingPeriod(address _pricer, uint256 _lockingPeriod) external {
+        pricerLockingPeriod[_pricer] = _lockingPeriod;
+    }
+
+    function setDisputePeriod(address _pricer, uint256 _disputePeriod) external {
+        pricerDisputePeriod[_pricer] = _disputePeriod;
     }
 }

@@ -1,33 +1,53 @@
-import {MockChainlinkOracleInstance, MockAddressBookInstance, OracleInstance} from '../build/types/truffle-types'
+import {
+  MockPricerInstance,
+  MockAddressBookInstance,
+  OracleInstance,
+  MockOtokenInstance,
+  MockERC20Instance,
+} from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
+import {assert} from 'chai'
 
-const {expectRevert, time, BN} = require('@openzeppelin/test-helpers')
+const {expectRevert, time} = require('@openzeppelin/test-helpers')
 
-const MockChainlinkOracle = artifacts.require('MockChainlinkOracle.sol')
+const MockPricer = artifacts.require('MockPricer.sol')
 const MockAddressBook = artifacts.require('MockAddressBook.sol')
+const MockERC20 = artifacts.require('MockERC20.sol')
+const Otoken = artifacts.require('MockOtoken.sol')
 const Oracle = artifacts.require('Oracle.sol')
 
 // address(0)
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
-contract('Oracle', ([owner, controllerAddress, random]) => {
-  const batch = web3.utils.asciiToHex('ETHUSDCUSDC1596218762')
-  // Chainlink mock instance
-  let batchOracle: MockChainlinkOracleInstance
+contract('Oracle', ([owner, controllerAddress, random, collateral, strike]) => {
+  // const batch = web3.utils.asciiToHex('ETHUSDCUSDC1596218762')
+  // mock a pricer
+  let wethPricer: MockPricerInstance
   // AddressBook module
   let addressBook: MockAddressBookInstance
   // Oracle module
   let oracle: OracleInstance
+  // otoken
+  let otoken: MockOtokenInstance
+  let weth: MockERC20Instance
+  let otokenExpiry: BigNumber
 
   before('Deployment', async () => {
-    // deploy price feed mock
-    batchOracle = await MockChainlinkOracle.new({from: owner})
     // addressbook module
     addressBook = await MockAddressBook.new({from: owner})
     // set controller address in AddressBook
     await addressBook.setController(controllerAddress, {from: owner})
     // deploy Oracle module
     oracle = await Oracle.new(addressBook.address, {from: owner})
+
+    // mock tokens
+    weth = await MockERC20.new('WETH', 'WETH')
+    otoken = await Otoken.new()
+    otokenExpiry = new BigNumber((await time.latest()).toNumber() + time.duration.days(30).toNumber())
+    await otoken.init(weth.address, strike, collateral, '200', otokenExpiry, true)
+
+    // deply mock pricer (to get live price and set expiry price)
+    wethPricer = await MockPricer.new(weth.address, oracle.address)
   })
 
   describe('Oracle deployment', () => {
@@ -36,376 +56,170 @@ contract('Oracle', ([owner, controllerAddress, random]) => {
     })
   })
 
-  describe('Batch oracle', () => {
-    it('should revert setting batch oracle from non-owner address', async () => {
+  describe('setAssetPricer', () => {
+    it('should revert setting pricer from non-owner address', async () => {
       await expectRevert(
-        oracle.setBatchOracle(batch, batchOracle.address, {from: random}),
+        oracle.setAssetPricer(weth.address, wethPricer.address, {from: random}),
         'Ownable: caller is not the owner',
       )
     })
 
-    it('should set batch oracle', async () => {
-      await oracle.setBatchOracle(batch, batchOracle.address, {from: owner})
+    it('should revert setting pricer to address(0)', async () => {
+      await expectRevert(
+        oracle.setAssetPricer(weth.address, ZERO_ADDR, {from: owner}),
+        'Oracle: cannot set pricer to address(0)',
+      )
+    })
 
-      assert.equal(await oracle.getBatchOracle(batch), batchOracle.address, 'batch oracle address mismatch')
+    it('should set batch oracle', async () => {
+      await oracle.setAssetPricer(weth.address, wethPricer.address, {from: owner})
+
+      assert.equal(await oracle.getPricer(weth.address), wethPricer.address, 'batch oracle address mismatch')
+    })
+  })
+
+  describe('Get live price.', () => {
+    it("should when querying assets that doesn't have pricer yet.", async () => {
+      await expectRevert(oracle.getPrice(random), 'Oracle: Pricer for this asset not set.')
+    })
+
+    it('should get the same price as Pricer', async () => {
+      const pricerPrice = await wethPricer.getPrice()
+      const oraclePrice = await oracle.getPrice(weth.address)
+      assert.equal(pricerPrice.toString(), oraclePrice.toString())
+    })
+
+    it('should update after Pricer update', async () => {
+      const price1 = new BigNumber(235).times(1e18).toString()
+      await wethPricer.setPrice(price1)
+      const oraclePrice = await oracle.getPrice(weth.address)
+      assert.equal(oraclePrice.toString(), price1)
     })
   })
 
   describe('Oracle locking period', () => {
     const lockingPeriod = new BigNumber(60 * 15) // 15min
 
-    it('should revert setting oracle locking period from non-owner address', async () => {
+    it('should revert setting pricer locking period from non-owner address', async () => {
       await expectRevert(
-        oracle.setLockingPeriod(batchOracle.address, lockingPeriod, {from: random}),
+        oracle.setLockingPeriod(wethPricer.address, lockingPeriod, {from: random}),
         'Ownable: caller is not the owner',
       )
     })
 
-    it('should set oracle locking period', async () => {
-      await oracle.setLockingPeriod(batchOracle.address, lockingPeriod, {from: owner})
+    it('should set pricer locking period', async () => {
+      await oracle.setLockingPeriod(wethPricer.address, lockingPeriod, {from: owner})
 
       assert.equal(
-        (await oracle.getOracleLockingPeriod(batchOracle.address)).toString(),
+        (await oracle.getPricerLockingPeriod(wethPricer.address)).toString(),
         lockingPeriod.toString(),
         'oracle locking period mismatch',
       )
     })
 
     it('should check if locking period is over', async () => {
-      const isOver = await oracle.isLockingPeriodOver(batchOracle.address, await time.latest(), {from: owner})
+      const isOver = await oracle.isLockingPeriodOver(wethPricer.address, await time.latest(), {from: owner})
       const expectedResult = false
       assert.equal(isOver, expectedResult, 'locking period check mismatch')
     })
   })
 
-  describe('Oracle dispute period', () => {
+  describe('Pricer dispute period', () => {
     const disputePeriod = new BigNumber(60 * 45) // 45min
 
-    it('should revert setting oracle locking period from non-owner address', async () => {
+    it('should revert setting pricer locking period from non-owner address', async () => {
       await expectRevert(
-        oracle.setDisputePeriod(batchOracle.address, disputePeriod, {from: random}),
+        oracle.setDisputePeriod(wethPricer.address, disputePeriod, {from: random}),
         'Ownable: caller is not the owner',
       )
     })
 
     it('should set oracle dispute period', async () => {
-      await oracle.setDisputePeriod(batchOracle.address, disputePeriod, {from: owner})
+      await oracle.setDisputePeriod(wethPricer.address, disputePeriod, {from: owner})
 
       assert.equal(
-        (await oracle.getOracleDisputePeriod(batchOracle.address)).toString(),
+        (await oracle.getPricerDisputePeriod(wethPricer.address)).toString(),
         disputePeriod.toString(),
         'oracle dispute period mismatch',
       )
     })
 
     it('should check if dispute period is over when price timestamp equal to zero', async () => {
-      const isOver = await oracle.isDisputePeriodOver(batchOracle.address, await time.latest(), {from: owner})
+      const isOver = await oracle.isDisputePeriodOver(weth.address, await time.latest(), {from: owner})
       const expectedResult = false
       assert.equal(isOver, expectedResult, 'dispute period check mismatch')
     })
   })
 
-  describe('Set batch underlying asset price', () => {
-    let batchExpiry: BigNumber
-    let roundBack: BigNumber
-    let priorRoundTimestamp: BigNumber
-    // expected underlying price at that timestamp
-    let batchUnderlyingPrice: BigNumber
+  describe('Set Expiry Price', () => {
+    let assetPrice: BigNumber
 
     before(async () => {
-      batchExpiry = new BigNumber(await time.latest())
-      roundBack = new BigNumber(1)
-      priorRoundTimestamp = roundBack.plus(1)
-      // expected underlying price at that timestamp
-      batchUnderlyingPrice = new BigNumber(200)
+      await time.increaseTo(otokenExpiry.toNumber())
+      assetPrice = new BigNumber(278)
+    })
+
+    it('should revert setting price if caller is not the pricer', async () => {
+      // increase til locking period over
+      await expectRevert(
+        oracle.setExpiryPrice(weth.address, otokenExpiry, assetPrice),
+        'Oracle: caller is not the pricer',
+      )
     })
 
     it('should revert setting price if locking period is not over', async () => {
-      // set round back timestamp, in this scenario price got pushed to feed 10 min after batch expiry
-      await batchOracle.setRoundTimestamp(roundBack, batchExpiry.plus(60 * 10))
-      // set prior round timestamp
-      await batchOracle.setRoundTimestamp(priorRoundTimestamp, batchExpiry.minus(60 * 10))
-      // set price feed
-      await batchOracle.setRoundAnswer(roundBack, batchUnderlyingPrice)
-
+      // the setExpiryPrice is set through pricer
       await expectRevert(
-        oracle.setBatchUnderlyingPrice(batch, batchExpiry, roundBack, {from: controllerAddress}),
+        wethPricer.setExpiryPriceToOralce(otokenExpiry, assetPrice),
         'Oracle: locking period is not over yet',
       )
     })
 
-    it('should revert setting price if caller is not controller', async () => {
-      await expectRevert(
-        oracle.setBatchUnderlyingPrice(batch, batchExpiry, roundBack, {from: random}),
-        'Oracle: Sender is not Controller',
-      )
+    it('should end locking period', async () => {
+      const lockingPeriod = (await oracle.getPricerLockingPeriod(wethPricer.address)).toNumber()
+      await time.increase(lockingPeriod + 100)
+      const isLockingPeriodOver = await oracle.isLockingPeriodOver(weth.address, otokenExpiry)
+      assert.equal(isLockingPeriodOver, true)
     })
 
-    it('should set price at round back equal to 1', async () => {
-      // advance time to pass batch locking period (15 min)
-      await time.increase(new BN(60 * 15.5))
+    it('should set price correctly', async () => {
+      // setExpiryPrice is called through pricer
+      await wethPricer.setExpiryPriceToOralce(otokenExpiry, assetPrice)
 
-      // set round back timestamp, in this scenario price got pushed to feed 10 min after batch expiry
-      await batchOracle.setRoundTimestamp(roundBack, batchExpiry.plus(60 * 10))
-      // set prior round timestamp
-      await batchOracle.setRoundTimestamp(priorRoundTimestamp, batchExpiry.minus(60 * 10))
-      // set price feed
-      await batchOracle.setRoundAnswer(roundBack, batchUnderlyingPrice)
-
-      // current timestamp at which price will be submitted to our Oracle module
-      const onchainPriceTimestamp = new BigNumber(await time.latest())
-      // set batch underlying price
-      await oracle.setBatchUnderlyingPrice(batch, batchExpiry, roundBack, {from: controllerAddress})
-
-      // get batch price
-      const price = await oracle.getBatchPrice(batch, batchExpiry)
-
-      assert.equal(price[0].toString(), batchUnderlyingPrice.toString(), 'batch underlying price mismatch')
-      // checking difference between timestamp is less than 2, used this because of lack timestamp precision
-      assert.isAtMost(
-        new BigNumber(price[1]).minus(onchainPriceTimestamp).toNumber(),
-        2,
-        'batch underlying price on-chain timestamp mismatch',
-      )
+      const [price, isFinalized] = await oracle.getExpiryPrice(weth.address, otokenExpiry)
+      assert.equal(price.toString(), assetPrice.toString())
+      assert.equal(isFinalized, false)
     })
 
-    it('should revert setting price from controller module if dispute period already started', async () => {
-      await expectRevert(
-        oracle.setBatchUnderlyingPrice(batch, batchExpiry, roundBack, {from: controllerAddress}),
-        'Oracle: dispute period started',
-      )
-
-      // re-set oracle to zero address
-      await oracle.setBatchOracle(batch, batchOracle.address, {from: owner})
-    })
-
-    it('should revert setting price if batch oracle is equal to address zero', async () => {
-      // set oracle to zero address
-      await oracle.setBatchOracle(batch, ZERO_ADDR, {from: owner})
-
-      await expectRevert(
-        oracle.setBatchUnderlyingPrice(batch, batchExpiry, roundBack, {from: controllerAddress}),
-        'Oracle: no oracle for this specific batch',
-      )
-
-      // re-set oracle to non-zero address
-      await oracle.setBatchOracle(batch, batchOracle.address, {from: owner})
-    })
-
-    it('should set price at round back=1, and chainlink roundback price=3', async () => {
-      batchUnderlyingPrice = new BigNumber(500)
-      batchExpiry = new BigNumber(await time.latest())
-
-      // advance time to pass batch locking period (15 min)
-      await time.increase(new BN(60 * 15.5))
-
-      // set round back timestamp, in this scenario price got pushed to feed 10 min after batch expiry
-      await batchOracle.setRoundTimestamp(roundBack, batchExpiry.plus(60 * 15))
-      // set roundback+1 timestamp
-      await batchOracle.setRoundTimestamp(roundBack.plus(1), batchExpiry.plus(60 * 10))
-      // set roundback+2 timestamp
-      await batchOracle.setRoundTimestamp(roundBack.plus(2), batchExpiry.plus(60 * 5))
-      // set roundback+2 timestamp
-      await batchOracle.setRoundTimestamp(roundBack.plus(3), batchExpiry.plus(60))
-      // set roundback+3 timestamp
-      await batchOracle.setRoundTimestamp(roundBack.plus(4), batchExpiry.minus(60 * 2))
-
-      // set price feed
-      await batchOracle.setRoundAnswer(roundBack.plus(3), batchUnderlyingPrice)
-
-      // current timestamp at which price will be submitted to our Oracle module
-      const onchainPriceTimestamp = new BigNumber(await time.latest())
-      // set batch underlying price
-      await oracle.setBatchUnderlyingPrice(batch, batchExpiry, roundBack, {from: controllerAddress})
-
-      // get batch price
-      const price = await oracle.getBatchPrice(batch, batchExpiry)
-
-      assert.equal(price[0].toString(), batchUnderlyingPrice.toString(), 'batch underlying price mismatch')
-      // checking difference between timestamp is less than 2, used this because of lack timestamp precision
-      assert.isAtMost(
-        new BigNumber(price[1]).minus(onchainPriceTimestamp).toNumber(),
-        2,
-        'batch underlying price on-chain timestamp mismatch',
-      )
-    })
-
-    it('isDisputePeriodOver should retun false when batch price timestamp is not updated', async () => {
-      const isOver = await oracle.isDisputePeriodOver(batch, batchExpiry)
-      const expectedResult = false
-      assert.equal(isOver, expectedResult, 'dispute period check mismatch')
-    })
-
-    it('isDisputePeriodOver should retun true when now >  updateTimestamp + disputePeriod', async () => {
-      await time.increase(60 * 60)
-      const isOver = await oracle.isDisputePeriodOver(batch, batchExpiry)
-      const expectedResult = true
-      assert.equal(isOver, expectedResult, 'dispute period check mismatch')
+    it('should revert if the same asset - expiry is set twice', async () => {
+      await expectRevert(wethPricer.setExpiryPriceToOralce(otokenExpiry, assetPrice), 'Oracle: dispute period started')
     })
   })
 
-  describe('Set batch underlying asset price', () => {
-    let batchExpiry: BigNumber
-    let roundBack: BigNumber
-    let priorRoundTimestamp: BigNumber
-    // expected underlying price at that timestamp
-    let batchUnderlyingPrice: BigNumber
-
-    before(async () => {
-      batchExpiry = new BigNumber(await time.latest())
-      roundBack = new BigNumber(1)
-      priorRoundTimestamp = roundBack.plus(1)
-      // expected underlying price at that timestamp
-      batchUnderlyingPrice = new BigNumber(200)
+  describe('Dispute price', () => {
+    const disputePrice = new BigNumber(700)
+    it('should revert disputing price during dispute period from non-owner', async () => {
+      await expectRevert(
+        oracle.disputeExpiryPrice(weth.address, otokenExpiry, disputePrice, {from: random}),
+        'Ownable: caller is not the owner',
+      )
     })
 
-    it('should revert setting price if locking period is not over', async () => {
-      // set round back timestamp, in this scenario price got pushed to feed 10 min after batch expiry
-      await batchOracle.setRoundTimestamp(roundBack, batchExpiry.plus(60 * 10))
-      // set prior round timestamp
-      await batchOracle.setRoundTimestamp(priorRoundTimestamp, batchExpiry.minus(60 * 10))
-      // set price feed
-      await batchOracle.setRoundAnswer(roundBack, batchUnderlyingPrice)
+    it('should dispute price during dispute period', async () => {
+      await oracle.disputeExpiryPrice(weth.address, otokenExpiry, disputePrice, {from: owner})
+
+      const price = await oracle.getExpiryPrice(weth.address, otokenExpiry)
+      assert.equal(price[0].toString(), disputePrice.toString(), 'asset price mismatch')
+    })
+
+    it('should revert disputing price after dispute period over', async () => {
+      const disputePeriod = (await oracle.getPricerDisputePeriod(wethPricer.address)).toNumber()
+      await time.increase(disputePeriod + 100)
 
       await expectRevert(
-        oracle.setBatchUnderlyingPrice(batch, batchExpiry, roundBack, {from: controllerAddress}),
-        'Oracle: locking period is not over yet',
+        oracle.disputeExpiryPrice(weth.address, otokenExpiry, disputePrice, {from: owner}),
+        'Oracle: dispute period over',
       )
-    })
-
-    it('should revert setting price from sender other than Controller', async () => {
-      // advance time to pass batch locking period (15 min)
-      await time.increase(new BN(60 * 15.5))
-
-      // set round back timestamp, in this scenario price got pushed to feed 10 min after batch expiry
-      await batchOracle.setRoundTimestamp(roundBack, batchExpiry.plus(60 * 10))
-      // set prior round timestamp
-      await batchOracle.setRoundTimestamp(priorRoundTimestamp, batchExpiry.minus(60 * 10))
-      // set price feed
-      await batchOracle.setRoundAnswer(roundBack, batchUnderlyingPrice)
-
-      await expectRevert(
-        oracle.setBatchUnderlyingPrice(batch, batchExpiry, roundBack, {from: random}),
-        'Oracle: Sender is not Controller',
-      )
-    })
-
-    it('should set price at round back equal to 1', async () => {
-      // set round back timestamp, in this scenario price got pushed to feed 10 min after batch expiry
-      await batchOracle.setRoundTimestamp(roundBack, batchExpiry.plus(60 * 10))
-      // set prior round timestamp
-      await batchOracle.setRoundTimestamp(priorRoundTimestamp, batchExpiry.minus(60 * 10))
-      // set price feed
-      await batchOracle.setRoundAnswer(roundBack, batchUnderlyingPrice)
-
-      // current timestamp at which price will be submitted to our Oracle module
-      const onchainPriceTimestamp = new BigNumber(await time.latest())
-      // set batch underlying price
-      await oracle.setBatchUnderlyingPrice(batch, batchExpiry, roundBack, {from: controllerAddress})
-
-      // get batch price
-      const price = await oracle.getBatchPrice(batch, batchExpiry)
-
-      assert.equal(price[0].toString(), batchUnderlyingPrice.toString(), 'batch underlying price mismatch')
-      // checking difference between timestamp is less than 2, used this because of lack timestamp precision
-      assert.isAtMost(
-        new BigNumber(price[1]).minus(onchainPriceTimestamp).toNumber(),
-        2,
-        'batch underlying price on-chain timestamp mismatch',
-      )
-    })
-
-    it('should revert setting price from controller module if dispute period already started', async () => {
-      await expectRevert(
-        oracle.setBatchUnderlyingPrice(batch, batchExpiry, roundBack, {from: controllerAddress}),
-        'Oracle: dispute period started',
-      )
-
-      // re-set oracle to zero address
-      await oracle.setBatchOracle(batch, batchOracle.address, {from: owner})
-    })
-
-    it('should revert setting price if batch oracle is equal to address zero', async () => {
-      // set oracle to zero address
-      await oracle.setBatchOracle(batch, ZERO_ADDR, {from: owner})
-
-      await expectRevert(
-        oracle.setBatchUnderlyingPrice(batch, batchExpiry, roundBack, {from: controllerAddress}),
-        'Oracle: no oracle for this specific batch',
-      )
-
-      // re-set oracle to zero address
-      await oracle.setBatchOracle(batch, batchOracle.address, {from: owner})
-    })
-
-    it('should set price at round back=1, and chainlink roundback price=3', async () => {
-      batchUnderlyingPrice = new BigNumber(500)
-      batchExpiry = new BigNumber(await time.latest())
-
-      // advance time to pass batch locking period (15 min)
-      await time.increase(new BN(60 * 15.5))
-
-      // set round back timestamp, in this scenario price got pushed to feed 10 min after batch expiry
-      await batchOracle.setRoundTimestamp(roundBack, batchExpiry.plus(60 * 15))
-      // set roundback+1 timestamp
-      await batchOracle.setRoundTimestamp(roundBack.plus(1), batchExpiry.plus(60 * 10))
-      // set roundback+2 timestamp
-      await batchOracle.setRoundTimestamp(roundBack.plus(2), batchExpiry.plus(60 * 5))
-      // set roundback+2 timestamp
-      await batchOracle.setRoundTimestamp(roundBack.plus(3), batchExpiry.plus(60))
-      // set roundback+3 timestamp
-      await batchOracle.setRoundTimestamp(roundBack.plus(4), batchExpiry.minus(60 * 2))
-
-      // set price feed
-      await batchOracle.setRoundAnswer(roundBack.plus(3), batchUnderlyingPrice)
-
-      // current timestamp at which price will be submitted to our Oracle module
-      const onchainPriceTimestamp = new BigNumber(await time.latest())
-      // set batch underlying price
-      await oracle.setBatchUnderlyingPrice(batch, batchExpiry, roundBack, {from: controllerAddress})
-
-      // get batch price
-      const price = await oracle.getBatchPrice(batch, batchExpiry)
-
-      assert.equal(price[0].toString(), batchUnderlyingPrice.toString(), 'batch underlying price mismatch')
-      // checking difference between timestamp is less than 2, used this because of lack timestamp precision
-      assert.isAtMost(
-        new BigNumber(price[1]).minus(onchainPriceTimestamp).toNumber(),
-        2,
-        'batch underlying price on-chain timestamp mismatch',
-      )
-    })
-
-    describe('Dispute price', () => {
-      it('should revert disputing price during dispute period from non-owner', async () => {
-        const disputePrice = new BigNumber(300)
-
-        await expectRevert(
-          oracle.disputeBatchPrice(batch, batchExpiry, disputePrice, {from: random}),
-          'Ownable: caller is not the owner',
-        )
-      })
-
-      it('should dispute price during dispute period', async () => {
-        const disputePrice = new BigNumber(300)
-
-        await oracle.disputeBatchPrice(batch, batchExpiry, disputePrice, {from: owner})
-
-        const price = await oracle.getBatchPrice(batch, batchExpiry)
-
-        assert.equal(price[0].toString(), disputePrice.toString(), 'batch underlying price mismatch')
-      })
-
-      it('should revert disputing price after dispute period over', async () => {
-        await time.increase(new BN(60 * 46))
-
-        const disputePrice = new BigNumber(300)
-
-        await expectRevert(
-          oracle.disputeBatchPrice(batch, batchExpiry, disputePrice, {from: owner}),
-          'Oracle: dispute period over',
-        )
-      })
     })
   })
 })
