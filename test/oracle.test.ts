@@ -56,7 +56,7 @@ contract('Oracle', ([owner, disputer, controllerAddress, random, collateral, str
     })
   })
 
-  describe('setAssetPricer', () => {
+  describe('Set asset pricer', () => {
     it('should revert setting pricer from non-owner address', async () => {
       await expectRevert(
         oracle.setAssetPricer(weth.address, wethPricer.address, {from: random}),
@@ -196,7 +196,7 @@ contract('Oracle', ([owner, disputer, controllerAddress, random, collateral, str
     })
   })
 
-  describe('Setting disputer role', () => {
+  describe('Set disputer', () => {
     it('should return address(0) for disputer', async () => {
       const disputer = await oracle.getDisputer()
       assert.equal(disputer, ZERO_ADDR)
@@ -212,7 +212,7 @@ contract('Oracle', ([owner, disputer, controllerAddress, random, collateral, str
     })
   })
 
-  describe('Disputer role and Dispute price', () => {
+  describe('Dispute price', () => {
     const disputePrice = new BigNumber(700)
 
     it('should revert before setting any disputer', async () => {
