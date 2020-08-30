@@ -68,6 +68,13 @@ contract('ChainlinkPricer', () => {
       const expectedResult = new BigNumber(300).times(1e18)
       assert.equal(price.toString(), expectedResult.toString())
     })
+    it('should return the new price after resetting answer in aggregator', async () => {
+      const newPrice = toChainLinkPrice(400)
+      await wethAggregator.setLatestAnswer(newPrice)
+      const price = await pricer.getPrice()
+      const expectedResult = new BigNumber(400).times(1e18)
+      assert.equal(price.toString(), expectedResult.toString())
+    })
     it('should revert if price is lower than 0', async () => {
       await wethAggregator.setLatestAnswer(-1)
       await expectRevert(pricer.getPrice(), 'ChainLinkPricer: price is lower than 0')
