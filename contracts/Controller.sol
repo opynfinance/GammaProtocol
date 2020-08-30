@@ -76,6 +76,17 @@ contract Controller is ReentrancyGuard, Ownable {
     }
 
     /**
+     * @notice modifier to check the validity of a specific vault id
+     * @param _accountOwner account owner address
+     * @param _vaultId vault id
+     */
+    modifier runPreprocessing(address _accountOwner, uint256 _vaultId) {
+        require((_vaultId > 0) && (_vaultId <= accountVaultCounter[_accountOwner]), "Controller: invalid vault id");
+
+        _;
+    }
+
+    /**
      * @notice allows admin to toggle pause / emergency shutdown
      * @param _paused The new boolean value to set systemPaused to.
      */
@@ -280,7 +291,7 @@ contract Controller is ReentrancyGuard, Ownable {
      * @param _vault final vault state
      */
     function _verifyFinalState(MarginAccount.Vault memory _vault) internal view {
-        if (_vault.shortOtokens.length > 0) {
+        if ((_vault.shortOtokens.length > 0) && (_vault.shortOtokens[0] != address(0))) {
             address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
             MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
 
@@ -325,7 +336,11 @@ contract Controller is ReentrancyGuard, Ownable {
      * @notice deposit long option into vault
      * @param _args DepositArgs structure
      */
-    function _depositLong(Actions.DepositArgs memory _args) internal returns (MarginAccount.Vault memory) {
+    function _depositLong(Actions.DepositArgs memory _args)
+        internal
+        runPreprocessing(_args.owner, _args.vaultId)
+        returns (MarginAccount.Vault memory)
+    {
         require(_args.from == msg.sender, "Controller: depositor address and msg.sender address mismatch");
 
         address whitelistModule = AddressBookInterface(addressBook).getWhitelist();
@@ -358,6 +373,7 @@ contract Controller is ReentrancyGuard, Ownable {
     function _withdrawLong(Actions.WithdrawArgs memory _args)
         internal
         isAuthorized(msg.sender, _args.owner)
+        runPreprocessing(_args.owner, _args.vaultId)
         returns (MarginAccount.Vault memory)
     {
         OtokenInterface otoken = OtokenInterface(_args.asset);
