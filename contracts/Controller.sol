@@ -251,16 +251,6 @@ contract Controller is ReentrancyGuard, Ownable {
             } else if (actionType == Actions.ActionType.WithdrawLongOption) {
                 vault = _withdrawLong(Actions._parseWithdrawArgs(action));
             }
-            if (actionType == Actions.ActionType.DepositLongOption) {
-                // check if this action is manipulating the same vault as all other actions, other than SettleVault
-                (prevActionVaultId, isActionVaultStored) = _checkActionsVaults(
-                    prevActionVaultId,
-                    action.vaultId,
-                    isActionVaultStored
-                );
-
-                vault = _depositLong(Actions._parseDepositArgs(action));
-            }
         }
 
         return vault;
