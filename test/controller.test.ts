@@ -502,7 +502,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
         )
       })
 
-      /*it('should revert when vault have more than 1 long otoken', async () => {
+      it('should revert when vault have more than 1 long otoken', async () => {
         const expiryTime = new BigNumber(60 * 60) // after 1 hour
         const collateralToDeposit = new BigNumber('20')
         // deploy second Otoken
@@ -538,7 +538,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
           controller.operate(actionArgs, {from: accountOwner1}),
           'MarginCalculator: Too many long otokens in the vault.',
         )
-      })*/
+      })
     })
 
     describe('withdraw long otoken', () => {

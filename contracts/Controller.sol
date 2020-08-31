@@ -261,12 +261,10 @@ contract Controller is ReentrancyGuard, Ownable {
      * @param _vault final vault state
      */
     function _verifyFinalState(MarginAccount.Vault memory _vault) internal view {
-        if ((_vault.shortOtokens.length > 0) && (_vault.shortOtokens[0] != address(0))) {
-            address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
-            MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
+        address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
+        MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
 
-            require(calculator.isValidState(_vault, _vault.shortOtokens[0]), "Controller: invalid final vault state");
-        }
+        require(calculator.isValidState(_vault, _vault.shortOtokens), "Controller: invalid final vault state");
     }
 
     /**

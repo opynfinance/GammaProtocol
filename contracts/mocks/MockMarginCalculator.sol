@@ -10,12 +10,18 @@ import {MarginAccount} from "../libs/MarginAccount.sol";
 
 contract MockMarginCalculator {
     // solhint-disable-ignore-no-unused-vars
-    function isValidState(MarginAccount.Vault memory finalVault, address shortOtoken)
+    function isValidState(MarginAccount.Vault memory finalVault, address[] calldata shortOtokens)
         external
         view
         returns (bool isValid)
     {
+        // ensure the number of collateral, long and short array is valid.
+        _checkIsValidSpread(finalVault);
+
         if (finalVault.shortOtokens.length == 0 || finalVault.shortAmounts.length == 0) return true;
+
+        // ensure the long asset is valid for the short asset.
+        _checkIsMarginableLong(finalVault);
 
         bool isExcess = getExcessMargin(finalVault, OtokenInterface(finalVault.shortOtokens[0]).collateralAsset());
 
@@ -27,11 +33,6 @@ contract MockMarginCalculator {
         view
         returns (bool isExcess)
     {
-        // ensure the number of collateral, long and short array is valid.
-        _checkIsValidSpread(_vault);
-        // ensure the long asset is valid for the short asset.
-        _checkIsMarginableLong(_vault);
-
         return true;
     }
 
@@ -59,17 +60,19 @@ contract MockMarginCalculator {
 
         OtokenInterface long = OtokenInterface(_vault.longOtokens[0]);
         OtokenInterface short = OtokenInterface(_vault.shortOtokens[0]);
-        require(_getBatchId(long) == _getBatchId(short), "MarginCalculator: Long and short batch mismatch");
-    }
 
-    function _getBatchId(OtokenInterface _otoken) internal view returns (bytes32 id) {
-        id = keccak256(
-            abi.encodePacked(
-                _otoken.underlyingAsset(),
-                _otoken.strikeAsset(),
-                _otoken.collateralAsset(),
-                _otoken.expiryTimestamp()
-            )
+        require(
+            long.underlyingAsset() == short.underlyingAsset(),
+            "MarginCalculator: Long and short underlying asset mismatch"
+        );
+        require(long.strikeAsset() == short.strikeAsset(), "MarginCalculator: Long and short strike asset mismatch");
+        require(
+            long.collateralAsset() == short.collateralAsset(),
+            "MarginCalculator: Long and short collateral asset mismatch"
+        );
+        require(
+            long.expiryTimestamp() == short.expiryTimestamp(),
+            "MarginCalculator: Long and short expiry timestamp mismatch"
         );
     }
 }

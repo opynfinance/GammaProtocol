@@ -13,5 +13,8 @@ interface MarginCalculatorInterface {
         view
         returns (uint256 netValue, bool isExcess);
 
-    function isValidState(MarginAccount.Vault memory _vault, address _denominated) external view returns (bool isValid);
+    function isValidState(MarginAccount.Vault memory _vault, address[] calldata _denominated)
+        external
+        view
+        returns (bool isValid);
 }
