@@ -281,10 +281,10 @@ contract MarginCalculator is Initializable {
      * @return isFinalized the price is finalized by the oracle and can't be changed
      */
     function _getUnderlyingPrice(address _otoken) internal view returns (uint256 price, bool isFinalized) {
-        OtokenInterface otoken = OtokenInterface(_otoken);
-        bytes32 batchId = _getBatchId(otoken);
         OracleInterface oracle = OracleInterface(AddressBookInterface(addressBook).getOracle());
-        return oracle.getBatchPrice(batchId, otoken.expiryTimestamp());
+        OtokenInterface otoken = OtokenInterface(_otoken);
+        // return (otoken.expiryTimestamp(), true);
+        return oracle.getExpiryPrice(otoken.underlyingAsset(), otoken.expiryTimestamp());
     }
 
     /**

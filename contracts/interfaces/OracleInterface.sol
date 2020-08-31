@@ -2,23 +2,35 @@
 pragma solidity 0.6.10;
 
 interface OracleInterface {
-    function isLockingPeriodOver(bytes32 _batch, uint256 _expiryTimestamp) external view returns (bool);
+    function isLockingPeriodOver(address _asset, uint256 _expiryTimestamp) external view returns (bool);
 
-    function isDisputePeriodOver(bytes32 _batch, uint256 _expiryTimestamp) external view returns (bool);
+    function isDisputePeriodOver(address _asset, uint256 _expiryTimestamp) external view returns (bool);
 
-    function isPriceFinalized(bytes32 _batch) external view returns (bool);
+    function getExpiryPrice(address _asset, uint256 _expiryTimestamp) external view returns (uint256, bool);
 
-    function getBatchPrice(bytes32 _batch, uint256 _timestamp) external view returns (uint256, bool);
+    function getPricer(address _asset) external view returns (address);
 
-    function setLockingPeriod(address _oracle, uint256 _lockingPeriod) external;
+    function getPricerLockingPeriod(address _pricer) external view returns (uint256);
 
-    function setDisputePeriod(address _oracle, uint256 _disputePeriod) external;
+    function getPricerDisputePeriod(address _pricer) external view returns (uint256);
 
-    function setBatchUnderlyingPrice(
-        bytes32 _batch,
+    // Non-view function
+
+    function setAssetPricer(address _asset, address _pricer) external;
+
+    function setLockingPeriod(address _pricer, uint256 _lockingPeriod) external;
+
+    function setDisputePeriod(address _pricer, uint256 _disputePeriod) external;
+
+    function setExpiryPrice(
+        address _asset,
         uint256 _expiryTimestamp,
-        uint256 _roundsBack
+        uint256 _price
     ) external;
 
-    function disputeBatchPrice(bytes32 _batch, uint256 _price) external;
+    function disputeExpiryPrice(
+        address _asset,
+        uint256 _expiryTimestamp,
+        uint256 _price
+    ) external;
 }

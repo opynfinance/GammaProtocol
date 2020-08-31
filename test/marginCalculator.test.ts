@@ -42,7 +42,7 @@ contract('MarginCalculator', () => {
     calculator = await MarginCalculator.new()
     await calculator.init(addressBook.address)
     // setup oracle
-    oracle = await MockOracle.new(addressBook.address)
+    oracle = await MockOracle.new()
     await addressBook.setOracle(oracle.address)
     // setup usdc and weth
     usdc = await MockERC20.new('USDC', 'USDC')
@@ -79,6 +79,7 @@ contract('MarginCalculator', () => {
       call = await MockOtoken.new()
       await put.init(weth.address, usdc.address, usdc.address, createScaledNumber(250), closeExpiry, true)
       await call.init(weth.address, usdc.address, usdc.address, createScaledNumber(250), closeExpiry, false)
+      await oracle.setIsFinalized(weth.address, closeExpiry, true)
     })
 
     it('Should revert when entering address(0)', async () => {
@@ -91,31 +92,32 @@ contract('MarginCalculator', () => {
     })
     it('Should return cash value for put as strike price - eth price when strike > eth price', async () => {
       const ethPirce = createScaledNumber(200)
-      await oracle.setMockedStatus(ethPirce, true)
+      await oracle.setExpiryPrice(weth.address, closeExpiry, ethPirce)
       const cashedValue = await calculator.getExpiredCashValue(put.address)
       assert.equal(cashedValue.toString(), createScaledNumber(50))
     })
     it('Should return cash value for call as 0 when strike price when strike > eth price', async () => {
       const ethPirce = createScaledNumber(150)
-      await oracle.setMockedStatus(ethPirce, true)
+      await oracle.setExpiryPrice(weth.address, closeExpiry, ethPirce)
       const cashedValue = await calculator.getExpiredCashValue(call.address)
       assert.equal(cashedValue.toString(), '0')
     })
     it('Should return cash value for put as 0 when strike  < eth price', async () => {
       const ethPirce = createScaledNumber(300)
-      await oracle.setMockedStatus(ethPirce, true)
+      await oracle.setExpiryPrice(weth.address, closeExpiry, ethPirce)
       const cashedValue = await calculator.getExpiredCashValue(put.address)
       assert.equal(cashedValue.toString(), '0')
     })
     it('Should return cash value for call as underlying - strike when strike < eth price', async () => {
       const ethPirce = createScaledNumber(300)
-      await oracle.setMockedStatus(ethPirce, true)
+      await oracle.setExpiryPrice(weth.address, closeExpiry, ethPirce)
       const cashedValue = await calculator.getExpiredCashValue(call.address)
       assert.equal(cashedValue.toString(), createScaledNumber(50))
     })
     it('Should revert if price is not finalized.', async () => {
       const ethPirce = createScaledNumber(200)
-      await oracle.setMockedStatus(ethPirce, false)
+      await oracle.setExpiryPrice(weth.address, closeExpiry, ethPirce)
+      await oracle.setIsFinalized(weth.address, closeExpiry, false)
       await expectRevert(
         calculator.getExpiredCashValue(call.address),
         'MarginCalculator: Oracle price not finalized yet.',
@@ -646,7 +648,8 @@ contract('MarginCalculator', () => {
         if ((await time.latest()) < expiry) {
           await time.increaseTo(expiry + 2)
         }
-        await oracle.setMockedStatus(createScaledNumber(150), true)
+        await oracle.setIsFinalized(weth.address, expiry, true)
+        await oracle.setExpiryPrice(weth.address, expiry, createScaledNumber(150))
       })
 
       it('(1) Short: 1 250 put, collateral: 250 USDC => can take out 150 USD', async () => {
@@ -734,7 +737,7 @@ contract('MarginCalculator', () => {
         if ((await time.latest()) < expiry) {
           await time.increaseTo(expiry + 2)
         }
-        await oracle.setMockedStatus(createScaledNumber(300), true)
+        await oracle.setExpiryPrice(weth.address, expiry, createScaledNumber(300))
       })
 
       it('(1) Short: 1 250 put, collateral: 250 USDC => can take out 250 USD', async () => {
@@ -822,7 +825,7 @@ contract('MarginCalculator', () => {
         if ((await time.latest()) < expiry) {
           await time.increaseTo(expiry + 2)
         }
-        await oracle.setMockedStatus(createScaledNumber(210), true)
+        await oracle.setExpiryPrice(weth.address, expiry, createScaledNumber(210))
       })
 
       it('(1) Short: 1 200 put, long 1 250 put => Net value', async () => {
@@ -852,7 +855,7 @@ contract('MarginCalculator', () => {
         if ((await time.latest()) < expiry) {
           await time.increaseTo(expiry + 2)
         }
-        await oracle.setMockedStatus(createScaledNumber(150), true)
+        await oracle.setExpiryPrice(weth.address, expiry, createScaledNumber(150))
       })
 
       const amountOne = createScaledNumber(1)
@@ -933,7 +936,7 @@ contract('MarginCalculator', () => {
         if ((await time.latest()) < expiry) {
           await time.increaseTo(expiry + 2)
         }
-        await oracle.setMockedStatus(createScaledNumber(300), true)
+        await oracle.setExpiryPrice(weth.address, expiry, createScaledNumber(300))
       })
 
       const amountOne = createScaledNumber(1)
@@ -1015,7 +1018,7 @@ contract('MarginCalculator', () => {
         if ((await time.latest()) < expiry) {
           await time.increaseTo(expiry + 2)
         }
-        await oracle.setMockedStatus(createScaledNumber(210), true)
+        await oracle.setExpiryPrice(weth.address, expiry, createScaledNumber(210))
       })
 
       it('(1) Short: 1 250 call, long 1 200 call, collateral 0 USDC => Net value', async () => {
