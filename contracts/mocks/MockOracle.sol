@@ -1,15 +1,18 @@
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.6.10;
+pragma solidity =0.6.10;
 
-import "../packages/oz/SafeMath.sol";
+import {SafeMath} from "../packages/oz/SafeMath.sol";
 
+/**
+ * SPDX-License-Identifier: UNLICENSED
+ * @dev The MockOracle contract let us easily manipulate the oracle state in testings.
+ */
 contract MockOracle {
-    using SafeMath for uint256;
-
     struct Price {
         uint256 price;
         uint256 timestamp; // timestamp at which the price is pushed to this oracle
     }
+
+    using SafeMath for uint256;
 
     mapping(address => mapping(uint256 => uint256)) public storedPrice;
     mapping(address => mapping(uint256 => bool)) public isFinalized;
@@ -43,21 +46,10 @@ contract MockOracle {
         return (storedPrice[_asset][_expiryTimestamp], isFinalized[_asset][_expiryTimestamp]);
     }
 
-    /**
-     * @notice get asset pricer
-     * @param _asset get the pricer for a specific asset.
-     * @return pricer address
-     */
     function getPricer(address _asset) external view returns (address) {
         return assetPricer[_asset];
     }
 
-    /**
-     * @notice get pricer locking period. A locking period is a period of time after expiry where no one can push price to oracle
-     * @dev during locking period, price can not be submitted to this contract
-     * @param _pricer pricer address
-     * @return locking period
-     */
     function getPricerLockingPeriod(address _pricer) external view returns (uint256) {
         return pricerLockingPeriod[_pricer];
     }
