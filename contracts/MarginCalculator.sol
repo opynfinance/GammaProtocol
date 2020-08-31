@@ -68,14 +68,12 @@ contract MarginCalculator is Initializable {
         require(_isMarginableLong(_vault), "MarginCalculator: long asset not marginable for short asset");
 
         // collateral amount is always positive.
-        FixedPointInt256.FixedPointInt memory collateralAmount = (_vault.collateralAssets.length == 0) ||
-            (_vault.collateralAssets[0] == address(0))
+        FixedPointInt256.FixedPointInt memory collateralAmount = _isEmptyAssetArray(_vault.collateralAssets)
             ? _uint256ToFixedPointInt(0)
             : _uint256ToFixedPointInt(_vault.collateralAmounts[0]);
 
         // Vault contains no short tokens: return collateral value.
-        if (_vault.shortOtokens.length == 0 || _vault.shortOtokens[0] == address(0))
-            return (SignedConverter.intToUint(collateralAmount.value), true);
+        if (_isEmptyAssetArray(_vault.shortOtokens)) return (SignedConverter.intToUint(collateralAmount.value), true);
 
         // For the currenct version, ensure denominated == short.collateral
         address shortCollateral = OtokenInterface(_vault.shortOtokens[0]).collateralAsset();
@@ -273,7 +271,7 @@ contract MarginCalculator is Initializable {
      * @param _vault the vault to check.
      */
     function _isMarginableLong(MarginAccount.Vault memory _vault) internal view returns (bool) {
-        if (_vault.longOtokens.length == 0 || _vault.shortOtokens.length == 0) return true;
+        if (_isEmptyAssetArray(_vault.longOtokens) || _isEmptyAssetArray(_vault.shortOtokens)) return true;
 
         OtokenInterface long = OtokenInterface(_vault.longOtokens[0]);
         OtokenInterface short = OtokenInterface(_vault.shortOtokens[0]);
@@ -298,23 +296,15 @@ contract MarginCalculator is Initializable {
         return oracle.getExpiryPrice(otoken.underlyingAsset(), otoken.expiryTimestamp());
     }
 
-    /**
-     * @dev internal function to hash paramters and get batch id. Same batch id means same product with same expiry.
-     * @param _otoken otoken address
-     * @return id the batchDd of an otoken
-     */
-    function _getBatchId(OtokenInterface _otoken) internal view returns (bytes32 id) {
-        id = keccak256(
-            abi.encodePacked(
-                _otoken.underlyingAsset(),
-                _otoken.strikeAsset(),
-                _otoken.collateralAsset(),
-                _otoken.expiryTimestamp()
-            )
-        );
-    }
-
     function _uint256ToFixedPointInt(uint256 _num) internal pure returns (FixedPointInt256.FixedPointInt memory) {
         return FixedPointInt256.FixedPointInt(SignedConverter.uintToInt(_num));
+    }
+
+    /**
+     * @dev check if array is empty or only have address(0)
+     * @return isEmpty or not
+     */
+    function _isEmptyAssetArray(address[] memory _assets) internal pure returns (bool) {
+        return _assets.length == 0 || _assets[0] == address(0);
     }
 }
