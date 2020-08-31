@@ -1,8 +1,6 @@
 import {FixedPointInt256TesterInstance} from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
-const {expectRevert} = require('@openzeppelin/test-helpers')
-
 const FixedPointInt256Tester = artifacts.require('FixedPointInt256Tester.sol')
 
 contract('FixedPointInt256 lib', () => {

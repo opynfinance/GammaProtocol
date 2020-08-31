@@ -15,7 +15,7 @@ const MockAddressBook = artifacts.require('MockAddressBook')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 const ETH_ADDR = ZERO_ADDR
 
-contract('MarginAccount', ([deployer, vaultOwner1, controller]) => {
+contract('MarginAccount', ([deployer, controller]) => {
   let weth: MockERC20Instance
   let usdc: MockERC20Instance
   let otoken: OtokenInstance

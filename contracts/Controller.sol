@@ -14,6 +14,8 @@ import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
 import {OtokenInterface} from "./interfaces/OtokenInterface.sol";
 import {MarginCalculatorInterface} from "./interfaces/MarginCalculatorInterface.sol";
 import {OracleInterface} from "./interfaces/OracleInterface.sol";
+import {WhitelistInterface} from "./interfaces/WhitelistInterface.sol";
+import {MarginPoolInterface} from "./interfaces/MarginPoolInterface.sol";
 
 /**
  * @author Opyn Team
@@ -225,6 +227,16 @@ contract Controller is ReentrancyGuard, Ownable {
 
                 _openVault(Actions._parseOpenVaultArgs(action));
             }
+            if (actionType == Actions.ActionType.DepositLongOption) {
+                // check if this action is manipulating the same vault as all other actions, other than SettleVault
+                (prevActionVaultId, isActionVaultStored) = _checkActionsVaults(
+                    prevActionVaultId,
+                    action.vaultId,
+                    isActionVaultStored
+                );
+
+                vault = _depositLong(Actions._parseDepositArgs(action));
+            }
         }
 
         return vault;
@@ -280,7 +292,30 @@ contract Controller is ReentrancyGuard, Ownable {
      * @notice deposit long option into vault
      * @param _args DepositArgs structure
      */
-    // function _depositLong(Actions.DepositArgs memory _args) internal {}
+    function _depositLong(Actions.DepositArgs memory _args) internal returns (MarginAccount.Vault memory) {
+        require(_args.from == msg.sender, "Controller: depositor address and msg.sender address mismatch");
+
+        address whitelistModule = AddressBookInterface(addressBook).getWhitelist();
+        WhitelistInterface whitelist = WhitelistInterface(whitelistModule);
+
+        require(
+            whitelist.isWhitelistedOtoken(_args.asset),
+            "Controller: otoken is not whitelisted to be used as collateral"
+        );
+
+        OtokenInterface otoken = OtokenInterface(_args.asset);
+
+        require(now <= otoken.expiryTimestamp(), "Controller: otoken used as collateral is already expired");
+
+        vaults[_args.owner][_args.vaultId]._addLong(address(otoken), _args.amount, _args.index);
+
+        address marginPoolModule = AddressBookInterface(addressBook).getMarginPool();
+        MarginPoolInterface marginPool = MarginPoolInterface(marginPoolModule);
+
+        marginPool.transferToPool(address(otoken), _args.from, _args.amount);
+
+        return vaults[_args.owner][_args.vaultId];
+    }
 
     /**
      * @notice withdraw long option from vault

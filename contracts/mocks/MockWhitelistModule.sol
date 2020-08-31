@@ -27,4 +27,8 @@ contract MockWhitelistModule {
     function whitelistOtoken(address _otoken) external {
         _isWhitelistedOtoken[_otoken] = true;
     }
+
+    function isWhitelistedOtoken(address _otoken) external view returns (bool) {
+        return _isWhitelistedOtoken[_otoken];
+    }
 }
