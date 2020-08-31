@@ -53,15 +53,10 @@ contract MarginCalculator is Initializable {
     /**
      * @notice returns the net value of a vault in the valid collateral asset for that vault i.e. USDC for puts/ ETH for calls
      * @param _vault the theoretical vault that needs to be checked
-     * @param _denominated the token the result is denominated in. Must be the same as short.collateral for now.
      * @return netValue the amount by which the margin is above or below the required amount.
      * @return isExcess true if there's excess margin in the vault. In this case, collateral can be taken out from the vault. False if there is insufficient margin and additional collateral needs to be added to the vault to create the position.
      */
-    function getExcessMargin(MarginAccount.Vault memory _vault, address _denominated)
-        public
-        view
-        returns (uint256, bool)
-    {
+    function getExcessMargin(MarginAccount.Vault memory _vault) public view returns (uint256, bool) {
         // ensure the number of collateral, long and short array is valid.
         _checkIsValidSpread(_vault);
         // ensure the long asset is valid for the short asset.
@@ -74,13 +69,6 @@ contract MarginCalculator is Initializable {
 
         // Vault contains no short tokens: return collateral value.
         if (_isEmptyAssetArray(_vault.shortOtokens)) return (SignedConverter.intToUint(collateralAmount.value), true);
-
-        // For the currenct version, ensure denominated == short.collateral
-        address shortCollateral = OtokenInterface(_vault.shortOtokens[0]).collateralAsset();
-        require(
-            shortCollateral == _denominated,
-            "MarginCalculator: Denomintated token should be the short otoken's collateral"
-        );
 
         FixedPointInt256.FixedPointInt memory marginRequirement = _getMarginRequired(_vault);
         // if marginRequirement > 0, the long assets cannot cover the max loss of short assets in the vault.
