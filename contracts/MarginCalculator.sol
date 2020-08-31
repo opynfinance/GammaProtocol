@@ -68,12 +68,14 @@ contract MarginCalculator is Initializable {
         require(_isMarginableLong(_vault), "MarginCalculator: long asset not marginable for short asset");
 
         // collateral amount is always positive.
-        FixedPointInt256.FixedPointInt memory collateralAmount = _vault.collateralAmounts.length > 0
-            ? _uint256ToFixedPointInt(_vault.collateralAmounts[0])
-            : _uint256ToFixedPointInt(0);
+        FixedPointInt256.FixedPointInt memory collateralAmount = (_vault.collateralAssets.length == 0) ||
+            (_vault.collateralAssets[0] == address(0))
+            ? _uint256ToFixedPointInt(0)
+            : _uint256ToFixedPointInt(_vault.collateralAmounts[0]);
 
         // Vault contains no short tokens: return collateral value.
-        if (_vault.shortOtokens.length == 0) return (SignedConverter.intToUint(collateralAmount.value), true);
+        if (_vault.shortOtokens.length == 0 || _vault.shortOtokens[0] == address(0))
+            return (SignedConverter.intToUint(collateralAmount.value), true);
 
         // For the currenct version, ensure denominated == short.collateral
         address shortCollateral = OtokenInterface(_vault.shortOtokens[0]).collateralAsset();
@@ -105,7 +107,7 @@ contract MarginCalculator is Initializable {
         // The vault passed in has a short array == 1, so we can just use shortAmounts[0]
         FixedPointInt256.FixedPointInt memory shortAmount = _uint256ToFixedPointInt(_vault.shortAmounts[0]);
 
-        bool hasLongInVault = _vault.longOtokens.length > 0;
+        bool hasLongInVault = _vault.longOtokens.length > 0 && _vault.longOtokens[0] != address(0);
         FixedPointInt256.FixedPointInt memory longAmount = hasLongInVault
             ? _uint256ToFixedPointInt(_vault.longAmounts[0])
             : _uint256ToFixedPointInt(0);
