@@ -924,6 +924,60 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
       )
     })
 
+    it('should deposit a whitelisted collateral asset from account operator', async () => {
+      const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+      assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+      const collateralToDeposit = new BigNumber('10')
+      const actionArgs = [
+        {
+          actionType: ActionType.DepositCollateral,
+          owner: accountOwner1,
+          sender: accountOperator1,
+          asset: usdc.address,
+          vaultId: vaultCounter.toNumber(),
+          amount: collateralToDeposit.toNumber(),
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+
+      const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+      const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOperator1))
+      const vaultBefore = await controller.getVault(accountOwner1, vaultCounter)
+
+      await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOperator1})
+      await controller.operate(actionArgs, {from: accountOperator1})
+
+      const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+      const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOperator1))
+      const vaultAfter = await controller.getVault(accountOwner1, vaultCounter)
+
+      assert.equal(
+        marginPoolBalanceAfter.minus(marginPoolBalanceBefore).toString(),
+        collateralToDeposit.toString(),
+        'Margin pool balance collateral asset balance mismatch',
+      )
+      assert.equal(
+        senderBalanceBefore.minus(senderBalanceAfter).toString(),
+        collateralToDeposit.toString(),
+        'Sender balance collateral asset balance mismatch',
+      )
+      assert.equal(vaultAfter.collateralAssets.length, 1, 'Vault collateral assets array length mismatch')
+      assert.equal(
+        vaultAfter.collateralAssets[0],
+        usdc.address,
+        'Collateral asset address deposited into vault mismatch',
+      )
+      assert.equal(
+        new BigNumber(vaultAfter.collateralAmounts[0])
+          .minus(new BigNumber(vaultBefore.collateralAmounts[0]))
+          .toString(),
+        collateralToDeposit.toString(),
+        'Long otoken amount deposited into vault mismatch',
+      )
+    })
+
     /*describe('Deposit un-whitelisted collateral asset', () => {
       it('should revert depositing a collateral asset that is not whitelisted', async () => {
         // deploy a shitcoin
