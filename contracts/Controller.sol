@@ -51,6 +51,40 @@ contract Controller is ReentrancyGuard, Ownable {
 
     /// @notice emits an event when a account operator updated for a specific account owner
     event AccountOperatorUpdated(address indexed accountOwner, address indexed operator, bool isSet);
+    /// @notice emits an event when new vault get opened
+    event VaultOpened(address indexed accountOwner, uint256 vaultId);
+    /// @notice emits an event when a long otoken is deposited into a vault
+    event LongOtokenDeposited(
+        address indexed otoken,
+        address indexed accountOwner,
+        address indexed from,
+        uint256 vaultId,
+        uint256 amount
+    );
+    /// @notice emits an event when a long otoken is withdrawed from a vault
+    event LongOtokenWithdrawed(
+        address indexed otoken,
+        address indexedAccountOwner,
+        address indexed to,
+        uint256 vaultId,
+        uint256 amount
+    );
+    /// @notice emits an event when a long otoken is deposited into a vault
+    event CollateralAssetDeposited(
+        address indexed asset,
+        address indexed accountOwner,
+        address indexed from,
+        uint256 vaultId,
+        uint256 amount
+    );
+    /// @notice emits an event when a collateral asset is withdrawed from a vault
+    event CollateralAssetWithdrawed(
+        address indexed asset,
+        address indexedAccountOwner,
+        address indexed to,
+        uint256 vaultId,
+        uint256 amount
+    );
 
     /**
      * @notice modifier check if protocol is not paused
@@ -246,6 +280,8 @@ contract Controller is ReentrancyGuard, Ownable {
                 vault = _depositLong(Actions._parseDepositArgs(action));
             } else if (actionType == Actions.ActionType.WithdrawLongOption) {
                 vault = _withdrawLong(Actions._parseWithdrawArgs(action));
+            } else if (actionType == Actions.ActionType.DepositCollateral) {
+                vault = _depositCollateral(Actions._parseDepositArgs(action));
             }
         }
 
@@ -296,6 +332,8 @@ contract Controller is ReentrancyGuard, Ownable {
             _args.vaultId == accountVaultCounter[_args.owner],
             "Controller: can not run actions on inexistent vault"
         );
+
+        emit VaultOpened(_args.owner, accountVaultCounter[_args.owner]);
     }
 
     /**
@@ -328,6 +366,8 @@ contract Controller is ReentrancyGuard, Ownable {
 
         marginPool.transferToPool(address(otoken), _args.from, _args.amount);
 
+        emit LongOtokenDeposited(address(otoken), _args.owner, _args.from, _args.vaultId, _args.amount);
+
         return vaults[_args.owner][_args.vaultId];
     }
 
@@ -353,6 +393,8 @@ contract Controller is ReentrancyGuard, Ownable {
 
         marginPool.transferToUser(address(otoken), _args.to, _args.amount);
 
+        emit LongOtokenWithdrawed(address(otoken), _args.owner, _args.to, _args.vaultId, _args.amount);
+
         return vaults[_args.owner][_args.vaultId];
     }
 
@@ -360,7 +402,32 @@ contract Controller is ReentrancyGuard, Ownable {
      * @notice deposit collateral asset into vault
      * @param _args DepositArgs structure
      */
-    // function _depositCollateral(Actions.DepositArgs memory _args) internal {}
+    function _depositCollateral(Actions.DepositArgs memory _args)
+        internal
+        isValidVaultId(_args.owner, _args.vaultId)
+        returns (MarginAccount.Vault memory)
+    {
+        require(_args.from == msg.sender, "Controller: depositor address and msg.sender address mismatch");
+
+        address whitelistModule = AddressBookInterface(addressBook).getWhitelist();
+        WhitelistInterface whitelist = WhitelistInterface(whitelistModule);
+
+        require(
+            whitelist.isWhitelistedCollateral(_args.asset),
+            "Controller: asset is not whitelisted to be used as collateral"
+        );
+
+        vaults[_args.owner][_args.vaultId]._addCollateral(_args.asset, _args.amount, _args.index);
+
+        address marginPoolModule = AddressBookInterface(addressBook).getMarginPool();
+        MarginPoolInterface marginPool = MarginPoolInterface(marginPoolModule);
+
+        marginPool.transferToPool(_args.asset, _args.from, _args.amount);
+
+        emit CollateralAssetDeposited(_args.asset, _args.owner, _args.from, _args.vaultId, _args.amount);
+
+        return vaults[_args.owner][_args.vaultId];
+    }
 
     /**
      * @notice withdraw collateral asset from vault

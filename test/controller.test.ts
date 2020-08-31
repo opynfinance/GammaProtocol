@@ -95,6 +95,11 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
     await addressBook.setController(controller.address, {from: owner})
 
     assert.equal(await controller.systemPaused(), false, 'System is paused')
+
+    // make everyone rich
+    await usdc.mint(accountOwner1, new BigNumber('1000'))
+    await usdc.mint(accountOperator1, new BigNumber('1000'))
+    await usdc.mint(random, new BigNumber('1000'))
   })
 
   describe('Controller initialization', () => {
@@ -863,6 +868,408 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
         })
       })
     })
+  })
+
+  describe('Collateral asset', () => {
+    it('should deposit a whitelisted collateral asset from account owner', async () => {
+      // whitelist usdc
+      await whitelist.whitelistCollateral(usdc.address)
+      const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+      assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+      const collateralToDeposit = new BigNumber('10')
+      const actionArgs = [
+        {
+          actionType: ActionType.DepositCollateral,
+          owner: accountOwner1,
+          sender: accountOwner1,
+          asset: usdc.address,
+          vaultId: vaultCounter.toNumber(),
+          amount: collateralToDeposit.toNumber(),
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+
+      const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+      const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
+
+      await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
+      await controller.operate(actionArgs, {from: accountOwner1})
+
+      const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+      const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
+      const vaultAfter = await controller.getVault(accountOwner1, vaultCounter)
+
+      assert.equal(
+        marginPoolBalanceAfter.minus(marginPoolBalanceBefore).toString(),
+        collateralToDeposit.toString(),
+        'Margin pool balance collateral asset balance mismatch',
+      )
+      assert.equal(
+        senderBalanceBefore.minus(senderBalanceAfter).toString(),
+        collateralToDeposit.toString(),
+        'Sender balance collateral asset balance mismatch',
+      )
+      assert.equal(vaultAfter.collateralAssets.length, 1, 'Vault collateral assets array length mismatch')
+      assert.equal(
+        vaultAfter.collateralAssets[0],
+        usdc.address,
+        'Collateral asset address deposited into vault mismatch',
+      )
+      assert.equal(
+        new BigNumber(vaultAfter.collateralAmounts[0]).toString(),
+        collateralToDeposit.toString(),
+        'Collateral asset amount deposited into vault mismatch',
+      )
+    })
+
+    /*describe('Deposit un-whitelisted collateral asset', () => {
+      it('should revert depositing a collateral asset that is not whitelisted', async () => {
+        // deploy a shitcoin
+        const trx: MockERC20Instance = await MockERC20.new('TRX', 'TRX')
+        await usdc.mint(accountOwner1, new BigNumber('1000'))
+
+
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+        const collateralDeposit = new BigNumber('10')
+        const actionArgs = [
+          {
+            actionType: ActionType.DepositCollateral,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: trx.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralDeposit.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        await trx.approve(marginPool.address, collateralDeposit, {from: accountOwner1})
+        await expectRevert(
+          controller.operate(actionArgs, {from: accountOwner1}),
+          'Controller: asset is not whitelisted to be used as collateral',
+        )
+      })
+    })*/
+
+    /*before(async () => {
+      const expiryTime = new BigNumber(60 * 60 * 24) // after 1 day
+
+      longOtoken = await MockOtoken.new()
+      // init otoken
+      await longOtoken.init(
+        weth.address,
+        usdc.address,
+        usdc.address,
+        new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+        new BigNumber(await time.latest()).plus(expiryTime),
+        true,
+      )
+
+      await longOtoken.mint(accountOwner1, new BigNumber('100'))
+      await longOtoken.mint(accountOperator1, new BigNumber('100'))
+    })
+
+    describe('deposit long otoken', () => {
+      it('should revert depositing a non-whitelisted long otoken into vault', async () => {
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        const collateralToDeposit = new BigNumber('20')
+        const actionArgs = [
+          {
+            actionType: ActionType.DepositLongOption,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: longOtoken.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToDeposit.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        await longOtoken.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
+        await expectRevert(
+          controller.operate(actionArgs, {from: accountOwner1}),
+          'Controller: otoken is not whitelisted to be used as collateral',
+        )
+      })
+
+      it('should deposit long otoken into vault from account owner', async () => {
+        // whitelist otoken
+        await whitelist.whitelistOtoken(longOtoken.address)
+
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        const collateralToDeposit = new BigNumber('20')
+        const actionArgs = [
+          {
+            actionType: ActionType.DepositLongOption,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: longOtoken.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToDeposit.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+        const marginPoolBalanceBefore = new BigNumber(await longOtoken.balanceOf(marginPool.address))
+        const senderBalanceBefore = new BigNumber(await longOtoken.balanceOf(accountOwner1))
+
+        await longOtoken.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
+        await controller.operate(actionArgs, {from: accountOwner1})
+
+        const marginPoolBalanceAfter = new BigNumber(await longOtoken.balanceOf(marginPool.address))
+        const senderBalanceAfter = new BigNumber(await longOtoken.balanceOf(accountOwner1))
+        const vaultAfter = await controller.getVault(accountOwner1, vaultCounter)
+
+        assert.equal(
+          marginPoolBalanceAfter.minus(marginPoolBalanceBefore).toString(),
+          collateralToDeposit.toString(),
+          'Margin pool balance long otoken balance mismatch',
+        )
+        assert.equal(
+          senderBalanceBefore.minus(senderBalanceAfter).toString(),
+          collateralToDeposit.toString(),
+          'Sender balance long otoken balance mismatch',
+        )
+        assert.equal(vaultAfter.longOtokens.length, 1, 'Vault long otoken array length mismatch')
+        assert.equal(vaultAfter.longOtokens[0], longOtoken.address, 'Long otoken address deposited into vault mismatch')
+        assert.equal(
+          new BigNumber(vaultAfter.longAmounts[0]).toString(),
+          collateralToDeposit.toString(),
+          'Long otoken amount deposited into vault mismatch',
+        )
+      })
+
+      it('should deposit long otoken into vault from account operator', async () => {
+        assert.equal(await controller.isOperator(accountOwner1, accountOperator1), true, 'Operator address mismatch')
+
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        const collateralToDeposit = new BigNumber('20')
+        const actionArgs = [
+          {
+            actionType: ActionType.DepositLongOption,
+            owner: accountOwner1,
+            sender: accountOperator1,
+            asset: longOtoken.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToDeposit.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+        const marginPoolBalanceBefore = new BigNumber(await longOtoken.balanceOf(marginPool.address))
+        const senderBalanceBefore = new BigNumber(await longOtoken.balanceOf(accountOperator1))
+        const vaultBefore = await controller.getVault(accountOwner1, vaultCounter)
+
+        await longOtoken.approve(marginPool.address, collateralToDeposit, {from: accountOperator1})
+        await controller.operate(actionArgs, {from: accountOperator1})
+
+        const marginPoolBalanceAfter = new BigNumber(await longOtoken.balanceOf(marginPool.address))
+        const senderBalanceAfter = new BigNumber(await longOtoken.balanceOf(accountOperator1))
+        const vaultAfter = await controller.getVault(accountOwner1, vaultCounter)
+
+        assert.equal(
+          marginPoolBalanceAfter.minus(marginPoolBalanceBefore).toString(),
+          collateralToDeposit.toString(),
+          'Margin pool balance long otoken balance mismatch',
+        )
+        assert.equal(
+          senderBalanceBefore.minus(senderBalanceAfter).toString(),
+          collateralToDeposit.toString(),
+          'Sender balance long otoken balance mismatch',
+        )
+        assert.equal(vaultAfter.longOtokens.length, 1, 'Vault long otoken array length mismatch')
+        assert.equal(vaultAfter.longOtokens[0], longOtoken.address, 'Long otoken address deposited into vault mismatch')
+        assert.equal(
+          new BigNumber(vaultAfter.longAmounts[0]).minus(new BigNumber(vaultBefore.longAmounts[0])).toString(),
+          collateralToDeposit.toString(),
+          'Long otoken amount deposited into vault mismatch',
+        )
+      })
+
+      it('should execute depositing long otoken into vault in multiple actions', async () => {
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        const collateralToDeposit = new BigNumber('20')
+        const actionArgs = [
+          {
+            actionType: ActionType.DepositLongOption,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: longOtoken.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToDeposit.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.DepositLongOption,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: longOtoken.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToDeposit.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+        const marginPoolBalanceBefore = new BigNumber(await longOtoken.balanceOf(marginPool.address))
+        const senderBalanceBefore = new BigNumber(await longOtoken.balanceOf(accountOwner1))
+        const vaultBefore = await controller.getVault(accountOwner1, vaultCounter)
+
+        await longOtoken.approve(marginPool.address, collateralToDeposit.multipliedBy(2), {from: accountOwner1})
+        await controller.operate(actionArgs, {from: accountOwner1})
+
+        const marginPoolBalanceAfter = new BigNumber(await longOtoken.balanceOf(marginPool.address))
+        const senderBalanceAfter = new BigNumber(await longOtoken.balanceOf(accountOwner1))
+        const vaultAfter = await controller.getVault(accountOwner1, vaultCounter)
+
+        assert.equal(
+          marginPoolBalanceAfter.minus(marginPoolBalanceBefore).toString(),
+          collateralToDeposit.multipliedBy(2).toString(),
+          'Margin pool balance long otoken balance mismatch',
+        )
+        assert.equal(
+          senderBalanceBefore.minus(senderBalanceAfter).toString(),
+          collateralToDeposit.multipliedBy(2).toString(),
+          'Sender balance long otoken balance mismatch',
+        )
+        assert.equal(vaultAfter.longOtokens.length, 1, 'Vault long otoken array length mismatch')
+        assert.equal(vaultAfter.longOtokens[0], longOtoken.address, 'Long otoken address deposited into vault mismatch')
+        assert.equal(
+          new BigNumber(vaultAfter.longAmounts[0]).minus(new BigNumber(vaultBefore.longAmounts[0])).toString(),
+          collateralToDeposit.multipliedBy(2).toString(),
+          'Long otoken amount deposited into vault mismatch',
+        )
+      })
+
+      it('should revert depositing long otoken from a sender different than arg.from', async () => {
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        const collateralToDeposit = new BigNumber('20')
+        const actionArgs = [
+          {
+            actionType: ActionType.DepositLongOption,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: longOtoken.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToDeposit.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        await longOtoken.approve(marginPool.address, collateralToDeposit, {from: accountOperator1})
+        await expectRevert(
+          controller.operate(actionArgs, {from: accountOperator1}),
+          'Controller: depositor address and msg.sender address mismatch',
+        )
+      })
+
+      it('should revert depositing long otoken with amount equal to zero', async () => {
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        const collateralToDeposit = new BigNumber('20')
+        const actionArgs = [
+          {
+            actionType: ActionType.DepositLongOption,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: longOtoken.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: '0',
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        await longOtoken.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
+        await expectRevert(
+          controller.operate(actionArgs, {from: accountOwner1}),
+          'MarginAccount: invalid long otoken amount',
+        )
+      })
+
+      it('should revert depositing an expired long otoken', async () => {
+        // deploy expired Otoken
+        const expiredLongOtoken: MockOtokenInstance = await MockOtoken.new()
+        // init otoken
+        await expiredLongOtoken.init(
+          weth.address,
+          usdc.address,
+          usdc.address,
+          new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+          '1219926985', // 2008
+          true,
+        )
+        await expiredLongOtoken.mint(accountOwner1, new BigNumber('100'))
+
+        // whitelist otoken
+        await whitelist.whitelistOtoken(expiredLongOtoken.address)
+
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        const collateralToDeposit = new BigNumber('20')
+        const actionArgs = [
+          {
+            actionType: ActionType.DepositLongOption,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: expiredLongOtoken.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToDeposit.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        await expiredLongOtoken.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
+        await expectRevert(
+          controller.operate(actionArgs, {from: accountOwner1}),
+          'Controller: otoken used as collateral is already expired',
+        )
+      })
+
+      it('should revert when vault have more than 1 long otoken', async () => {
+        const expiryTime = new BigNumber(60 * 60) // after 1 hour
+        const collateralToDeposit = new BigNumber('20')
+        // deploy second Otoken
+        const secondLongOtoken: MockOtokenInstance = await MockOtoken.new()
+        // init otoken
+        await secondLongOtoken.init(
+          weth.address,
+          usdc.address,
+          usdc.address,
+          new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+          new BigNumber(await time.latest()).plus(expiryTime),
+          true,
+        )
+        await secondLongOtoken.mint(accountOwner1, collateralToDeposit)
+        // whitelist otoken
+        await whitelist.whitelistOtoken(secondLongOtoken.address)
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        const actionArgs = [
+          {
+            actionType: ActionType.DepositLongOption,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: secondLongOtoken.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToDeposit.toNumber(),
+            index: '1',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        await secondLongOtoken.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
+        await expectRevert(
+          controller.operate(actionArgs, {from: accountOwner1}),
+          'MarginCalculator: Too many long otokens in the vault.',
+        )
+      })
+    })*/
   })
 
   describe('Check if price is finalized', () => {
