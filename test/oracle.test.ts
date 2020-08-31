@@ -8,7 +8,7 @@ import {
 import BigNumber from 'bignumber.js'
 import {assert} from 'chai'
 
-const {expectRevert, time} = require('@openzeppelin/test-helpers')
+const {expectRevert, expectEvent, time} = require('@openzeppelin/test-helpers')
 
 const MockPricer = artifacts.require('MockPricer.sol')
 const MockAddressBook = artifacts.require('MockAddressBook.sol')
@@ -19,7 +19,7 @@ const Oracle = artifacts.require('Oracle.sol')
 // address(0)
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
-contract('Oracle', ([owner, controllerAddress, random, collateral, strike]) => {
+contract('Oracle', ([owner, disputer, controllerAddress, random, collateral, strike]) => {
   // const batch = web3.utils.asciiToHex('ETHUSDCUSDC1596218762')
   // mock a pricer
   let wethPricer: MockPricerInstance
@@ -56,7 +56,7 @@ contract('Oracle', ([owner, controllerAddress, random, collateral, strike]) => {
     })
   })
 
-  describe('setAssetPricer', () => {
+  describe('Set asset pricer', () => {
     it('should revert setting pricer from non-owner address', async () => {
       await expectRevert(
         oracle.setAssetPricer(weth.address, wethPricer.address, {from: random}),
@@ -144,7 +144,7 @@ contract('Oracle', ([owner, controllerAddress, random, collateral, strike]) => {
       )
     })
 
-    it('should check if dispute period is over when price timestamp equal to zero', async () => {
+    it('should check if dispute period is over when no price submitted for that timestamp', async () => {
       const isOver = await oracle.isDisputePeriodOver(weth.address, await time.latest(), {from: owner})
       const expectedResult = false
       assert.equal(isOver, expectedResult, 'dispute period check mismatch')
@@ -196,17 +196,41 @@ contract('Oracle', ([owner, controllerAddress, random, collateral, strike]) => {
     })
   })
 
+  describe('Set disputer', () => {
+    it('should return address(0) for disputer', async () => {
+      const disputer = await oracle.getDisputer()
+      assert.equal(disputer, ZERO_ADDR)
+    })
+
+    it('should revert setting disputer from a non-owner address', async () => {
+      await expectRevert(oracle.setDisputer(disputer, {from: random}), 'Ownable: caller is not the owner')
+    })
+
+    it('should set the disputer from the owner', async () => {
+      expectEvent(await oracle.setDisputer(disputer, {from: owner}), 'DisputerUpdated', {newDisputer: disputer})
+      assert.equal(await oracle.getDisputer(), disputer)
+    })
+  })
+
   describe('Dispute price', () => {
     const disputePrice = new BigNumber(700)
-    it('should revert disputing price during dispute period from non-owner', async () => {
+
+    it('should revert before setting any disputer', async () => {
       await expectRevert(
         oracle.disputeExpiryPrice(weth.address, otokenExpiry, disputePrice, {from: random}),
-        'Ownable: caller is not the owner',
+        'Oracle: caller is not the disputer',
+      )
+    })
+
+    it('should revert disputing price during dispute period from non-disputer', async () => {
+      await expectRevert(
+        oracle.disputeExpiryPrice(weth.address, otokenExpiry, disputePrice, {from: random}),
+        'Oracle: caller is not the disputer',
       )
     })
 
     it('should dispute price during dispute period', async () => {
-      await oracle.disputeExpiryPrice(weth.address, otokenExpiry, disputePrice, {from: owner})
+      await oracle.disputeExpiryPrice(weth.address, otokenExpiry, disputePrice, {from: disputer})
 
       const price = await oracle.getExpiryPrice(weth.address, otokenExpiry)
       assert.equal(price[0].toString(), disputePrice.toString(), 'asset price mismatch')
@@ -217,7 +241,7 @@ contract('Oracle', ([owner, controllerAddress, random, collateral, strike]) => {
       await time.increase(disputePeriod + 100)
 
       await expectRevert(
-        oracle.disputeExpiryPrice(weth.address, otokenExpiry, disputePrice, {from: owner}),
+        oracle.disputeExpiryPrice(weth.address, otokenExpiry, disputePrice, {from: disputer}),
         'Oracle: dispute period over',
       )
     })

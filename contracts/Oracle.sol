@@ -31,7 +31,11 @@ contract Oracle is Ownable {
     mapping(address => address) internal assetPricer;
     /// @dev mapping between asset, timestamp and the price at the timestamp.
     mapping(address => mapping(uint256 => Price)) internal storedPrice;
+    //// @dev a disputer is a role defined by owner that has the ability to dispute a price during dispute period.
+    address internal disputer;
 
+    /// @notice emits an event when disputer is updated
+    event DisputerUpdated(address indexed newDisputer);
     /// @notice emits an event when an pricer updated for a specific asset
     event PricerUpdated(address asset, address pricer);
     /// @notice emits an event when a locking period updated for a specific oracle
@@ -98,6 +102,14 @@ contract Oracle is Ownable {
      */
     function getPricer(address _asset) external view returns (address) {
         return assetPricer[_asset];
+    }
+
+    /**
+     * @notice get disputer address
+     * @return pricer address
+     */
+    function getDisputer() external view returns (address) {
+        return disputer;
     }
 
     /**
@@ -190,6 +202,17 @@ contract Oracle is Ownable {
     }
 
     /**
+     * @notice set the disputer role
+     * @dev can only be called by owner
+     * @param _disputer oracle address
+     */
+    function setDisputer(address _disputer) external onlyOwner {
+        disputer = _disputer;
+
+        emit DisputerUpdated(_disputer);
+    }
+
+    /**
      * @notice dispute an asset price by owner during dispute period
      * @dev only owner can dispute a price during the dispute period, by setting a new one.
      * @param _asset asset address
@@ -200,7 +223,8 @@ contract Oracle is Ownable {
         address _asset,
         uint256 _expiryTimestamp,
         uint256 _price
-    ) external onlyOwner {
+    ) external {
+        require(msg.sender == disputer, "Oracle: caller is not the disputer");
         require(!isDisputePeriodOver(_asset, _expiryTimestamp), "Oracle: dispute period over");
 
         Price storage priceToUpdate = storedPrice[_asset][_expiryTimestamp];
