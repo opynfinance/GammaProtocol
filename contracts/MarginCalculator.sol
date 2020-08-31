@@ -296,6 +296,10 @@ contract MarginCalculator is Initializable {
         return oracle.getExpiryPrice(otoken.underlyingAsset(), otoken.expiryTimestamp());
     }
 
+    /**
+     * @dev convert uint256 to FixedPointInt
+     * @return the FixedPointInt format of input
+     */
     function _uint256ToFixedPointInt(uint256 _num) internal pure returns (FixedPointInt256.FixedPointInt memory) {
         return FixedPointInt256.FixedPointInt(SignedConverter.uintToInt(_num));
     }
