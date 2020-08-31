@@ -206,7 +206,7 @@ contract('MarginCalculator', () => {
         const vault = createVault(eth250Put.address, undefined, usdc.address, shortAmount, undefined, collateralAmount)
         await expectRevert(
           calculator.getExcessMargin(vault, dai.address),
-          'MarginCalculator: Denomintated token should be short.collateral',
+          "MarginCalculator: Denomintated token should be the short otoken's collateral",
         )
       })
 
@@ -223,7 +223,7 @@ contract('MarginCalculator', () => {
         )
         await expectRevert(
           calculator.getExcessMargin(vault, usdc.address),
-          'MarginCalculator: Long and short batch mismatch',
+          'MarginCalculator: long asset not marginable for short asset',
         )
       })
 
@@ -240,7 +240,7 @@ contract('MarginCalculator', () => {
         )
         await expectRevert(
           calculator.getExcessMargin(vault, usdc.address),
-          'MarginCalculator: Long and short batch mismatch',
+          'MarginCalculator: long asset not marginable for short asset',
         )
       })
 
@@ -257,7 +257,7 @@ contract('MarginCalculator', () => {
         )
         await expectRevert(
           calculator.getExcessMargin(vault, dai.address),
-          'MarginCalculator: Long and short batch mismatch',
+          'MarginCalculator: long asset not marginable for short asset',
         )
       })
 
@@ -274,7 +274,7 @@ contract('MarginCalculator', () => {
         )
         await expectRevert(
           calculator.getExcessMargin(vault, usdc.address),
-          'MarginCalculator: Long and short batch mismatch',
+          'MarginCalculator: long asset not marginable for short asset',
         )
       })
     })

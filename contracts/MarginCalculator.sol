@@ -60,12 +60,12 @@ contract MarginCalculator is Initializable {
     function getExcessMargin(MarginAccount.Vault memory _vault, address _denominated)
         public
         view
-        returns (uint256 netValue, bool isExcess)
+        returns (uint256, bool)
     {
         // ensure the number of collateral, long and short array is valid.
         _checkIsValidSpread(_vault);
         // ensure the long asset is valid for the short asset.
-        _checkIsMarginableLong(_vault);
+        require(_isMarginableLong(_vault), "MarginCalculator: long asset not marginable for short asset");
 
         // collateral amount is always positive.
         FixedPointInt256.FixedPointInt memory collateralAmount = _vault.collateralAmounts.length > 0
@@ -77,14 +77,18 @@ contract MarginCalculator is Initializable {
 
         // For the currenct version, ensure denominated == short.collateral
         address shortCollateral = OtokenInterface(_vault.shortOtokens[0]).collateralAsset();
-        require(shortCollateral == _denominated, "MarginCalculator: Denomintated token should be short.collateral");
+        require(
+            shortCollateral == _denominated,
+            "MarginCalculator: Denomintated token should be the short otoken's collateral"
+        );
 
         FixedPointInt256.FixedPointInt memory marginRequirement = _getMarginRequired(_vault);
         // if marginRequirement > 0, the long assets cannot cover the max loss of short assets in the vault.
         // will need to check if collateral - marginRequirement is greater than 0.
         FixedPointInt256.FixedPointInt memory excessMargin = collateralAmount.sub(marginRequirement);
-        isExcess = excessMargin.isGreaterThanOrEqual(_uint256ToFixedPointInt(0));
-        netValue = SignedConverter.intToUint(excessMargin.value);
+        bool isExcess = excessMargin.isGreaterThanOrEqual(_uint256ToFixedPointInt(0));
+        uint256 netValue = SignedConverter.intToUint(excessMargin.value);
+        return (netValue, isExcess);
     }
 
     /**
@@ -266,12 +270,17 @@ contract MarginCalculator is Initializable {
      * @dev if there is a short option in the vault, ensure that the long option series being used is a valid margin.
      * @param _vault the vault to check.
      */
-    function _checkIsMarginableLong(MarginAccount.Vault memory _vault) internal view {
-        if (_vault.longOtokens.length == 0 || _vault.shortOtokens.length == 0) return;
+    function _isMarginableLong(MarginAccount.Vault memory _vault) internal view returns (bool) {
+        if (_vault.longOtokens.length == 0 || _vault.shortOtokens.length == 0) return true;
 
         OtokenInterface long = OtokenInterface(_vault.longOtokens[0]);
         OtokenInterface short = OtokenInterface(_vault.shortOtokens[0]);
-        require(_getBatchId(long) == _getBatchId(short), "MarginCalculator: Long and short batch mismatch");
+        bool isMarginable = long.underlyingAsset() == short.underlyingAsset() &&
+            long.strikeAsset() == short.strikeAsset() &&
+            long.collateralAsset() == short.collateralAsset() &&
+            long.expiryTimestamp() == short.expiryTimestamp();
+
+        return isMarginable;
     }
 
     /**
