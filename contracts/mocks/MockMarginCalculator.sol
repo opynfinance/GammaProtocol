@@ -7,33 +7,28 @@ pragma experimental ABIEncoderV2;
 
 import {OtokenInterface} from "../interfaces/OtokenInterface.sol";
 import {MarginAccount} from "../libs/MarginAccount.sol";
+import {FixedPointInt256} from "../libs/FixedPointInt256.sol";
+import {SignedConverter} from "../libs/SignedConverter.sol";
 
 contract MockMarginCalculator {
     // solhint-disable-ignore-no-unused-vars
-    function isValidState(MarginAccount.Vault memory finalVault, address[] calldata shortOtokens)
-        external
-        view
-        returns (bool isValid)
-    {
+    function getExcessMargin(MarginAccount.Vault memory _vault) public view returns (uint256 netValue, bool isExcess) {
         // ensure the number of collateral, long and short array is valid.
-        _checkIsValidSpread(finalVault);
-
-        if (finalVault.shortOtokens.length == 0 || finalVault.shortAmounts.length == 0) return true;
+        _checkIsValidSpread(_vault);
 
         // ensure the long asset is valid for the short asset.
-        _checkIsMarginableLong(finalVault);
+        _checkIsMarginableLong(_vault);
 
-        bool isExcess = getExcessMargin(finalVault, OtokenInterface(finalVault.shortOtokens[0]).collateralAsset());
+        // collateral amount is always positive.
+        FixedPointInt256.FixedPointInt memory collateralAmount = _vault.collateralAmounts.length > 0
+            ? _uint256ToFixedPointInt(_vault.collateralAmounts[0])
+            : _uint256ToFixedPointInt(0);
 
-        return isExcess;
-    }
+        // Vault contains no short tokens: return collateral value.
+        if ((_vault.shortOtokens.length == 0) || (_vault.shortOtokens[0] == address(0)))
+            return (SignedConverter.intToUint(collateralAmount.value), true);
 
-    function getExcessMargin(MarginAccount.Vault memory _vault, address _denominated)
-        public
-        view
-        returns (bool isExcess)
-    {
-        return true;
+        return (0, true);
     }
 
     function _checkIsValidSpread(MarginAccount.Vault memory _vault) internal pure {
@@ -74,5 +69,9 @@ contract MockMarginCalculator {
             long.expiryTimestamp() == short.expiryTimestamp(),
             "MarginCalculator: Long and short expiry timestamp mismatch"
         );
+    }
+
+    function _uint256ToFixedPointInt(uint256 _num) internal pure returns (FixedPointInt256.FixedPointInt memory) {
+        return FixedPointInt256.FixedPointInt(SignedConverter.uintToInt(_num));
     }
 }

@@ -80,7 +80,7 @@ contract Controller is ReentrancyGuard, Ownable {
      * @param _accountOwner account owner address
      * @param _vaultId vault id
      */
-    modifier runPreprocessing(address _accountOwner, uint256 _vaultId) {
+    modifier isValidVaultId(address _accountOwner, uint256 _vaultId) {
         require((_vaultId > 0) && (_vaultId <= accountVaultCounter[_accountOwner]), "Controller: invalid vault id");
 
         _;
@@ -158,9 +158,8 @@ contract Controller is ReentrancyGuard, Ownable {
         // if there is a short option and it has expired
         address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
         MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
-        OtokenInterface otoken = OtokenInterface(vault.shortOtokens[0]);
 
-        (uint256 netValue, ) = calculator.getExcessMargin(vault, otoken.collateralAsset());
+        (uint256 netValue, ) = calculator.getExcessMargin(vault);
         vault.collateralAmounts[0] = netValue;
         return vault;
     }
@@ -228,9 +227,6 @@ contract Controller is ReentrancyGuard, Ownable {
             Actions.ActionArgs memory action = _actions[i];
             Actions.ActionType actionType = action.actionType;
 
-            uint256 prevActionVaultId;
-            bool isActionVaultStored;
-
             if (
                 (actionType != Actions.ActionType.SettleVault) ||
                 (actionType != Actions.ActionType.Exercise) ||
@@ -264,7 +260,9 @@ contract Controller is ReentrancyGuard, Ownable {
         address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
         MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
 
-        require(calculator.isValidState(_vault, _vault.shortOtokens), "Controller: invalid final vault state");
+        (, bool isValidVault) = calculator.getExcessMargin(_vault);
+
+        require(isValidVault, "Controller: invalid final vault state");
     }
 
     /**
@@ -306,7 +304,7 @@ contract Controller is ReentrancyGuard, Ownable {
      */
     function _depositLong(Actions.DepositArgs memory _args)
         internal
-        runPreprocessing(_args.owner, _args.vaultId)
+        isValidVaultId(_args.owner, _args.vaultId)
         returns (MarginAccount.Vault memory)
     {
         require(_args.from == msg.sender, "Controller: depositor address and msg.sender address mismatch");
@@ -341,7 +339,7 @@ contract Controller is ReentrancyGuard, Ownable {
     function _withdrawLong(Actions.WithdrawArgs memory _args)
         internal
         isAuthorized(msg.sender, _args.owner)
-        runPreprocessing(_args.owner, _args.vaultId)
+        isValidVaultId(_args.owner, _args.vaultId)
         returns (MarginAccount.Vault memory)
     {
         OtokenInterface otoken = OtokenInterface(_args.asset);
