@@ -7,6 +7,7 @@ import {
   MockWhitelistModuleInstance,
   MarginPoolInstance,
   ControllerInstance,
+  AddressBookInstance,
 } from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
@@ -17,7 +18,7 @@ const MockOtoken = artifacts.require('MockOtoken.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const MockMarginCalculator = artifacts.require('MockMarginCalculator.sol')
 const MockWhitelistModule = artifacts.require('MockWhitelistModule.sol')
-const MockAddressBook = artifacts.require('MockAddressBook.sol')
+const AddressBook = artifacts.require('AddressBook.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
 
@@ -52,7 +53,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
   // whitelist module mock
   let whitelist: MockWhitelistModuleInstance
   // addressbook module mock
-  let addressBook: MockAddressBookInstance
+  let addressBook: AddressBookInstance
   // controller module
   let controller: ControllerInstance
 
@@ -72,7 +73,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
       true,
     )
     // addressbook deployment
-    addressBook = await MockAddressBook.new()
+    addressBook = await AddressBook.new()
     // deploy Oracle module
     oracle = await MockOracle.new(addressBook.address, {from: owner})
     // calculator deployment
@@ -94,12 +95,15 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
     // set controller address in AddressBook
     await addressBook.setController(controller.address, {from: owner})
 
+    const controllerProxy = await addressBook.getController()
+    controller = await Controller.at(controllerProxy)
+
     assert.equal(await controller.systemPaused(), false, 'System is paused')
   })
 
   describe('Controller initialization', () => {
-    it('should revert if initilized with 0 addressBook address', async () => {
-      await expectRevert(Controller.new(ZERO_ADDR), 'Invalid address book')
+    it('should revert when calling initialize if it is already initalized', async () => {
+      await expectRevert(controller.initialize(addressBook.address), 'Contract instance has already been initialized')
     })
   })
 

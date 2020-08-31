@@ -5,9 +5,10 @@ pragma solidity =0.6.10;
 
 pragma experimental ABIEncoderV2;
 
-import {Ownable} from "./packages/oz/Ownable.sol";
+import {OwnableUpgradeSafe} from "./packages/oz/upgradeability/OwnableUpgradeSafe.sol";
+import {ReentrancyGuardUpgradeSafe} from "./packages/oz/upgradeability/ReentrancyGuardUpgradeSafe.sol";
+import {Initializable} from "./packages/oz/upgradeability/Initializable.sol";
 import {SafeMath} from "./packages/oz/SafeMath.sol";
-import {ReentrancyGuard} from "./packages/oz/ReentrancyGuard.sol";
 import {MarginAccount} from "./libs/MarginAccount.sol";
 import {Actions} from "./libs/Actions.sol";
 import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
@@ -22,7 +23,7 @@ import {MarginPoolInterface} from "./interfaces/MarginPoolInterface.sol";
  * @title Controller
  * @notice contract that
  */
-contract Controller is ReentrancyGuard, Ownable {
+contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgradeSafe {
     using MarginAccount for MarginAccount.Vault;
     using SafeMath for uint256;
 
@@ -40,11 +41,13 @@ contract Controller is ReentrancyGuard, Ownable {
     mapping(address => mapping(address => bool)) internal operators;
 
     /**
-     * @notice contructor
+     * @notice initalize deployed contract
      * @param _addressBook adressbook module
      */
-    constructor(address _addressBook) public {
-        require(_addressBook != address(0), "Controller: Invalid address book");
+    function initialize(address _addressBook) public initializer {
+        __Context_init_unchained();
+        __Ownable_init_unchained();
+        __ReentrancyGuard_init_unchained();
 
         addressBook = _addressBook;
     }
