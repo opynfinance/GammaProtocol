@@ -10,8 +10,6 @@ import {Initializable} from "../packages/oz/upgradeability/Initializable.sol";
  * @notice Upgradeable testing contract
  */
 contract UpgradeableContractV1 is Initializable {
-    /// @notice contract version
-    uint256 public constant CONTRACT_REVISION = 0x1;
     /// @notice addressbook address
     address public addressBook;
     /// @notice owner address
@@ -27,11 +25,7 @@ contract UpgradeableContractV1 is Initializable {
         owner = _owner;
     }
 
-    /**
-     * @notice return current contract version
-     * @dev should be implemented in all contracts that inherit VersionedInitializable
-     */
-    function getRevision() external pure returns (uint256) {
-        return CONTRACT_REVISION;
+    function getV1Version() external pure returns (uint256) {
+        return 1;
     }
 }

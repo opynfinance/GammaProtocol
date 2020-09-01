@@ -238,7 +238,7 @@ contract('AddressBook', ([owner, otokenImplAdd, marginPoolAdd, liquidationManage
     const key = web3.utils.fromAscii('ammModule')
 
     let v1Contract: UpgradeableContractV1Instance
-    let v2Contract: UpgradeableContractV1Instance
+    let v2Contract: UpgradeableContractV2Instance
 
     before(async () => {
       v1Contract = await UpgradeableContractV1.new()
@@ -251,12 +251,12 @@ contract('AddressBook', ([owner, otokenImplAdd, marginPoolAdd, liquidationManage
       const implementationAddress = await proxy.implementation()
 
       assert.equal(v1Contract.address, implementationAddress, 'AMM module implementation address mismatch')
-      assert.equal((await v1Contract.CONTRACT_REVISION()).toString(), '1', 'AMM implementation version mismatch')
+      assert.equal((await v1Contract.getV1Version()).toString(), '1', 'AMM implementation version mismatch')
     })
 
     it('should upgrade contract from V1 to V2', async () => {
       // deploy V2 implementation
-      v2Contract = await UpgradeableContractV1.new()
+      v2Contract = await UpgradeableContractV2.new()
 
       const v1Proxy: OwnedUpgradeabilityProxyInstance = await OwnedUpgradeabilityProxy.at(
         await addressBook.getAddress(key),
@@ -277,7 +277,7 @@ contract('AddressBook', ([owner, otokenImplAdd, marginPoolAdd, liquidationManage
 
       v2Contract = await UpgradeableContractV1.at(await addressBook.getController())
 
-      assert.equal((await v2Contract.CONTRACT_REVISION()).toString(), '2', 'AMM implementation version mismatch')
+      assert.equal((await v2Contract.getV2Version()).toString(), '2', 'AMM implementation version mismatch')
     })
   })
 })
