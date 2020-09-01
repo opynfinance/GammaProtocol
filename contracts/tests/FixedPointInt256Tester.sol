@@ -14,13 +14,6 @@ import "../libs/FixedPointInt256.sol";
 contract FixedPointInt256Tester {
     using FixedPointInt256 for FixedPointInt256.FixedPointInt;
 
-    /*function testFromInt(int256 a) external pure returns (uint256) {
-        return FixedPointInt256.intToUint(a);
-    }
-
-    function testFromUint(uint256 a) external pure returns (int256) {
-        return FixedPointInt256.uintToInt(a);
-    }*/
     function testFromUnscaledInt(int256 a) external pure returns (FixedPointInt256.FixedPointInt memory) {
         return FixedPointInt256.fromUnscaledInt(a);
     }
@@ -30,7 +23,7 @@ contract FixedPointInt256Tester {
         pure
         returns (FixedPointInt256.FixedPointInt memory)
     {
-        return FixedPointInt256.add(a, b);
+        return a.add(b);
     }
 
     function testSub(FixedPointInt256.FixedPointInt memory a, FixedPointInt256.FixedPointInt memory b)
@@ -38,7 +31,7 @@ contract FixedPointInt256Tester {
         pure
         returns (FixedPointInt256.FixedPointInt memory)
     {
-        return FixedPointInt256.sub(a, b);
+        return a.sub(b);
     }
 
     function testMul(FixedPointInt256.FixedPointInt memory a, FixedPointInt256.FixedPointInt memory b)
@@ -46,7 +39,7 @@ contract FixedPointInt256Tester {
         pure
         returns (FixedPointInt256.FixedPointInt memory)
     {
-        return FixedPointInt256.mul(a, b);
+        return a.mul(b);
     }
 
     function testDiv(FixedPointInt256.FixedPointInt memory a, FixedPointInt256.FixedPointInt memory b)
@@ -54,7 +47,7 @@ contract FixedPointInt256Tester {
         pure
         returns (FixedPointInt256.FixedPointInt memory)
     {
-        return FixedPointInt256.div(a, b);
+        return a.div(b);
     }
 
     function testMin(FixedPointInt256.FixedPointInt memory a, FixedPointInt256.FixedPointInt memory b)
@@ -78,7 +71,7 @@ contract FixedPointInt256Tester {
         pure
         returns (bool)
     {
-        return FixedPointInt256.isEqual(a, b);
+        return a.isEqual(b);
     }
 
     function testIsGreaterThan(FixedPointInt256.FixedPointInt memory a, FixedPointInt256.FixedPointInt memory b)
@@ -86,7 +79,7 @@ contract FixedPointInt256Tester {
         pure
         returns (bool)
     {
-        return FixedPointInt256.isGreaterThan(a, b);
+        return a.isGreaterThan(b);
     }
 
     function testIsGreaterThanOrEqual(FixedPointInt256.FixedPointInt memory a, FixedPointInt256.FixedPointInt memory b)
@@ -94,7 +87,7 @@ contract FixedPointInt256Tester {
         pure
         returns (bool)
     {
-        return FixedPointInt256.isGreaterThanOrEqual(a, b);
+        return a.isGreaterThanOrEqual(b);
     }
 
     function testIsLessThan(FixedPointInt256.FixedPointInt memory a, FixedPointInt256.FixedPointInt memory b)
@@ -102,7 +95,7 @@ contract FixedPointInt256Tester {
         pure
         returns (bool)
     {
-        return FixedPointInt256.isLessThan(a, b);
+        return a.isLessThan(b);
     }
 
     function testIsLessThanOrEqual(FixedPointInt256.FixedPointInt memory a, FixedPointInt256.FixedPointInt memory b)
@@ -110,6 +103,6 @@ contract FixedPointInt256Tester {
         pure
         returns (bool)
     {
-        return FixedPointInt256.isLessThanOrEqual(a, b);
+        return a.isLessThanOrEqual(b);
     }
 }
