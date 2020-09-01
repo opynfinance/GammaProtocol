@@ -8,6 +8,7 @@ import {
   MarginPoolInstance,
   ControllerInstance,
   AddressBookInstance,
+  OwnedUpgradeabilityProxyInstance,
 } from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
@@ -16,6 +17,7 @@ const {expectRevert, time} = require('@openzeppelin/test-helpers')
 const MockERC20 = artifacts.require('MockERC20.sol')
 const MockOtoken = artifacts.require('MockOtoken.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
+const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy.sol')
 const MockMarginCalculator = artifacts.require('MockMarginCalculator.sol')
 const MockWhitelistModule = artifacts.require('MockWhitelistModule.sol')
 const AddressBook = artifacts.require('AddressBook.sol')
@@ -56,6 +58,8 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
   let addressBook: AddressBookInstance
   // controller module
   let controller: ControllerInstance
+  // controller proxy instance
+  let proxy: OwnedUpgradeabilityProxyInstance
 
   before('Deployment', async () => {
     // ERC20 deployment
@@ -92,18 +96,29 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
     await addressBook.setWhitelist(whitelist.address)
     // deploy Controller module
     controller = await Controller.new(addressBook.address)
+
     // set controller address in AddressBook
     await addressBook.setController(controller.address, {from: owner})
 
     const controllerProxy = await addressBook.getController()
     controller = await Controller.at(controllerProxy)
 
+    // proxy = await OwnedUpgradeabilityProxy.at(controllerProxy)
+    // console.log(controllerProxy)
+    // console.log(await controller.owner())
+    // console.log(await proxy.proxyOwner());
+    // console.log(owner)
+    // console.log(addressBook.address)
+
     assert.equal(await controller.systemPaused(), false, 'System is paused')
   })
 
   describe('Controller initialization', () => {
     it('should revert when calling initialize if it is already initalized', async () => {
-      await expectRevert(controller.initialize(addressBook.address), 'Contract instance has already been initialized')
+      await expectRevert(
+        controller.initialize(addressBook.address, owner),
+        'Contract instance has already been initialized',
+      )
     })
   })
 

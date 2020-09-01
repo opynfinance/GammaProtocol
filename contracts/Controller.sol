@@ -44,9 +44,9 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @notice initalize deployed contract
      * @param _addressBook adressbook module
      */
-    function initialize(address _addressBook) public initializer {
+    function initialize(address _addressBook, address _owner) public initializer {
         __Context_init_unchained();
-        __Ownable_init_unchained();
+        __Ownable_init_unchained(_owner);
         __ReentrancyGuard_init_unchained();
 
         addressBook = _addressBook;
