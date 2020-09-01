@@ -176,6 +176,36 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
       )
     })
 
+    it('should revert opening multiple vaults in the same operate call', async () => {
+      const actionArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: accountOwner1,
+          sender: accountOwner1,
+          asset: ZERO_ADDR,
+          vaultId: '1',
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.OpenVault,
+          owner: accountOwner1,
+          sender: accountOwner1,
+          asset: ZERO_ADDR,
+          vaultId: '2',
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+
+      await expectRevert(
+        controller.operate(actionArgs, {from: accountOwner1}),
+        'Controller: can not run actions on different vaults',
+      )
+    })
+
     it('should open vault', async () => {
       const vaultCounterBefore = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
       assert.equal(vaultCounterBefore.toString(), '0', 'vault counter before mismatch')
