@@ -1058,7 +1058,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
       )
     })
 
-    it('should revert when vault have more than 1 long otoken', async () => {
+    it('should revert when vault have more than 1 collateral type', async () => {
       const collateralToDeposit = new BigNumber('20')
       //whitelist weth to use in this test
       await whitelist.whitelistCollateral(weth.address)
