@@ -39,8 +39,7 @@ contract('MarginCalculator', () => {
     // initiate addressbook first.
     addressBook = await MockAddressBook.new()
     // setup calculator
-    calculator = await MarginCalculator.new()
-    await calculator.init(addressBook.address)
+    calculator = await MarginCalculator.new(addressBook.address)
     // setup oracle
     oracle = await MockOracle.new()
     await addressBook.setOracle(oracle.address)

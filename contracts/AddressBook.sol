@@ -222,14 +222,13 @@ contract AddressBook is Ownable {
 
         bytes memory params = abi.encodeWithSignature("initialize(address,address)", address(this), owner());
 
-        OwnedUpgradeabilityProxy proxy = new OwnedUpgradeabilityProxy();
-
         if (proxyAddress == address(0)) {
+            OwnedUpgradeabilityProxy proxy = new OwnedUpgradeabilityProxy();
             setAddress(_id, address(proxy));
             emit ProxyCreated(_id, address(proxy));
             proxy.upgradeToAndCall(_newAddress, params);
         } else {
-            proxy = OwnedUpgradeabilityProxy(proxyAddress);
+            OwnedUpgradeabilityProxy proxy = OwnedUpgradeabilityProxy(proxyAddress);
             proxy.upgradeToAndCall(_newAddress, params);
         }
     }
