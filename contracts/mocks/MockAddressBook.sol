@@ -5,6 +5,7 @@ contract MockAddressBook {
     address private _otokenImpl;
     address private _whitelist;
     address private _otokenFactoryImpl;
+    address private _oracle;
     address private _weth;
     address private _controllerImpl;
     address private _oracleImpl;
@@ -31,8 +32,8 @@ contract MockAddressBook {
         _controllerImpl = _controller;
     }
 
-    function setOracle(address _oracle) external {
-        _oracleImpl = _oracle;
+    function setOracle(address _oracleAddr) external {
+        _oracleImpl = _oracleAddr;
     }
 
     function setMarginCalculator(address _calculator) external {
@@ -55,16 +56,16 @@ contract MockAddressBook {
         return _otokenFactoryImpl;
     }
 
+    function getOracle() external view returns (address) {
+        return _oracleImpl;
+    }
+
     function getWeth() external view returns (address) {
         return _weth;
     }
 
     function getController() external view returns (address) {
         return _controllerImpl;
-    }
-
-    function getOracle() external view returns (address) {
-        return _oracleImpl;
     }
 
     function getMarginCalculator() external view returns (address) {
