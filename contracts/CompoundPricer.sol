@@ -74,19 +74,7 @@ contract CompoundPricer is OpynPricerInterface {
 
     /**
      * @dev convert underlying price to cToken price.
-     * For example: cETH : ETH
-       * underlyingPrice: 468440000000000000000 // 468.44 * 1e18
-       * underlyingDecimals: 18
-       * cTokenDecimals: 8
-       * exchangeRate = 200192735438752381581313918 // 200192735.438752381581313918 * 1e18
-       
-     * For example: cUSDC : USDC
-       * underlyingPrice: 1000000000000000000 // 1 * 1e18
-       * underlyingDecimals: 6
-       * cTokenDecimals: 8
-       * exchangeRate = 211590468390562 // 0.0002115 * 1e18
-        
-     * @param _underlyingPrice price of 1 underlying token (1e6 USDC, 1e18 WETH) in USD, scled by 1e18 
+     * @param _underlyingPrice price of 1 underlying token (1e6 USDC, 1e18 WETH) in USD, scled by 1e18
      * @return net worth of 1e8 cToken in USD, scaled by 1e18.
      */
     function _underlyingPriceToCtokenPrice(uint256 _underlyingPrice) internal view returns (uint256) {
