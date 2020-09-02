@@ -389,11 +389,8 @@ contract Controller is ReentrancyGuard, Ownable {
      * @notice deposit collateral asset into vault
      * @param _args DepositArgs structure
      */
-    function _depositCollateral(Actions.DepositArgs memory _args)
-        internal
-        isValidVaultId(_args.owner, _args.vaultId)
-        returns (MarginAccount.Vault memory)
-    {
+    function _depositCollateral(Actions.DepositArgs memory _args) internal returns (MarginAccount.Vault memory) {
+        require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         require(_args.from == msg.sender, "Controller: depositor address and msg.sender address mismatch");
 
         address whitelistModule = AddressBookInterface(addressBook).getWhitelist();
