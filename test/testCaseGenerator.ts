@@ -125,6 +125,13 @@ function putMarginRequiredBeforeExpiry(strikePrices: StrikePrices, amounts: Amou
   return Math.max(0, netValue)
 }
 
+function callMarginRequiredBeforeExpiry(strikePrices: StrikePrices, amounts: Amounts): number {
+  const netValue =
+    strikePrices.shortStrike * amounts.shortAmount -
+    strikePrices.longStrike * Math.min(amounts.shortAmount, amounts.longAmount)
+  return Math.max(0, netValue)
+}
+
 function putMarginRequiredAfterExpiry(spotPrice: number, strikePrices: StrikePrices, amounts: Amounts): number {
   const longCashValue = Math.max(0, strikePrices.longStrike - spotPrice) * amounts.longAmount
   const shortCashValue = Math.max(0, strikePrices.shortStrike - spotPrice) * amounts.shortAmount
