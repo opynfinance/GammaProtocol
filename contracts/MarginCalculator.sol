@@ -56,7 +56,7 @@ contract MarginCalculator is Initializable {
      * @return netValue the amount by which the margin is above or below the required amount.
      * @return isExcess true if there's excess margin in the vault. In this case, collateral can be taken out from the vault. False if there is insufficient margin and additional collateral needs to be added to the vault to create the position.
      */
-    function getExcessMargin(MarginAccount.Vault memory _vault) public view returns (uint256, bool) {
+    function getExcessCollateral(MarginAccount.Vault memory _vault) public view returns (uint256, bool) {
         // ensure the number of collateral, long and short array is valid.
         _checkIsValidSpread(_vault);
         // ensure the long asset is valid for the short asset.
