@@ -40,6 +40,7 @@ contract ChainLinkPricer is OpynPricerInterface {
     /**
      * @notice get live price for the asset.
      * @dev overides the getPrice function in OpynPricerInterface.
+     * @return price of asset scaled by 1e18
      */
     function getPrice() external override view returns (uint256) {
         int256 answer = aggregator.latestAnswer();
