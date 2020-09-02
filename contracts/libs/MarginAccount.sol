@@ -10,12 +10,6 @@ import {SafeMath} from "../packages/oz/SafeMath.sol";
 library MarginAccount {
     using SafeMath for uint256;
 
-    // Account is a struct corresponding to a user that describes how many vaults that user has.
-    struct Account {
-        // the number of vaults a user has, starting at index 0 and incrementing. vaultCounter sorted chronologically.
-        uint256 vaultCounter;
-    }
-
     // Vault is a struct of 6 arrays that describe a position a user has. A user can have multiple vaults.
     struct Vault {
         // the addresses of oTokens a user has shorted (i.e. written) against this vault, including those in spreads/combos
@@ -32,14 +26,6 @@ library MarginAccount {
         uint256[] longAmounts;
         // describes the quantity of tokens deposited as collateral in the vault for each token address in collateralAssets
         uint256[] collateralAmounts;
-    }
-
-    /**
-     * @dev Increment vault numbers in account
-     * @param _account The account relating to the user for whom the protocol is opening the new vault.
-     */
-    function _openNewVault(Account storage _account) internal {
-        _account.vaultCounter = _account.vaultCounter.add(1);
     }
 
     /**
@@ -110,6 +96,8 @@ library MarginAccount {
         uint256 _amount,
         uint256 _index
     ) internal {
+        require(_amount > 0, "MarginAccount: invalid long otoken amount");
+
         // Valid indexes in any array are between 0 and array.length - 1.
         // If adding amount into an existant long otoken, make sure _index in the range of 0->length-1
         if ((_index >= _vault.longOtokens.length) && ((_index >= _vault.longAmounts.length))) {

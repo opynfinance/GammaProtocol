@@ -195,6 +195,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([deployer
     it('should not affect existing otoken instances', async () => {
       await testController.testMintOtoken(otoken1.address, user1, amountToMint.toString())
       const newOtoken = await MockOtoken.new()
+      // update otokenimpl address in addressbook
       await addressBook.setOtokenImpl(newOtoken.address, {from: deployer})
 
       const balance = await otoken1.balanceOf(user1)

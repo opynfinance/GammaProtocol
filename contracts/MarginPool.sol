@@ -57,7 +57,7 @@ contract MarginPool {
         address _user,
         uint256 _amount
     ) public onlyController returns (bool) {
-        require(_amount > 0, "MarginPool: transferToPool amount is below or equal to 0");
+        require(_amount > 0, "MarginPool: transferToPool amount is equal to 0");
 
         // transfer val from _user to pool
         return ERC20Interface(_asset).transferFrom(_user, address(this), _amount);
@@ -77,7 +77,7 @@ contract MarginPool {
         address payable _user,
         uint256 _amount
     ) public onlyController returns (bool) {
-        require(_amount > 0, "MarginPool: transferToUser amount is below or equal to 0");
+        require(_amount > 0, "MarginPool: transferToUser amount is equal to 0");
 
         // transfer asset val from Pool to _user
         return ERC20Interface(_asset).transfer(_user, _amount);
