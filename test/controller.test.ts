@@ -624,7 +624,6 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
         const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
         assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-        const collateralToWithdraw = new BigNumber('20')
         const actionArgs = [
           {
             actionType: ActionType.WithdrawLongOption,

@@ -76,17 +76,6 @@ contract Controller is ReentrancyGuard, Ownable {
     }
 
     /**
-     * @notice modifier to check the validity of a specific vault id
-     * @param _accountOwner account owner address
-     * @param _vaultId vault id
-     */
-    modifier isValidVaultId(address _accountOwner, uint256 _vaultId) {
-        require((_vaultId > 0) && (_vaultId <= accountVaultCounter[_accountOwner]), "Controller: invalid vault id");
-
-        _;
-    }
-
-    /**
      * @notice allows admin to toggle pause / emergency shutdown
      * @param _paused The new boolean value to set systemPaused to.
      */
@@ -302,11 +291,8 @@ contract Controller is ReentrancyGuard, Ownable {
      * @notice deposit long option into vault
      * @param _args DepositArgs structure
      */
-    function _depositLong(Actions.DepositArgs memory _args)
-        internal
-        isValidVaultId(_args.owner, _args.vaultId)
-        returns (MarginAccount.Vault memory)
-    {
+    function _depositLong(Actions.DepositArgs memory _args) internal returns (MarginAccount.Vault memory) {
+        require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         require(_args.from == msg.sender, "Controller: depositor address and msg.sender address mismatch");
 
         address whitelistModule = AddressBookInterface(addressBook).getWhitelist();
@@ -339,9 +325,10 @@ contract Controller is ReentrancyGuard, Ownable {
     function _withdrawLong(Actions.WithdrawArgs memory _args)
         internal
         isAuthorized(msg.sender, _args.owner)
-        isValidVaultId(_args.owner, _args.vaultId)
         returns (MarginAccount.Vault memory)
     {
+        require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+
         OtokenInterface otoken = OtokenInterface(_args.asset);
 
         require(now <= otoken.expiryTimestamp(), "Controller: can not withdraw an expired otoken");
@@ -400,4 +387,13 @@ contract Controller is ReentrancyGuard, Ownable {
     //    //Check whitelistModule.isWhitelistCallDestination(args.address)
     //    //Call args.address with args.data
     //}
+
+    /**
+     * @notice function to check the validity of a specific vault id
+     * @param _accountOwner account owner address
+     * @param _vaultId vault id
+     */
+    function checkVaultId(address _accountOwner, uint256 _vaultId) internal view returns (bool) {
+        return ((_vaultId > 0) && (_vaultId <= accountVaultCounter[_accountOwner]));
+    }
 }
