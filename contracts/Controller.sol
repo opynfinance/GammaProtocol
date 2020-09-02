@@ -18,6 +18,25 @@ import {WhitelistInterface} from "./interfaces/WhitelistInterface.sol";
 import {MarginPoolInterface} from "./interfaces/MarginPoolInterface.sol";
 
 /**
+ * SPDX-License-Identifier: UNLICENSED
+ */
+pragma solidity =0.6.10;
+
+pragma experimental ABIEncoderV2;
+
+import {Ownable} from "./packages/oz/Ownable.sol";
+import {SafeMath} from "./packages/oz/SafeMath.sol";
+import {ReentrancyGuard} from "./packages/oz/ReentrancyGuard.sol";
+import {MarginAccount} from "./libs/MarginAccount.sol";
+import {Actions} from "./libs/Actions.sol";
+import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
+import {OtokenInterface} from "./interfaces/OtokenInterface.sol";
+import {MarginCalculatorInterface} from "./interfaces/MarginCalculatorInterface.sol";
+import {OracleInterface} from "./interfaces/OracleInterface.sol";
+import {WhitelistInterface} from "./interfaces/WhitelistInterface.sol";
+import {MarginPoolInterface} from "./interfaces/MarginPoolInterface.sol";
+
+/**
  * @author Opyn Team
  * @title Controller
  * @notice contract that
@@ -51,6 +70,40 @@ contract Controller is ReentrancyGuard, Ownable {
 
     /// @notice emits an event when a account operator updated for a specific account owner
     event AccountOperatorUpdated(address indexed accountOwner, address indexed operator, bool isSet);
+    /// @notice emits an event when new vault get opened
+    event VaultOpened(address indexed accountOwner, uint256 vaultId);
+    /// @notice emits an event when a long otoken is deposited into a vault
+    event LongOtokenDeposited(
+        address indexed otoken,
+        address indexed accountOwner,
+        address indexed from,
+        uint256 vaultId,
+        uint256 amount
+    );
+    /// @notice emits an event when a long otoken is withdrawed from a vault
+    event LongOtokenWithdrawed(
+        address indexed otoken,
+        address indexedAccountOwner,
+        address indexed to,
+        uint256 vaultId,
+        uint256 amount
+    );
+    /// @notice emits an event when a long otoken is deposited into a vault
+    event CollateralAssetDeposited(
+        address indexed asset,
+        address indexed accountOwner,
+        address indexed from,
+        uint256 vaultId,
+        uint256 amount
+    );
+    /// @notice emits an event when a collateral asset is withdrawed from a vault
+    event CollateralAssetWithdrawed(
+        address indexed asset,
+        address indexedAccountOwner,
+        address indexed to,
+        uint256 vaultId,
+        uint256 amount
+    );
 
     /**
      * @notice modifier check if protocol is not paused
@@ -147,9 +200,8 @@ contract Controller is ReentrancyGuard, Ownable {
         // if there is a short option and it has expired
         address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
         MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
-        OtokenInterface otoken = OtokenInterface(vault.shortOtokens[0]);
 
-        (uint256 netValue, ) = calculator.getExcessMargin(vault, otoken.collateralAsset());
+        (uint256 netValue, ) = calculator.getExcessCollateral(vault);
         vault.collateralAmounts[0] = netValue;
         return vault;
     }
@@ -217,25 +269,27 @@ contract Controller is ReentrancyGuard, Ownable {
             Actions.ActionArgs memory action = _actions[i];
             Actions.ActionType actionType = action.actionType;
 
-            if (actionType == Actions.ActionType.OpenVault) {
+            if (
+                (actionType != Actions.ActionType.SettleVault) ||
+                (actionType != Actions.ActionType.Exercise) ||
+                (actionType != Actions.ActionType.Call)
+            ) {
                 // check if this action is manipulating the same vault as all other actions, other than SettleVault
                 (prevActionVaultId, isActionVaultStored) = _checkActionsVaults(
                     prevActionVaultId,
                     action.vaultId,
                     isActionVaultStored
                 );
-
-                _openVault(Actions._parseOpenVaultArgs(action));
             }
-            if (actionType == Actions.ActionType.DepositLongOption) {
-                // check if this action is manipulating the same vault as all other actions, other than SettleVault
-                (prevActionVaultId, isActionVaultStored) = _checkActionsVaults(
-                    prevActionVaultId,
-                    action.vaultId,
-                    isActionVaultStored
-                );
 
+            if (actionType == Actions.ActionType.OpenVault) {
+                _openVault(Actions._parseOpenVaultArgs(action));
+            } else if (actionType == Actions.ActionType.DepositLongOption) {
                 vault = _depositLong(Actions._parseDepositArgs(action));
+            } else if (actionType == Actions.ActionType.WithdrawLongOption) {
+                vault = _withdrawLong(Actions._parseWithdrawArgs(action));
+            } else if (actionType == Actions.ActionType.DepositCollateral) {
+                vault = _depositCollateral(Actions._parseDepositArgs(action));
             }
         }
 
@@ -247,12 +301,12 @@ contract Controller is ReentrancyGuard, Ownable {
      * @param _vault final vault state
      */
     function _verifyFinalState(MarginAccount.Vault memory _vault) internal view {
-        if (_vault.shortOtokens.length > 0) {
-            address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
-            MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
+        address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
+        MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
 
-            require(calculator.isValidState(_vault, _vault.shortOtokens[0]), "Controller: invalid final vault state");
-        }
+        (, bool isValidVault) = calculator.getExcessCollateral(_vault);
+
+        require(isValidVault, "Controller: invalid final vault state");
     }
 
     /**
@@ -286,6 +340,8 @@ contract Controller is ReentrancyGuard, Ownable {
             _args.vaultId == accountVaultCounter[_args.owner],
             "Controller: can not run actions on inexistent vault"
         );
+
+        emit VaultOpened(_args.owner, accountVaultCounter[_args.owner]);
     }
 
     /**
@@ -293,6 +349,7 @@ contract Controller is ReentrancyGuard, Ownable {
      * @param _args DepositArgs structure
      */
     function _depositLong(Actions.DepositArgs memory _args) internal returns (MarginAccount.Vault memory) {
+        require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         require(_args.from == msg.sender, "Controller: depositor address and msg.sender address mismatch");
 
         address whitelistModule = AddressBookInterface(addressBook).getWhitelist();
@@ -314,6 +371,8 @@ contract Controller is ReentrancyGuard, Ownable {
 
         marginPool.transferToPool(address(otoken), _args.from, _args.amount);
 
+        emit LongOtokenDeposited(address(otoken), _args.owner, _args.from, _args.vaultId, _args.amount);
+
         return vaults[_args.owner][_args.vaultId];
     }
 
@@ -322,13 +381,56 @@ contract Controller is ReentrancyGuard, Ownable {
      * @dev Only account owner or operator can withdraw long option from vault
      * @param _args WithdrawArgs structure
      */
-    // function _withdrawLong(Actions.WithdrawArgs memory _args) internal isAuthorized(_args.owner) {}
+    function _withdrawLong(Actions.WithdrawArgs memory _args)
+        internal
+        isAuthorized(msg.sender, _args.owner)
+        returns (MarginAccount.Vault memory)
+    {
+        require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+
+        OtokenInterface otoken = OtokenInterface(_args.asset);
+
+        require(now <= otoken.expiryTimestamp(), "Controller: can not withdraw an expired otoken");
+
+        vaults[_args.owner][_args.vaultId]._removeLong(address(otoken), _args.amount, _args.index);
+
+        address marginPoolModule = AddressBookInterface(addressBook).getMarginPool();
+        MarginPoolInterface marginPool = MarginPoolInterface(marginPoolModule);
+
+        marginPool.transferToUser(address(otoken), _args.to, _args.amount);
+
+        emit LongOtokenWithdrawed(address(otoken), _args.owner, _args.to, _args.vaultId, _args.amount);
+
+        return vaults[_args.owner][_args.vaultId];
+    }
 
     /**
      * @notice deposit collateral asset into vault
      * @param _args DepositArgs structure
      */
-    // function _depositCollateral(Actions.DepositArgs memory _args) internal {}
+    function _depositCollateral(Actions.DepositArgs memory _args) internal returns (MarginAccount.Vault memory) {
+        require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+        require(_args.from == msg.sender, "Controller: depositor address and msg.sender address mismatch");
+
+        address whitelistModule = AddressBookInterface(addressBook).getWhitelist();
+        WhitelistInterface whitelist = WhitelistInterface(whitelistModule);
+
+        require(
+            whitelist.isWhitelistedCollateral(_args.asset),
+            "Controller: asset is not whitelisted to be used as collateral"
+        );
+
+        vaults[_args.owner][_args.vaultId]._addCollateral(_args.asset, _args.amount, _args.index);
+
+        address marginPoolModule = AddressBookInterface(addressBook).getMarginPool();
+        MarginPoolInterface marginPool = MarginPoolInterface(marginPoolModule);
+
+        marginPool.transferToPool(_args.asset, _args.from, _args.amount);
+
+        emit CollateralAssetDeposited(_args.asset, _args.owner, _args.from, _args.vaultId, _args.amount);
+
+        return vaults[_args.owner][_args.vaultId];
+    }
 
     /**
      * @notice withdraw collateral asset from vault
@@ -368,4 +470,13 @@ contract Controller is ReentrancyGuard, Ownable {
     //    //Check whitelistModule.isWhitelistCallDestination(args.address)
     //    //Call args.address with args.data
     //}
+
+    /**
+     * @notice function to check the validity of a specific vault id
+     * @param _accountOwner account owner address
+     * @param _vaultId vault id
+     */
+    function checkVaultId(address _accountOwner, uint256 _vaultId) internal view returns (bool) {
+        return ((_vaultId > 0) && (_vaultId <= accountVaultCounter[_accountOwner]));
+    }
 }
