@@ -270,7 +270,7 @@ contract Controller is ReentrancyGuard, Ownable {
             } else if (actionType == Actions.ActionType.WithdrawLongOption) {
                 vault = _withdrawLong(Actions._parseWithdrawArgs(action));
             } else if (actionType == Actions.ActionType.DepositCollateral) {
-                vault = _depositCollateral(Actions._parseDepositArgs(action));
+                svault = _depositCollateral(Actions._parseDepositArgs(action));
             } else if (actionType == Actions.ActionType.WithdrawCollateral) {
                 vault = _withdrawCollateral(Actions._parseWithdrawArgs(action));
             }
