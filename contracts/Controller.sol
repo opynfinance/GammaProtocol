@@ -147,9 +147,8 @@ contract Controller is ReentrancyGuard, Ownable {
         // if there is a short option and it has expired
         address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
         MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
-        OtokenInterface otoken = OtokenInterface(vault.shortOtokens[0]);
 
-        (uint256 netValue, ) = calculator.getExcessMargin(vault, otoken.collateralAsset());
+        (uint256 netValue, ) = calculator.getExcessCollateral(vault);
         vault.collateralAmounts[0] = netValue;
         return vault;
     }
@@ -217,25 +216,25 @@ contract Controller is ReentrancyGuard, Ownable {
             Actions.ActionArgs memory action = _actions[i];
             Actions.ActionType actionType = action.actionType;
 
-            if (actionType == Actions.ActionType.OpenVault) {
+            if (
+                (actionType != Actions.ActionType.SettleVault) ||
+                (actionType != Actions.ActionType.Exercise) ||
+                (actionType != Actions.ActionType.Call)
+            ) {
                 // check if this action is manipulating the same vault as all other actions, other than SettleVault
                 (prevActionVaultId, isActionVaultStored) = _checkActionsVaults(
                     prevActionVaultId,
                     action.vaultId,
                     isActionVaultStored
                 );
-
-                _openVault(Actions._parseOpenVaultArgs(action));
             }
-            if (actionType == Actions.ActionType.DepositLongOption) {
-                // check if this action is manipulating the same vault as all other actions, other than SettleVault
-                (prevActionVaultId, isActionVaultStored) = _checkActionsVaults(
-                    prevActionVaultId,
-                    action.vaultId,
-                    isActionVaultStored
-                );
 
+            if (actionType == Actions.ActionType.OpenVault) {
+                _openVault(Actions._parseOpenVaultArgs(action));
+            } else if (actionType == Actions.ActionType.DepositLongOption) {
                 vault = _depositLong(Actions._parseDepositArgs(action));
+            } else if (actionType == Actions.ActionType.WithdrawLongOption) {
+                vault = _withdrawLong(Actions._parseWithdrawArgs(action));
             }
         }
 
@@ -247,12 +246,12 @@ contract Controller is ReentrancyGuard, Ownable {
      * @param _vault final vault state
      */
     function _verifyFinalState(MarginAccount.Vault memory _vault) internal view {
-        if (_vault.shortOtokens.length > 0) {
-            address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
-            MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
+        address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
+        MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
 
-            require(calculator.isValidState(_vault, _vault.shortOtokens[0]), "Controller: invalid final vault state");
-        }
+        (, bool isValidVault) = calculator.getExcessCollateral(_vault);
+
+        require(isValidVault, "Controller: invalid final vault state");
     }
 
     /**
@@ -293,6 +292,7 @@ contract Controller is ReentrancyGuard, Ownable {
      * @param _args DepositArgs structure
      */
     function _depositLong(Actions.DepositArgs memory _args) internal returns (MarginAccount.Vault memory) {
+        require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         require(_args.from == msg.sender, "Controller: depositor address and msg.sender address mismatch");
 
         address whitelistModule = AddressBookInterface(addressBook).getWhitelist();
@@ -322,7 +322,26 @@ contract Controller is ReentrancyGuard, Ownable {
      * @dev Only account owner or operator can withdraw long option from vault
      * @param _args WithdrawArgs structure
      */
-    // function _withdrawLong(Actions.WithdrawArgs memory _args) internal isAuthorized(_args.owner) {}
+    function _withdrawLong(Actions.WithdrawArgs memory _args)
+        internal
+        isAuthorized(msg.sender, _args.owner)
+        returns (MarginAccount.Vault memory)
+    {
+        require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+
+        OtokenInterface otoken = OtokenInterface(_args.asset);
+
+        require(now <= otoken.expiryTimestamp(), "Controller: can not withdraw an expired otoken");
+
+        vaults[_args.owner][_args.vaultId]._removeLong(address(otoken), _args.amount, _args.index);
+
+        address marginPoolModule = AddressBookInterface(addressBook).getMarginPool();
+        MarginPoolInterface marginPool = MarginPoolInterface(marginPoolModule);
+
+        marginPool.transferToUser(address(otoken), _args.to, _args.amount);
+
+        return vaults[_args.owner][_args.vaultId];
+    }
 
     /**
      * @notice deposit collateral asset into vault
@@ -368,4 +387,13 @@ contract Controller is ReentrancyGuard, Ownable {
     //    //Check whitelistModule.isWhitelistCallDestination(args.address)
     //    //Call args.address with args.data
     //}
+
+    /**
+     * @notice function to check the validity of a specific vault id
+     * @param _accountOwner account owner address
+     * @param _vaultId vault id
+     */
+    function checkVaultId(address _accountOwner, uint256 _vaultId) internal view returns (bool) {
+        return ((_vaultId > 0) && (_vaultId <= accountVaultCounter[_accountOwner]));
+    }
 }
