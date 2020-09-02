@@ -3,7 +3,7 @@ import {
   MockAddressBookInstance,
   WETH9Instance,
   MarginPoolInstance,
-} from '../../build/types/truffle-types'
+} from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
 const {expectRevert, ether} = require('@openzeppelin/test-helpers')
@@ -77,7 +77,7 @@ contract('MarginPool', ([controllerAddress, user1, random]) => {
 
       await expectRevert(
         marginPool.transferToPool(usdc.address, user1, ether('0'), {from: controllerAddress}),
-        'MarginPool: transferToPool amount is below or equal to 0',
+        'MarginPool: transferToPool amount is equal to 0',
       )
     })
 
@@ -143,7 +143,7 @@ contract('MarginPool', ([controllerAddress, user1, random]) => {
     it('should revert transfering to user an amount equal to zero', async () => {
       await expectRevert(
         marginPool.transferToUser(usdc.address, user1, ether('0'), {from: controllerAddress}),
-        'MarginPool: transferToUser amount is below or equal to 0',
+        'MarginPool: transferToUser amount is equal to 0',
       )
     })
 
@@ -222,7 +222,7 @@ contract('MarginPool', ([controllerAddress, user1, random]) => {
         marginPool.batchTransferToPool([usdc.address, weth.address], [user1, user1], [ether('0'), wethToTransfer], {
           from: controllerAddress,
         }),
-        'MarginPool: transferToPool amount is below or equal to 0',
+        'MarginPool: transferToPool amount is equal to 0',
       )
     })
 
@@ -304,7 +304,7 @@ contract('MarginPool', ([controllerAddress, user1, random]) => {
         marginPool.batchTransferToUser([usdc.address, weth.address], [user1, user1], [usdcToTransfer, ether('0')], {
           from: controllerAddress,
         }),
-        'MarginPool: transferToUser amount is below or equal to 0',
+        'MarginPool: transferToUser amount is equal to 0',
       )
     })
 

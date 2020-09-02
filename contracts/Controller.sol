@@ -18,25 +18,6 @@ import {WhitelistInterface} from "./interfaces/WhitelistInterface.sol";
 import {MarginPoolInterface} from "./interfaces/MarginPoolInterface.sol";
 
 /**
- * SPDX-License-Identifier: UNLICENSED
- */
-pragma solidity =0.6.10;
-
-pragma experimental ABIEncoderV2;
-
-import {Ownable} from "./packages/oz/Ownable.sol";
-import {SafeMath} from "./packages/oz/SafeMath.sol";
-import {ReentrancyGuard} from "./packages/oz/ReentrancyGuard.sol";
-import {MarginAccount} from "./libs/MarginAccount.sol";
-import {Actions} from "./libs/Actions.sol";
-import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
-import {OtokenInterface} from "./interfaces/OtokenInterface.sol";
-import {MarginCalculatorInterface} from "./interfaces/MarginCalculatorInterface.sol";
-import {OracleInterface} from "./interfaces/OracleInterface.sol";
-import {WhitelistInterface} from "./interfaces/WhitelistInterface.sol";
-import {MarginPoolInterface} from "./interfaces/MarginPoolInterface.sol";
-
-/**
  * @author Opyn Team
  * @title Controller
  * @notice contract that
