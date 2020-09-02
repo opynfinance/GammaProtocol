@@ -110,7 +110,6 @@ contract('CompoundPricer', ([owner, random]) => {
   })
 
   describe('setExpiryPrice', () => {
-    // time order: t0, t1, t2, t3, t4
     let expiry: number
     const ethPrice = new BigNumber(createScaledNumber(300))
     const exchangeRate = new BigNumber('200192735438752381581313918')
