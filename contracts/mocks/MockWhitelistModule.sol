@@ -4,6 +4,7 @@ pragma solidity 0.6.10;
 contract MockWhitelistModule {
     mapping(address => bool) public _isWhitelistedOtoken;
     mapping(bytes32 => bool) private _isWhitelistedProduct;
+    mapping(address => bool) private whitelistedCollateral;
 
     function whitelistProduct(
         address _underlying,
@@ -30,5 +31,15 @@ contract MockWhitelistModule {
 
     function isWhitelistedOtoken(address _otoken) external view returns (bool) {
         return _isWhitelistedOtoken[_otoken];
+    }
+
+    function isWhitelistedCollateral(address _collateral) external view returns (bool) {
+        return whitelistedCollateral[_collateral];
+    }
+
+    function whitelistCollateral(address _collateral) external {
+        require(!whitelistedCollateral[_collateral], "Whitelist: Collateral already whitelisted");
+
+        whitelistedCollateral[_collateral] = true;
     }
 }
