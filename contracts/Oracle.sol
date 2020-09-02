@@ -3,10 +3,10 @@
  */
 pragma solidity 0.6.10;
 
-import "./interfaces/AggregatorInterface.sol";
-import "./interfaces/AddressBookInterface.sol";
-import "./packages/oz/Ownable.sol";
-import "./packages/oz/SafeMath.sol";
+import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
+import {OpynPricerInterface} from "./interfaces/OpynPricerInterface.sol";
+import {Ownable} from "./packages/oz/Ownable.sol";
+import {SafeMath} from "./packages/oz/SafeMath.sol";
 
 /**
  * @author Opyn Team
@@ -19,131 +19,238 @@ contract Oracle is Ownable {
     /// @dev structure that represent price, and timestamp
     struct Price {
         uint256 price;
-        uint256 timestamp; // timestamp at which the price is pulled to this oracle
+        uint256 timestamp; // timestamp at which the price is pushed to this oracle
     }
 
-    /// @dev mapping between oracle and it's locking period
-    mapping(address => uint256) internal oracleLockingPeriod;
-    /// @dev mapping of asset price to it's dispute period
-    mapping(address => uint256) internal oracleDisputePeriod;
-    /// @dev mapping between batch and it's oracle
-    mapping(bytes32 => address) internal batchOracle;
-    /// @dev mapping between batch and it price at specific timestmap. A batch is the hash of underlying, collateral, strike and expiry.
-    mapping(bytes32 => mapping(uint256 => Price)) internal batchPriceAt;
+    /// @dev mapping between pricer and it's locking period.
+    /// locking period is a period of time after expiry timestamp, that preventing from pushing asset price.
+    mapping(address => uint256) internal pricerLockingPeriod;
+    /// @dev mapping of asset pricer to it's dispute period. Dispute period start from the timestamp of pushing underyling price
+    mapping(address => uint256) internal pricerDisputePeriod;
+    /// @dev mapping between asset and its pricer.
+    mapping(address => address) internal assetPricer;
+    /// @dev mapping between asset, timestamp and the price at the timestamp.
+    mapping(address => mapping(uint256 => Price)) internal storedPrice;
+    //// @dev a disputer is a role defined by owner that has the ability to dispute a price during dispute period.
+    address internal disputer;
 
-    /// @notice emits an event when an oracle added for a specific batch
-    event BatchOracleUpdated(bytes32 indexed batch, address oracle);
-    /// @notice emits an event when a locking period added for a specific oracle
-    event OracleLockingPeriodUpdated(address indexed oracle, uint256 lockingPeriod);
-    /// @notice emits an event when a dispute period added for a specific oracle
-    event OracleDisputePeriodUpdated(address indexed oracle, uint256 disputePeriod);
+    /// @notice emits an event when disputer is updated
+    event DisputerUpdated(address indexed newDisputer);
+    /// @notice emits an event when an pricer updated for a specific asset
+    event PricerUpdated(address asset, address pricer);
+    /// @notice emits an event when a locking period updated for a specific oracle
+    event PricerLockingPeriodUpdated(address indexed pricer, uint256 lockingPeriod);
+    /// @notice emits an event when a dispute period updated for a specific oracle
+    event PricerDisputePeriodUpdated(address indexed pricer, uint256 disputePeriod);
+    /// @notice emits an event when price is updated for a specific asset
+    event ExpiryPriceUpdated(
+        address indexed asset,
+        uint256 indexed expirtyTimestamp,
+        uint256 price,
+        uint256 onchainTimestamp
+    );
+    /// @notice emits an event when owner dispute a asset price during dispute period
+    event ExpiryPriceDisputed(
+        address indexed asset,
+        uint256 indexed expiryTimestamp,
+        uint256 disputedPrice,
+        uint256 newPrice,
+        uint256 disputeTimestamp
+    );
+
+    /// @notice AddressBook module
+    address public addressBook;
 
     /**
-     * @notice get batch price
-     * @param _batch a batch is the hash of underlying, collateral, strike and expiry.
-     * @param _timestamp price timestamp
-     * @return price and timestap at which price submitted to this contract
+     * @notice contructor
+     * @param _addressBook adressbook module
      */
-    function getBatchPrice(bytes32 _batch, uint256 _timestamp) public view returns (uint256, uint256) {
-        Price memory batchPrice = batchPriceAt[_batch][_timestamp];
-        return (batchPrice.price, batchPrice.timestamp);
+    constructor(address _addressBook) public {
+        require(_addressBook != address(0), "Oracle: Invalid address book");
+
+        addressBook = _addressBook;
     }
 
     /**
-     * @notice get batch oracle. Each underlying-collateral-strike-expiry has its own oracle
-     * @param _batch get the price oracle for a specific batch. A batch is the hash of underlying, collateral, strike and expiry.
-     * @return oracle address
+     * @notice get the live price from oracle
+     * @param _asset the asset address
+     * @return price scaled in 1e18, denominated in USD
+     * e.g. 173689000000000000000 => 175.689 USD
      */
-    function getBatchOracle(bytes32 _batch) public view returns (address) {
-        return batchOracle[_batch];
+    function getPrice(address _asset) external view returns (uint256) {
+        require(assetPricer[_asset] != address(0), "Oracle: Pricer for this asset not set.");
+        return OpynPricerInterface(assetPricer[_asset]).getPrice();
     }
 
     /**
-     * @notice get oracle locking period. A locking period is a period of time after expiry where no one can push price to oracle
-     * @dev during an oracle locking period, price can not be submitted to this contract
-     * @param _oracle oracle address
+     * @notice get the asset price at specific expiry timestamp.
+     * @param _asset the asset want to get price at.
+     * @param _expiryTimestamp expiry timestamp
+     * @return price denominated in USD, scaled 10e18
+     * @return isFinalized if the price is finalized or not.
+     */
+    function getExpiryPrice(address _asset, uint256 _expiryTimestamp) external view returns (uint256, bool) {
+        uint256 price = storedPrice[_asset][_expiryTimestamp].price;
+        bool isFinalized = isDisputePeriodOver(_asset, _expiryTimestamp);
+        return (price, isFinalized);
+    }
+
+    /**
+     * @notice get asset pricer
+     * @param _asset get the pricer for a specific asset.
+     * @return pricer address
+     */
+    function getPricer(address _asset) external view returns (address) {
+        return assetPricer[_asset];
+    }
+
+    /**
+     * @notice get disputer address
+     * @return pricer address
+     */
+    function getDisputer() external view returns (address) {
+        return disputer;
+    }
+
+    /**
+     * @notice get pricer locking period. A locking period is a period of time after expiry where no one can push price to oracle
+     * @dev during locking period, price can not be submitted to this contract
+     * @param _pricer pricer address
      * @return locking period
      */
-    function getOracleLockingPeriod(address _oracle) public view returns (uint256) {
-        return oracleLockingPeriod[_oracle];
+    function getPricerLockingPeriod(address _pricer) external view returns (uint256) {
+        return pricerLockingPeriod[_pricer];
     }
 
     /**
-     * @notice get oracle dispute period
-     * @dev during an oracle dispute period, the owner of this contract can dispute the submitted price and modify it. The dispute period start after submitting batch price on-chain
-     * @param _oracle oracle address
+     * @notice get pricer dispute period
+     * @dev during dispute period, the owner of this contract can dispute the submitted price and modify it.
+     * The dispute period start after submitting a price on-chain
+     * @param _pricer oracle address
      * @return dispute period
      */
-    function getOracleDisputePeriod(address _oracle) public view returns (uint256) {
-        return oracleDisputePeriod[_oracle];
+    function getPricerDisputePeriod(address _pricer) external view returns (uint256) {
+        return pricerDisputePeriod[_pricer];
     }
 
     /**
-     * @notice check if locking period is over
-     * @param _batch A batch is the hash of underlying, collateral, strike and expiry.
-     * @param _expiryTimestamp batch expiry
+     * @notice check if locking period is over for setting the asset price for that timestamp
+     * @param _asset asset address
+     * @param _expiryTimestamp expiry timestamp
      * @return True if locking period is over, otherwise false
      */
-    function isLockingPeriodOver(bytes32 _batch, uint256 _expiryTimestamp) external view returns (bool) {
-        address oracle = batchOracle[_batch];
-        uint256 lockingPeriod = oracleLockingPeriod[oracle];
+    function isLockingPeriodOver(address _asset, uint256 _expiryTimestamp) public view returns (bool) {
+        address pricer = assetPricer[_asset];
+        uint256 lockingPeriod = pricerLockingPeriod[pricer];
 
         return now > _expiryTimestamp.add(lockingPeriod);
     }
 
     /**
      * @notice check if dispute period is over
-     * @param _batch batch hash
-     * @param _expiryTimestamp batch expiry
+     * @param _asset assets to query
+     * @param _expiryTimestamp expiry timestamp of otoken
      * @return True if dispute period is over, otherwise false
      */
-    function isDisputePeriodOver(bytes32 _batch, uint256 _expiryTimestamp) external view returns (bool) {
-        address oracle = batchOracle[_batch];
-        uint256 disputePeriod = oracleDisputePeriod[oracle];
-
-        Price memory batchPrice = batchPriceAt[_batch][_expiryTimestamp];
-
-        if (batchPrice.timestamp == 0) {
+    function isDisputePeriodOver(address _asset, uint256 _expiryTimestamp) public view returns (bool) {
+        // check if the pricer has submitted the price at this tiestamp
+        Price memory price = storedPrice[_asset][_expiryTimestamp];
+        if (price.timestamp == 0) {
             return false;
         }
 
-        return now > batchPrice.timestamp.add(disputePeriod);
+        address pricer = assetPricer[_asset];
+        uint256 disputePeriod = pricerDisputePeriod[pricer];
+        return now > price.timestamp.add(disputePeriod);
     }
 
     /**
-     * @notice set batch oracle
+     * @notice set pricer for an asset
      * @dev can only be called by owner
-     * @param _batch batch (hash of underlying, stike, collateral and expiry)
-     * @param _oracle oracle address
+     * @param _asset asset
+     * @param _pricer pricer address
      */
-    function setBatchOracle(bytes32 _batch, address _oracle) external onlyOwner {
-        batchOracle[_batch] = _oracle;
+    function setAssetPricer(address _asset, address _pricer) external onlyOwner {
+        require(_pricer != address(0), "Oracle: cannot set pricer to address(0)");
+        assetPricer[_asset] = _pricer;
 
-        emit BatchOracleUpdated(_batch, _oracle);
+        emit PricerUpdated(_asset, _asset);
     }
 
     /**
-     * @notice set oracle locking period
-     * @dev can only be called by owner
-     * @param _oracle oracle address
+     * @notice set pricer locking period
+     * @dev this function can only be called by owner
+     * @param _pricer pricer address
      * @param _lockingPeriod locking period
      */
-    function setLockingPeriod(address _oracle, uint256 _lockingPeriod) external onlyOwner {
-        oracleLockingPeriod[_oracle] = _lockingPeriod;
+    function setLockingPeriod(address _pricer, uint256 _lockingPeriod) external onlyOwner {
+        pricerLockingPeriod[_pricer] = _lockingPeriod;
 
-        emit OracleLockingPeriodUpdated(_oracle, _lockingPeriod);
+        emit PricerLockingPeriodUpdated(_pricer, _lockingPeriod);
     }
 
     /**
      * @notice set oracle dispute period
      * @dev can only be called by owner
-     * @param _oracle oracle address
+     * @param _pricer oracle address
      * @param _disputePeriod dispute period
      */
-    function setDisputePeriod(address _oracle, uint256 _disputePeriod) external onlyOwner {
-        oracleDisputePeriod[_oracle] = _disputePeriod;
+    function setDisputePeriod(address _pricer, uint256 _disputePeriod) external onlyOwner {
+        pricerDisputePeriod[_pricer] = _disputePeriod;
 
-        emit OracleDisputePeriodUpdated(_oracle, _disputePeriod);
-        (_oracle, _disputePeriod);
+        emit PricerDisputePeriodUpdated(_pricer, _disputePeriod);
+    }
+
+    /**
+     * @notice set the disputer role
+     * @dev can only be called by owner
+     * @param _disputer oracle address
+     */
+    function setDisputer(address _disputer) external onlyOwner {
+        disputer = _disputer;
+
+        emit DisputerUpdated(_disputer);
+    }
+
+    /**
+     * @notice dispute an asset price by owner during dispute period
+     * @dev only owner can dispute a price during the dispute period, by setting a new one.
+     * @param _asset asset address
+     * @param _expiryTimestamp expiry timestamp
+     * @param _price the correct price
+     */
+    function disputeExpiryPrice(
+        address _asset,
+        uint256 _expiryTimestamp,
+        uint256 _price
+    ) external {
+        require(msg.sender == disputer, "Oracle: caller is not the disputer");
+        require(!isDisputePeriodOver(_asset, _expiryTimestamp), "Oracle: dispute period over");
+
+        Price storage priceToUpdate = storedPrice[_asset][_expiryTimestamp];
+        uint256 oldPrice = priceToUpdate.price;
+        priceToUpdate.price = _price;
+
+        emit ExpiryPriceDisputed(_asset, _expiryTimestamp, oldPrice, _price, now);
+    }
+
+    /**
+     * @notice submit expiry price to the oracle, can only be set from the pricer.
+     * @dev asset price can only be set after locking period is over and before starting dispute period
+     * @param _asset asset address
+     * @param _expiryTimestamp expiry timestamp
+     * @param _price the asset price at expiry
+     */
+    function setExpiryPrice(
+        address _asset,
+        uint256 _expiryTimestamp,
+        uint256 _price
+    ) external {
+        require(msg.sender == assetPricer[_asset], "Oracle: caller is not the pricer");
+        require(isLockingPeriodOver(_asset, _expiryTimestamp), "Oracle: locking period is not over yet");
+        require(storedPrice[_asset][_expiryTimestamp].timestamp == 0, "Oracle: dispute period started");
+
+        storedPrice[_asset][_expiryTimestamp] = Price(_price, now);
+        emit ExpiryPriceUpdated(_asset, _expiryTimestamp, _price, now);
     }
 }
