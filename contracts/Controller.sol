@@ -148,7 +148,7 @@ contract Controller is ReentrancyGuard, Ownable {
         address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
         MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
 
-        (uint256 netValue, ) = calculator.getExcessMargin(vault);
+        (uint256 netValue, ) = calculator.getExcessCollateral(vault);
         vault.collateralAmounts[0] = netValue;
         return vault;
     }
@@ -249,7 +249,7 @@ contract Controller is ReentrancyGuard, Ownable {
         address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
         MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
 
-        (, bool isValidVault) = calculator.getExcessMargin(_vault);
+        (, bool isValidVault) = calculator.getExcessCollateral(_vault);
 
         require(isValidVault, "Controller: invalid final vault state");
     }

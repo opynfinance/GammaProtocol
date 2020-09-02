@@ -12,7 +12,11 @@ import {SignedConverter} from "../libs/SignedConverter.sol";
 
 contract MockMarginCalculator {
     // solhint-disable-ignore-no-unused-vars
-    function getExcessMargin(MarginAccount.Vault memory _vault) public view returns (uint256 netValue, bool isExcess) {
+    function getExcessCollateral(MarginAccount.Vault memory _vault)
+        public
+        view
+        returns (uint256 netValue, bool isExcess)
+    {
         // ensure the number of collateral, long and short array is valid.
         _checkIsValidSpread(_vault);
 
