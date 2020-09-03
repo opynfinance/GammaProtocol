@@ -329,8 +329,9 @@ contract MarginCalculator is Initializable {
         if (short.isPut()) {
             address strike = short.strikeAsset();
             if (strike != collateral) {
-                uint256 strikePrice = oracle.getPrice(strike); // 50 usdc
-                uint256 collateralPrice = oracle.getPrice(collateral); // 100 usdc
+                // price is already scaled by 1e18
+                uint256 strikePrice = oracle.getPrice(strike);
+                uint256 collateralPrice = oracle.getPrice(collateral);
                 toCollateralExchangeRate = _uint256ToFixedPointInt(strikePrice).div(
                     _uint256ToFixedPointInt(collateralPrice)
                 );
