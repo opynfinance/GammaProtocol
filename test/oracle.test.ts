@@ -44,7 +44,7 @@ contract('Oracle', ([owner, disputer, controllerAddress, random, collateral, str
     weth = await MockERC20.new('WETH', 'WETH')
     otoken = await Otoken.new()
     otokenExpiry = new BigNumber((await time.latest()).toNumber() + time.duration.days(30).toNumber())
-    await otoken.init(weth.address, strike, collateral, '200', otokenExpiry, true)
+    await otoken.init(addressBook.address, weth.address, strike, collateral, '200', otokenExpiry, true)
 
     // deply mock pricer (to get live price and set expiry price)
     wethPricer = await MockPricer.new(weth.address, oracle.address)

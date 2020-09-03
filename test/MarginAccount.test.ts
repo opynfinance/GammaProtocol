@@ -37,11 +37,15 @@ contract('MarginAccount', ([deployer, controller]) => {
     addressBook = await MockAddressBook.new()
     await addressBook.setController(controller)
     // deploy otoken
-    otoken = await Otoken.new(addressBook.address)
-    await otoken.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, expiry, isPut, {from: deployer})
+    otoken = await Otoken.new()
+    await otoken.init(addressBook.address, ETH_ADDR, usdc.address, usdc.address, strikePrice, expiry, isPut, {
+      from: deployer,
+    })
     // deploy second otoken
-    otoken2 = await Otoken.new(addressBook.address)
-    await otoken2.init(ETH_ADDR, usdc.address, usdc.address, strikePrice, expiry, isPut, {from: deployer})
+    otoken2 = await Otoken.new()
+    await otoken2.init(addressBook.address, ETH_ADDR, usdc.address, usdc.address, strikePrice, expiry, isPut, {
+      from: deployer,
+    })
     // margin account
     marginAccountTester = await MarginAccountTester.new()
   })
