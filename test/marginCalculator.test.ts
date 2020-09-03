@@ -58,8 +58,11 @@ contract('MarginCalculator', () => {
     usdc = await MockERC20.new('USDC', 'USDC', 6)
     dai = await MockERC20.new('DAI', 'DAI', 18)
     weth = await MockERC20.new('WETH', 'WETH', 18)
+<<<<<<< HEAD
     cusdc = await MockERC20.new('cUSDC', 'cUSDC', 8)
     ceth = await MockERC20.new('cETH', 'cETH', 8)
+=======
+>>>>>>> Add decimals in mock token
     // setup put tokens
     eth300Put = await MockOtoken.new()
     eth250Put = await MockOtoken.new()
