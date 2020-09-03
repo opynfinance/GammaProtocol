@@ -1270,6 +1270,28 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
         await expectRevert(controller.operate(actionArgs, {from: accountOwner1}), 'Controller: invalid vault id')
       })
 
+      it('should revert withdrawing collateral asset amount greater than the vault balance', async () => {
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+        const vaultBefore = await controller.getVault(accountOwner1, vaultCounter)
+        const collateralToWithdraw = new BigNumber(vaultBefore.collateralAmounts[0]).plus(1)
+        const actionArgs = [
+          {
+            actionType: ActionType.WithdrawCollateral,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: usdc.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToWithdraw.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        await expectRevert(controller.operate(actionArgs, {from: accountOwner1}), 'SafeMath: subtraction overflow')
+      })
+
       it('should withdraw collateral to any random address where msg.sender is account owner', async () => {
         const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
         assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
