@@ -42,6 +42,15 @@ contract FixedPointInt256Tester {
         return a.mul(b);
     }
 
+    function testMulOne(FixedPointInt256.FixedPointInt memory a)
+        external
+        pure
+        returns (FixedPointInt256.FixedPointInt memory)
+    {
+        FixedPointInt256.FixedPointInt memory b = FixedPointInt256.fromUnscaledInt(1);
+        return a.mul(b);
+    }
+
     function testDiv(FixedPointInt256.FixedPointInt memory a, FixedPointInt256.FixedPointInt memory b)
         external
         pure

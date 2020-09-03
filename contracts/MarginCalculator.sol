@@ -87,7 +87,6 @@ contract MarginCalculator is Initializable {
 
         FixedPointInt256.FixedPointInt memory excessCollateral = collateralAmount.sub(collateralRequired);
         bool isExcess = excessCollateral.isGreaterThanOrEqual(_uint256ToFixedPointInt(0));
-
         return (SignedConverter.intToUint(excessCollateral.value), isExcess);
     }
 
@@ -330,9 +329,8 @@ contract MarginCalculator is Initializable {
         if (short.isPut()) {
             address strike = short.strikeAsset();
             if (strike != collateral) {
-                // price is already scaled by 1e18
-                uint256 strikePrice = oracle.getPrice(strike);
-                uint256 collateralPrice = oracle.getPrice(collateral);
+                uint256 strikePrice = oracle.getPrice(strike); // 50 usdc
+                uint256 collateralPrice = oracle.getPrice(collateral); // 100 usdc
                 toCollateralExchangeRate = _uint256ToFixedPointInt(strikePrice).div(
                     _uint256ToFixedPointInt(collateralPrice)
                 );
