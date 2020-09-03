@@ -29,7 +29,7 @@ contract('MarginPool', ([controllerAddress, user1, random]) => {
 
   before('Deployment', async () => {
     // deploy USDC token
-    usdc = await MockERC20.new('USDC', 'USDC')
+    usdc = await MockERC20.new('USDC', 'USDC', 8)
     // deploy WETH token for testing
     weth = await WETH9.new()
     // deploy AddressBook mock
