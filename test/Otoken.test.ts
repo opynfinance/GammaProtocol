@@ -28,7 +28,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
     // deploy oToken with addressbook
     otoken = await Otoken.new()
 
-    usdc = await MockERC20.new('USDC', 'USDC')
+    usdc = await MockERC20.new('USDC', 'USDC', 6)
   })
 
   describe('Otoken Initialization', () => {
@@ -74,7 +74,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
     })
 
     it('should set the right name for non-eth options', async () => {
-      const weth = await MockERC20.new('WETH', 'WETH')
+      const weth = await MockERC20.new('WETH', 'WETH', 18)
       const putOption = await Otoken.new(addressBookAddr)
       await putOption.init(addressBookAddr, weth.address, usdc.address, usdc.address, strikePrice, expiry, isPut, {
         from: deployer,

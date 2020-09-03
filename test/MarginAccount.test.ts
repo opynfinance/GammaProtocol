@@ -30,9 +30,9 @@ contract('MarginAccount', ([deployer, controller]) => {
 
   before('Deployment', async () => {
     // deploy WETH token
-    weth = await MockERC20.new('WETH', 'WETH')
+    weth = await MockERC20.new('WETH', 'WETH', 18)
     // usdc
-    usdc = await MockERC20.new('USDC', 'USDC')
+    usdc = await MockERC20.new('USDC', 'USDC', 6)
     // deploy AddressBook token
     addressBook = await MockAddressBook.new()
     await addressBook.setController(controller)

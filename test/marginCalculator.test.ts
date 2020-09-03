@@ -45,9 +45,9 @@ contract('MarginCalculator', () => {
     oracle = await MockOracle.new()
     await addressBook.setOracle(oracle.address)
     // setup usdc and weth
-    usdc = await MockERC20.new('USDC', 'USDC')
-    dai = await MockERC20.new('DAI', 'DAI')
-    weth = await MockERC20.new('WETH', 'WETH')
+    usdc = await MockERC20.new('USDC', 'USDC', 6)
+    dai = await MockERC20.new('DAI', 'DAI', 18)
+    weth = await MockERC20.new('WETH', 'WETH', 18)
     // setup put tokens
     eth300Put = await MockOtoken.new()
     eth250Put = await MockOtoken.new()

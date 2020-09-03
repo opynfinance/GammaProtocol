@@ -26,7 +26,7 @@ contract('AddressBook', ([owner, otokenImplAdd, marginPoolAdd, random]) => {
 
   before('Deployment', async () => {
     // deploy WETH token
-    weth = await MockERC20.new('WETH', 'WETH')
+    weth = await MockERC20.new('WETH', 'WETH', 18)
     // deploy AddressBook token
     addressBook = await AddressBook.new()
   })
