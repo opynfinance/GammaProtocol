@@ -271,6 +271,8 @@ contract Controller is ReentrancyGuard, Ownable {
                 vault = _withdrawLong(Actions._parseWithdrawArgs(action));
             } else if (actionType == Actions.ActionType.DepositCollateral) {
                 vault = _depositCollateral(Actions._parseDepositArgs(action));
+            } else if (actionType == Actions.ActionType.WithdrawCollateral) {
+                vault = _withdrawCollateral(Actions._parseWithdrawArgs(action));
             }
         }
 
@@ -418,7 +420,34 @@ contract Controller is ReentrancyGuard, Ownable {
      * @dev only account owner or operator can withdraw long option from vault
      * @param _args WithdrawArgs structure
      */
-    // function _withdrawCollateral(Actions.WithdrawArgs memory _args) internal isAuthorized(_args.owner) {}
+    function _withdrawCollateral(Actions.WithdrawArgs memory _args)
+        internal
+        isAuthorized(msg.sender, _args.owner)
+        returns (MarginAccount.Vault memory)
+    {
+        require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+
+        MarginAccount.Vault memory vault = vaults[_args.owner][_args.vaultId];
+        if (isNotEmpty(vault.shortOtokens)) {
+            OtokenInterface otoken = OtokenInterface(vault.shortOtokens[0]);
+
+            require(
+                now <= otoken.expiryTimestamp(),
+                "Controller: can not withdraw collateral from a vault with an expired short otoken"
+            );
+        }
+
+        vaults[_args.owner][_args.vaultId]._removeCollateral(_args.asset, _args.amount, _args.index);
+
+        address marginPoolModule = AddressBookInterface(addressBook).getMarginPool();
+        MarginPoolInterface marginPool = MarginPoolInterface(marginPoolModule);
+
+        marginPool.transferToUser(_args.asset, _args.to, _args.amount);
+
+        emit CollateralAssetWithdrawed(_args.asset, _args.owner, _args.to, _args.vaultId, _args.amount);
+
+        return vaults[_args.owner][_args.vaultId];
+    }
 
     /**
      * @notice mint option into vault
@@ -459,5 +488,9 @@ contract Controller is ReentrancyGuard, Ownable {
      */
     function checkVaultId(address _accountOwner, uint256 _vaultId) internal view returns (bool) {
         return ((_vaultId > 0) && (_vaultId <= accountVaultCounter[_accountOwner]));
+    }
+
+    function isNotEmpty(address[] memory _array) internal view returns (bool) {
+        return (_array.length > 0) && (_array[0] != address(0));
     }
 }
