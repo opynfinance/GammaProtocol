@@ -45,3 +45,11 @@ BigNumber.config({EXPONENTIAL_AT: 30})
 export const createScaledNumber = (num: number): string => {
   return new BigNumber(num).times(1e18).toString()
 }
+
+/**
+ * Create a number string that scales numbers to number of decimals passed in
+ * @param num
+ */
+export const createScaledUint256 = (num: number, exp: number): string => {
+  return new BigNumber(num).times(10 ** exp).toString()
+}

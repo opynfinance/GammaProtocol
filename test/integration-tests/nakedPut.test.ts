@@ -8,7 +8,7 @@ import {
   MockWhitelistModuleInstance,
   MarginPoolInstance,
 } from '../../build/types/truffle-types'
-import {createVault, createScaledNumber} from '../utils'
+import {createVault, createScaledUint256} from '../utils'
 import {assert} from 'chai'
 import BigNumber from 'bignumber.js'
 
@@ -79,9 +79,9 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
     whitelist = await MockWhitelist.new()
 
     // setup usdc and weth
-    usdc = await MockERC20.new('USDC', 'USDC')
-    dai = await MockERC20.new('DAI', 'DAI')
-    weth = await MockERC20.new('WETH', 'WETH')
+    usdc = await MockERC20.new('USDC', 'USDC', 6)
+    dai = await MockERC20.new('DAI', 'DAI', 18)
+    weth = await MockERC20.new('WETH', 'WETH', 18)
 
     // TODO: setup address book
     // await addressBook.setOracle(oracle.address)
@@ -90,10 +90,18 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
     // await addressBook.setWhitelist(whitelist.address)
     // await addressBook.setMarginPool(marginPool.address)
 
-    ethPut = await Otoken.new(addressBook.address)
-    await ethPut.init(weth.address, usdc.address, usdc.address, createScaledNumber(strikePrice), expiry, true)
+    ethPut = await Otoken.new()
+    await ethPut.init(
+      addressBook.address,
+      weth.address,
+      usdc.address,
+      usdc.address,
+      createScaledUint256(strikePrice, 18),
+      expiry,
+      true,
+    )
     // mint usdc to user
-    usdc.mint(accountOwner1, createScaledNumber(2 * collateralAmount))
+    usdc.mint(accountOwner1, createScaledUint256(2 * collateralAmount, (await usdc.decimals()).toNumber()))
 
     // have the user approve all the usdc transfers
     usdc.approve(marginPool.address, '10000000000000000000000', {from: accountOwner1})
@@ -146,7 +154,7 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
           sender: accountOwner1,
           asset: ethPut.address,
           vaultId: vaultCounter,
-          amount: createScaledNumber(optionsAmount),
+          amount: createScaledUint256(optionsAmount, 18),
           index: '0',
           data: ZERO_ADDR,
         },
@@ -156,7 +164,7 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
           sender: accountOwner1,
           asset: usdc.address,
           vaultId: vaultCounter,
-          amount: createScaledNumber(collateralAmount),
+          amount: createScaledUint256(collateralAmount, (await usdc.decimals()).toNumber()),
           index: '0',
           data: ZERO_ADDR,
         },
@@ -173,19 +181,23 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
 
       // check balances before and after changed as expected
       assert.equal(
-        ownerUsdcBalanceBefore.minus(createScaledNumber(collateralAmount)).toString(),
+        ownerUsdcBalanceBefore
+          .minus(createScaledUint256(collateralAmount, (await usdc.decimals()).toNumber()))
+          .toString(),
         ownerUsdcBalanceAfter.toString(),
       )
       assert.equal(
-        marginPoolUsdcBalanceBefore.plus(createScaledNumber(collateralAmount)).toString(),
+        marginPoolUsdcBalanceBefore
+          .plus(createScaledUint256(collateralAmount, (await usdc.decimals()).toNumber()))
+          .toString(),
         marginPoolUsdcBalanceAfter.toString(),
       )
       assert.equal(
-        ownerOtokenBalanceBefore.plus(createScaledNumber(optionsAmount)).toString(),
+        ownerOtokenBalanceBefore.plus(createScaledUint256(optionsAmount, 18)).toString(),
         ownerOtokenBalanceAfter.toString(),
       )
       assert.equal(
-        marginPoolOtokenSupplyBefore.plus(createScaledNumber(optionsAmount)).toString(),
+        marginPoolOtokenSupplyBefore.plus(createScaledUint256(optionsAmount, 18)).toString(),
         marginPoolOtokenSupplyAfter.toString(),
       )
 
@@ -213,12 +225,12 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
 
       assert.equal(
         vaultAfter.shortOtokens[0].toString(),
-        createScaledNumber(optionsAmount),
+        createScaledUint256(optionsAmount, 18),
         'Incorrect amount of collateral stored in the vault',
       )
       assert.equal(
         vaultAfter.collateralAmounts[0].toString(),
-        createScaledNumber(collateralAmount),
+        createScaledUint256(collateralAmount, 18),
         'Incorrect amount of collateral stored in the vault',
       )
     })
@@ -235,7 +247,7 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
           sender: accountOwner1,
           asset: usdc.address,
           vaultId: vaultCounter,
-          amount: createScaledNumber(collateralAmount),
+          amount: createScaledUint256(collateralAmount, (await usdc.decimals()).toNumber()),
           index: '0',
           data: ZERO_ADDR,
         },
@@ -249,18 +261,25 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
 
       // check balances before and after changed as expected
       assert.equal(
-        ownerUsdcBalanceBefore.minus(createScaledNumber(collateralAmount)).toString(),
+        ownerUsdcBalanceBefore
+          .minus(createScaledUint256(collateralAmount, (await usdc.decimals()).toNumber()))
+          .toString(),
         ownerUsdcBalanceAfter.toString(),
       )
       assert.equal(
-        marginPoolUsdcBalanceBefore.plus(createScaledNumber(collateralAmount)).toString(),
+        marginPoolUsdcBalanceBefore
+          .plus(createScaledUint256(collateralAmount, (await usdc.decimals()).toNumber()))
+          .toString(),
         marginPoolUsdcBalanceAfter.toString(),
       )
 
       // Check that there is excess margin
       const vaultAfter = await controller.getVault(accountOwner1, vaultCounter)
       const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
-      assert.equal(vaultStateAfter[0].toString(), createScaledNumber(collateralAmount))
+      assert.equal(
+        vaultStateAfter[0].toString(),
+        createScaledUint256(collateralAmount, (await usdc.decimals()).toNumber()),
+      )
       assert.equal(vaultStateAfter[1], true)
 
       // Check the vault balances stored in the contract
@@ -281,12 +300,12 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
 
       assert.equal(
         vaultAfter.shortOtokens[0].toString(),
-        createScaledNumber(optionsAmount),
+        createScaledUint256(optionsAmount, 18),
         'Incorrect amount of collateral stored in the vault',
       )
       assert.equal(
         vaultAfter.collateralAmounts[0].toString(),
-        createScaledNumber(2 * collateralAmount),
+        createScaledUint256(2 * collateralAmount, (await usdc.decimals()).toNumber()),
         'Incorrect amount of collateral stored in the vault',
       )
     })
@@ -302,7 +321,7 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
           sender: accountOwner1,
           asset: usdc.address,
           vaultId: vaultCounter,
-          amount: createScaledNumber(collateralAmount),
+          amount: createScaledUint256(collateralAmount, (await usdc.decimals()).toNumber()),
           index: '0',
           data: ZERO_ADDR,
         },
@@ -316,11 +335,15 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
 
       // check balances before and after changed as expected
       assert.equal(
-        ownerUsdcBalanceBefore.plus(createScaledNumber(collateralAmount)).toString(),
+        ownerUsdcBalanceBefore
+          .plus(createScaledUint256(collateralAmount, (await usdc.decimals()).toNumber()))
+          .toString(),
         ownerUsdcBalanceAfter.toString(),
       )
       assert.equal(
-        marginPoolUsdcBalanceBefore.minus(createScaledNumber(collateralAmount)).toString(),
+        marginPoolUsdcBalanceBefore
+          .minus(createScaledUint256(collateralAmount, (await usdc.decimals()).toNumber()))
+          .toString(),
         marginPoolUsdcBalanceAfter.toString(),
       )
 
@@ -348,12 +371,12 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
 
       assert.equal(
         vaultAfter.shortOtokens[0].toString(),
-        createScaledNumber(optionsAmount),
+        createScaledUint256(optionsAmount, 18),
         'Incorrect amount of collateral stored in the vault',
       )
       assert.equal(
         vaultAfter.collateralAmounts[0].toString(),
-        createScaledNumber(collateralAmount),
+        createScaledUint256(collateralAmount, 18),
         'Incorrect amount of collateral stored in the vault',
       )
     })
@@ -366,7 +389,7 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
           sender: accountOwner1,
           asset: usdc.address,
           vaultId: vaultCounter,
-          amount: createScaledNumber(collateralAmount),
+          amount: createScaledUint256(collateralAmount, (await usdc.decimals()).toNumber()),
           index: '0',
           data: ZERO_ADDR,
         },
@@ -381,22 +404,22 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
       const buyerBalanceBeforeSell = new BigNumber(await ethPut.balanceOf(random))
 
       // owner sells their put option
-      ethPut.transfer(random, createScaledNumber(optionsAmount), {from: accountOwner1})
+      ethPut.transfer(random, createScaledUint256(optionsAmount, 18), {from: accountOwner1})
 
       const ownerOtokenBalanceAfterSell = new BigNumber(await ethPut.balanceOf(accountOwner1))
       const buyerBalanceAfterSell = new BigNumber(await ethPut.balanceOf(random))
 
       assert.equal(
-        ownerOtokenBalanceBeforeSell.minus(createScaledNumber(optionsAmount)).toString(),
+        ownerOtokenBalanceBeforeSell.minus(createScaledUint256(optionsAmount, 18)).toString(),
         ownerOtokenBalanceAfterSell.toString(),
       )
       assert.equal(
-        buyerBalanceBeforeSell.plus(createScaledNumber(optionsAmount)).toString(),
+        buyerBalanceBeforeSell.plus(createScaledUint256(optionsAmount, 18)).toString(),
         buyerBalanceAfterSell.toString(),
       )
 
       // owner buys back their put option
-      ethPut.transfer(accountOwner1, createScaledNumber(optionsAmount), {from: random})
+      ethPut.transfer(accountOwner1, createScaledUint256(optionsAmount, 18), {from: random})
     })
 
     it('should be able to close out the short position', async () => {
@@ -419,7 +442,7 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
           sender: accountOwner1,
           asset: usdc.address,
           vaultId: vaultCounter,
-          amount: createScaledNumber(collateralAmount),
+          amount: createScaledUint256(collateralAmount, (await usdc.decimals()).toNumber()),
           index: '0',
           data: ZERO_ADDR,
         },
@@ -429,7 +452,7 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
           sender: accountOwner1,
           asset: ethPut.address,
           vaultId: vaultCounter,
-          amount: createScaledNumber(optionsAmount),
+          amount: createScaledUint256(optionsAmount, (await usdc.decimals()).toNumber()),
           index: '0',
           data: ZERO_ADDR,
         },
@@ -446,19 +469,23 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
 
       // check balances before and after changed as expected
       assert.equal(
-        ownerUsdcBalanceBefore.plus(createScaledNumber(collateralAmount)).toString(),
+        ownerUsdcBalanceBefore
+          .plus(createScaledUint256(collateralAmount, (await usdc.decimals()).toNumber()))
+          .toString(),
         ownerUsdcBalanceAfter.toString(),
       )
       assert.equal(
-        marginPoolUsdcBalanceBefore.minus(createScaledNumber(collateralAmount)).toString(),
+        marginPoolUsdcBalanceBefore
+          .minus(createScaledUint256(collateralAmount, (await usdc.decimals()).toNumber()))
+          .toString(),
         marginPoolUsdcBalanceAfter.toString(),
       )
       assert.equal(
-        ownerOtokenBalanceBefore.minus(createScaledNumber(optionsAmount)).toString(),
+        ownerOtokenBalanceBefore.minus(createScaledUint256(optionsAmount, 18)).toString(),
         ownerOtokenBalanceAfter.toString(),
       )
       assert.equal(
-        marginPoolOtokenSupplyBefore.minus(createScaledNumber(optionsAmount)).toString(),
+        marginPoolOtokenSupplyBefore.minus(createScaledUint256(optionsAmount, 18)).toString(),
         marginPoolOtokenSupplyAfter.toString(),
       )
 
