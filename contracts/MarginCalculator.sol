@@ -93,7 +93,7 @@ contract MarginCalculator is Initializable {
         // The vault passed in has a short array == 1, so we can just use shortAmounts[0]
         FixedPointInt256.FixedPointInt memory shortAmount = _uint256ToFixedPointInt(_vault.shortAmounts[0]);
 
-        bool hasLongInVault = _vault.longOtokens.length > 0 && _vault.longOtokens[0] != address(0);
+        bool hasLongInVault = !_isEmptyAssetArray(_vault.longOtokens);
         FixedPointInt256.FixedPointInt memory longAmount = hasLongInVault
             ? _uint256ToFixedPointInt(_vault.longAmounts[0])
             : _uint256ToFixedPointInt(0);
