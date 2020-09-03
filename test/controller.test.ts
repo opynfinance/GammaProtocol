@@ -58,8 +58,8 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
 
   before('Deployment', async () => {
     // ERC20 deployment
-    usdc = await MockERC20.new('USDC', 'USDC')
-    weth = await MockERC20.new('WETH', 'WETH')
+    usdc = await MockERC20.new('USDC', 'USDC', 8)
+    weth = await MockERC20.new('WETH', 'WETH', 18)
     // Otoken deployment
     otoken = await MockOtoken.new()
     // addressbook deployment
@@ -1174,7 +1174,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
       describe('Deposit un-whitelisted collateral asset', () => {
         it('should revert depositing a collateral asset that is not whitelisted', async () => {
           // deploy a shitcoin
-          const trx: MockERC20Instance = await MockERC20.new('TRX', 'TRX')
+          const trx: MockERC20Instance = await MockERC20.new('TRX', 'TRX', 18)
           await trx.mint(accountOwner1, new BigNumber('1000'))
 
           const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))

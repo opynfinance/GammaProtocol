@@ -41,7 +41,7 @@ contract('Oracle', ([owner, disputer, controllerAddress, random, collateral, str
     oracle = await Oracle.new(addressBook.address, {from: owner})
 
     // mock tokens
-    weth = await MockERC20.new('WETH', 'WETH')
+    weth = await MockERC20.new('WETH', 'WETH', 18)
     otoken = await Otoken.new()
     otokenExpiry = new BigNumber((await time.latest()).toNumber() + time.duration.days(30).toNumber())
     await otoken.init(addressBook.address, weth.address, strike, collateral, '200', otokenExpiry, true)
