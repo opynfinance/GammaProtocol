@@ -44,7 +44,7 @@ contract('CompoundPricer', ([owner, random]) => {
   before('Deployment', async () => {
     // deploy mock contracts
     oracle = await MockOracle.new({from: owner})
-    weth = await MockERC20.new('WETH', 'WETH')
+    weth = await MockERC20.new('WETH', 'WETH', 18)
     cETH = await MockCToken.new('CETH', 'CETH')
     //
     chainlinkPricer = await MockPricer.new(weth.address, oracle.address)

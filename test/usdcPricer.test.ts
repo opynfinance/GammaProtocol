@@ -15,7 +15,7 @@ contract('USDCPricer', ([owner, random]) => {
   before('Deployment', async () => {
     // deploy mock contracts
     oracle = await MockOracle.new()
-    usdc = await MockERC20.new('USDC', 'USDC', {from: owner})
+    usdc = await MockERC20.new('USDC', 'USDC', 6, {from: owner})
     pricer = await USDCPricer.new(usdc.address, oracle.address)
   })
 
