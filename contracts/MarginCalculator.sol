@@ -71,7 +71,9 @@ contract MarginCalculator is Initializable {
         // Vault contains no short tokens: return collateral value.
         if (_isEmptyAssetArray(_vault.shortOtokens)) return (SignedConverter.intToUint(collateralAmount.value), true);
 
+        // get required margin, denominated in strike or underlying asset
         FixedPointInt256.FixedPointInt memory marginRequirement = _getMarginRequired(_vault);
+        // get exchange rate to convert marginRequirement to amount of collateral
         FixedPointInt256.FixedPointInt memory exchangeRate = _getToCollateralRate(_vault.shortOtokens[0]);
 
         // only multiplied by the exchange rate if it's not equal to 1, to avoid rounding problem.
@@ -83,7 +85,7 @@ contract MarginCalculator is Initializable {
 
         FixedPointInt256.FixedPointInt memory excessCollateral = collateralAmount.sub(collateralRequired);
         bool isExcess = excessCollateral.isGreaterThanOrEqual(_uint256ToFixedPointInt(0));
-        // uint256 excessCollateral = SignedConverter.intToUint(excessMargin.value);
+
         return (SignedConverter.intToUint(excessCollateral.value), isExcess);
     }
 
