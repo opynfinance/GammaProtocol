@@ -9,7 +9,7 @@ import {SafeMath} from "./packages/oz/SafeMath.sol";
 import {OtokenInterface} from "./interfaces/OtokenInterface.sol";
 import {OracleInterface} from "./interfaces/OracleInterface.sol";
 import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
-import {FixedPointInt256} from "./libs/FixedPointInt256.sol";
+import {FixedPointInt256 as FPI} from "./libs/FixedPointInt256.sol";
 import {SignedConverter} from "./libs/SignedConverter.sol";
 import {MarginAccount} from "./libs/MarginAccount.sol";
 
@@ -20,8 +20,8 @@ import {MarginAccount} from "./libs/MarginAccount.sol";
  */
 contract MarginCalculator is Initializable {
     using SafeMath for uint256;
-    using FixedPointInt256 for FixedPointInt256.FixedPointInt;
-    using FixedPointInt256 for int256;
+    using FPI for FPI.FixedPointInt;
+    using FPI for int256;
     address public addressBook;
 
     function init(address _addressBook) external initializer {
@@ -66,27 +66,26 @@ contract MarginCalculator is Initializable {
         require(_isMarginableLong(_vault), "MarginCalculator: long asset not marginable for short asset");
 
         // collateral amount is always positive.
-        FixedPointInt256.FixedPointInt memory collateralAmount = _isEmptyAssetArray(_vault.collateralAssets)
-            ? _uint256ToFixedPointInt(0)
-            : _uint256ToFixedPointInt(_vault.collateralAmounts[0]);
+        FPI.FixedPointInt memory collateralAmount = _isEmptyAssetArray(_vault.collateralAssets)
+            ? _uint256ToFPI(0)
+            : _uint256ToFPI(_vault.collateralAmounts[0]);
 
         // Vault contains no short tokens: return collateral value.
         if (_isEmptyAssetArray(_vault.shortOtokens)) return (SignedConverter.intToUint(collateralAmount.value), true);
 
         // get required margin, denominated in strike or underlying asset
-        FixedPointInt256.FixedPointInt memory marginRequirement = _getMarginRequired(_vault);
+        FPI.FixedPointInt memory marginRequirement = _getMarginRequired(_vault);
         // get exchange rate to convert marginRequirement to amount of collateral
-        FixedPointInt256.FixedPointInt memory exchangeRate = _getToCollateralRate(_vault.shortOtokens[0]);
+        FPI.FixedPointInt memory exchangeRate = _getToCollateralRate(_vault.shortOtokens[0]);
 
         // only multiplied by the exchange rate if it's not equal to 1, to avoid rounding problem.
-        FixedPointInt256.FixedPointInt memory collateralRequired = exchangeRate.isEqual(
-            FixedPointInt256.fromUnscaledInt(1)
-        )
+        FPI.FixedPointInt memory collateralRequired = exchangeRate.isEqual(FPI.fromUnscaledInt(1))
             ? marginRequirement
             : marginRequirement.mul(exchangeRate);
 
-        FixedPointInt256.FixedPointInt memory excessCollateral = collateralAmount.sub(collateralRequired);
-        bool isExcess = excessCollateral.isGreaterThanOrEqual(_uint256ToFixedPointInt(0));
+        FPI.FixedPointInt memory excessCollateral = collateralAmount.sub(collateralRequired);
+        bool isExcess = excessCollateral.isGreaterThanOrEqual(_uint256ToFPI(0));
+
         return (SignedConverter.intToUint(excessCollateral.value), isExcess);
     }
 
@@ -96,31 +95,25 @@ contract MarginCalculator is Initializable {
      * @param _vault the theoretical vault that needs to be checked
      * @return marginRequired the minimal amount of collateral needed in a vault.
      */
-    function _getMarginRequired(MarginAccount.Vault memory _vault)
-        internal
-        view
-        returns (FixedPointInt256.FixedPointInt memory)
-    {
+    function _getMarginRequired(MarginAccount.Vault memory _vault) internal view returns (FPI.FixedPointInt memory) {
         // The vault passed in has a short array == 1, so we can just use shortAmounts[0]
-        FixedPointInt256.FixedPointInt memory shortAmount = _uint256ToFixedPointInt(_vault.shortAmounts[0]);
+        FPI.FixedPointInt memory shortAmount = _uint256ToFPI(_vault.shortAmounts[0]);
 
         bool hasLongInVault = !_isEmptyAssetArray(_vault.longOtokens);
-        FixedPointInt256.FixedPointInt memory longAmount = hasLongInVault
-            ? _uint256ToFixedPointInt(_vault.longAmounts[0])
-            : _uint256ToFixedPointInt(0);
+        FPI.FixedPointInt memory longAmount = hasLongInVault ? _uint256ToFPI(_vault.longAmounts[0]) : _uint256ToFPI(0);
 
         OtokenInterface short = OtokenInterface(_vault.shortOtokens[0]);
         bool expired = now > short.expiryTimestamp();
         bool isPut = short.isPut();
 
         // marginRequired is denominated in underlying for call, and denominated in strike in put.
-        FixedPointInt256.FixedPointInt memory marginRequired = _uint256ToFixedPointInt(0);
+        FPI.FixedPointInt memory marginRequired = _uint256ToFPI(0);
 
         if (!expired) {
-            FixedPointInt256.FixedPointInt memory shortStrike = _uint256ToFixedPointInt(short.strikePrice());
-            FixedPointInt256.FixedPointInt memory longStrike = hasLongInVault
-                ? _uint256ToFixedPointInt(OtokenInterface(_vault.longOtokens[0]).strikePrice())
-                : _uint256ToFixedPointInt(0);
+            FPI.FixedPointInt memory shortStrike = _uint256ToFPI(short.strikePrice());
+            FPI.FixedPointInt memory longStrike = hasLongInVault
+                ? _uint256ToFPI(OtokenInterface(_vault.longOtokens[0]).strikePrice())
+                : _uint256ToFPI(0);
 
             if (isPut) {
                 marginRequired = _getPutSpreadMarginRequired(shortAmount, longAmount, shortStrike, longStrike);
@@ -128,18 +121,16 @@ contract MarginCalculator is Initializable {
                 marginRequired = _getCallSpreadMarginRequired(shortAmount, longAmount, shortStrike, longStrike);
             }
         } else {
-            FixedPointInt256.FixedPointInt memory shortCashValue = _uint256ToFixedPointInt(
-                getExpiredCashValue(address(short))
-            );
-            FixedPointInt256.FixedPointInt memory longCashValue = hasLongInVault
-                ? _uint256ToFixedPointInt(getExpiredCashValue(_vault.longOtokens[0]))
-                : _uint256ToFixedPointInt(0);
+            FPI.FixedPointInt memory shortCashValue = _uint256ToFPI(getExpiredCashValue(address(short)));
+            FPI.FixedPointInt memory longCashValue = hasLongInVault
+                ? _uint256ToFPI(getExpiredCashValue(_vault.longOtokens[0]))
+                : _uint256ToFPI(0);
 
             if (isPut) {
                 marginRequired = _getExpiredPutSpreadCashValue(shortAmount, longAmount, shortCashValue, longCashValue);
             } else {
                 (uint256 underlyingPrice, ) = _getUnderlyingPrice(address(short));
-                FixedPointInt256.FixedPointInt memory underlyingPriceInt = _uint256ToFixedPointInt(underlyingPrice);
+                FPI.FixedPointInt memory underlyingPriceInt = _uint256ToFPI(underlyingPrice);
                 marginRequired = _getExpiredCallSpreadCashValue(
                     shortAmount,
                     longAmount,
@@ -161,15 +152,15 @@ contract MarginCalculator is Initializable {
      * @return margin requirement denominated in strike asset.
      */
     function _getPutSpreadMarginRequired(
-        FixedPointInt256.FixedPointInt memory _shortAmount,
-        FixedPointInt256.FixedPointInt memory _longAmount,
-        FixedPointInt256.FixedPointInt memory _shortStrike,
-        FixedPointInt256.FixedPointInt memory _longStrike
-    ) internal pure returns (FixedPointInt256.FixedPointInt memory) {
+        FPI.FixedPointInt memory _shortAmount,
+        FPI.FixedPointInt memory _longAmount,
+        FPI.FixedPointInt memory _shortStrike,
+        FPI.FixedPointInt memory _longStrike
+    ) internal pure returns (FPI.FixedPointInt memory) {
         return
-            FixedPointInt256.max(
-                _shortAmount.mul(_shortStrike).sub(_longStrike.mul(FixedPointInt256.min(_shortAmount, _longAmount))),
-                FixedPointInt256.FixedPointInt(0)
+            FPI.max(
+                _shortAmount.mul(_shortStrike).sub(_longStrike.mul(FPI.min(_shortAmount, _longAmount))),
+                _uint256ToFPI(0)
             );
     }
 
@@ -183,12 +174,12 @@ contract MarginCalculator is Initializable {
      * @return margin requirement denominated in underlying asset.
      */
     function _getCallSpreadMarginRequired(
-        FixedPointInt256.FixedPointInt memory _shortAmount,
-        FixedPointInt256.FixedPointInt memory _longAmount,
-        FixedPointInt256.FixedPointInt memory _shortStrike,
-        FixedPointInt256.FixedPointInt memory _longStrike
-    ) internal pure returns (FixedPointInt256.FixedPointInt memory) {
-        FixedPointInt256.FixedPointInt memory zero = FixedPointInt256.FixedPointInt(0);
+        FPI.FixedPointInt memory _shortAmount,
+        FPI.FixedPointInt memory _longAmount,
+        FPI.FixedPointInt memory _shortStrike,
+        FPI.FixedPointInt memory _longStrike
+    ) internal pure returns (FPI.FixedPointInt memory) {
+        FPI.FixedPointInt memory zero = _uint256ToFPI(0);
         // if long strike == 0, return short amount
         if (_longStrike.isEqual(zero)) {
             return _shortAmount;
@@ -199,16 +190,14 @@ contract MarginCalculator is Initializable {
          * calculate  ----------------------------------------------
          *                             long strike
          */
-        FixedPointInt256.FixedPointInt memory firstPart = _longStrike.sub(_shortStrike).mul(_shortAmount).div(
-            _longStrike
-        );
+        FPI.FixedPointInt memory firstPart = _longStrike.sub(_shortStrike).mul(_shortAmount).div(_longStrike);
 
         /**
          * calculate max ( short amount - long amount , 0)
          */
-        FixedPointInt256.FixedPointInt memory secondPart = FixedPointInt256.max(_shortAmount.sub(_longAmount), zero);
+        FPI.FixedPointInt memory secondPart = FPI.max(_shortAmount.sub(_longAmount), zero);
 
-        return FixedPointInt256.max(firstPart, secondPart);
+        return FPI.max(firstPart, secondPart);
     }
 
     /**
@@ -219,11 +208,11 @@ contract MarginCalculator is Initializable {
      * @return cash value denominated in strike asset.
      */
     function _getExpiredPutSpreadCashValue(
-        FixedPointInt256.FixedPointInt memory _shortAmount,
-        FixedPointInt256.FixedPointInt memory _longAmount,
-        FixedPointInt256.FixedPointInt memory _shortCashValue,
-        FixedPointInt256.FixedPointInt memory _longCashValue
-    ) internal pure returns (FixedPointInt256.FixedPointInt memory) {
+        FPI.FixedPointInt memory _shortAmount,
+        FPI.FixedPointInt memory _longAmount,
+        FPI.FixedPointInt memory _shortCashValue,
+        FPI.FixedPointInt memory _longCashValue
+    ) internal pure returns (FPI.FixedPointInt memory) {
         return _shortCashValue.mul(_shortAmount).sub(_longCashValue.mul(_longAmount));
     }
 
@@ -235,12 +224,12 @@ contract MarginCalculator is Initializable {
      * @return cash value denominated in underlying asset.
      */
     function _getExpiredCallSpreadCashValue(
-        FixedPointInt256.FixedPointInt memory _shortAmount,
-        FixedPointInt256.FixedPointInt memory _longAmount,
-        FixedPointInt256.FixedPointInt memory _shortCashValue,
-        FixedPointInt256.FixedPointInt memory _longCashValue,
-        FixedPointInt256.FixedPointInt memory _underlyingPriceInt
-    ) internal pure returns (FixedPointInt256.FixedPointInt memory) {
+        FPI.FixedPointInt memory _shortAmount,
+        FPI.FixedPointInt memory _longAmount,
+        FPI.FixedPointInt memory _shortCashValue,
+        FPI.FixedPointInt memory _longCashValue,
+        FPI.FixedPointInt memory _underlyingPriceInt
+    ) internal pure returns (FPI.FixedPointInt memory) {
         return _shortCashValue.mul(_shortAmount).sub((_longCashValue.mul(_longAmount))).div(_underlyingPriceInt);
     }
 
@@ -320,11 +309,11 @@ contract MarginCalculator is Initializable {
      * @dev for put, returns collateral / strike rate
      * @return the exchange rate to convert amount in strike or underlying to equivilent value of collateral.
      */
-    function _getToCollateralRate(address _short) internal view returns (FixedPointInt256.FixedPointInt memory) {
+    function _getToCollateralRate(address _short) internal view returns (FPI.FixedPointInt memory) {
         OtokenInterface short = OtokenInterface(_short);
         OracleInterface oracle = OracleInterface(AddressBookInterface(addressBook).getOracle());
 
-        FixedPointInt256.FixedPointInt memory toCollateralExchangeRate = FixedPointInt256.fromUnscaledInt(1);
+        FPI.FixedPointInt memory toCollateralExchangeRate = FPI.fromUnscaledInt(1);
         address collateral = short.collateralAsset();
         if (short.isPut()) {
             address strike = short.strikeAsset();
@@ -332,18 +321,14 @@ contract MarginCalculator is Initializable {
                 // price is already scaled by 1e18
                 uint256 strikePrice = oracle.getPrice(strike);
                 uint256 collateralPrice = oracle.getPrice(collateral);
-                toCollateralExchangeRate = _uint256ToFixedPointInt(strikePrice).div(
-                    _uint256ToFixedPointInt(collateralPrice)
-                );
+                toCollateralExchangeRate = _uint256ToFPI(strikePrice).div(_uint256ToFPI(collateralPrice));
             }
         } else {
             address underlying = short.underlyingAsset();
             if (underlying != collateral) {
                 uint256 underlyingPrice = oracle.getPrice(underlying);
                 uint256 collateralPrice = oracle.getPrice(collateral);
-                toCollateralExchangeRate = _uint256ToFixedPointInt(underlyingPrice).div(
-                    _uint256ToFixedPointInt(collateralPrice)
-                );
+                toCollateralExchangeRate = _uint256ToFPI(underlyingPrice).div(_uint256ToFPI(collateralPrice));
             }
         }
 
@@ -354,8 +339,8 @@ contract MarginCalculator is Initializable {
      * @dev convert uint256 to FixedPointInt, no scaling invloved
      * @return the FixedPointInt format of input
      */
-    function _uint256ToFixedPointInt(uint256 _num) internal pure returns (FixedPointInt256.FixedPointInt memory) {
-        return FixedPointInt256.FixedPointInt(SignedConverter.uintToInt(_num));
+    function _uint256ToFPI(uint256 _num) internal pure returns (FPI.FixedPointInt memory) {
+        return FPI.FixedPointInt(SignedConverter.uintToInt(_num));
     }
 
     /**
