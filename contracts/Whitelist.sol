@@ -187,11 +187,11 @@ contract Whitelist is Ownable {
 
     /**
      * @notice set product state
-     * @param _productHash product hash in bytes
+     * @param _product product hash in bytes
      * @param _state represent if a product is whitelisted or not, true to whitelist and false to blacklist
      */
     function _setWhitelistedProduct(bytes32 _product, bool _state) internal {
-        whitelistedProduct[_productHash] = _state;
+        whitelistedProduct[_product] = _state;
     }
 
     /**
