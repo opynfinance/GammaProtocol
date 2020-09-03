@@ -62,8 +62,11 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
     weth = await MockERC20.new('WETH', 'WETH')
     // Otoken deployment
     otoken = await MockOtoken.new()
+    // addressbook deployment
+    addressBook = await MockAddressBook.new()
     // init otoken
     await otoken.init(
+      addressBook.address,
       weth.address,
       usdc.address,
       usdc.address,
@@ -71,8 +74,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
       1753776000, // 07/29/2025 @ 8:00am (UTC)
       true,
     )
-    // addressbook deployment
-    addressBook = await MockAddressBook.new()
+
     // deploy Oracle module
     oracle = await MockOracle.new(addressBook.address, {from: owner})
     // calculator deployment
@@ -267,6 +269,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
       longOtoken = await MockOtoken.new()
       // init otoken
       await longOtoken.init(
+        addressBook.address,
         weth.address,
         usdc.address,
         usdc.address,
@@ -503,6 +506,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
         const expiredLongOtoken: MockOtokenInstance = await MockOtoken.new()
         // init otoken
         await expiredLongOtoken.init(
+          addressBook.address,
           weth.address,
           usdc.address,
           usdc.address,
@@ -544,6 +548,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
         const secondLongOtoken: MockOtokenInstance = await MockOtoken.new()
         // init otoken
         await secondLongOtoken.init(
+          addressBook.address,
           weth.address,
           usdc.address,
           usdc.address,
@@ -872,6 +877,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
           expiredLongOtoken = await MockOtoken.new()
           // init otoken
           await expiredLongOtoken.init(
+            addressBook.address,
             weth.address,
             usdc.address,
             usdc.address,
@@ -1270,6 +1276,28 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
         await expectRevert(controller.operate(actionArgs, {from: accountOwner1}), 'Controller: invalid vault id')
       })
 
+      it('should revert withdrawing collateral asset amount greater than the vault balance', async () => {
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+        const vaultBefore = await controller.getVault(accountOwner1, vaultCounter)
+        const collateralToWithdraw = new BigNumber(vaultBefore.collateralAmounts[0]).plus(1)
+        const actionArgs = [
+          {
+            actionType: ActionType.WithdrawCollateral,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: usdc.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToWithdraw.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        await expectRevert(controller.operate(actionArgs, {from: accountOwner1}), 'SafeMath: subtraction overflow')
+      })
+
       it('should withdraw collateral to any random address where msg.sender is account owner', async () => {
         const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
         assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
@@ -1483,6 +1511,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
       expiredOtoken = await MockOtoken.new()
       // init otoken
       await expiredOtoken.init(
+        addressBook.address,
         weth.address,
         usdc.address,
         usdc.address,
@@ -1518,6 +1547,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
       const expiry = new BigNumber(await time.latest())
       // init otoken
       await expiredOtoken.init(
+        addressBook.address,
         weth.address,
         usdc.address,
         usdc.address,
@@ -1548,6 +1578,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
       const expiredOtoken = await MockOtoken.new()
       // init otoken
       await expiredOtoken.init(
+        addressBook.address,
         weth.address,
         usdc.address,
         usdc.address,

@@ -16,7 +16,7 @@ const MockOtoken = artifacts.require('MockOtoken.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
 contract('OTokenFactory', ([user1, user2]) => {
-  let otoken: MockOtokenInstance
+  let firstOtoken: MockOtokenInstance
   let addressBook: MockAddressBookInstance
   let otokenFactory: OtokenFactoryInstance
 
@@ -37,6 +37,7 @@ contract('OTokenFactory', ([user1, user2]) => {
     // Deploy and whitelist ETH:USDC product
     const mockWhitelist: MockWhitelistModuleInstance = await MockWhitelist.new()
     await mockWhitelist.whitelistProduct(ethAddress, usdc.address, usdc.address)
+    await mockWhitelist.whitelistProduct(usdc.address, ethAddress, ethAddress)
     // Deploy addressbook
     addressBook = await MockAddressBook.new()
     await addressBook.setOtokenImpl(logic.address)
@@ -182,12 +183,11 @@ contract('OTokenFactory', ([user1, user2]) => {
         isPut: isPut,
         tokenAddress: targetAddress,
       })
-      otoken = await MockOtoken.at(targetAddress)
+      firstOtoken = await MockOtoken.at(targetAddress)
     })
 
-    it('Should revert when calling init on already inited otoken', async () => {
-      /* This should be included in the integration test. */
-      await expectRevert(otoken.init(usdc.address, usdc.address, usdc.address, strikePrice, expiry, isPut), 'revert')
+    it('The init() function in Mocked Otoken contract should have been called', async () => {
+      assert.isTrue(await firstOtoken.inited())
     })
 
     it('Should be able to create a new Otoken by another user', async () => {
@@ -243,7 +243,7 @@ contract('OTokenFactory', ([user1, user2]) => {
       assert.equal(counter.toString(), '2')
 
       const firstToken = await otokenFactory.otokens(0)
-      assert.equal(firstToken, otoken.address)
+      assert.equal(firstToken, firstOtoken.address)
     })
 
     it('should get same address if calling getTargetOTokenAddress with existing option paramters', async () => {
@@ -255,7 +255,7 @@ contract('OTokenFactory', ([user1, user2]) => {
         expiry,
         isPut,
       )
-      assert.equal(addr, otoken.address)
+      assert.equal(addr, firstOtoken.address)
     })
 
     it('Should return correct token address', async () => {
@@ -267,7 +267,7 @@ contract('OTokenFactory', ([user1, user2]) => {
         expiry,
         isPut,
       )
-      assert.equal(existAddress, otoken.address)
+      assert.equal(existAddress, firstOtoken.address)
     })
   })
 
