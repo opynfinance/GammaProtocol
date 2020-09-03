@@ -95,10 +95,9 @@ contract MarginCalculator is Initializable {
         uint256 excessCollateralInternal = SignedConverter.intToUint(excessCollateral.value);
 
         // convert from internal amount to token's native amount
-        uint256 excessCollateralExternal = _inernalAmountToTokenAmount(
-            excessCollateralInternal,
-            _vault.collateralAssets[0]
-        );
+        uint256 excessCollateralExternal = hasCollateral
+            ? _inernalAmountToTokenAmount(excessCollateralInternal, _vault.collateralAssets[0])
+            : excessCollateralInternal;
 
         return (excessCollateralExternal, isExcess);
     }
