@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.6.10;
 
-import {AggregatorInterface} from "./interfaces/AggregatorInterface.sol";
-import {OracleInterface} from "./interfaces/OracleInterface.sol";
-import {OpynPricerInterface} from "./interfaces/OpynPricerInterface.sol";
-import {CTokenInterface} from "./interfaces/CTokenInterface.sol";
-import {ERC20Interface} from "./interfaces/ERC20Interface.sol";
-import {SafeMath} from "./packages/oz/SafeMath.sol";
+import {OracleInterface} from "../interfaces/OracleInterface.sol";
+import {OpynPricerInterface} from "../interfaces/OpynPricerInterface.sol";
+import {CTokenInterface} from "../interfaces/CTokenInterface.sol";
+import {ERC20Interface} from "../interfaces/ERC20Interface.sol";
+import {SafeMath} from "../packages/oz/SafeMath.sol";
 
 /**
  * @notice A Pricer contract for Compound Asset.

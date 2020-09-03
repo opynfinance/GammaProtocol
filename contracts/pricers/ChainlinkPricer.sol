@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.6.10;
 
-import {AggregatorInterface} from "./interfaces/AggregatorInterface.sol";
-import {OracleInterface} from "./interfaces/OracleInterface.sol";
-import {OpynPricerInterface} from "./interfaces/OpynPricerInterface.sol";
-import {SafeMath} from "./packages/oz/SafeMath.sol";
+import {AggregatorInterface} from "../interfaces/AggregatorInterface.sol";
+import {OracleInterface} from "../interfaces/OracleInterface.sol";
+import {OpynPricerInterface} from "../interfaces/OpynPricerInterface.sol";
+import {SafeMath} from "../packages/oz/SafeMath.sol";
 
 /**
  * @notice A Pricer contract for Chainlink for 1 asset
