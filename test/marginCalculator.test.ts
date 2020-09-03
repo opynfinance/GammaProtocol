@@ -21,17 +21,27 @@ contract('MarginCalculator', () => {
   let calculator: MarginCalculatorInstance
   let addressBook: MockAddressBookInstance
   let oracle: MockOracleInstance
+  // eth puts
   let eth300Put: MockOtokenInstance
   let eth250Put: MockOtokenInstance
   let eth200Put: MockOtokenInstance
   let eth100Put: MockOtokenInstance
+  // eth puts cUSDC collateral
+  let eth300PutCUSDC: MockOtokenInstance
+
+  // eth calls
   let eth300Call: MockOtokenInstance
   let eth250Call: MockOtokenInstance
   let eth200Call: MockOtokenInstance
   let eth100Call: MockOtokenInstance
+  // eth calls cETH collateral
+  let eth300CallCETH: MockOtokenInstance
+
   let usdc: MockERC20Instance
   let dai: MockERC20Instance
   let weth: MockERC20Instance
+  let ceth: MockERC20Instance
+  let cusdc: MockERC20Instance
 
   before('set up contracts', async () => {
     const now = (await time.latest()).toNumber()
@@ -48,24 +58,30 @@ contract('MarginCalculator', () => {
     usdc = await MockERC20.new('USDC', 'USDC')
     dai = await MockERC20.new('DAI', 'DAI')
     weth = await MockERC20.new('WETH', 'WETH')
+    cusdc = await MockERC20.new('cUSDC', 'cUSDC')
+    ceth = await MockERC20.new('cETH', 'cETH')
     // setup put tokens
     eth300Put = await MockOtoken.new()
     eth250Put = await MockOtoken.new()
     eth200Put = await MockOtoken.new()
     eth100Put = await MockOtoken.new()
+    eth300PutCUSDC = await MockOtoken.new()
     await eth300Put.init(weth.address, usdc.address, usdc.address, createScaledNumber(300), expiry, true)
     await eth250Put.init(weth.address, usdc.address, usdc.address, createScaledNumber(250), expiry, true)
     await eth200Put.init(weth.address, usdc.address, usdc.address, createScaledNumber(200), expiry, true)
     await eth100Put.init(weth.address, usdc.address, usdc.address, createScaledNumber(100), expiry, true)
+    await eth300PutCUSDC.init(weth.address, usdc.address, cusdc.address, createScaledNumber(300), expiry, true)
     // setup call tokens
     eth300Call = await MockOtoken.new()
     eth250Call = await MockOtoken.new()
     eth200Call = await MockOtoken.new()
     eth100Call = await MockOtoken.new()
+    eth300CallCETH = await MockOtoken.new()
     await eth300Call.init(weth.address, usdc.address, weth.address, createScaledNumber(300), expiry, false)
     await eth250Call.init(weth.address, usdc.address, weth.address, createScaledNumber(250), expiry, false)
     await eth200Call.init(weth.address, usdc.address, weth.address, createScaledNumber(200), expiry, false)
     await eth100Call.init(weth.address, usdc.address, weth.address, createScaledNumber(100), expiry, false)
+    await eth300CallCETH.init(weth.address, usdc.address, ceth.address, createScaledNumber(300), expiry, false)
   })
 
   describe('Get cash value tests', () => {
