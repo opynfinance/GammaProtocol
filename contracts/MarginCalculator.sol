@@ -8,6 +8,7 @@ import {Initializable} from "./packages/oz/upgradeability/Initializable.sol";
 import {SafeMath} from "./packages/oz/SafeMath.sol";
 import {OtokenInterface} from "./interfaces/OtokenInterface.sol";
 import {OracleInterface} from "./interfaces/OracleInterface.sol";
+import {ERC20Interface} from "./interfaces/ERC20Interface.sol";
 import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
 import {FixedPointInt256 as FPI} from "./libs/FixedPointInt256.sol";
 import {SignedConverter} from "./libs/SignedConverter.sol";
@@ -65,13 +66,18 @@ contract MarginCalculator is Initializable {
         // ensure the long asset is valid for the short asset.
         require(_isMarginableLong(_vault), "MarginCalculator: long asset not marginable for short asset");
 
+        bool hasCollateral = !_isEmptyAssetArray(_vault.collateralAssets);
+
         // collateral amount is always positive.
-        FPI.FixedPointInt memory collateralAmount = _isEmptyAssetArray(_vault.collateralAssets)
-            ? _uint256ToFPI(0)
-            : _uint256ToFPI(_vault.collateralAmounts[0]);
+        FPI.FixedPointInt memory collateralAmount = hasCollateral
+            ? _uint256ToFPI(_tokenAmountToInernalAmount(_vault.collateralAmounts[0], _vault.collateralAssets[0]))
+            : _uint256ToFPI(0);
 
         // Vault contains no short tokens: return collateral value.
-        if (_isEmptyAssetArray(_vault.shortOtokens)) return (SignedConverter.intToUint(collateralAmount.value), true);
+        if (_isEmptyAssetArray(_vault.shortOtokens)) {
+            uint256 amount = hasCollateral ? _vault.collateralAmounts[0] : 0;
+            return (amount, true);
+        }
 
         // get required margin, denominated in strike or underlying asset
         FPI.FixedPointInt memory marginRequirement = _getMarginRequired(_vault);
@@ -86,7 +92,15 @@ contract MarginCalculator is Initializable {
         FPI.FixedPointInt memory excessCollateral = collateralAmount.sub(collateralRequired);
         bool isExcess = excessCollateral.isGreaterThanOrEqual(_uint256ToFPI(0));
 
-        return (SignedConverter.intToUint(excessCollateral.value), isExcess);
+        uint256 excessCollateralInternal = SignedConverter.intToUint(excessCollateral.value);
+
+        // convert from internal amount to token's native amount
+        uint256 excessCollateralExternal = _inernalAmountToTokenAmount(
+            excessCollateralInternal,
+            _vault.collateralAssets[0]
+        );
+
+        return (excessCollateralExternal, isExcess);
     }
 
     /**
@@ -97,10 +111,13 @@ contract MarginCalculator is Initializable {
      */
     function _getMarginRequired(MarginAccount.Vault memory _vault) internal view returns (FPI.FixedPointInt memory) {
         // The vault passed in has a short array == 1, so we can just use shortAmounts[0]
+        // Don't have to scale the short token, because all otoken has decimals 18
         FPI.FixedPointInt memory shortAmount = _uint256ToFPI(_vault.shortAmounts[0]);
 
         bool hasLongInVault = !_isEmptyAssetArray(_vault.longOtokens);
-        FPI.FixedPointInt memory longAmount = hasLongInVault ? _uint256ToFPI(_vault.longAmounts[0]) : _uint256ToFPI(0);
+        FPI.FixedPointInt memory longAmount = hasLongInVault
+            ? _uint256ToFPI(_tokenAmountToInernalAmount(_vault.longAmounts[0], _vault.longOtokens[0]))
+            : _uint256ToFPI(0);
 
         OtokenInterface short = OtokenInterface(_vault.shortOtokens[0]);
         bool expired = now > short.expiryTimestamp();
@@ -349,5 +366,52 @@ contract MarginCalculator is Initializable {
      */
     function _isEmptyAssetArray(address[] memory _assets) internal pure returns (bool) {
         return _assets.length == 0 || _assets[0] == address(0);
+    }
+
+    /**
+     * @dev convert a uint256 amount
+     * Examples:
+     * (1)  USDC    decimals = 6
+     *      Input:  8000000 USDC =>     Output: 8 * 1e18 (8.0 USDC)
+     * (2)  cUSDC   decimals = 8
+     *      Input:  8000000 cUSDC =>    Output: 8 * 1e16 (0.08 cUSDC)
+     * @return internal amount that is sacled by 1e18.
+     */
+
+    function _tokenAmountToInernalAmount(uint256 _amount, address _token) internal view returns (uint256) {
+        ERC20Interface token = ERC20Interface(_token);
+        uint256 decimals = uint256(token.decimals());
+        uint256 base = 18;
+        if (decimals == base) return _amount;
+        if (decimals > base) {
+            uint256 exp = decimals - base;
+            return _amount.div(10**exp);
+        } else {
+            uint256 exp = base - decimals;
+            return _amount.mul(10**exp);
+        }
+    }
+
+    /**
+     * @dev convert an internal amount (1e18) to native token amount
+     * Examples:
+     * (1)  USDC    decimals = 6
+     *      Input:  8 * 1e18 (8.0 USDC) =>     Output:  8000000 USDC
+     * (2)  cUSDC   decimals = 8
+     *      Input:  8 * 1e16 (0.08 cUSDC) =>   Output:  8000000 cUSDC
+     * @return token amount in its native form.
+     */
+    function _inernalAmountToTokenAmount(uint256 _amount, address _token) internal view returns (uint256) {
+        ERC20Interface token = ERC20Interface(_token);
+        uint256 decimals = uint256(token.decimals());
+        uint256 base = 18;
+        if (decimals == base) return _amount;
+        if (decimals > base) {
+            uint256 exp = decimals - base;
+            return _amount.mul(10**exp);
+        } else {
+            uint256 exp = base - decimals;
+            return _amount.div(10**exp);
+        }
     }
 }
