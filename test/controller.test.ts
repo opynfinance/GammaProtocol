@@ -62,8 +62,11 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
     weth = await MockERC20.new('WETH', 'WETH')
     // Otoken deployment
     otoken = await MockOtoken.new()
+    // addressbook deployment
+    addressBook = await MockAddressBook.new()
     // init otoken
     await otoken.init(
+      addressBook.address,
       weth.address,
       usdc.address,
       usdc.address,
@@ -71,8 +74,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
       1753776000, // 07/29/2025 @ 8:00am (UTC)
       true,
     )
-    // addressbook deployment
-    addressBook = await MockAddressBook.new()
+
     // deploy Oracle module
     oracle = await MockOracle.new(addressBook.address, {from: owner})
     // calculator deployment
@@ -267,6 +269,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
       longOtoken = await MockOtoken.new()
       // init otoken
       await longOtoken.init(
+        addressBook.address,
         weth.address,
         usdc.address,
         usdc.address,
@@ -503,6 +506,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
         const expiredLongOtoken: MockOtokenInstance = await MockOtoken.new()
         // init otoken
         await expiredLongOtoken.init(
+          addressBook.address,
           weth.address,
           usdc.address,
           usdc.address,
@@ -544,6 +548,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
         const secondLongOtoken: MockOtokenInstance = await MockOtoken.new()
         // init otoken
         await secondLongOtoken.init(
+          addressBook.address,
           weth.address,
           usdc.address,
           usdc.address,
@@ -872,6 +877,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
           expiredLongOtoken = await MockOtoken.new()
           // init otoken
           await expiredLongOtoken.init(
+            addressBook.address,
             weth.address,
             usdc.address,
             usdc.address,
@@ -1505,6 +1511,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
       expiredOtoken = await MockOtoken.new()
       // init otoken
       await expiredOtoken.init(
+        addressBook.address,
         weth.address,
         usdc.address,
         usdc.address,
@@ -1540,6 +1547,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
       const expiry = new BigNumber(await time.latest())
       // init otoken
       await expiredOtoken.init(
+        addressBook.address,
         weth.address,
         usdc.address,
         usdc.address,
@@ -1570,6 +1578,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
       const expiredOtoken = await MockOtoken.new()
       // init otoken
       await expiredOtoken.init(
+        addressBook.address,
         weth.address,
         usdc.address,
         usdc.address,

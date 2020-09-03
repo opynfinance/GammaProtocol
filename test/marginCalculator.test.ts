@@ -53,19 +53,83 @@ contract('MarginCalculator', () => {
     eth250Put = await MockOtoken.new()
     eth200Put = await MockOtoken.new()
     eth100Put = await MockOtoken.new()
-    await eth300Put.init(weth.address, usdc.address, usdc.address, createScaledNumber(300), expiry, true)
-    await eth250Put.init(weth.address, usdc.address, usdc.address, createScaledNumber(250), expiry, true)
-    await eth200Put.init(weth.address, usdc.address, usdc.address, createScaledNumber(200), expiry, true)
-    await eth100Put.init(weth.address, usdc.address, usdc.address, createScaledNumber(100), expiry, true)
+    await eth300Put.init(
+      addressBook.address,
+      weth.address,
+      usdc.address,
+      usdc.address,
+      createScaledNumber(300),
+      expiry,
+      true,
+    )
+    await eth250Put.init(
+      addressBook.address,
+      weth.address,
+      usdc.address,
+      usdc.address,
+      createScaledNumber(250),
+      expiry,
+      true,
+    )
+    await eth200Put.init(
+      addressBook.address,
+      weth.address,
+      usdc.address,
+      usdc.address,
+      createScaledNumber(200),
+      expiry,
+      true,
+    )
+    await eth100Put.init(
+      addressBook.address,
+      weth.address,
+      usdc.address,
+      usdc.address,
+      createScaledNumber(100),
+      expiry,
+      true,
+    )
     // setup call tokens
     eth300Call = await MockOtoken.new()
     eth250Call = await MockOtoken.new()
     eth200Call = await MockOtoken.new()
     eth100Call = await MockOtoken.new()
-    await eth300Call.init(weth.address, usdc.address, weth.address, createScaledNumber(300), expiry, false)
-    await eth250Call.init(weth.address, usdc.address, weth.address, createScaledNumber(250), expiry, false)
-    await eth200Call.init(weth.address, usdc.address, weth.address, createScaledNumber(200), expiry, false)
-    await eth100Call.init(weth.address, usdc.address, weth.address, createScaledNumber(100), expiry, false)
+    await eth300Call.init(
+      addressBook.address,
+      weth.address,
+      usdc.address,
+      weth.address,
+      createScaledNumber(300),
+      expiry,
+      false,
+    )
+    await eth250Call.init(
+      addressBook.address,
+      weth.address,
+      usdc.address,
+      weth.address,
+      createScaledNumber(250),
+      expiry,
+      false,
+    )
+    await eth200Call.init(
+      addressBook.address,
+      weth.address,
+      usdc.address,
+      weth.address,
+      createScaledNumber(200),
+      expiry,
+      false,
+    )
+    await eth100Call.init(
+      addressBook.address,
+      weth.address,
+      usdc.address,
+      weth.address,
+      createScaledNumber(100),
+      expiry,
+      false,
+    )
   })
 
   describe('Get cash value tests', () => {
@@ -77,8 +141,24 @@ contract('MarginCalculator', () => {
       closeExpiry = now + time.duration.days(1).toNumber()
       put = await MockOtoken.new()
       call = await MockOtoken.new()
-      await put.init(weth.address, usdc.address, usdc.address, createScaledNumber(250), closeExpiry, true)
-      await call.init(weth.address, usdc.address, usdc.address, createScaledNumber(250), closeExpiry, false)
+      await put.init(
+        addressBook.address,
+        weth.address,
+        usdc.address,
+        usdc.address,
+        createScaledNumber(250),
+        closeExpiry,
+        true,
+      )
+      await call.init(
+        addressBook.address,
+        weth.address,
+        usdc.address,
+        usdc.address,
+        createScaledNumber(250),
+        closeExpiry,
+        false,
+      )
       await oracle.setIsFinalized(weth.address, closeExpiry, true)
     })
 
@@ -206,7 +286,15 @@ contract('MarginCalculator', () => {
 
       it('Should revert if long token has differet underlying as short.', async () => {
         const otokenWrongUnderlying = await MockOtoken.new()
-        await otokenWrongUnderlying.init(dai.address, usdc.address, usdc.address, '0', expiry, true)
+        await otokenWrongUnderlying.init(
+          addressBook.address,
+          dai.address,
+          usdc.address,
+          usdc.address,
+          '0',
+          expiry,
+          true,
+        )
         const vault = createVault(
           eth250Put.address,
           otokenWrongUnderlying.address,
@@ -223,7 +311,7 @@ contract('MarginCalculator', () => {
 
       it('Should revert if long token has differet strike as short.', async () => {
         const otokenWrongStrike = await MockOtoken.new()
-        await otokenWrongStrike.init(weth.address, dai.address, usdc.address, '0', expiry, true)
+        await otokenWrongStrike.init(addressBook.address, weth.address, dai.address, usdc.address, '0', expiry, true)
         const vault = createVault(
           eth250Put.address,
           otokenWrongStrike.address,
@@ -240,7 +328,15 @@ contract('MarginCalculator', () => {
 
       it('Should revert if long token has differet collateral as short.', async () => {
         const otokenWrongCollateral = await MockOtoken.new()
-        await otokenWrongCollateral.init(weth.address, usdc.address, dai.address, '0', expiry, true)
+        await otokenWrongCollateral.init(
+          addressBook.address,
+          weth.address,
+          usdc.address,
+          dai.address,
+          '0',
+          expiry,
+          true,
+        )
         const vault = createVault(
           eth250Put.address,
           otokenWrongCollateral.address,
@@ -257,7 +353,15 @@ contract('MarginCalculator', () => {
 
       it('Should revert if long token has differet expiry as short.', async () => {
         const otokenWrongExpiry = await MockOtoken.new()
-        await otokenWrongExpiry.init(weth.address, usdc.address, usdc.address, '0', expiry + 1, true)
+        await otokenWrongExpiry.init(
+          addressBook.address,
+          weth.address,
+          usdc.address,
+          usdc.address,
+          '0',
+          expiry + 1,
+          true,
+        )
         const vault = createVault(
           eth250Put.address,
           otokenWrongExpiry.address,
