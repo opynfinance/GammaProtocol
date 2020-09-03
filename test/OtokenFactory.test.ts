@@ -29,8 +29,8 @@ contract('OTokenFactory', ([user1, user2]) => {
   const expiry = 1753776000 // 07/29/2025 @ 8:00am (UTC)
 
   before('Deploy otoken logic and Factory contract', async () => {
-    usdc = await MockERC20.new('USDC', 'USDC')
-    shitcoin = await MockERC20.new('Shit coin', 'STC')
+    usdc = await MockERC20.new('USDC', 'USDC', 6)
+    shitcoin = await MockERC20.new('Shit coin', 'STC', 18)
 
     const logic = await MockOtoken.new()
 
