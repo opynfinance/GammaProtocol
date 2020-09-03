@@ -4,8 +4,8 @@ import {
   MockAddressBookInstance,
   MockOracleInstance,
   MockOtokenInstance,
-} from '../build/types/truffle-types'
-import {createVault, createScaledNumber} from './utils'
+} from '../../build/types/truffle-types'
+import {createVault, createScaledNumber} from '../utils'
 import {assert} from 'chai'
 
 const {expectRevert, time} = require('@openzeppelin/test-helpers')
