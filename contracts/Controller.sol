@@ -428,7 +428,7 @@ contract Controller is ReentrancyGuard, Ownable {
         require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
 
         MarginAccount.Vault memory vault = vaults[_args.owner][_args.vaultId];
-        if ((vault.shortOtokens.length > 0) && (vault.shortOtokens[0] != address(0))) {
+        if (isNotEmpty(vault.shortOtokens)) {
             OtokenInterface otoken = OtokenInterface(vault.shortOtokens[0]);
 
             require(
@@ -488,5 +488,9 @@ contract Controller is ReentrancyGuard, Ownable {
      */
     function checkVaultId(address _accountOwner, uint256 _vaultId) internal view returns (bool) {
         return ((_vaultId > 0) && (_vaultId <= accountVaultCounter[_accountOwner]));
+    }
+
+    function isNotEmpty(address[] memory _array) internal view returns (bool) {
+        return (_array.length > 0) && (_array[0] != address(0));
     }
 }
