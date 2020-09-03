@@ -36,7 +36,7 @@ enum ActionType {
   Call,
 }
 
-contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, random]) => {
+contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, random]) => {
   let expiry: number
 
   let addressBook: AddressBookInstance
@@ -53,11 +53,14 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
   let dai: MockERC20Instance
   let weth: MockERC20Instance
 
-  let ethPut: OtokenInstance
-  const strikePrice = 300
+  let shortPut: OtokenInstance
+  let longPut: OtokenInstance
+  const shortStrike = 300
+  const longStrike = 200
 
   const optionsAmount = 10
-  const collateralAmount = optionsAmount * strikePrice
+  const collateralAmount = Math.abs(shortStrike - longStrike) * optionsAmount
+
   let vaultCounter: number
 
   before('set up contracts', async () => {
@@ -90,33 +93,92 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
     // await addressBook.setWhitelist(whitelist.address)
     // await addressBook.setMarginPool(marginPool.address)
 
-    ethPut = await Otoken.new()
-    await ethPut.init(
+    shortPut = await Otoken.new()
+    await shortPut.init(
       addressBook.address,
       weth.address,
       usdc.address,
       usdc.address,
-      createScaledUint256(strikePrice, 18),
+      createScaledUint256(shortStrike, 18),
       expiry,
       true,
     )
+
+    longPut = await Otoken.new()
+    await longPut.init(
+      addressBook.address,
+      weth.address,
+      usdc.address,
+      usdc.address,
+      createScaledUint256(shortStrike, 18),
+      expiry,
+      true,
+    )
+
     // mint usdc to user
     usdc.mint(accountOwner1, createScaledUint256(2 * collateralAmount, (await usdc.decimals()).toNumber()))
+    usdc.mint(random, createScaledUint256(longStrike * optionsAmount, (await usdc.decimals()).toNumber()))
 
     // have the user approve all the usdc transfers
     usdc.approve(marginPool.address, '10000000000000000000000', {from: accountOwner1})
+    usdc.approve(marginPool.address, '10000000000000000000000', {from: random})
 
     const vaultCounterBefore = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
     vaultCounter = vaultCounterBefore.toNumber() + 1
   })
 
-  describe('Integration test: Sell a naked short put and close it before expiry', () => {
-    it('Seller should be able to open a short put option', async () => {
+  describe('Integration test: Sell a short put spread and close it before expiry', () => {
+    before('Someone else mints the long option and sends it to the seller', async () => {
+      const collateralToMintLong = longStrike * optionsAmount
+      const actionArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: random,
+          sender: random,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounter,
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.MintShortOption,
+          owner: random,
+          sender: random,
+          asset: longPut.address,
+          vaultId: vaultCounter,
+          amount: createScaledUint256(optionsAmount, 18),
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.DepositCollateral,
+          owner: random,
+          sender: random,
+          asset: usdc.address,
+          vaultId: vaultCounter,
+          amount: createScaledUint256(collateralToMintLong, (await usdc.decimals()).toNumber()),
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+
+      await controller.operate(actionArgs, {from: random})
+
+      // random sells their long put option to owner
+      longPut.transfer(random, createScaledUint256(optionsAmount, 18), {from: accountOwner1})
+    })
+    it('Seller should be able to open a short put spread', async () => {
       // Keep track of balances before
       const ownerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
       const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
-      const ownerOtokenBalanceBefore = new BigNumber(await ethPut.balanceOf(accountOwner1))
-      const marginPoolOtokenSupplyBefore = new BigNumber(await ethPut.totalSupply())
+
+      const ownerShortOtokenBalanceBefore = new BigNumber(await shortPut.balanceOf(accountOwner1))
+      const marginPoolShortOtokenSupplyBefore = new BigNumber(await shortPut.totalSupply())
+
+      const ownerlongOtokenBalanceBefore = new BigNumber(await longPut.balanceOf(accountOwner1))
+      const marginPoolLongOtokenSupplyBefore = new BigNumber(await longPut.totalSupply())
+      const marginPoolLongOtokenBalanceBefore = new BigNumber(await longPut.balanceOf(marginPool.address))
 
       // Check that we start at a valid state
       const vaultBefore = await controller.getVault(accountOwner1, vaultCounter)
@@ -152,7 +214,7 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
           actionType: ActionType.MintShortOption,
           owner: accountOwner1,
           sender: accountOwner1,
-          asset: ethPut.address,
+          asset: shortPut.address,
           vaultId: vaultCounter,
           amount: createScaledUint256(optionsAmount, 18),
           index: '0',
@@ -168,16 +230,31 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
           index: '0',
           data: ZERO_ADDR,
         },
+        {
+          actionType: ActionType.DepositLongOption,
+          owner: accountOwner1,
+          sender: accountOwner1,
+          asset: longPut.address,
+          vaultId: vaultCounter,
+          amount: createScaledUint256(optionsAmount, 18),
+          index: '0',
+          data: ZERO_ADDR,
+        },
       ]
 
+      await longPut.approve(marginPool.address, '1000000000000000000000', {from: accountOwner1})
       await controller.operate(actionArgs, {from: accountOwner1})
 
       // keep track of balances after
       const ownerUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
       const marginPoolUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
 
-      const ownerOtokenBalanceAfter = new BigNumber(await ethPut.balanceOf(accountOwner1))
-      const marginPoolOtokenSupplyAfter = new BigNumber(await ethPut.totalSupply())
+      const ownerShortOtokenBalanceAfter = new BigNumber(await shortPut.balanceOf(accountOwner1))
+      const marginPoolShortOtokenSupplyAfter = new BigNumber(await shortPut.totalSupply())
+
+      const ownerlongOtokenBalanceAfter = new BigNumber(await longPut.balanceOf(accountOwner1))
+      const marginPoolLongOtokenSupplyAfter = new BigNumber(await longPut.totalSupply())
+      const marginPoolLongOtokenBalanceAfter = new BigNumber(await longPut.balanceOf(marginPool.address))
 
       // check balances before and after changed as expected
       assert.equal(
@@ -193,12 +270,22 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
         marginPoolUsdcBalanceAfter.toString(),
       )
       assert.equal(
-        ownerOtokenBalanceBefore.plus(createScaledUint256(optionsAmount, 18)).toString(),
-        ownerOtokenBalanceAfter.toString(),
+        ownerShortOtokenBalanceBefore.plus(createScaledUint256(optionsAmount, 18)).toString(),
+        ownerShortOtokenBalanceAfter.toString(),
       )
       assert.equal(
-        marginPoolOtokenSupplyBefore.plus(createScaledUint256(optionsAmount, 18)).toString(),
-        marginPoolOtokenSupplyAfter.toString(),
+        marginPoolShortOtokenSupplyBefore.plus(createScaledUint256(optionsAmount, 18)).toString(),
+        marginPoolShortOtokenSupplyAfter.toString(),
+      )
+
+      assert.equal(
+        ownerlongOtokenBalanceBefore.minus(createScaledUint256(optionsAmount, 18)).toString(),
+        ownerlongOtokenBalanceAfter.toString(),
+      )
+      assert.equal(marginPoolLongOtokenSupplyBefore.toString(), marginPoolLongOtokenSupplyAfter.toString())
+      assert.equal(
+        marginPoolLongOtokenBalanceBefore.plus(createScaledUint256(optionsAmount, 18)).toString(),
+        marginPoolLongOtokenBalanceAfter.toString(),
       )
 
       // Check that we end at a valid state
@@ -210,10 +297,11 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
       // Check the vault balances stored in the contract
       assert.equal(vaultAfter.shortOtokens.length, 1, 'Length of the short otoken array in the vault is incorrect')
       assert.equal(vaultAfter.collateralAssets.length, 1, 'Length of the collateral array in the vault is incorrect')
-      assert.equal(vaultAfter.longOtokens.length, 0, 'Length of the long otoken array in the vault is incorrect')
+      assert.equal(vaultAfter.longOtokens.length, 1, 'Length of the long otoken array in the vault is incorrect')
 
-      assert.equal(vaultAfter.shortOtokens[0], ethPut.address, 'Incorrect short otoken in the vault')
+      assert.equal(vaultAfter.shortOtokens[0], shortPut.address, 'Incorrect short otoken in the vault')
       assert.equal(vaultAfter.collateralAssets[0], usdc.address, 'Incorrect collateral asset in the vault')
+      assert.equal(vaultAfter.longOtokens[0], longPut.address, 'Incorrect long otoken in the vault')
 
       assert.equal(vaultAfter.shortAmounts.length, 1, 'Length of the short amounts array in the vault is incorrect')
       assert.equal(
@@ -221,17 +309,22 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
         1,
         'Length of the collateral amounts array in the vault is incorrect',
       )
-      assert.equal(vaultAfter.longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
+      assert.equal(vaultAfter.longAmounts.length, 1, 'Length of the long amounts array in the vault is incorrect')
 
       assert.equal(
         vaultAfter.shortAmounts[0].toString(),
         createScaledUint256(optionsAmount, 18),
-        'Incorrect amount of short stored in the vault',
+        'Incorrect amount of short options stored in the vault',
       )
       assert.equal(
         vaultAfter.collateralAmounts[0].toString(),
         createScaledUint256(collateralAmount, 18),
         'Incorrect amount of collateral stored in the vault',
+      )
+      assert.equal(
+        vaultAfter.longAmounts[0].toString(),
+        createScaledUint256(optionsAmount, 18),
+        'Incorrect amount of long options stored in the vault',
       )
     })
 
@@ -285,10 +378,11 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
       // Check the vault balances stored in the contract
       assert.equal(vaultAfter.shortOtokens.length, 1, 'Length of the short otoken array in the vault is incorrect')
       assert.equal(vaultAfter.collateralAssets.length, 1, 'Length of the collateral array in the vault is incorrect')
-      assert.equal(vaultAfter.longOtokens.length, 0, 'Length of the long otoken array in the vault is incorrect')
+      assert.equal(vaultAfter.longOtokens.length, 1, 'Length of the long otoken array in the vault is incorrect')
 
-      assert.equal(vaultAfter.shortOtokens[0], ethPut.address, 'Incorrect short otoken in the vault')
+      assert.equal(vaultAfter.shortOtokens[0], shortPut.address, 'Incorrect short otoken in the vault')
       assert.equal(vaultAfter.collateralAssets[0], usdc.address, 'Incorrect collateral asset in the vault')
+      assert.equal(vaultAfter.longOtokens[0], longPut.address, 'Incorrect long otoken in the vault')
 
       assert.equal(vaultAfter.shortAmounts.length, 1, 'Length of the short amounts array in the vault is incorrect')
       assert.equal(
@@ -296,7 +390,7 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
         1,
         'Length of the collateral amounts array in the vault is incorrect',
       )
-      assert.equal(vaultAfter.longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
+      assert.equal(vaultAfter.longAmounts.length, 1, 'Length of the long amounts array in the vault is incorrect')
 
       assert.equal(
         vaultAfter.shortAmounts[0].toString(),
@@ -305,8 +399,13 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
       )
       assert.equal(
         vaultAfter.collateralAmounts[0].toString(),
-        createScaledUint256(2 * collateralAmount, (await usdc.decimals()).toNumber()),
+        createScaledUint256(2 * collateralAmount, 18),
         'Incorrect amount of collateral stored in the vault',
+      )
+      assert.equal(
+        vaultAfter.longAmounts[0].toString(),
+        createScaledUint256(optionsAmount, 18),
+        'Incorrect amount of long options stored in the vault',
       )
     })
     it('withdraw excess collateral from the safe vault', async () => {
@@ -356,10 +455,11 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
       // Check the vault balances stored in the contract
       assert.equal(vaultAfter.shortOtokens.length, 1, 'Length of the short otoken array in the vault is incorrect')
       assert.equal(vaultAfter.collateralAssets.length, 1, 'Length of the collateral array in the vault is incorrect')
-      assert.equal(vaultAfter.longOtokens.length, 0, 'Length of the long otoken array in the vault is incorrect')
+      assert.equal(vaultAfter.longOtokens.length, 1, 'Length of the long otoken array in the vault is incorrect')
 
-      assert.equal(vaultAfter.shortOtokens[0], ethPut.address, 'Incorrect short otoken in the vault')
+      assert.equal(vaultAfter.shortOtokens[0], shortPut.address, 'Incorrect short otoken in the vault')
       assert.equal(vaultAfter.collateralAssets[0], usdc.address, 'Incorrect collateral asset in the vault')
+      assert.equal(vaultAfter.longOtokens[0], longPut.address, 'Incorrect long otoken in the vault')
 
       assert.equal(vaultAfter.shortAmounts.length, 1, 'Length of the short amounts array in the vault is incorrect')
       assert.equal(
@@ -367,17 +467,22 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
         1,
         'Length of the collateral amounts array in the vault is incorrect',
       )
-      assert.equal(vaultAfter.longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
+      assert.equal(vaultAfter.longAmounts.length, 1, 'Length of the long amounts array in the vault is incorrect')
 
       assert.equal(
         vaultAfter.shortAmounts[0].toString(),
         createScaledUint256(optionsAmount, 18),
-        'Incorrect amount of short stored in the vault',
+        'Incorrect amount of short options stored in the vault',
       )
       assert.equal(
         vaultAfter.collateralAmounts[0].toString(),
         createScaledUint256(collateralAmount, 18),
         'Incorrect amount of collateral stored in the vault',
+      )
+      assert.equal(
+        vaultAfter.longAmounts[0].toString(),
+        createScaledUint256(optionsAmount, 18),
+        'Incorrect amount of long options stored in the vault',
       )
     })
 
@@ -400,18 +505,18 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
 
     xit('should be able to transfer long otokens to another address', async () => {
       // keep track of balances
-      const ownerOtokenBalanceBeforeSell = new BigNumber(await ethPut.balanceOf(accountOwner1))
-      const buyerBalanceBeforeSell = new BigNumber(await ethPut.balanceOf(random))
+      const ownerShortOtokenBalanceBeforeSell = new BigNumber(await shortPut.balanceOf(accountOwner1))
+      const buyerBalanceBeforeSell = new BigNumber(await shortPut.balanceOf(random))
 
       // owner sells their put option
-      ethPut.transfer(random, createScaledUint256(optionsAmount, 18), {from: accountOwner1})
+      shortPut.transfer(random, createScaledUint256(optionsAmount, 18), {from: accountOwner1})
 
-      const ownerOtokenBalanceAfterSell = new BigNumber(await ethPut.balanceOf(accountOwner1))
-      const buyerBalanceAfterSell = new BigNumber(await ethPut.balanceOf(random))
+      const ownerShortOtokenBalanceAfterSell = new BigNumber(await shortPut.balanceOf(accountOwner1))
+      const buyerBalanceAfterSell = new BigNumber(await shortPut.balanceOf(random))
 
       assert.equal(
-        ownerOtokenBalanceBeforeSell.minus(createScaledUint256(optionsAmount, 18)).toString(),
-        ownerOtokenBalanceAfterSell.toString(),
+        ownerShortOtokenBalanceBeforeSell.minus(createScaledUint256(optionsAmount, 18)).toString(),
+        ownerShortOtokenBalanceAfterSell.toString(),
       )
       assert.equal(
         buyerBalanceBeforeSell.plus(createScaledUint256(optionsAmount, 18)).toString(),
@@ -419,15 +524,19 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
       )
 
       // owner buys back their put option
-      ethPut.transfer(accountOwner1, createScaledUint256(optionsAmount, 18), {from: random})
+      shortPut.transfer(accountOwner1, createScaledUint256(optionsAmount, 18), {from: random})
     })
 
-    it('should be able to close out the short position', async () => {
+    it('should be able to close out the short spread position', async () => {
       // Keep track of balances before
       const ownerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
       const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
-      const ownerOtokenBalanceBefore = new BigNumber(await ethPut.balanceOf(accountOwner1))
-      const marginPoolOtokenSupplyBefore = new BigNumber(await ethPut.totalSupply())
+      const ownerShortOtokenBalanceBefore = new BigNumber(await shortPut.balanceOf(accountOwner1))
+      const marginPoolShortOtokenSupplyBefore = new BigNumber(await shortPut.totalSupply())
+
+      const ownerlongOtokenBalanceBefore = new BigNumber(await longPut.balanceOf(accountOwner1))
+      const marginPoolLongOtokenSupplyBefore = new BigNumber(await longPut.totalSupply())
+      const marginPoolLongOtokenBalanceBefore = new BigNumber(await longPut.balanceOf(marginPool.address))
 
       // Check that we start at a valid state
       const vaultBefore = await controller.getVault(accountOwner1, vaultCounter)
@@ -450,7 +559,17 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
           actionType: ActionType.BurnShortOption,
           owner: accountOwner1,
           sender: accountOwner1,
-          asset: ethPut.address,
+          asset: shortPut.address,
+          vaultId: vaultCounter,
+          amount: createScaledUint256(optionsAmount, 18),
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.WithdrawLongOption,
+          owner: accountOwner1,
+          sender: accountOwner1,
+          asset: longPut.address,
           vaultId: vaultCounter,
           amount: createScaledUint256(optionsAmount, 18),
           index: '0',
@@ -464,8 +583,12 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
       const ownerUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
       const marginPoolUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
 
-      const ownerOtokenBalanceAfter = new BigNumber(await ethPut.balanceOf(accountOwner1))
-      const marginPoolOtokenSupplyAfter = new BigNumber(await ethPut.totalSupply())
+      const ownerShortOtokenBalanceAfter = new BigNumber(await shortPut.balanceOf(accountOwner1))
+      const marginPoolShortOtokenSupplyAfter = new BigNumber(await shortPut.totalSupply())
+
+      const ownerlongOtokenBalanceAfter = new BigNumber(await longPut.balanceOf(accountOwner1))
+      const marginPoolLongOtokenSupplyAfter = new BigNumber(await longPut.totalSupply())
+      const marginPoolLongOtokenBalanceAfter = new BigNumber(await longPut.balanceOf(marginPool.address))
 
       // check balances before and after changed as expected
       assert.equal(
@@ -481,12 +604,22 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
         marginPoolUsdcBalanceAfter.toString(),
       )
       assert.equal(
-        ownerOtokenBalanceBefore.minus(createScaledUint256(optionsAmount, 18)).toString(),
-        ownerOtokenBalanceAfter.toString(),
+        ownerShortOtokenBalanceBefore.minus(createScaledUint256(optionsAmount, 18)).toString(),
+        ownerShortOtokenBalanceAfter.toString(),
       )
       assert.equal(
-        marginPoolOtokenSupplyBefore.minus(createScaledUint256(optionsAmount, 18)).toString(),
-        marginPoolOtokenSupplyAfter.toString(),
+        marginPoolShortOtokenSupplyBefore.minus(createScaledUint256(optionsAmount, 18)).toString(),
+        marginPoolShortOtokenSupplyAfter.toString(),
+      )
+
+      assert.equal(
+        ownerlongOtokenBalanceBefore.plus(createScaledUint256(optionsAmount, 18)).toString(),
+        ownerlongOtokenBalanceAfter.toString(),
+      )
+      assert.equal(marginPoolLongOtokenSupplyBefore.toString(), marginPoolLongOtokenSupplyAfter.toString())
+      assert.equal(
+        marginPoolLongOtokenBalanceBefore.minus(createScaledUint256(optionsAmount, 18)).toString(),
+        marginPoolLongOtokenBalanceAfter.toString(),
       )
 
       // Check that we end at a valid state
@@ -498,10 +631,11 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
       // Check the vault balances stored in the contract
       assert.equal(vaultAfter.shortOtokens.length, 1, 'Length of the short otoken array in the vault is incorrect')
       assert.equal(vaultAfter.collateralAssets.length, 1, 'Length of the collateral array in the vault is incorrect')
-      assert.equal(vaultAfter.longOtokens.length, 0, 'Length of the long otoken array in the vault is incorrect')
+      assert.equal(vaultAfter.longOtokens.length, 1, 'Length of the long otoken array in the vault is incorrect')
 
       assert.equal(vaultAfter.shortOtokens[0], ZERO_ADDR, 'Incorrect short otoken in the vault')
       assert.equal(vaultAfter.collateralAssets[0], ZERO_ADDR, 'Incorrect collateral asset in the vault')
+      assert.equal(vaultAfter.longOtokens[0], ZERO_ADDR, 'Incorrect long otoken in the vault')
 
       assert.equal(vaultAfter.shortAmounts.length, 1, 'Length of the short amounts array in the vault is incorrect')
       assert.equal(
@@ -509,14 +643,15 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, rand
         1,
         'Length of the collateral amounts array in the vault is incorrect',
       )
-      assert.equal(vaultAfter.longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
+      assert.equal(vaultAfter.longAmounts.length, 1, 'Length of the long amounts array in the vault is incorrect')
 
-      assert.equal(vaultAfter.shortAmounts[0].toString(), '0', 'Incorrect amount of collateral stored in the vault')
+      assert.equal(vaultAfter.shortAmounts[0].toString(), '0', 'Incorrect amount of short stored in the vault')
       assert.equal(
         vaultAfter.collateralAmounts[0].toString(),
         '0',
         'Incorrect amount of collateral stored in the vault',
       )
+      assert.equal(vaultAfter.longAmounts[0].toString(), '0', 'Incorrect amount of long stored in the vault')
     })
   })
 })
