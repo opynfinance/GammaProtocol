@@ -946,278 +946,551 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
   })
 
   describe('Collateral asset', () => {
-    it('should deposit a whitelisted collateral asset from account owner', async () => {
-      // whitelist usdc
-      await whitelist.whitelistCollateral(usdc.address)
-      const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
-      assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
-
-      const collateralToDeposit = new BigNumber('10')
-      const actionArgs = [
-        {
-          actionType: ActionType.DepositCollateral,
-          owner: accountOwner1,
-          sender: accountOwner1,
-          asset: usdc.address,
-          vaultId: vaultCounter.toNumber(),
-          amount: collateralToDeposit.toNumber(),
-          index: '0',
-          data: ZERO_ADDR,
-        },
-      ]
-
-      const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
-      const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
-
-      await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
-      await controller.operate(actionArgs, {from: accountOwner1})
-
-      const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
-      const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
-      const vaultAfter = await controller.getVault(accountOwner1, vaultCounter)
-
-      assert.equal(
-        marginPoolBalanceAfter.minus(marginPoolBalanceBefore).toString(),
-        collateralToDeposit.toString(),
-        'Margin pool balance collateral asset balance mismatch',
-      )
-      assert.equal(
-        senderBalanceBefore.minus(senderBalanceAfter).toString(),
-        collateralToDeposit.toString(),
-        'Sender balance collateral asset balance mismatch',
-      )
-      assert.equal(vaultAfter.collateralAssets.length, 1, 'Vault collateral assets array length mismatch')
-      assert.equal(
-        vaultAfter.collateralAssets[0],
-        usdc.address,
-        'Collateral asset address deposited into vault mismatch',
-      )
-      assert.equal(
-        new BigNumber(vaultAfter.collateralAmounts[0]).toString(),
-        collateralToDeposit.toString(),
-        'Collateral asset amount deposited into vault mismatch',
-      )
-    })
-
-    it('should deposit a whitelisted collateral asset from account operator', async () => {
-      const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
-      assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
-
-      const collateralToDeposit = new BigNumber('10')
-      const actionArgs = [
-        {
-          actionType: ActionType.DepositCollateral,
-          owner: accountOwner1,
-          sender: accountOperator1,
-          asset: usdc.address,
-          vaultId: vaultCounter.toNumber(),
-          amount: collateralToDeposit.toNumber(),
-          index: '0',
-          data: ZERO_ADDR,
-        },
-      ]
-
-      const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
-      const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOperator1))
-      const vaultBefore = await controller.getVault(accountOwner1, vaultCounter)
-
-      await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOperator1})
-      await controller.operate(actionArgs, {from: accountOperator1})
-
-      const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
-      const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOperator1))
-      const vaultAfter = await controller.getVault(accountOwner1, vaultCounter)
-
-      assert.equal(
-        marginPoolBalanceAfter.minus(marginPoolBalanceBefore).toString(),
-        collateralToDeposit.toString(),
-        'Margin pool balance collateral asset balance mismatch',
-      )
-      assert.equal(
-        senderBalanceBefore.minus(senderBalanceAfter).toString(),
-        collateralToDeposit.toString(),
-        'Sender balance collateral asset balance mismatch',
-      )
-      assert.equal(vaultAfter.collateralAssets.length, 1, 'Vault collateral assets array length mismatch')
-      assert.equal(
-        vaultAfter.collateralAssets[0],
-        usdc.address,
-        'Collateral asset address deposited into vault mismatch',
-      )
-      assert.equal(
-        new BigNumber(vaultAfter.collateralAmounts[0])
-          .minus(new BigNumber(vaultBefore.collateralAmounts[0]))
-          .toString(),
-        collateralToDeposit.toString(),
-        'Long otoken amount deposited into vault mismatch',
-      )
-    })
-
-    it('should revert depositing a collateral asset from a msg.sender different than arg.from', async () => {
-      const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
-      assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
-
-      const collateralToDeposit = new BigNumber('10')
-      const actionArgs = [
-        {
-          actionType: ActionType.DepositCollateral,
-          owner: accountOwner1,
-          sender: random,
-          asset: usdc.address,
-          vaultId: vaultCounter.toNumber(),
-          amount: collateralToDeposit.toNumber(),
-          index: '0',
-          data: ZERO_ADDR,
-        },
-      ]
-
-      await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
-      await expectRevert(
-        controller.operate(actionArgs, {from: accountOwner1}),
-        'Controller: depositor address and msg.sender address mismatch',
-      )
-    })
-
-    it('should revert depositing a collateral asset with amount equal to zero', async () => {
-      const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
-      assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
-
-      const collateralToDeposit = new BigNumber('0')
-      const actionArgs = [
-        {
-          actionType: ActionType.DepositCollateral,
-          owner: accountOwner1,
-          sender: accountOwner1,
-          asset: usdc.address,
-          vaultId: vaultCounter.toNumber(),
-          amount: collateralToDeposit.toNumber(),
-          index: '0',
-          data: ZERO_ADDR,
-        },
-      ]
-
-      await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
-      await expectRevert(
-        controller.operate(actionArgs, {from: accountOwner1}),
-        'MarginAccount: invalid collateral amount',
-      )
-    })
-
-    it('should revert when vault have more than 1 collateral type', async () => {
-      const collateralToDeposit = new BigNumber('20')
-      //whitelist weth to use in this test
-      await whitelist.whitelistCollateral(weth.address)
-      await weth.mint(accountOwner1, collateralToDeposit)
-
-      const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
-      const actionArgs = [
-        {
-          actionType: ActionType.DepositCollateral,
-          owner: accountOwner1,
-          sender: accountOwner1,
-          asset: weth.address,
-          vaultId: vaultCounter.toNumber(),
-          amount: collateralToDeposit.toNumber(),
-          index: '1',
-          data: ZERO_ADDR,
-        },
-      ]
-
-      await weth.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
-      await expectRevert(
-        controller.operate(actionArgs, {from: accountOwner1}),
-        'MarginCalculator: Too many collateral assets in the vault.',
-      )
-    })
-
-    it('should execute depositing collateral into vault in multiple actions', async () => {
-      const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
-      const collateralToDeposit = new BigNumber('20')
-      const actionArgs = [
-        {
-          actionType: ActionType.DepositCollateral,
-          owner: accountOwner1,
-          sender: accountOwner1,
-          asset: usdc.address,
-          vaultId: vaultCounter.toNumber(),
-          amount: collateralToDeposit.toNumber(),
-          index: '0',
-          data: ZERO_ADDR,
-        },
-        {
-          actionType: ActionType.DepositCollateral,
-          owner: accountOwner1,
-          sender: accountOwner1,
-          asset: usdc.address,
-          vaultId: vaultCounter.toNumber(),
-          amount: collateralToDeposit.toNumber(),
-          index: '0',
-          data: ZERO_ADDR,
-        },
-      ]
-      const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
-      const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
-      const vaultBefore = await controller.getVault(accountOwner1, vaultCounter)
-
-      await usdc.approve(marginPool.address, collateralToDeposit.multipliedBy(2), {from: accountOwner1})
-      await controller.operate(actionArgs, {from: accountOwner1})
-
-      const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
-      const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
-      const vaultAfter = await controller.getVault(accountOwner1, vaultCounter)
-
-      assert.equal(
-        marginPoolBalanceAfter.minus(marginPoolBalanceBefore).toString(),
-        collateralToDeposit.multipliedBy(2).toString(),
-        'Margin pool collateral balance mismatch',
-      )
-      assert.equal(
-        senderBalanceBefore.minus(senderBalanceAfter).toString(),
-        collateralToDeposit.multipliedBy(2).toString(),
-        'Sender collateral asset balance mismatch',
-      )
-      assert.equal(vaultAfter.collateralAmounts.length, 1, 'Vault collateral asset array length mismatch')
-      assert.equal(
-        vaultAfter.collateralAssets[0],
-        usdc.address,
-        'Collateral asset address deposited into vault mismatch',
-      )
-      assert.equal(
-        new BigNumber(vaultAfter.collateralAmounts[0])
-          .minus(new BigNumber(vaultBefore.collateralAmounts[0]))
-          .toString(),
-        collateralToDeposit.multipliedBy(2).toString(),
-        'Collateral asset amount deposited into vault mismatch',
-      )
-    })
-
-    describe('Deposit un-whitelisted collateral asset', () => {
-      it('should revert depositing a collateral asset that is not whitelisted', async () => {
-        // deploy a shitcoin
-        const trx: MockERC20Instance = await MockERC20.new('TRX', 'TRX')
-        await trx.mint(accountOwner1, new BigNumber('1000'))
-
+    describe('Deposit collateral asset', () => {
+      it('should deposit a whitelisted collateral asset from account owner', async () => {
+        // whitelist usdc
+        await whitelist.whitelistCollateral(usdc.address)
         const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
         assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-        const collateralDeposit = new BigNumber('10')
+        const collateralToDeposit = new BigNumber('10')
         const actionArgs = [
           {
             actionType: ActionType.DepositCollateral,
             owner: accountOwner1,
             sender: accountOwner1,
-            asset: trx.address,
+            asset: usdc.address,
             vaultId: vaultCounter.toNumber(),
-            amount: collateralDeposit.toNumber(),
+            amount: collateralToDeposit.toNumber(),
             index: '0',
             data: ZERO_ADDR,
           },
         ]
 
-        await trx.approve(marginPool.address, collateralDeposit, {from: accountOwner1})
+        const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
+
+        await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
+        await controller.operate(actionArgs, {from: accountOwner1})
+
+        const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
+        const vaultAfter = await controller.getVault(accountOwner1, vaultCounter)
+
+        assert.equal(
+          marginPoolBalanceAfter.minus(marginPoolBalanceBefore).toString(),
+          collateralToDeposit.toString(),
+          'Margin pool balance collateral asset balance mismatch',
+        )
+        assert.equal(
+          senderBalanceBefore.minus(senderBalanceAfter).toString(),
+          collateralToDeposit.toString(),
+          'Sender balance collateral asset balance mismatch',
+        )
+        assert.equal(vaultAfter.collateralAssets.length, 1, 'Vault collateral assets array length mismatch')
+        assert.equal(
+          vaultAfter.collateralAssets[0],
+          usdc.address,
+          'Collateral asset address deposited into vault mismatch',
+        )
+        assert.equal(
+          new BigNumber(vaultAfter.collateralAmounts[0]).toString(),
+          collateralToDeposit.toString(),
+          'Collateral asset amount deposited into vault mismatch',
+        )
+      })
+
+      it('should deposit a whitelisted collateral asset from account operator', async () => {
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+        const collateralToDeposit = new BigNumber('10')
+        const actionArgs = [
+          {
+            actionType: ActionType.DepositCollateral,
+            owner: accountOwner1,
+            sender: accountOperator1,
+            asset: usdc.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToDeposit.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOperator1))
+        const vaultBefore = await controller.getVault(accountOwner1, vaultCounter)
+
+        await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOperator1})
+        await controller.operate(actionArgs, {from: accountOperator1})
+
+        const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOperator1))
+        const vaultAfter = await controller.getVault(accountOwner1, vaultCounter)
+
+        assert.equal(
+          marginPoolBalanceAfter.minus(marginPoolBalanceBefore).toString(),
+          collateralToDeposit.toString(),
+          'Margin pool balance collateral asset balance mismatch',
+        )
+        assert.equal(
+          senderBalanceBefore.minus(senderBalanceAfter).toString(),
+          collateralToDeposit.toString(),
+          'Sender balance collateral asset balance mismatch',
+        )
+        assert.equal(vaultAfter.collateralAssets.length, 1, 'Vault collateral assets array length mismatch')
+        assert.equal(
+          vaultAfter.collateralAssets[0],
+          usdc.address,
+          'Collateral asset address deposited into vault mismatch',
+        )
+        assert.equal(
+          new BigNumber(vaultAfter.collateralAmounts[0])
+            .minus(new BigNumber(vaultBefore.collateralAmounts[0]))
+            .toString(),
+          collateralToDeposit.toString(),
+          'Long otoken amount deposited into vault mismatch',
+        )
+      })
+
+      it('should revert depositing a collateral asset from a msg.sender different than arg.from', async () => {
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+        const collateralToDeposit = new BigNumber('10')
+        const actionArgs = [
+          {
+            actionType: ActionType.DepositCollateral,
+            owner: accountOwner1,
+            sender: random,
+            asset: usdc.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToDeposit.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
         await expectRevert(
           controller.operate(actionArgs, {from: accountOwner1}),
-          'Controller: asset is not whitelisted to be used as collateral',
+          'Controller: depositor address and msg.sender address mismatch',
+        )
+      })
+
+      it('should revert depositing a collateral asset with amount equal to zero', async () => {
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+        const collateralToDeposit = new BigNumber('0')
+        const actionArgs = [
+          {
+            actionType: ActionType.DepositCollateral,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: usdc.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToDeposit.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
+        await expectRevert(
+          controller.operate(actionArgs, {from: accountOwner1}),
+          'MarginAccount: invalid collateral amount',
+        )
+      })
+
+      it('should execute depositing collateral into vault in multiple actions', async () => {
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        const collateralToDeposit = new BigNumber('20')
+        const actionArgs = [
+          {
+            actionType: ActionType.DepositCollateral,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: usdc.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToDeposit.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.DepositCollateral,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: usdc.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToDeposit.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+        const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
+        const vaultBefore = await controller.getVault(accountOwner1, vaultCounter)
+
+        await usdc.approve(marginPool.address, collateralToDeposit.multipliedBy(2), {from: accountOwner1})
+        await controller.operate(actionArgs, {from: accountOwner1})
+
+        const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
+        const vaultAfter = await controller.getVault(accountOwner1, vaultCounter)
+
+        assert.equal(
+          marginPoolBalanceAfter.minus(marginPoolBalanceBefore).toString(),
+          collateralToDeposit.multipliedBy(2).toString(),
+          'Margin pool collateral balance mismatch',
+        )
+        assert.equal(
+          senderBalanceBefore.minus(senderBalanceAfter).toString(),
+          collateralToDeposit.multipliedBy(2).toString(),
+          'Sender collateral asset balance mismatch',
+        )
+        assert.equal(vaultAfter.collateralAmounts.length, 1, 'Vault collateral asset array length mismatch')
+        assert.equal(
+          vaultAfter.collateralAssets[0],
+          usdc.address,
+          'Collateral asset address deposited into vault mismatch',
+        )
+        assert.equal(
+          new BigNumber(vaultAfter.collateralAmounts[0])
+            .minus(new BigNumber(vaultBefore.collateralAmounts[0]))
+            .toString(),
+          collateralToDeposit.multipliedBy(2).toString(),
+          'Collateral asset amount deposited into vault mismatch',
+        )
+      })
+
+      describe('Deposit un-whitelisted collateral asset', () => {
+        it('should revert depositing a collateral asset that is not whitelisted', async () => {
+          // deploy a shitcoin
+          const trx: MockERC20Instance = await MockERC20.new('TRX', 'TRX')
+          await trx.mint(accountOwner1, new BigNumber('1000'))
+
+          const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+          assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+          const collateralDeposit = new BigNumber('10')
+          const actionArgs = [
+            {
+              actionType: ActionType.DepositCollateral,
+              owner: accountOwner1,
+              sender: accountOwner1,
+              asset: trx.address,
+              vaultId: vaultCounter.toNumber(),
+              amount: collateralDeposit.toNumber(),
+              index: '0',
+              data: ZERO_ADDR,
+            },
+          ]
+
+          await trx.approve(marginPool.address, collateralDeposit, {from: accountOwner1})
+          await expectRevert(
+            controller.operate(actionArgs, {from: accountOwner1}),
+            'Controller: asset is not whitelisted to be used as collateral',
+          )
+        })
+      })
+
+      it('should revert when vault have more than 1 collateral type', async () => {
+        const collateralToDeposit = new BigNumber('20')
+        //whitelist weth to use in this test
+        await whitelist.whitelistCollateral(weth.address)
+        await weth.mint(accountOwner1, collateralToDeposit)
+
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        const actionArgs = [
+          {
+            actionType: ActionType.DepositCollateral,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: weth.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToDeposit.toNumber(),
+            index: '1',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        await weth.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
+        await expectRevert(
+          controller.operate(actionArgs, {from: accountOwner1}),
+          'MarginCalculator: Too many collateral assets in the vault.',
+        )
+      })
+    })
+
+    describe('withdraw collateral', () => {
+      it('should revert withdrawing collateral asset with wrong index from a vault', async () => {
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+        const collateralToWithdraw = new BigNumber('20')
+        const actionArgs = [
+          {
+            actionType: ActionType.WithdrawCollateral,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: usdc.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToWithdraw.toNumber(),
+            index: '1',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        await expectRevert(
+          controller.operate(actionArgs, {from: accountOwner1}),
+          'MarginAccount: collateral token address mismatch',
+        )
+      })
+
+      it('should revert withdrawing collateral asset from an invalid id', async () => {
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+        const collateralToWithdraw = new BigNumber('20')
+        const actionArgs = [
+          {
+            actionType: ActionType.WithdrawCollateral,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: usdc.address,
+            vaultId: '1350',
+            amount: collateralToWithdraw.toNumber(),
+            index: '1',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        await expectRevert(controller.operate(actionArgs, {from: accountOwner1}), 'Controller: invalid vault id')
+      })
+
+      it('should revert withdrawing collateral asset amount greater than the vault balance', async () => {
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+        const vaultBefore = await controller.getVault(accountOwner1, vaultCounter)
+        const collateralToWithdraw = new BigNumber(vaultBefore.collateralAmounts[0]).plus(1)
+        const actionArgs = [
+          {
+            actionType: ActionType.WithdrawCollateral,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: usdc.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToWithdraw.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        await expectRevert(controller.operate(actionArgs, {from: accountOwner1}), 'SafeMath: subtraction overflow')
+      })
+
+      it('should withdraw collateral to any random address where msg.sender is account owner', async () => {
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+        const collateralToWithdraw = new BigNumber('10')
+        const actionArgs = [
+          {
+            actionType: ActionType.WithdrawCollateral,
+            owner: accountOwner1,
+            sender: random,
+            asset: usdc.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToWithdraw.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+        const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const receiverBalanceBefore = new BigNumber(await usdc.balanceOf(random))
+        const vaultBefore = await controller.getVault(accountOwner1, vaultCounter)
+
+        await controller.operate(actionArgs, {from: accountOwner1})
+
+        const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const receiverBalanceAfter = new BigNumber(await usdc.balanceOf(random))
+        const vaultAfter = await controller.getVault(accountOwner1, vaultCounter)
+
+        assert.equal(
+          marginPoolBalanceBefore.minus(marginPoolBalanceAfter).toString(),
+          collateralToWithdraw.toString(),
+          'Margin pool collateral asset balance mismatch',
+        )
+        assert.equal(
+          receiverBalanceAfter.minus(receiverBalanceBefore).toString(),
+          collateralToWithdraw.toString(),
+          'Receiver collateral asset balance mismatch',
+        )
+        assert.equal(vaultAfter.collateralAssets.length, 1, 'Vault collateral asset array length mismatch')
+        assert.equal(
+          new BigNumber(vaultBefore.collateralAmounts[0])
+            .minus(new BigNumber(vaultAfter.collateralAmounts[0]))
+            .toString(),
+          collateralToWithdraw.toString(),
+          'Collateral asset amount in vault after withdraw mismatch',
+        )
+      })
+
+      it('should withdraw collateral asset to any random address where msg.sender is account operator', async () => {
+        assert.equal(await controller.isOperator(accountOwner1, accountOperator1), true, 'Operator address mismatch')
+
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+        const collateralToWithdraw = new BigNumber('10')
+        const actionArgs = [
+          {
+            actionType: ActionType.WithdrawCollateral,
+            owner: accountOwner1,
+            sender: random,
+            asset: usdc.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToWithdraw.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+        const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const receiverBalanceBefore = new BigNumber(await usdc.balanceOf(random))
+        const vaultBefore = await controller.getVault(accountOwner1, vaultCounter)
+
+        await controller.operate(actionArgs, {from: accountOperator1})
+
+        const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const receiverBalanceAfter = new BigNumber(await usdc.balanceOf(random))
+        const vaultAfter = await controller.getVault(accountOwner1, vaultCounter)
+
+        assert.equal(
+          marginPoolBalanceBefore.minus(marginPoolBalanceAfter).toString(),
+          collateralToWithdraw.toString(),
+          'Margin pool collateral asset balance mismatch',
+        )
+        assert.equal(
+          receiverBalanceAfter.minus(receiverBalanceBefore).toString(),
+          collateralToWithdraw.toString(),
+          'Receiver collateral asset balance mismatch',
+        )
+        assert.equal(vaultAfter.collateralAssets.length, 1, 'Vault collateral asset array length mismatch')
+        assert.equal(
+          new BigNumber(vaultBefore.collateralAmounts[0])
+            .minus(new BigNumber(vaultAfter.collateralAmounts[0]))
+            .toString(),
+          collateralToWithdraw.toString(),
+          'Collateral asset amount in vault after withdraw mismatch',
+        )
+      })
+
+      it('should execute withdrawing collateral asset in mutliple actions', async () => {
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+        const collateralToWithdraw = new BigNumber('10')
+        const actionArgs = [
+          {
+            actionType: ActionType.WithdrawCollateral,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: usdc.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToWithdraw.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.WithdrawCollateral,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: usdc.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToWithdraw.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+        const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const receiverBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
+        const vaultBefore = await controller.getVault(accountOwner1, vaultCounter)
+
+        await controller.operate(actionArgs, {from: accountOwner1})
+
+        const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const receiverBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
+        const vaultAfter = await controller.getVault(accountOwner1, vaultCounter)
+
+        assert.equal(
+          marginPoolBalanceBefore.minus(marginPoolBalanceAfter).toString(),
+          collateralToWithdraw.multipliedBy(2).toString(),
+          'Margin pool collateral asset balance mismatch',
+        )
+        assert.equal(
+          receiverBalanceAfter.minus(receiverBalanceBefore).toString(),
+          collateralToWithdraw.multipliedBy(2).toString(),
+          'Receiver collateral asset balance mismatch',
+        )
+        assert.equal(vaultAfter.collateralAssets.length, 1, 'Vault long otoken array length mismatch')
+        assert.equal(
+          new BigNumber(vaultBefore.collateralAmounts[0])
+            .minus(new BigNumber(vaultAfter.collateralAmounts[0]))
+            .toString(),
+          collateralToWithdraw.multipliedBy(2).toString(),
+          'Collateral asset amount in vault after withdraw mismatch',
+        )
+      })
+
+      it('should remove collateral asset address from collateral array if amount is equal to zero after withdrawing', async () => {
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+        const vaultBefore = await controller.getVault(accountOwner1, vaultCounter)
+
+        const collateralToWithdraw = new BigNumber(vaultBefore.collateralAmounts[0])
+        const actionArgs = [
+          {
+            actionType: ActionType.WithdrawCollateral,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: usdc.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToWithdraw.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+        const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const receiverBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
+
+        await controller.operate(actionArgs, {from: accountOwner1})
+
+        const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const receiverBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
+        const vaultAfter = await controller.getVault(accountOwner1, vaultCounter)
+
+        assert.equal(
+          marginPoolBalanceBefore.minus(marginPoolBalanceAfter).toString(),
+          collateralToWithdraw.toString(),
+          'Margin pool balance long otoken balance mismatch',
+        )
+        assert.equal(
+          receiverBalanceAfter.minus(receiverBalanceBefore).toString(),
+          collateralToWithdraw.toString(),
+          'Receiver long otoken balance mismatch',
+        )
+        assert.equal(vaultAfter.collateralAssets.length, 1, 'Vault collateral asset array length mismatch')
+        assert.equal(vaultAfter.collateralAssets[0], ZERO_ADDR, 'Vault collater asset address after clearing mismatch')
+        assert.equal(
+          new BigNumber(vaultBefore.collateralAmounts[0])
+            .minus(new BigNumber(vaultAfter.collateralAmounts[0]))
+            .toString(),
+          collateralToWithdraw.toString(),
+          'Collateral asset amount in vault after withdraw mismatch',
         )
       })
     })
