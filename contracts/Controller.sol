@@ -64,7 +64,7 @@ contract Controller is ReentrancyGuard, Ownable {
     /// @notice emits an event when a long otoken is withdrawed from a vault
     event LongOtokenWithdrawed(
         address indexed otoken,
-        address indexedAccountOwner,
+        address indexed AccountOwner,
         address indexed to,
         uint256 vaultId,
         uint256 amount
@@ -80,7 +80,15 @@ contract Controller is ReentrancyGuard, Ownable {
     /// @notice emits an event when a collateral asset is withdrawed from a vault
     event CollateralAssetWithdrawed(
         address indexed asset,
-        address indexedAccountOwner,
+        address indexed AccountOwner,
+        address indexed to,
+        uint256 vaultId,
+        uint256 amount
+    );
+    /// @notice emits an event when a short otoken get minted into a vault
+    event ShortOtokenMinted(
+        address indexed otoken,
+        address indexed AccountOwner,
         address indexed to,
         uint256 vaultId,
         uint256 amount
@@ -273,6 +281,8 @@ contract Controller is ReentrancyGuard, Ownable {
                 vault = _depositCollateral(Actions._parseDepositArgs(action));
             } else if (actionType == Actions.ActionType.WithdrawCollateral) {
                 vault = _withdrawCollateral(Actions._parseWithdrawArgs(action));
+            } else if (actionType == Actions.ActionType.MintShortOption) {
+                vault = _mintOtoken(Actions._parseMintArgs(action));
             }
         }
 
@@ -454,7 +464,26 @@ contract Controller is ReentrancyGuard, Ownable {
      * @dev only account owner or operator can withdraw long option from vault
      * @param _args MintArgs structure
      */
-    // function _mintOtoken(Actions.MintArgs memory _args) internal isAuthorized(_args.owner) {}
+    function _mintOtoken(Actions.MintArgs memory _args)
+        internal
+        isAuthorized(msg.sender, _args.owner)
+        returns (MarginAccount.Vault memory)
+    {
+        require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+        require(_args.to == msg.sender, "Controller: minter address and msg.sender address mismatch");
+
+        OtokenInterface otoken = OtokenInterface(_args.otoken);
+
+        require(now <= otoken.expiryTimestamp(), "Controller: can not mint expired otoken");
+
+        vaults[_args.owner][_args.vaultId]._addShort(_args.otoken, _args.amount, _args.index);
+
+        otoken.mintOtoken(_args.to, _args.amount);
+
+        emit ShortOtokenMinted(_args.otoken, _args.owner, _args.to, _args.vaultId, _args.amount);
+
+        return vaults[_args.owner][_args.vaultId];
+    }
 
     /**
      * @notice burn option
