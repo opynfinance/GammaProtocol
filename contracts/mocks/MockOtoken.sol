@@ -41,7 +41,7 @@ contract MockOtoken is ERC20Initializable {
         __ERC20_init_unchained(tokenName, tokenSymbol);
     }
 
-    function mint(address _to, uint256 _amount) external {
+    function mintOtoken(address _to, uint256 _amount) external {
         _mint(_to, _amount);
     }
 }

@@ -54,15 +54,13 @@ contract MockMarginCalculator {
         if ((_vault.shortOtokens.length == 0) || (_vault.shortOtokens[0] == address(0)))
             return (SignedConverter.intToUint(collateralAmount.value), true);
 
-        // FixedPointInt256.FixedPointInt memory marginRequirement = _getMarginRequired(_vault);
-        // // if marginRequirement > 0, the long assets cannot cover the max loss of short assets in the vault.
-        // // will need to check if collateral - marginRequirement is greater than 0.
-        // FixedPointInt256.FixedPointInt memory excessMargin = collateralAmount.sub(marginRequirement);
-        // bool isExcess = excessMargin.isGreaterThanOrEqual(_uint256ToFixedPointInt(0));
-        // uint256 netValue = SignedConverter.intToUint(excessMargin.value);
-        // return (netValue, isExcess);
-
-        return (0, true);
+        FixedPointInt256.FixedPointInt memory marginRequirement = _getMarginRequired(_vault);
+        // if marginRequirement > 0, the long assets cannot cover the max loss of short assets in the vault.
+        // will need to check if collateral - marginRequirement is greater than 0.
+        FixedPointInt256.FixedPointInt memory excessMargin = collateralAmount.sub(marginRequirement);
+        bool isExcess = excessMargin.isGreaterThanOrEqual(_uint256ToFixedPointInt(0));
+        uint256 netValue = SignedConverter.intToUint(excessMargin.value);
+        return (netValue, isExcess);
     }
 
     function _getMarginRequired(MarginAccount.Vault memory _vault)
