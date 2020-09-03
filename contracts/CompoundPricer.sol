@@ -9,7 +9,7 @@ import {ERC20Interface} from "./interfaces/ERC20Interface.sol";
 import {SafeMath} from "./packages/oz/SafeMath.sol";
 
 /**
- * @notice A Compound contract for Chainlink for 1 asset
+ * @notice A Pricer contract for Compound Asset.
  */
 contract CompoundPricer is OpynPricerInterface {
     using SafeMath for uint256;
@@ -18,7 +18,7 @@ contract CompoundPricer is OpynPricerInterface {
     OracleInterface public oracle;
 
     /// @notice the pricer interface to get price for cToken's underying asset
-    // If cToken is cUSDC, we need a Pricer for USDC
+    // If cToken is cUSDC, underlyingPricer is the Pricer for USDC
     OpynPricerInterface public underlyingPricer;
 
     /// @notice the compound asset (cToken) that this pricer will get price for.
