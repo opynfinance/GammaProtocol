@@ -44,9 +44,9 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([deployer
   const expiry = 1753776000 // 07/29/2025 @ 8:00am (UTC)
 
   before('Deploy addressBook, otoken logic, whitelist, Factory contract', async () => {
-    usdc = await MockERC20.new('USDC', 'USDC')
-    dai = await MockERC20.new('DAI', 'DAI')
-    randomERC20 = await MockERC20.new('RANDOM', 'RAM')
+    usdc = await MockERC20.new('USDC', 'USDC', 6)
+    dai = await MockERC20.new('DAI', 'DAI', 18)
+    randomERC20 = await MockERC20.new('RANDOM', 'RAM', 10)
 
     // Setup AddresBook
     addressBook = await AddressBook.new({from: deployer})
