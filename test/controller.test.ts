@@ -1557,19 +1557,9 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
             index: '0',
             data: ZERO_ADDR,
           },
-          {
-            actionType: ActionType.DepositCollateral,
-            owner: accountOwner1,
-            sender: random,
-            asset: usdc.address,
-            vaultId: vaultCounter.toNumber(),
-            amount: collateralToDeposit.toNumber(),
-            index: '0',
-            data: ZERO_ADDR,
-          },
         ]
 
-        await usdc.approve(marginPool.address, collateralToDeposit, {from: random})
+        // await usdc.approve(marginPool.address, collateralToDeposit, {from: random})
         await expectRevert(
           controller.operate(actionArgs, {from: random}),
           'Controller: msg.sender is not authorized to run action',
