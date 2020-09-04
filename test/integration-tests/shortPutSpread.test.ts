@@ -12,6 +12,8 @@ import {createVault, createScaledUint256} from '../utils'
 import {assert} from 'chai'
 import BigNumber from 'bignumber.js'
 
+import Reverter from '../Reverter'
+
 const {expectRevert, time} = require('@openzeppelin/test-helpers')
 const AddressBook = artifacts.require('AddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
@@ -36,7 +38,8 @@ enum ActionType {
   Call,
 }
 
-contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, random]) => {
+contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buyer]) => {
+  const reverter = new Reverter(web3)
   let expiry: number
 
   let addressBook: AddressBookInstance
@@ -117,11 +120,11 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, ran
 
     // mint usdc to user
     usdc.mint(accountOwner1, createScaledUint256(2 * collateralAmount, (await usdc.decimals()).toNumber()))
-    usdc.mint(random, createScaledUint256(longStrike * optionsAmount, (await usdc.decimals()).toNumber()))
+    usdc.mint(buyer, createScaledUint256(longStrike * optionsAmount, (await usdc.decimals()).toNumber()))
 
     // have the user approve all the usdc transfers
     usdc.approve(marginPool.address, '10000000000000000000000', {from: accountOwner1})
-    usdc.approve(marginPool.address, '10000000000000000000000', {from: random})
+    usdc.approve(marginPool.address, '10000000000000000000000', {from: buyer})
 
     const vaultCounterBefore = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
     vaultCounter = vaultCounterBefore.toNumber() + 1
@@ -133,8 +136,8 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, ran
       const actionArgs = [
         {
           actionType: ActionType.OpenVault,
-          owner: random,
-          sender: random,
+          owner: buyer,
+          sender: buyer,
           asset: ZERO_ADDR,
           vaultId: vaultCounter,
           amount: '0',
@@ -143,8 +146,8 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, ran
         },
         {
           actionType: ActionType.MintShortOption,
-          owner: random,
-          sender: random,
+          owner: buyer,
+          sender: buyer,
           asset: longPut.address,
           vaultId: vaultCounter,
           amount: createScaledUint256(optionsAmount, 18),
@@ -153,8 +156,8 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, ran
         },
         {
           actionType: ActionType.DepositCollateral,
-          owner: random,
-          sender: random,
+          owner: buyer,
+          sender: buyer,
           asset: usdc.address,
           vaultId: vaultCounter,
           amount: createScaledUint256(collateralToMintLong, (await usdc.decimals()).toNumber()),
@@ -163,10 +166,10 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, ran
         },
       ]
 
-      await controller.operate(actionArgs, {from: random})
+      await controller.operate(actionArgs, {from: buyer})
 
-      // random sells their long put option to owner
-      longPut.transfer(random, createScaledUint256(optionsAmount, 18), {from: accountOwner1})
+      // buyer sells their long put option to owner
+      longPut.transfer(buyer, createScaledUint256(optionsAmount, 18), {from: accountOwner1})
     })
     it('Seller should be able to open a short put spread', async () => {
       // Keep track of balances before
@@ -326,6 +329,8 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, ran
         createScaledUint256(optionsAmount, 18),
         'Incorrect amount of long options stored in the vault',
       )
+
+      await reverter.snapshot()
     })
 
     it('deposit more collateral into the safe vault', async () => {
@@ -506,13 +511,13 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, ran
     xit('should be able to transfer long otokens to another address', async () => {
       // keep track of balances
       const ownerShortOtokenBalanceBeforeSell = new BigNumber(await shortPut.balanceOf(accountOwner1))
-      const buyerBalanceBeforeSell = new BigNumber(await shortPut.balanceOf(random))
+      const buyerBalanceBeforeSell = new BigNumber(await shortPut.balanceOf(buyer))
 
       // owner sells their put option
-      shortPut.transfer(random, createScaledUint256(optionsAmount, 18), {from: accountOwner1})
+      shortPut.transfer(buyer, createScaledUint256(optionsAmount, 18), {from: accountOwner1})
 
       const ownerShortOtokenBalanceAfterSell = new BigNumber(await shortPut.balanceOf(accountOwner1))
-      const buyerBalanceAfterSell = new BigNumber(await shortPut.balanceOf(random))
+      const buyerBalanceAfterSell = new BigNumber(await shortPut.balanceOf(buyer))
 
       assert.equal(
         ownerShortOtokenBalanceBeforeSell.minus(createScaledUint256(optionsAmount, 18)).toString(),
@@ -524,7 +529,7 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, ran
       )
 
       // owner buys back their put option
-      shortPut.transfer(accountOwner1, createScaledUint256(optionsAmount, 18), {from: random})
+      shortPut.transfer(accountOwner1, createScaledUint256(optionsAmount, 18), {from: buyer})
     })
 
     it('should be able to close out the short spread position', async () => {
@@ -652,6 +657,306 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, ran
         'Incorrect amount of collateral stored in the vault',
       )
       assert.equal(vaultAfter.longAmounts[0].toString(), '0', 'Incorrect amount of long stored in the vault')
+    })
+  })
+
+  describe('Integration test: Sell a naked short put and close it after expiry', () => {
+    describe('OTM Tests', async () => {
+      before('revert to state where options have been created', async () => {
+        await reverter.revert()
+      })
+
+      it('Seller: close an OTM position after expiry', async () => {
+        // Set the oracle price
+        if ((await time.latest()) < expiry) {
+          await time.increaseTo(expiry + 2)
+        }
+        await oracle.setIsFinalized(weth.address, expiry, true)
+        const strikePriceChange = 100
+        const expirySpotPrice = shortStrike + strikePriceChange
+        await oracle.setExpiryPrice(weth.address, expiry, createScaledUint256(expirySpotPrice, 18))
+
+        // Keep track of balances before
+        const ownerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
+        const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const ownerOtokenBalanceBefore = new BigNumber(await shortPut.balanceOf(accountOwner1))
+        const marginPoolOtokenSupplyBefore = new BigNumber(await shortPut.totalSupply())
+
+        // Check that we start at a valid state
+        const vaultBefore = await controller.getVault(accountOwner1, vaultCounter)
+        const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore)
+        assert.equal(vaultStateBefore[0].toString(), '0')
+        assert.equal(vaultStateBefore[1], true)
+
+        const actionArgs = [
+          {
+            actionType: ActionType.SettleVault,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: ZERO_ADDR,
+            vaultId: vaultCounter,
+            amount: '0',
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        await controller.operate(actionArgs, {from: accountOwner1})
+
+        // keep track of balances after
+        const ownerUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
+        const marginPoolUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+
+        const ownerOtokenBalanceAfter = new BigNumber(await shortPut.balanceOf(accountOwner1))
+        const marginPoolOtokenSupplyAfter = new BigNumber(await shortPut.totalSupply())
+
+        // check balances before and after changed as expected
+        assert.equal(
+          ownerUsdcBalanceBefore
+            .plus(createScaledUint256(collateralAmount, (await usdc.decimals()).toNumber()))
+            .toString(),
+          ownerUsdcBalanceAfter.toString(),
+        )
+        assert.equal(
+          marginPoolUsdcBalanceBefore
+            .minus(createScaledUint256(collateralAmount, (await usdc.decimals()).toNumber()))
+            .toString(),
+          marginPoolUsdcBalanceAfter.toString(),
+        )
+        assert.equal(ownerOtokenBalanceBefore.toString(), ownerOtokenBalanceAfter.toString())
+        assert.equal(marginPoolOtokenSupplyBefore.toString(), marginPoolOtokenSupplyAfter.toString())
+
+        // Check that we end at a valid state
+        const vaultAfter = await controller.getVault(accountOwner1, vaultCounter)
+        const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
+        assert.equal(vaultStateAfter[0].toString(), '0')
+        assert.equal(vaultStateAfter[1], true)
+
+        // Check the vault balances stored in the contract
+        assert.equal(vaultAfter.shortOtokens.length, 1, 'Length of the short otoken array in the vault is incorrect')
+        assert.equal(vaultAfter.collateralAssets.length, 1, 'Length of the collateral array in the vault is incorrect')
+        assert.equal(vaultAfter.longOtokens.length, 1, 'Length of the long otoken array in the vault is incorrect')
+
+        assert.equal(vaultAfter.shortOtokens[0], ZERO_ADDR, 'Incorrect short otoken in the vault')
+        assert.equal(vaultAfter.longOtokens[0], ZERO_ADDR, 'Incorrect long otoken in the vault')
+        assert.equal(vaultAfter.collateralAssets[0], ZERO_ADDR, 'Incorrect collateral asset in the vault')
+
+        assert.equal(vaultAfter.shortAmounts.length, 1, 'Length of the short amounts array in the vault is incorrect')
+        assert.equal(
+          vaultAfter.collateralAmounts.length,
+          1,
+          'Length of the collateral amounts array in the vault is incorrect',
+        )
+        assert.equal(vaultAfter.longAmounts.length, 1, 'Length of the long amounts array in the vault is incorrect')
+
+        assert.equal(vaultAfter.shortAmounts[0].toString(), '0', 'Incorrect amount of short stored in the vault')
+        assert.equal(
+          vaultAfter.collateralAmounts[0].toString(),
+          '0',
+          'Incorrect amount of collateral stored in the vault',
+        )
+        assert.equal(vaultAfter.longAmounts[0].toString(), '0', 'Incorrect amount of long stored in the vault')
+      })
+
+      xit('Buyer: exercise OTM put option after expiry', async () => {
+        // owner sells their put option
+        shortPut.transfer(buyer, createScaledUint256(optionsAmount, 18), {from: accountOwner1})
+
+        // Keep track of balances before
+        const ownerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(buyer))
+        const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const ownerOtokenBalanceBefore = new BigNumber(await shortPut.balanceOf(buyer))
+        const marginPoolOtokenSupplyBefore = new BigNumber(await shortPut.totalSupply())
+
+        const actionArgs = [
+          {
+            actionType: ActionType.Exercise,
+            owner: buyer,
+            sender: buyer,
+            asset: shortPut.address,
+            vaultId: '0',
+            amount: createScaledUint256(optionsAmount, 18),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        await shortPut.approve(marginPool.address, createScaledUint256(optionsAmount, 18), {from: buyer})
+        await controller.operate(actionArgs, {from: buyer})
+
+        // keep track of balances after
+        const ownerUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(buyer))
+        const marginPoolUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const ownerOtokenBalanceAfter = new BigNumber(await shortPut.balanceOf(buyer))
+        const marginPoolOtokenSupplyAfter = new BigNumber(await shortPut.totalSupply())
+
+        // check balances before and after changed as expected
+        assert.equal(ownerUsdcBalanceBefore.toString(), ownerUsdcBalanceAfter.toString())
+        assert.equal(marginPoolUsdcBalanceBefore.toString(), marginPoolUsdcBalanceAfter.toString())
+        assert.equal(
+          ownerOtokenBalanceBefore.minus(createScaledUint256(optionsAmount, 18)).toString(),
+          ownerOtokenBalanceAfter.toString(),
+        )
+        assert.equal(
+          marginPoolOtokenSupplyBefore.minus(createScaledUint256(optionsAmount, 18)).toString(),
+          marginPoolOtokenSupplyAfter.toString(),
+        )
+      })
+    })
+
+    describe('ITM Tests', async () => {
+      before('revert to state where options have been created', async () => {
+        await reverter.revert()
+      })
+
+      it('Seller: close an ITM position after expiry', async () => {
+        // Set the oracle price
+        if ((await time.latest()) < expiry) {
+          await time.increaseTo(expiry + 2)
+        }
+        await oracle.setIsFinalized(weth.address, expiry, true)
+        const strikePriceChange = 50
+        const expirySpotPrice = shortStrike - strikePriceChange
+        await oracle.setExpiryPrice(weth.address, expiry, createScaledUint256(expirySpotPrice, 18))
+
+        // Keep track of balances before
+        const ownerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
+        const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const ownerOtokenBalanceBefore = new BigNumber(await shortPut.balanceOf(accountOwner1))
+        const marginPoolOtokenSupplyBefore = new BigNumber(await shortPut.totalSupply())
+
+        // Check that we start at a valid state
+        const vaultBefore = await controller.getVault(accountOwner1, vaultCounter)
+        const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore)
+        assert.equal(vaultStateBefore[0].toString(), '0')
+        assert.equal(vaultStateBefore[1], true)
+
+        const actionArgs = [
+          {
+            actionType: ActionType.SettleVault,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: ZERO_ADDR,
+            vaultId: vaultCounter,
+            amount: '0',
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        await controller.operate(actionArgs, {from: accountOwner1})
+
+        // keep track of balances after
+        const ownerUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
+        const marginPoolUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+
+        const ownerOtokenBalanceAfter = new BigNumber(await shortPut.balanceOf(accountOwner1))
+        const marginPoolOtokenSupplyAfter = new BigNumber(await shortPut.totalSupply())
+
+        const collateralPayout = Math.max(collateralAmount - strikePriceChange * optionsAmount, 0)
+
+        // check balances before and after changed as expected
+        assert.equal(
+          ownerUsdcBalanceBefore
+            .plus(createScaledUint256(collateralPayout, (await usdc.decimals()).toNumber()))
+            .toString(),
+          ownerUsdcBalanceAfter.toString(),
+        )
+        assert.equal(
+          marginPoolUsdcBalanceBefore
+            .minus(createScaledUint256(collateralPayout, (await usdc.decimals()).toNumber()))
+            .toString(),
+          marginPoolUsdcBalanceAfter.toString(),
+        )
+        assert.equal(ownerOtokenBalanceBefore.toString(), ownerOtokenBalanceAfter.toString())
+        assert.equal(marginPoolOtokenSupplyBefore.toString(), marginPoolOtokenSupplyAfter.toString())
+
+        // Check that we end at a valid state
+        const vaultAfter = await controller.getVault(accountOwner1, vaultCounter)
+        const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
+        assert.equal(vaultStateAfter[0].toString(), '0')
+        assert.equal(vaultStateAfter[1], true)
+
+        // Check the vault balances stored in the contract
+        assert.equal(vaultAfter.shortOtokens.length, 1, 'Length of the short otoken array in the vault is incorrect')
+        assert.equal(vaultAfter.collateralAssets.length, 1, 'Length of the collateral array in the vault is incorrect')
+        assert.equal(vaultAfter.longOtokens.length, 1, 'Length of the long otoken array in the vault is incorrect')
+
+        assert.equal(vaultAfter.shortOtokens[0], ZERO_ADDR, 'Incorrect short otoken in the vault')
+        assert.equal(vaultAfter.longOtokens[0], ZERO_ADDR, 'Incorrect long otoken in the vault')
+        assert.equal(vaultAfter.collateralAssets[0], ZERO_ADDR, 'Incorrect collateral asset in the vault')
+
+        assert.equal(vaultAfter.shortAmounts.length, 1, 'Length of the short amounts array in the vault is incorrect')
+        assert.equal(
+          vaultAfter.collateralAmounts.length,
+          1,
+          'Length of the collateral amounts array in the vault is incorrect',
+        )
+        assert.equal(vaultAfter.longAmounts.length, 1, 'Length of the long amounts array in the vault is incorrect')
+
+        assert.equal(vaultAfter.shortAmounts[0].toString(), '0', 'Incorrect amount of short stored in the vault')
+        assert.equal(
+          vaultAfter.collateralAmounts[0].toString(),
+          '0',
+          'Incorrect amount of collateral stored in the vault',
+        )
+        assert.equal(vaultAfter.longAmounts[0].toString(), '0', 'Incorrect amount of long stored in the vault')
+      })
+
+      xit('Buyer: exercise ITM put option after expiry', async () => {
+        // owner sells their put option
+        shortPut.transfer(buyer, createScaledUint256(optionsAmount, 18), {from: accountOwner1})
+        // oracle orice decreases
+        const strikePriceChange = 50
+
+        // Keep track of balances before
+        const ownerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(buyer))
+        const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const ownerOtokenBalanceBefore = new BigNumber(await shortPut.balanceOf(buyer))
+        const marginPoolOtokenSupplyBefore = new BigNumber(await shortPut.totalSupply())
+
+        const actionArgs = [
+          {
+            actionType: ActionType.Exercise,
+            owner: buyer,
+            sender: buyer,
+            asset: shortPut.address,
+            vaultId: '0',
+            amount: createScaledUint256(optionsAmount, 18),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        await shortPut.approve(marginPool.address, createScaledUint256(optionsAmount, 18), {from: buyer})
+        await controller.operate(actionArgs, {from: buyer})
+
+        // keep track of balances after
+        const ownerUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(buyer))
+        const marginPoolUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const ownerOtokenBalanceAfter = new BigNumber(await shortPut.balanceOf(buyer))
+        const marginPoolOtokenSupplyAfter = new BigNumber(await shortPut.totalSupply())
+
+        const payout = strikePriceChange * optionsAmount
+
+        // check balances before and after changed as expected
+        assert.equal(
+          ownerUsdcBalanceBefore.plus(createScaledUint256(payout, (await usdc.decimals()).toNumber())).toString(),
+          ownerUsdcBalanceAfter.toString(),
+        )
+        assert.equal(
+          marginPoolUsdcBalanceBefore.minus(createScaledUint256(payout, (await usdc.decimals()).toNumber())).toString(),
+          marginPoolUsdcBalanceAfter.toString(),
+        )
+        assert.equal(
+          ownerOtokenBalanceBefore.minus(createScaledUint256(optionsAmount, 18)).toString(),
+          ownerOtokenBalanceAfter.toString(),
+        )
+        assert.equal(
+          marginPoolOtokenSupplyBefore.minus(createScaledUint256(optionsAmount, 18)).toString(),
+          marginPoolOtokenSupplyAfter.toString(),
+        )
+      })
     })
   })
 })
