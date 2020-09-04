@@ -427,7 +427,7 @@ contract Controller is ReentrancyGuard, Ownable {
 
     /**
      * @notice withdraw collateral asset from vault
-     * @dev only account owner or operator can withdraw long option from vault
+     * @dev only account owner or operator can withdraw collateral option from vault
      * @param _args WithdrawArgs structure
      */
     function _withdrawCollateral(Actions.WithdrawArgs memory _args)
@@ -461,7 +461,7 @@ contract Controller is ReentrancyGuard, Ownable {
 
     /**
      * @notice mint option into vault
-     * @dev only account owner or operator can withdraw long option from vault
+     * @dev only account owner or operator can mint short otoken into vault
      * @param _args MintArgs structure
      */
     function _mintOtoken(Actions.MintArgs memory _args)
