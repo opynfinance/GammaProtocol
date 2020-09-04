@@ -1,7 +1,7 @@
 import {
   MockERC20Instance,
   MarginCalculatorInstance,
-  AddressBookInstance,
+  MockAddressBookInstance,
   MockOracleInstance,
   OtokenInstance,
   ControllerInstance,
@@ -15,7 +15,7 @@ import BigNumber from 'bignumber.js'
 import Reverter from '../Reverter'
 
 const {expectRevert, time} = require('@openzeppelin/test-helpers')
-const AddressBook = artifacts.require('AddressBook.sol')
+const AddressBook = artifacts.require('MockAddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const Otoken = artifacts.require('Otoken.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
@@ -43,7 +43,7 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, buye
 
   let expiry: number
 
-  let addressBook: AddressBookInstance
+  let addressBook: MockAddressBookInstance
   let calculator: MarginCalculatorInstance
   let controller: ControllerInstance
   let marginPool: MarginPoolInstance
@@ -66,7 +66,7 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, buye
 
   before('set up contracts', async () => {
     const now = (await time.latest()).toNumber()
-    expiry = now + time.duration.days(30).toNumber()
+    expiry = now + time.duration.days(500).toNumber()
 
     // initiate addressbook first.
     addressBook = await AddressBook.new()
@@ -83,16 +83,17 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, buye
     whitelist = await MockWhitelist.new()
 
     // setup usdc and weth
-    usdc = await MockERC20.new('USDC', 'USDC', 6)
+    // TODO: make usdc 18
+    usdc = await MockERC20.new('USDC', 'USDC', 18)
     dai = await MockERC20.new('DAI', 'DAI', 18)
     weth = await MockERC20.new('WETH', 'WETH', 18)
 
     // TODO: setup address book
-    // await addressBook.setOracle(oracle.address)
-    // await addressBook.setController(controller.address)
-    // await addressBook.setMarginCalculator(calculator.address)
-    // await addressBook.setWhitelist(whitelist.address)
-    // await addressBook.setMarginPool(marginPool.address)
+    await addressBook.setOracle(oracle.address)
+    await addressBook.setController(controller.address)
+    await addressBook.setMarginCalculator(calculator.address)
+    await addressBook.setWhitelist(whitelist.address)
+    await addressBook.setMarginPool(marginPool.address)
 
     ethCall = await Otoken.new()
     await ethCall.init(
@@ -104,6 +105,10 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, buye
       expiry,
       false,
     )
+
+    // setup the whitelist module
+    await whitelist.whitelistOtoken(ethCall.address)
+    await whitelist.whitelistCollateral(weth.address)
 
     // mint weth to user
     weth.mint(accountOwner1, createScaledUint256(2 * collateralAmount, (await weth.decimals()).toNumber()))
@@ -405,7 +410,7 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, buye
       await expectRevert.unspecified(controller.operate(actionArgs, {from: accountOwner1}))
     })
 
-    xit('should be able to transfer long otokens to another address', async () => {
+    it('should be able to transfer long otokens to another address', async () => {
       // keep track of balances
       const ownerOtokenBalanceBeforeSell = new BigNumber(await ethCall.balanceOf(accountOwner1))
       const buyerBalanceBeforeSell = new BigNumber(await ethCall.balanceOf(buyer))
@@ -429,7 +434,7 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, buye
       ethCall.transfer(accountOwner1, createScaledUint256(optionsAmount, 18), {from: buyer})
     })
 
-    it('should be able to close out the short position', async () => {
+    xit('should be able to close out the short position', async () => {
       // Keep track of balances before
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
@@ -533,7 +538,7 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, buye
         await reverter.revert()
       })
 
-      it('Seller: close an OTM position after expiry', async () => {
+      xit('Seller: close an OTM position after expiry', async () => {
         // Set the oracle price
         if ((await time.latest()) < expiry) {
           await time.increaseTo(expiry + 2)
@@ -674,7 +679,7 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, buye
         await reverter.revert()
       })
 
-      it('Seller: close an ITM position after expiry', async () => {
+      xit('Seller: close an ITM position after expiry', async () => {
         // Set the oracle price
         if ((await time.latest()) < expiry) {
           await time.increaseTo(expiry + 2)
