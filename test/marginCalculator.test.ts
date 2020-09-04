@@ -5,6 +5,7 @@ import {
   MockOracleInstance,
   MockOtokenInstance,
 } from '../build/types/truffle-types'
+import BigNumber from 'bignumber.js'
 import {createVault, createScaledNumber as scaleNum, createTokenAmount} from './utils'
 import {assert} from 'chai'
 
@@ -594,6 +595,15 @@ contract('MarginCalculator', () => {
         const collateralAmount = createTokenAmount(350, rtokenDecimals)
         const expectOutPut = createTokenAmount(50, rtokenDecimals)
         const vault = createVault(put.address, undefined, rusd.address, amountOne, undefined, collateralAmount)
+        const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
+        assert.equal(isExcess, true)
+        assert.equal(netValue.toString(), expectOutPut.toString())
+      })
+
+      it('(4) Short: 1 unit 300 put, collateral: 35001 rUSDC => excess: 5000', async () => {
+        const collateralAmount = 35001 // 350.01 1e-18
+        const expectOutPut = 5000 // instead of 5001
+        const vault = createVault(put.address, undefined, rusd.address, 1, undefined, collateralAmount)
         const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
         assert.equal(isExcess, true)
         assert.equal(netValue.toString(), expectOutPut.toString())
