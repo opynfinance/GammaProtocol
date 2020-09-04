@@ -93,6 +93,14 @@ contract Controller is ReentrancyGuard, Ownable {
         uint256 vaultId,
         uint256 amount
     );
+    /// @notice emits an event when a short otoken get burned from a vaukt
+    event ShortOtokenBurned(
+        address indexed otoken,
+        address indexed AccountOwner,
+        address indexed from,
+        uint256 vaultId,
+        uint256 amount
+    );
 
     /**
      * @notice modifier check if protocol is not paused
@@ -283,6 +291,8 @@ contract Controller is ReentrancyGuard, Ownable {
                 vault = _withdrawCollateral(Actions._parseWithdrawArgs(action));
             } else if (actionType == Actions.ActionType.MintShortOption) {
                 vault = _mintOtoken(Actions._parseMintArgs(action));
+            } else if (actionType == Actions.ActionType.BurnShortOption) {
+                vault = _burnOtoken(Actions._parseBurnArgs(action));
             }
         }
 
@@ -490,7 +500,24 @@ contract Controller is ReentrancyGuard, Ownable {
      * @dev only account owner or operator can withdraw long option from vault
      * @param _args MintArgs structure
      */
-    // function _burnOtoken(Actions.BurnArgs memory _args) internal {}
+    function _burnOtoken(Actions.BurnArgs memory _args)
+        internal
+        isAuthorized(msg.sender, _args.owner)
+        returns (MarginAccount.Vault memory)
+    {
+        require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+        require(_args.from == msg.sender, "Controller: minter address and msg.sender address mismatch");
+
+        vaults[_args.owner][_args.vaultId]._removeShort(_args.otoken, _args.amount, _args.index);
+
+        OtokenInterface otoken = OtokenInterface(_args.otoken);
+
+        otoken.burnOtoken(_args.from, _args.amount);
+
+        emit ShortOtokenBurned(_args.otoken, _args.owner, _args.from, _args.vaultId, _args.amount);
+
+        return vaults[_args.owner][_args.vaultId];
+    }
 
     /**
      * @notice exercise option
