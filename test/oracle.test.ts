@@ -63,7 +63,7 @@ contract('Oracle', ([owner, disputer, random, collateral, strike]) => {
       )
     })
 
-    it('should set batch oracle', async () => {
+    it('should set asset pricer', async () => {
       await oracle.setAssetPricer(weth.address, wethPricer.address, {from: owner})
 
       assert.equal(await oracle.getPricer(weth.address), wethPricer.address, 'batch oracle address mismatch')
