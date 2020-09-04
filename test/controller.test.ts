@@ -1576,7 +1576,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
         )
       })
 
-      it('mint naked short otoken', async () => {
+      it('mint naked short otoken from owner', async () => {
         const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
         assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
@@ -1659,6 +1659,89 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
         )
       })
 
+      it('mint naked short otoken from operator', async () => {
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+        const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e18)
+        const amountToMint = new BigNumber('1')
+        const actionArgs = [
+          {
+            actionType: ActionType.MintShortOption,
+            owner: accountOwner1,
+            sender: accountOperator1,
+            asset: shortOtoken.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: amountToMint.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.DepositCollateral,
+            owner: accountOwner1,
+            sender: accountOperator1,
+            asset: usdc.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToDeposit.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOperator1))
+        const senderShortBalanceBefore = new BigNumber(await shortOtoken.balanceOf(accountOperator1))
+        const vaultBefore = await controller.getVault(accountOwner1, vaultCounter)
+
+        await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOperator1})
+        await controller.operate(actionArgs, {from: accountOperator1})
+
+        const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOperator1))
+        const senderShortBalanceAfter = new BigNumber(await shortOtoken.balanceOf(accountOperator1))
+        const vaultAfter = await controller.getVault(accountOwner1, vaultCounter)
+
+        assert.equal(
+          marginPoolBalanceAfter.minus(marginPoolBalanceBefore).toString(),
+          collateralToDeposit.toString(),
+          'Margin pool collateral asset balance mismatch',
+        )
+        assert.equal(
+          senderBalanceBefore.minus(senderBalanceAfter).toString(),
+          collateralToDeposit.toString(),
+          'Sender collateral asset balance mismatch',
+        )
+        assert.equal(vaultAfter.collateralAssets.length, 1, 'Vault collateral asset array length mismatch')
+        assert.equal(vaultAfter.shortOtokens.length, 1, 'Vault short otoken array length mismatch')
+        assert.equal(
+          vaultAfter.collateralAssets[0],
+          usdc.address,
+          'Collateral asset address deposited into vault mismatch',
+        )
+        assert.equal(
+          vaultAfter.shortOtokens[0],
+          shortOtoken.address,
+          'Short otoken address deposited into vault mismatch',
+        )
+        assert.equal(
+          senderShortBalanceAfter.minus(senderShortBalanceBefore).toString(),
+          amountToMint.toString(),
+          'Short otoken amount minted mismatch',
+        )
+        assert.equal(
+          new BigNumber(vaultAfter.collateralAmounts[0])
+            .minus(new BigNumber(vaultBefore.collateralAmounts[0]))
+            .toString(),
+          collateralToDeposit.toString(),
+          'Collateral asset amount deposited into vault mismatch',
+        )
+        assert.equal(
+          new BigNumber(vaultAfter.shortAmounts[0]).minus(new BigNumber(vaultBefore.shortAmounts[0])).toString(),
+          amountToMint.toString(),
+          'Short otoken amount minted into vault mismatch',
+        )
+      })
+
       it('should revert withdrawing collateral from naked short position when net value is equal to zero', async () => {
         const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
         assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
@@ -1688,6 +1771,124 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
         await expectRevert(
           controller.operate(actionArgs, {from: accountOwner1}),
           'Controller: invalid final vault state',
+        )
+      })
+
+      it('should withdraw exceeded collateral from naked short position when net value ', async () => {
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+        // deposit more collateral
+        const excessCollateralToDeposit = new BigNumber('50')
+        const firstActionArgs = [
+          {
+            actionType: ActionType.DepositCollateral,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: usdc.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: excessCollateralToDeposit.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+        await usdc.approve(marginPool.address, excessCollateralToDeposit, {from: accountOwner1})
+        await controller.operate(firstActionArgs, {from: accountOwner1})
+
+        const vaultBefore = await controller.getVault(accountOwner1, vaultCounter)
+        const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const withdrawerBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
+
+        const netValue = (await calculator.getExcessCollateral(vaultBefore))[0]
+        const isExcess = (await calculator.getExcessCollateral(vaultBefore))[1]
+
+        assert.equal(netValue.toString(), excessCollateralToDeposit.toString(), 'Position net value mistmatch')
+        assert.equal(isExcess, true, 'Position collateral excess mismatch')
+
+        const secondActionArgs = [
+          {
+            actionType: ActionType.WithdrawCollateral,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: usdc.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: excessCollateralToDeposit.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        controller.operate(secondActionArgs, {from: accountOwner1})
+
+        const vaultAfter = await controller.getVault(accountOwner1, vaultCounter)
+        const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const withdrawerBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
+
+        assert.equal(
+          marginPoolBalanceBefore.minus(marginPoolBalanceAfter).toString(),
+          excessCollateralToDeposit.toString(),
+          'Margin pool collateral asset balance mismatch',
+        )
+        assert.equal(
+          withdrawerBalanceAfter.minus(withdrawerBalanceBefore).toString(),
+          excessCollateralToDeposit.toString(),
+          'Receiver collateral asset balance mismatch',
+        )
+        assert.equal(vaultAfter.collateralAssets.length, 1, 'Vault collateral asset array length mismatch')
+        assert.equal(
+          new BigNumber(vaultBefore.collateralAmounts[0])
+            .minus(new BigNumber(vaultAfter.collateralAmounts[0]))
+            .toString(),
+          excessCollateralToDeposit.toString(),
+          'Collateral asset amount in vault after withdraw mismatch',
+        )
+      })
+
+      it('should revert when vault have more than 1 short otoken', async () => {
+        const expiryTime = new BigNumber(60 * 60 * 24) // after 1 day
+        const invalidShortOtoken: MockOtokenInstance = await MockOtoken.new()
+        await invalidShortOtoken.init(
+          addressBook.address,
+          weth.address,
+          usdc.address,
+          usdc.address,
+          new BigNumber(250).times(new BigNumber(10).exponentiatedBy(18)),
+          new BigNumber(await time.latest()).plus(expiryTime),
+          true,
+        )
+
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+        const collateralToDeposit = new BigNumber(await invalidShortOtoken.strikePrice()).dividedBy(1e18)
+        const amountToMint = new BigNumber('1')
+        const actionArgs = [
+          {
+            actionType: ActionType.DepositCollateral,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: usdc.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToDeposit.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.MintShortOption,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: invalidShortOtoken.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: amountToMint.toNumber(),
+            index: '1',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
+        await expectRevert(
+          controller.operate(actionArgs, {from: accountOwner1}),
+          'MarginCalculator: Too many short otokens in the vault.',
         )
       })
     })
