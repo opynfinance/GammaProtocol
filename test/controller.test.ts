@@ -1774,7 +1774,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
         )
       })
 
-      it('should withdraw exceeded collateral from naked short position when net value ', async () => {
+      it('should withdraw exceeded collateral from naked short position when net value > 0 ', async () => {
         const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
         assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
