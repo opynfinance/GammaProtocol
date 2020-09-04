@@ -232,6 +232,21 @@ contract('MarginCalculator', () => {
         )
       })
 
+      it('Should revert when collateral assets is different from short.collateral', async () => {
+        const vault = createVault(
+          eth100Put.address,
+          undefined,
+          weth.address,
+          scaleNum(1),
+          undefined,
+          createTokenAmount(100, wethDecimals),
+        )
+        await expectRevert(
+          calculator.getExcessCollateral(vault),
+          'MarginCalculator: collateral asset not marginable for short asset',
+        )
+      })
+
       it("Should return collateral amount if there's no short.", async () => {
         const collateralAmount = createTokenAmount(100, usdcDecimals)
         const vault = createVault(undefined, undefined, usdc.address, undefined, undefined, collateralAmount)

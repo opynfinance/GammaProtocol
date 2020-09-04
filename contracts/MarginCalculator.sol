@@ -65,6 +65,8 @@ contract MarginCalculator is Initializable {
         require(_isMarginableCollateral(_vault), "MarginCalculator: collateral asset not marginable for short asset");
         // ensure the long asset is valid for the short asset.
         require(_isMarginableLong(_vault), "MarginCalculator: long asset not marginable for short asset");
+        // ensure that the collateral asset is valid for the short asset
+        require(_isMarginableCollateral(_vault), "MarginCalculator: collateral asset not marginable for short asset");
 
         bool hasCollateral = !_isEmptyAssetArray(_vault.collateralAssets);
 
@@ -276,6 +278,20 @@ contract MarginCalculator is Initializable {
     }
 
     /**
+     * @dev if there is a short option in the vault, ensure that the collateral asset being used is a valid margin.
+     * @param _vault the vault to check.
+     */
+    function _isMarginableCollateral(MarginAccount.Vault memory _vault) internal view returns (bool) {
+        if (_isEmptyAssetArray(_vault.collateralAssets) || _isEmptyAssetArray(_vault.shortOtokens)) return true;
+
+        OtokenInterface short = OtokenInterface(_vault.shortOtokens[0]);
+
+        bool isMarginable = short.collateralAsset() == _vault.collateralAssets[0];
+
+        return isMarginable;
+    }
+
+    /**
      * @dev if there is a short option in the vault, ensure that the long option series being used is a valid margin.
      * @param _vault the vault to check.
      */
@@ -374,6 +390,8 @@ contract MarginCalculator is Initializable {
      *      Input:  8000000 USDC =>     Output: 8 * 1e18 (8.0 USDC)
      * (2)  cUSDC   decimals = 8
      *      Input:  8000000 cUSDC =>    Output: 8 * 1e16 (0.08 cUSDC)
+     * (3)  rUSD    decimals = 20 (random USD)
+     *      Input:  15                    =>   Output:  0       rUSDC
      * @return internal amount that is sacled by 1e18.
      */
 
@@ -395,9 +413,11 @@ contract MarginCalculator is Initializable {
      * @dev convert an internal amount (1e18) to native token amount
      * Examples:
      * (1)  USDC    decimals = 6
-     *      Input:  8 * 1e18 (8.0 USDC) =>     Output:  8000000 USDC
+     *      Input:  8 * 1e18 (8.0 USDC)   =>   Output:  8000000 USDC
      * (2)  cUSDC   decimals = 8
      *      Input:  8 * 1e16 (0.08 cUSDC) =>   Output:  8000000 cUSDC
+     * (3)  rUSD    decimals = 20 (random USD)
+     *      Input:  1                    =>    Output:  100     rUSDC
      * @return token amount in its native form.
      */
     function _inernalAmountToTokenAmount(uint256 _amount, address _token) internal view returns (uint256) {
