@@ -22,7 +22,7 @@ const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
  */
 const toChainLinkPrice = (num: number) => new BigNumber(num).times(1e8).integerValue()
 
-contract('ChainlinkPricer', () => {
+contract('ChainlinkPricer', ([owner, random]) => {
   let wethAggregator: MockChainlinkAggregatorInstance
   let oracle: MockOracleInstance
   let weth: MockERC20Instance
@@ -31,7 +31,7 @@ contract('ChainlinkPricer', () => {
 
   before('Deployment', async () => {
     // deploy mock contracts
-    oracle = await MockOracle.new()
+    oracle = await MockOracle.new({from: owner})
     wethAggregator = await MockChainlinkAggregator.new()
     weth = await MockERC20.new('WETH', 'WETH', 18)
     //
@@ -125,7 +125,7 @@ contract('ChainlinkPricer', () => {
     it('everyone can set an price oracle', async () => {
       const expiryTimestamp = (t1 + t2) / 2 // between t1 and t2
       const roundId = 2
-      await pricer.setExpiryPriceToOralce(expiryTimestamp, roundId)
+      await pricer.setExpiryPriceToOralce(expiryTimestamp, roundId, {from: random})
       const priceFromOracle = await oracle.getExpiryPrice(weth.address, expiryTimestamp)
       assert.equal(p2.toString(), priceFromOracle[0].toString())
     })
