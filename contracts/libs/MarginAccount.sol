@@ -41,6 +41,8 @@ library MarginAccount {
         uint256 _amount,
         uint256 _index
     ) internal {
+        require(_amount > 0, "MarginAccount: invalid short otoken amount");
+
         // Valid indexes in any array are between 0 and array.length - 1.
         // If adding amount into an existant short otoken, make sure _index in the range of 0->length-1
         if ((_index >= _vault.shortOtokens.length) && ((_index >= _vault.shortAmounts.length))) {
