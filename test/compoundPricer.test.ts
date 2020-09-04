@@ -36,33 +36,42 @@ const underlyingPriceToCtokenPrice = async (
 contract('CompoundPricer', ([owner, random]) => {
   let oracle: MockOracleInstance
   let weth: MockERC20Instance
+  let usdc: MockERC20Instance
   let cETH: MockCTokenInstance
-  let chainlinkPricer: MockPricerInstance
-  let compoundPricer: CompoundPricerInstance
-  // mock contracts
+  let cUSDC: MockCTokenInstance
+  // old pricer
+  let wethPricer: MockPricerInstance
+  let usdcPricer: MockPricerInstance
+  // compound pricer
+  let cethPricer: CompoundPricerInstance
+  let cusdcPricer: CompoundPricerInstance
 
   before('Deployment', async () => {
     // deploy mock contracts
     oracle = await MockOracle.new({from: owner})
     weth = await MockERC20.new('WETH', 'WETH', 18)
+    usdc = await MockERC20.new('USDC', 'USDC', 6)
     cETH = await MockCToken.new('CETH', 'CETH')
-    //
-    chainlinkPricer = await MockPricer.new(weth.address, oracle.address)
+    cUSDC = await MockCToken.new('cUSDC', 'cUSDC')
+    // mock underlying pricers
+    wethPricer = await MockPricer.new(weth.address, oracle.address)
+    usdcPricer = await MockPricer.new(usdc.address, oracle.address)
   })
 
   describe('constructor', () => {
     it('should deploy the contract successfully', async () => {
-      compoundPricer = await CompoundPricer.new(cETH.address, weth.address, chainlinkPricer.address, oracle.address)
+      cethPricer = await CompoundPricer.new(cETH.address, weth.address, wethPricer.address, oracle.address)
+      cusdcPricer = await CompoundPricer.new(cUSDC.address, usdc.address, usdcPricer.address, oracle.address)
     })
     it('should revert if initializing with cToken = 0', async () => {
       await expectRevert(
-        CompoundPricer.new(ZERO_ADDR, weth.address, chainlinkPricer.address, oracle.address),
+        CompoundPricer.new(ZERO_ADDR, weth.address, wethPricer.address, oracle.address),
         'CompoundPricer: cToken address can not be 0',
       )
     })
     it('should revert if initializing with underlying = 0 address', async () => {
       await expectRevert(
-        CompoundPricer.new(cETH.address, ZERO_ADDR, chainlinkPricer.address, oracle.address),
+        CompoundPricer.new(cETH.address, ZERO_ADDR, wethPricer.address, oracle.address),
         'CompoundPricer: underlying address can not be 0',
       )
     })
@@ -74,7 +83,7 @@ contract('CompoundPricer', ([owner, random]) => {
     })
     it('should revert if initializing with oracle = 0 address', async () => {
       await expectRevert(
-        CompoundPricer.new(cETH.address, weth.address, chainlinkPricer.address, ZERO_ADDR),
+        CompoundPricer.new(cETH.address, weth.address, wethPricer.address, ZERO_ADDR),
         'CompoundPricer: oracle address can not be 0',
       )
     })
@@ -84,12 +93,12 @@ contract('CompoundPricer', ([owner, random]) => {
     const ethPrice = createScaledNumber(470)
     const exchangeRate = new BigNumber('200192735438752381581313918')
     before('mock data in chainlink pricer and cToken', async () => {
-      await chainlinkPricer.setPrice(ethPrice)
+      await wethPricer.setPrice(ethPrice)
       await cETH.setExchangeRate(exchangeRate)
     })
     it('should return the price in 1e18', async () => {
       // how much 1e8 cToken worth in USD
-      const cTokenprice = await compoundPricer.getPrice()
+      const cTokenprice = await cethPricer.getPrice()
       const expectResult = await underlyingPriceToCtokenPrice(new BigNumber(ethPrice), exchangeRate, weth)
       assert.equal(cTokenprice.toString(), expectResult.toString())
       // hard coded answer
@@ -98,14 +107,14 @@ contract('CompoundPricer', ([owner, random]) => {
     })
     it('should return the new price after resetting answer in aggregator', async () => {
       const newPrice = createScaledNumber(500)
-      await chainlinkPricer.setPrice(newPrice)
-      const cTokenPrice = await compoundPricer.getPrice()
+      await wethPricer.setPrice(newPrice)
+      const cTokenPrice = await cethPricer.getPrice()
       const expectedResult = await underlyingPriceToCtokenPrice(new BigNumber(newPrice), exchangeRate, weth)
       assert.equal(cTokenPrice.toString(), expectedResult.toString())
     })
     it('should revert if price is lower than 0', async () => {
-      await chainlinkPricer.setPrice('0')
-      await expectRevert(compoundPricer.getPrice(), 'CompoundPricer: underlying price is 0')
+      await wethPricer.setPrice('0')
+      await expectRevert(cethPricer.getPrice(), 'CompoundPricer: underlying price is 0')
     })
   })
 
@@ -119,12 +128,12 @@ contract('CompoundPricer', ([owner, random]) => {
     })
 
     it("should revert if oracle don't have price of underlying yet", async () => {
-      await expectRevert(compoundPricer.setExpiryPriceToOralce(expiry), 'CompoundPricer: underlying price not set yet.')
+      await expectRevert(cethPricer.setExpiryPriceToOralce(expiry), 'CompoundPricer: underlying price not set yet.')
     })
 
     it('should set price successfully by arbitrary address', async () => {
       await oracle.setExpiryPrice(weth.address, expiry, ethPrice)
-      await compoundPricer.setExpiryPriceToOralce(expiry, {from: random})
+      await cethPricer.setExpiryPriceToOralce(expiry, {from: random})
       const [price] = await oracle.getExpiryPrice(cETH.address, expiry)
       const expectedResult = await underlyingPriceToCtokenPrice(ethPrice, exchangeRate, weth)
       assert.equal(price.toString(), expectedResult.toString())
