@@ -1,7 +1,7 @@
 import {
   MockERC20Instance,
   MarginCalculatorInstance,
-  AddressBookInstance,
+  MockAddressBookInstance,
   MockOracleInstance,
   OtokenInstance,
   ControllerInstance,
@@ -15,7 +15,7 @@ import BigNumber from 'bignumber.js'
 import Reverter from '../Reverter'
 
 const {expectRevert, time} = require('@openzeppelin/test-helpers')
-const AddressBook = artifacts.require('AddressBook.sol')
+const AddressBook = artifacts.require('MockAddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const Otoken = artifacts.require('Otoken.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
@@ -38,11 +38,11 @@ enum ActionType {
   Call,
 }
 
-contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buyer]) => {
+contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buyer, accountOwner2]) => {
   const reverter = new Reverter(web3)
   let expiry: number
 
-  let addressBook: AddressBookInstance
+  let addressBook: MockAddressBookInstance
   let calculator: MarginCalculatorInstance
   let controller: ControllerInstance
   let marginPool: MarginPoolInstance
@@ -85,16 +85,28 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buy
     whitelist = await MockWhitelist.new()
 
     // setup usdc and weth
-    usdc = await MockERC20.new('USDC', 'USDC', 6)
+    // TODO: make usdc 6 decimals
+    usdc = await MockERC20.new('USDC', 'USDC', 18)
     dai = await MockERC20.new('DAI', 'DAI', 18)
     weth = await MockERC20.new('WETH', 'WETH', 18)
 
     // TODO: setup address book
-    // await addressBook.setOracle(oracle.address)
-    // await addressBook.setController(controller.address)
-    // await addressBook.setMarginCalculator(calculator.address)
-    // await addressBook.setWhitelist(whitelist.address)
-    // await addressBook.setMarginPool(marginPool.address)
+    await addressBook.setOracle(oracle.address)
+    await addressBook.setController(controller.address)
+    await addressBook.setMarginCalculator(calculator.address)
+    await addressBook.setWhitelist(whitelist.address)
+    await addressBook.setMarginPool(marginPool.address)
+
+    longPut = await Otoken.new()
+    await longPut.init(
+      addressBook.address,
+      weth.address,
+      usdc.address,
+      usdc.address,
+      createScaledUint256(longStrike, 18),
+      expiry,
+      true,
+    )
 
     shortPut = await Otoken.new()
     await shortPut.init(
@@ -107,37 +119,34 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buy
       true,
     )
 
-    longPut = await Otoken.new()
-    await longPut.init(
-      addressBook.address,
-      weth.address,
-      usdc.address,
-      usdc.address,
-      createScaledUint256(shortStrike, 18),
-      expiry,
-      true,
-    )
+    // setup the whitelist module
+    await whitelist.whitelistOtoken(longPut.address)
+    await whitelist.whitelistOtoken(shortPut.address)
+    await whitelist.whitelistCollateral(usdc.address)
 
     // mint usdc to user
     usdc.mint(accountOwner1, createScaledUint256(2 * collateralAmount, (await usdc.decimals()).toNumber()))
+    usdc.mint(accountOwner2, createScaledUint256(longStrike * optionsAmount, (await usdc.decimals()).toNumber()))
     usdc.mint(buyer, createScaledUint256(longStrike * optionsAmount, (await usdc.decimals()).toNumber()))
 
     // have the user approve all the usdc transfers
     usdc.approve(marginPool.address, '10000000000000000000000', {from: accountOwner1})
-    usdc.approve(marginPool.address, '10000000000000000000000', {from: buyer})
+    usdc.approve(marginPool.address, '10000000000000000000000000000000000000000', {from: accountOwner2})
+    usdc.approve(marginPool.address, '10000000000000000000000000000', {from: buyer})
 
     const vaultCounterBefore = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
     vaultCounter = vaultCounterBefore.toNumber() + 1
   })
 
   describe('Integration test: Sell a short put spread and close it before expiry', () => {
-    before('Someone else mints the long option and sends it to the seller', async () => {
+    it('Someone else mints the long option and sends it to the seller', async () => {
       const collateralToMintLong = longStrike * optionsAmount
+
       const actionArgs = [
         {
           actionType: ActionType.OpenVault,
-          owner: buyer,
-          sender: buyer,
+          owner: accountOwner2,
+          sender: accountOwner2,
           asset: ZERO_ADDR,
           vaultId: vaultCounter,
           amount: '0',
@@ -146,8 +155,8 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buy
         },
         {
           actionType: ActionType.MintShortOption,
-          owner: buyer,
-          sender: buyer,
+          owner: accountOwner2,
+          sender: accountOwner2,
           asset: longPut.address,
           vaultId: vaultCounter,
           amount: createScaledUint256(optionsAmount, 18),
@@ -156,8 +165,8 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buy
         },
         {
           actionType: ActionType.DepositCollateral,
-          owner: buyer,
-          sender: buyer,
+          owner: accountOwner2,
+          sender: accountOwner2,
           asset: usdc.address,
           vaultId: vaultCounter,
           amount: createScaledUint256(collateralToMintLong, (await usdc.decimals()).toNumber()),
@@ -166,10 +175,10 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buy
         },
       ]
 
-      await controller.operate(actionArgs, {from: buyer})
+      await controller.operate(actionArgs, {from: accountOwner2})
 
       // buyer sells their long put option to owner
-      longPut.transfer(buyer, createScaledUint256(optionsAmount, 18), {from: accountOwner1})
+      longPut.transfer(accountOwner1, createScaledUint256(optionsAmount, 18), {from: accountOwner2})
     })
     it('Seller should be able to open a short put spread', async () => {
       // Keep track of balances before
@@ -508,7 +517,7 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buy
       await expectRevert.unspecified(controller.operate(actionArgs, {from: accountOwner1}))
     })
 
-    xit('should be able to transfer long otokens to another address', async () => {
+    it('should be able to transfer long otokens to another address', async () => {
       // keep track of balances
       const ownerShortOtokenBalanceBeforeSell = new BigNumber(await shortPut.balanceOf(accountOwner1))
       const buyerBalanceBeforeSell = new BigNumber(await shortPut.balanceOf(buyer))
@@ -532,7 +541,7 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buy
       shortPut.transfer(accountOwner1, createScaledUint256(optionsAmount, 18), {from: buyer})
     })
 
-    it('should be able to close out the short spread position', async () => {
+    xit('should be able to close out the short spread position', async () => {
       // Keep track of balances before
       const ownerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
       const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
