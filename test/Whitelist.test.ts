@@ -23,11 +23,11 @@ contract('Whitelist', ([owner, otokenFactoryAddress, random, newOwner]) => {
 
   before('Deployment', async () => {
     // deploy USDC token
-    usdc = await MockERC20.new('USDC', 'USDC')
+    usdc = await MockERC20.new('USDC', 'USDC', 6)
     // deploy DAI token
-    dai = await MockERC20.new('DAI', 'DAI')
+    dai = await MockERC20.new('DAI', 'DAI', 18)
     // deploy option
-    otoken = await MockERC20.new('OETH', 'OETH')
+    otoken = await MockERC20.new('OETH', 'OETH', 18)
 
     // deploy AddressBook mock
     addressBook = await MockAddressBook.new()

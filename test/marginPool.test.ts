@@ -29,15 +29,13 @@ contract('MarginPool', ([controllerAddress, user1, random]) => {
 
   before('Deployment', async () => {
     // deploy USDC token
-    usdc = await MockERC20.new('USDC', 'USDC')
+    usdc = await MockERC20.new('USDC', 'USDC', 8)
     // deploy WETH token for testing
     weth = await WETH9.new()
     // deploy AddressBook mock
     addressBook = await MockAddressBook.new()
     // set Controller module address
     await addressBook.setController(controllerAddress)
-    // set WETH address
-    await addressBook.setWeth(weth.address)
     // deploy MarginPool module
     marginPool = await MarginPool.new(addressBook.address)
 
@@ -45,7 +43,6 @@ contract('MarginPool', ([controllerAddress, user1, random]) => {
     await usdc.mint(user1, usdcToMint)
     // wrap ETH in Controller module level
     await weth.deposit({from: controllerAddress, value: wethToMint})
-    //await weth.withdraw(ether("5"), {from: controllerAddress});
 
     // controller approving infinite amount of WETH to pool
     await weth.approve(marginPool.address, wethToMint, {from: controllerAddress})
