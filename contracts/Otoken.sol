@@ -32,7 +32,7 @@ contract Otoken is ERC20Initializable {
     uint256 public strikePrice;
 
     /// @notice time of the option represented by unix timestamp
-    uint256 public expiry;
+    uint256 public expiryTimestamp;
 
     /// @notice is this a put option, if not it is a call
     bool public isPut;
@@ -62,7 +62,7 @@ contract Otoken is ERC20Initializable {
         strikeAsset = _strikeAsset;
         collateralAsset = _collateralAsset;
         strikePrice = _strikePrice;
-        expiry = _expiry;
+        expiryTimestamp = _expiry;
         isPut = _isPut;
         (string memory tokenName, string memory tokenSymbol) = _getNameAndSymbol();
         __ERC20_init_unchained(tokenName, tokenSymbol);
@@ -99,7 +99,7 @@ contract Otoken is ERC20Initializable {
         string memory collateral = _getTokenSymbol(collateralAsset);
         uint256 displayedStrikePrice = strikePrice.div(STRIKE_PRICE_DIGITS);
         // convert expiry to readable string
-        (uint256 year, uint256 month, uint256 day) = BokkyPooBahsDateTimeLibrary.timestampToDate(expiry);
+        (uint256 year, uint256 month, uint256 day) = BokkyPooBahsDateTimeLibrary.timestampToDate(expiryTimestamp);
 
         // Get option type string
         (string memory typeSymbol, string memory typeFull) = _getOptionType(isPut);
