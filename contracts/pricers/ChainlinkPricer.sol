@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.6.10;
 
-import {AggregatorInterface} from "./interfaces/AggregatorInterface.sol";
-import {OracleInterface} from "./interfaces/OracleInterface.sol";
-import {OpynPricerInterface} from "./interfaces/OpynPricerInterface.sol";
-import {SafeMath} from "./packages/oz/SafeMath.sol";
+import {AggregatorInterface} from "../interfaces/AggregatorInterface.sol";
+import {OracleInterface} from "../interfaces/OracleInterface.sol";
+import {OpynPricerInterface} from "../interfaces/OpynPricerInterface.sol";
+import {SafeMath} from "../packages/oz/SafeMath.sol";
 
 /**
  * @notice A Pricer contract for Chainlink for 1 asset
@@ -40,6 +40,7 @@ contract ChainLinkPricer is OpynPricerInterface {
     /**
      * @notice get live price for the asset.
      * @dev overides the getPrice function in OpynPricerInterface.
+     * @return price of asset scaled by 1e18
      */
     function getPrice() external override view returns (uint256) {
         int256 answer = aggregator.latestAnswer();
