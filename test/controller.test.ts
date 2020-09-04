@@ -1892,6 +1892,274 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
         )
       })
     })
+
+    describe('Burn short otoken', () => {
+      /*it('should revert withdrawing collateral asset with wrong index from a vault', async () => {
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+        const collateralToWithdraw = new BigNumber('20')
+        const actionArgs = [
+          {
+            actionType: ActionType.WithdrawCollateral,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: usdc.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToWithdraw.toNumber(),
+            index: '1',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        await expectRevert(
+          controller.operate(actionArgs, {from: accountOwner1}),
+          'MarginAccount: collateral token address mismatch',
+        )
+      })
+
+      it('should revert withdrawing collateral asset from an invalid id', async () => {
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+        const collateralToWithdraw = new BigNumber('20')
+        const actionArgs = [
+          {
+            actionType: ActionType.WithdrawCollateral,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: usdc.address,
+            vaultId: '1350',
+            amount: collateralToWithdraw.toNumber(),
+            index: '1',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        await expectRevert(controller.operate(actionArgs, {from: accountOwner1}), 'Controller: invalid vault id')
+      })
+
+      it('should revert withdrawing collateral asset amount greater than the vault balance', async () => {
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+        const vaultBefore = await controller.getVault(accountOwner1, vaultCounter)
+        const collateralToWithdraw = new BigNumber(vaultBefore.collateralAmounts[0]).plus(1)
+        const actionArgs = [
+          {
+            actionType: ActionType.WithdrawCollateral,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: usdc.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToWithdraw.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        await expectRevert(controller.operate(actionArgs, {from: accountOwner1}), 'SafeMath: subtraction overflow')
+      })
+
+      it('should withdraw collateral to any random address where msg.sender is account owner', async () => {
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+        const collateralToWithdraw = new BigNumber('10')
+        const actionArgs = [
+          {
+            actionType: ActionType.WithdrawCollateral,
+            owner: accountOwner1,
+            sender: random,
+            asset: usdc.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToWithdraw.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+        const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const receiverBalanceBefore = new BigNumber(await usdc.balanceOf(random))
+        const vaultBefore = await controller.getVault(accountOwner1, vaultCounter)
+
+        await controller.operate(actionArgs, {from: accountOwner1})
+
+        const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const receiverBalanceAfter = new BigNumber(await usdc.balanceOf(random))
+        const vaultAfter = await controller.getVault(accountOwner1, vaultCounter)
+
+        assert.equal(
+          marginPoolBalanceBefore.minus(marginPoolBalanceAfter).toString(),
+          collateralToWithdraw.toString(),
+          'Margin pool collateral asset balance mismatch',
+        )
+        assert.equal(
+          receiverBalanceAfter.minus(receiverBalanceBefore).toString(),
+          collateralToWithdraw.toString(),
+          'Receiver collateral asset balance mismatch',
+        )
+        assert.equal(vaultAfter.collateralAssets.length, 1, 'Vault collateral asset array length mismatch')
+        assert.equal(
+          new BigNumber(vaultBefore.collateralAmounts[0])
+            .minus(new BigNumber(vaultAfter.collateralAmounts[0]))
+            .toString(),
+          collateralToWithdraw.toString(),
+          'Collateral asset amount in vault after withdraw mismatch',
+        )
+      })
+
+      it('should withdraw collateral asset to any random address where msg.sender is account operator', async () => {
+        assert.equal(await controller.isOperator(accountOwner1, accountOperator1), true, 'Operator address mismatch')
+
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+        const collateralToWithdraw = new BigNumber('10')
+        const actionArgs = [
+          {
+            actionType: ActionType.WithdrawCollateral,
+            owner: accountOwner1,
+            sender: random,
+            asset: usdc.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToWithdraw.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+        const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const receiverBalanceBefore = new BigNumber(await usdc.balanceOf(random))
+        const vaultBefore = await controller.getVault(accountOwner1, vaultCounter)
+
+        await controller.operate(actionArgs, {from: accountOperator1})
+
+        const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const receiverBalanceAfter = new BigNumber(await usdc.balanceOf(random))
+        const vaultAfter = await controller.getVault(accountOwner1, vaultCounter)
+
+        assert.equal(
+          marginPoolBalanceBefore.minus(marginPoolBalanceAfter).toString(),
+          collateralToWithdraw.toString(),
+          'Margin pool collateral asset balance mismatch',
+        )
+        assert.equal(
+          receiverBalanceAfter.minus(receiverBalanceBefore).toString(),
+          collateralToWithdraw.toString(),
+          'Receiver collateral asset balance mismatch',
+        )
+        assert.equal(vaultAfter.collateralAssets.length, 1, 'Vault collateral asset array length mismatch')
+        assert.equal(
+          new BigNumber(vaultBefore.collateralAmounts[0])
+            .minus(new BigNumber(vaultAfter.collateralAmounts[0]))
+            .toString(),
+          collateralToWithdraw.toString(),
+          'Collateral asset amount in vault after withdraw mismatch',
+        )
+      })
+
+      it('should execute withdrawing collateral asset in mutliple actions', async () => {
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+        const collateralToWithdraw = new BigNumber('10')
+        const actionArgs = [
+          {
+            actionType: ActionType.WithdrawCollateral,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: usdc.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToWithdraw.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.WithdrawCollateral,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: usdc.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToWithdraw.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+        const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const receiverBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
+        const vaultBefore = await controller.getVault(accountOwner1, vaultCounter)
+
+        await controller.operate(actionArgs, {from: accountOwner1})
+
+        const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const receiverBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
+        const vaultAfter = await controller.getVault(accountOwner1, vaultCounter)
+
+        assert.equal(
+          marginPoolBalanceBefore.minus(marginPoolBalanceAfter).toString(),
+          collateralToWithdraw.multipliedBy(2).toString(),
+          'Margin pool collateral asset balance mismatch',
+        )
+        assert.equal(
+          receiverBalanceAfter.minus(receiverBalanceBefore).toString(),
+          collateralToWithdraw.multipliedBy(2).toString(),
+          'Receiver collateral asset balance mismatch',
+        )
+        assert.equal(vaultAfter.collateralAssets.length, 1, 'Vault long otoken array length mismatch')
+        assert.equal(
+          new BigNumber(vaultBefore.collateralAmounts[0])
+            .minus(new BigNumber(vaultAfter.collateralAmounts[0]))
+            .toString(),
+          collateralToWithdraw.multipliedBy(2).toString(),
+          'Collateral asset amount in vault after withdraw mismatch',
+        )
+      })*/
+
+      it('should remove short otoken address from short otokens array if amount is equal to zero after burnign', async () => {
+        // send back all short otoken to owner
+        const operatorShortBalance = new BigNumber(await shortOtoken.balanceOf(accountOperator1))
+        await shortOtoken.transfer(accountOwner1, operatorShortBalance, {from: accountOperator1})
+
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+        const vaultBefore = await controller.getVault(accountOwner1, vaultCounter)
+
+        const shortOtokenToBurn = new BigNumber(vaultBefore.shortAmounts[0])
+        console.log(shortOtokenToBurn.toString())
+        console.log(new BigNumber(await shortOtoken.balanceOf(accountOwner1)).toString())
+        const actionArgs = [
+          {
+            actionType: ActionType.BurnShortOption,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: shortOtoken.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: shortOtokenToBurn.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+        const sellerBalanceBefore = new BigNumber(await shortOtoken.balanceOf(accountOwner1))
+
+        await controller.operate(actionArgs, {from: accountOwner1})
+
+        const sellerBalanceAfter = new BigNumber(await shortOtoken.balanceOf(accountOwner1))
+        const vaultAfter = await controller.getVault(accountOwner1, vaultCounter)
+
+        assert.equal(
+          sellerBalanceBefore.minus(sellerBalanceAfter).toString(),
+          shortOtokenToBurn.toString(),
+          'Short otoken burned amount mismatch',
+        )
+        assert.equal(vaultAfter.shortOtokens.length, 1, 'Vault short otoken array length mismatch')
+        assert.equal(vaultAfter.shortOtokens[0], ZERO_ADDR, 'Vault short otoken address after clearing mismatch')
+        assert.equal(
+          new BigNumber(vaultBefore.shortAmounts[0]).minus(new BigNumber(vaultAfter.shortAmounts[0])).toString(),
+          shortOtokenToBurn.toString(),
+          'Short otoken amount in vault after burn mismatch',
+        )
+      })
+    })
   })
 
   describe('Check if price is finalized', () => {
