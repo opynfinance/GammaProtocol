@@ -19,7 +19,7 @@ const Oracle = artifacts.require('Oracle.sol')
 // address(0)
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
-contract('Oracle', ([owner, disputer, controllerAddress, random, collateral, strike]) => {
+contract('Oracle', ([owner, disputer, random, collateral, strike]) => {
   // const batch = web3.utils.asciiToHex('ETHUSDCUSDC1596218762')
   // mock a pricer
   let wethPricer: MockPricerInstance
@@ -35,10 +35,8 @@ contract('Oracle', ([owner, disputer, controllerAddress, random, collateral, str
   before('Deployment', async () => {
     // addressbook module
     addressBook = await MockAddressBook.new({from: owner})
-    // set controller address in AddressBook
-    await addressBook.setController(controllerAddress, {from: owner})
     // deploy Oracle module
-    oracle = await Oracle.new(addressBook.address, {from: owner})
+    oracle = await Oracle.new({from: owner})
 
     // mock tokens
     weth = await MockERC20.new('WETH', 'WETH', 18)
@@ -48,12 +46,6 @@ contract('Oracle', ([owner, disputer, controllerAddress, random, collateral, str
 
     // deply mock pricer (to get live price and set expiry price)
     wethPricer = await MockPricer.new(weth.address, oracle.address)
-  })
-
-  describe('Oracle deployment', () => {
-    it('shout revert if deployed with 0 addressBook address', async () => {
-      await expectRevert(Oracle.new(ZERO_ADDR), 'Invalid address book')
-    })
   })
 
   describe('Set asset pricer', () => {
