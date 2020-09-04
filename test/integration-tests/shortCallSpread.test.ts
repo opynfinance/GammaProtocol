@@ -58,8 +58,8 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buy
 
   let shortCall: OtokenInstance
   let longCall: OtokenInstance
-  const shortStrike = 200
-  const longStrike = 300
+  const shortStrike = 100
+  const longStrike = 200
 
   const optionsAmount = 10
   const collateralAmount = (Math.abs(longStrike - shortStrike) * optionsAmount) / longStrike
