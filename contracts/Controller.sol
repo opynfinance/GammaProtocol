@@ -472,6 +472,11 @@ contract Controller is ReentrancyGuard, Ownable {
         require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         require(_args.to == msg.sender, "Controller: minter address and msg.sender address mismatch");
 
+        address whitelistModule = AddressBookInterface(addressBook).getWhitelist();
+        WhitelistInterface whitelist = WhitelistInterface(whitelistModule);
+
+        require(whitelist.isWhitelistedOtoken(_args.otoken), "Controller: otoken is not whitelisted to be minted");
+
         OtokenInterface otoken = OtokenInterface(_args.otoken);
 
         require(now <= otoken.expiryTimestamp(), "Controller: can not mint expired otoken");
