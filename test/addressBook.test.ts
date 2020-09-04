@@ -275,7 +275,7 @@ contract('AddressBook', ([owner, otokenImplAdd, marginPoolAdd, liquidationManage
       assert.equal(v2Contract.address, v2ImplementationAddress, 'AMM V2 implementation address mismatch')
       assert.equal(v1Proxy.address, v2Proxy.address, 'AMM proxy address mismatch')
 
-      v2Contract = await UpgradeableContractV1.at(await addressBook.getController())
+      v2Contract = await UpgradeableContractV2.at(await addressBook.getAddress(key))
 
       assert.equal((await v2Contract.getV2Version()).toString(), '2', 'AMM implementation version mismatch')
     })

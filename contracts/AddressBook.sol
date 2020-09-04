@@ -229,7 +229,7 @@ contract AddressBook is Ownable {
             proxy.upgradeToAndCall(_newAddress, params);
         } else {
             OwnedUpgradeabilityProxy proxy = OwnedUpgradeabilityProxy(proxyAddress);
-            proxy.upgradeToAndCall(_newAddress, params);
+            proxy.upgradeTo(_newAddress);
         }
     }
 }
