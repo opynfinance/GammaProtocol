@@ -105,7 +105,7 @@ contract('CompoundPricer', ([owner, random]) => {
       // 1 cETH = 9.4 USD
       assert.equal(cTokenprice.toString(), '9409058565621361934')
     })
-    it('should return the new price after resetting answer in aggregator', async () => {
+    it('should return the new price after resetting answer in underlying pricer', async () => {
       const newPrice = createScaledNumber(500)
       await wethPricer.setPrice(newPrice)
       const cTokenPrice = await cethPricer.getPrice()
@@ -115,6 +115,35 @@ contract('CompoundPricer', ([owner, random]) => {
     it('should revert if price is lower than 0', async () => {
       await wethPricer.setPrice('0')
       await expectRevert(cethPricer.getPrice(), 'CompoundPricer: underlying price is 0')
+    })
+  })
+
+  describe('getPrice for cUSDC', () => {
+    const usdPrice = createScaledNumber(1)
+    const exchangeRate = new BigNumber('211619877757422')
+    before('mock data in chainlink pricer and cToken', async () => {
+      await usdcPricer.setPrice(usdPrice)
+      await cUSDC.setExchangeRate(exchangeRate)
+    })
+    it('should return the price in 1e18', async () => {
+      // how much 1e8 cToken worth in USD
+      const cTokenprice = await cusdcPricer.getPrice()
+      const expectResult = await underlyingPriceToCtokenPrice(new BigNumber(usdPrice), exchangeRate, usdc)
+      assert.equal(cTokenprice.toString(), expectResult.toString())
+      // hard coded answer
+      // 1 cUSDC = 0.02 USD
+      assert.equal(cTokenprice.toString(), '21161987775742200') // 0.0211 usd
+    })
+    it('should return the new price after resetting answer in underlying pricer', async () => {
+      const newPrice = createScaledNumber(1.1)
+      await usdcPricer.setPrice(newPrice)
+      const cTokenPrice = await cusdcPricer.getPrice()
+      const expectedResult = await underlyingPriceToCtokenPrice(new BigNumber(newPrice), exchangeRate, usdc)
+      assert.equal(cTokenPrice.toString(), expectedResult.toString())
+    })
+    it('should revert if price is lower than 0', async () => {
+      await usdcPricer.setPrice('0')
+      await expectRevert(cusdcPricer.getPrice(), 'CompoundPricer: underlying price is 0')
     })
   })
 
