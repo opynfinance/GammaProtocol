@@ -116,7 +116,7 @@ contract Whitelist is Ownable {
     ) external onlyOwner {
         bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral));
 
-        _setWhitelistedProduct(productHash, true);
+        whitelistedProduct[productHash] = true;
 
         emit ProductWhitelisted(productHash, _underlying, _strike, _collateral);
     }
@@ -136,7 +136,7 @@ contract Whitelist is Ownable {
     ) external onlyOwner {
         bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral));
 
-        _setWhitelistedProduct(productHash, false);
+        whitelistedProduct[productHash] = false;
 
         emit ProductBlacklisted(productHash, _underlying, _strike, _collateral);
     }
@@ -147,7 +147,7 @@ contract Whitelist is Ownable {
      * @param _collateral collateral asset address
      */
     function whitelistCollateral(address _collateral) external onlyOwner {
-        _setWhitelistedCollateral(_collateral, true);
+        whitelistedCollateral[_collateral] = true;
 
         emit CollateralWhitelisted(_collateral);
     }
@@ -158,7 +158,7 @@ contract Whitelist is Ownable {
      * @param _collateral collateral asset address
      */
     function blacklistCollateral(address _collateral) external onlyOwner {
-        _setWhitelistedCollateral(_collateral, false);
+        whitelistedCollateral[_collateral] = false;
 
         emit CollateralBlacklisted(_collateral);
     }
@@ -169,7 +169,7 @@ contract Whitelist is Ownable {
      * @param _otokenAddress otoken
      */
     function whitelistOtoken(address _otokenAddress) external onlyFactory {
-        _setWhitelistedOtoken(_otokenAddress, true);
+        whitelistedOtoken[_otokenAddress] = true;
 
         emit OtokenWhitelisted(_otokenAddress);
     }
@@ -180,35 +180,8 @@ contract Whitelist is Ownable {
      * @param _otokenAddress otoken
      */
     function blacklistOtoken(address _otokenAddress) external onlyOwner {
-        _setWhitelistedOtoken(_otokenAddress, false);
+        whitelistedOtoken[_otokenAddress] = false;
 
         emit OtokenBlacklisted(_otokenAddress);
-    }
-
-    /**
-     * @notice set product state
-     * @param _product product hash in bytes
-     * @param _state represent if a product is whitelisted or not, true to whitelist and false to blacklist
-     */
-    function _setWhitelistedProduct(bytes32 _product, bool _state) internal {
-        whitelistedProduct[_product] = _state;
-    }
-
-    /**
-     * @notice set a collateral address as whitelisted
-     * @param _collateral collateral address
-     * @param _state represent if a collateral is whitelisted or not, true to whitelist and false to blacklist
-     */
-    function _setWhitelistedCollateral(address _collateral, bool _state) internal {
-        whitelistedCollateral[_collateral] = _state;
-    }
-
-    /**
-     * @notice set an otoken address as whitelisted
-     * @param _otokenAddress address of the oToken that is being whitelisted
-     * @param _state represent if a Otoken is whitelisted or not, true to whitelist and false to blacklist
-     */
-    function _setWhitelistedOtoken(address _otokenAddress, bool _state) internal {
-        whitelistedOtoken[_otokenAddress] = _state;
     }
 }
