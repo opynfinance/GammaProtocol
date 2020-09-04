@@ -274,16 +274,6 @@ contract('MarginCalculator', () => {
         assert.isTrue(isExcess)
       })
 
-      // it('Should revert if denominated token is different from short.collateral.', async () => {
-      //   const shortAmount = createScaledNumber(1)
-      //   const collateralAmount = createScaledNumber(250)
-      //   const vault = createVault(eth250Put.address, undefined, usdc.address, shortAmount, undefined, collateralAmount)
-      //   await expectRevert(
-      //     calculator. getExcessCollateral(vault, dai.address),
-      //     "MarginCalculator: Denomintated token should be the short otoken's collateral",
-      //   )
-      // })
-
       it('Should revert if long token has differet underlying as short.', async () => {
         const otokenWrongUnderlying = await MockOtoken.new()
         await otokenWrongUnderlying.init(
@@ -373,6 +363,14 @@ contract('MarginCalculator', () => {
         await expectRevert(
           calculator.getExcessCollateral(vault),
           'MarginCalculator: long asset not marginable for short asset',
+        )
+      })
+
+      it('Should revert when collateral is different from collateral of short', async () => {
+        const vault = createVault(eth200Put.address, undefined, weth.address, createScaledNumber(1), undefined, 100)
+        await expectRevert(
+          calculator.getExcessCollateral(vault),
+          'MarginCalculator: collateral asset not marginable for short asset',
         )
       })
     })
