@@ -106,8 +106,8 @@ contract Controller is ReentrancyGuard, Ownable {
         address indexed otoken,
         address indexed from,
         address indexed exerciser,
+        address collateralAsset,
         uint256 otokenBurned,
-        uint256 cashValue,
         uint256 payout
     );
 
@@ -540,21 +540,31 @@ contract Controller is ReentrancyGuard, Ownable {
 
         require(isPriceFinalized(_args.otoken), "Controller: otoken underlying asset price is not finalized yet");
 
-        address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
-        MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
-
-        uint256 cashValue = calculator.getExpiredCashValue(_args.otoken);
-
-        uint256 payout = cashValue.mul(_args.amount);
+        uint256 payout = getPayout(_args.otoken, _args.amount);
 
         otoken.burnOtoken(msg.sender, _args.amount);
 
         address marginPoolModule = AddressBookInterface(addressBook).getMarginPool();
         MarginPoolInterface marginPool = MarginPoolInterface(marginPoolModule);
 
-        marginPool.transferToUser(_args.otoken, _args.exerciser, payout);
+        marginPool.transferToUser(otoken.collateralAsset(), _args.exerciser, payout);
 
-        emit Exercise(_args.otoken, msg.sender, _args.exerciser, _args.amount, cashValue, payout);
+        emit Exercise(_args.otoken, msg.sender, _args.exerciser, otoken.collateralAsset(), _args.amount, payout);
+    }
+
+    /**
+     * @notice get Otoken payout after expiry
+     * @param _otoken Otoken address
+     * @param _amount amount of Otoken
+     * @return payout = cashValue * amount
+     */
+    function getPayout(address _otoken, uint256 _amount) internal view returns (uint256) {
+        address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
+        MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
+
+        uint256 cashValue = calculator.getExpiredCashValue(_otoken);
+
+        return cashValue.mul(_amount).div(1e18);
     }
 
     /**

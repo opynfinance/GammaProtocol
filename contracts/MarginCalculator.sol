@@ -296,7 +296,6 @@ contract MarginCalculator is Initializable {
     function _getUnderlyingPrice(address _otoken) internal view returns (uint256 price, bool isFinalized) {
         OracleInterface oracle = OracleInterface(AddressBookInterface(addressBook).getOracle());
         OtokenInterface otoken = OtokenInterface(_otoken);
-        // return (otoken.expiryTimestamp(), true);
         return oracle.getExpiryPrice(otoken.underlyingAsset(), otoken.expiryTimestamp());
     }
 
