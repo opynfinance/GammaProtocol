@@ -317,6 +317,14 @@ contract('MarginCalculator', () => {
           'MarginCalculator: long asset not marginable for short asset',
         )
       })
+
+      it('Should revert when collateral is different from collateral of short', async () => {
+        const vault = createVault(eth200Put.address, undefined, weth.address, createScaledNumber(1), undefined, 100)
+        await expectRevert(
+          calculator.getExcessCollateral(vault),
+          'MarginCalculator: collateral asset not marginable for short asset',
+        )
+      })
     })
 
     describe('Put vault check before expiry', () => {
