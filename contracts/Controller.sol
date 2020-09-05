@@ -110,6 +110,15 @@ contract Controller is ReentrancyGuard, Ownable {
         uint256 otokenBurned,
         uint256 payout
     );
+    /// @notice emits an event when a vault is settlted
+    event VaultSettled(
+        address indexed otoken,
+        address indexed AccountOwner,
+        address indexed to,
+        address collateral,
+        uint256 vaultId,
+        uint256 payout
+    );
 
     /**
      * @notice modifier check if protocol is not paused
@@ -296,6 +305,8 @@ contract Controller is ReentrancyGuard, Ownable {
                 vault = _burnOtoken(Actions._parseBurnArgs(action));
             } else if (actionType == Actions.ActionType.Exercise) {
                 _exercise(Actions._parseExerciseArgs(action));
+            } else if (actionType == Actions.ActionType.Exercise) {
+                _settleVault(Actions._parseSettleVaultArgs(action));
             }
         }
 
@@ -553,25 +564,52 @@ contract Controller is ReentrancyGuard, Ownable {
     }
 
     /**
-     * @notice get Otoken payout after expiry
-     * @param _otoken Otoken address
-     * @param _amount amount of Otoken
-     * @return payout = cashValue * amount
-     */
-    function getPayout(address _otoken, uint256 _amount) internal view returns (uint256) {
-        address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
-        MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
-
-        uint256 cashValue = calculator.getExpiredCashValue(_otoken);
-
-        return cashValue.mul(_amount).div(1e18);
-    }
-
-    /**
      * @notice settle vault option
      * @param _args SettleVaultArgs structure
      */
-    // function _settleVault(Actions.SettleVaultArgs memory _args) internal {}
+    function _settleVault(Actions.SettleVaultArgs memory _args)
+        internal
+        isAuthorized(msg.sender, _args.owner)
+        returns (MarginAccount.Vault memory)
+    {
+        require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+
+        MarginAccount.Vault memory vault = vaults[_args.owner][_args.vaultId];
+
+        require(isNotEmpty(vault.shortOtokens), "Controller: can not settle a vault with no otoken minted");
+
+        OtokenInterface shortOtoken = OtokenInterface(vault.shortOtokens[0]);
+
+        require(now > shortOtoken.expiryTimestamp(), "Controller: can not settle vault with un-expired otoken");
+        require(
+            isPriceFinalized(address(shortOtoken)),
+            "Controller: otoken underlying asset price is not finalized yet"
+        );
+
+        uint256 payout = 0;
+
+        if (isNotEmpty(vault.longOtokens)) {
+            OtokenInterface longOtoken = OtokenInterface(vault.longOtokens[0]);
+
+            longOtoken.burnOtoken(msg.sender, vault.longAmounts[0]);
+        }
+
+        vaults[_args.owner][_args.vaultId]._clearVault();
+
+        address marginPoolModule = AddressBookInterface(addressBook).getMarginPool();
+        MarginPoolInterface marginPool = MarginPoolInterface(marginPoolModule);
+
+        marginPool.transferToUser(shortOtoken.collateralAsset(), _args.to, payout);
+
+        emit VaultSettled(
+            address(shortOtoken),
+            _args.owner,
+            _args.to,
+            shortOtoken.collateralAsset(),
+            _args.vaultId,
+            payout
+        );
+    }
 
     //High Level: call arbitrary smart contract
     //function _call(Actions.CallArgs args) internal {
@@ -590,5 +628,20 @@ contract Controller is ReentrancyGuard, Ownable {
 
     function isNotEmpty(address[] memory _array) internal pure returns (bool) {
         return (_array.length > 0) && (_array[0] != address(0));
+    }
+
+    /**
+     * @notice get Otoken payout after expiry
+     * @param _otoken Otoken address
+     * @param _amount amount of Otoken
+     * @return payout = cashValue * amount
+     */
+    function getPayout(address _otoken, uint256 _amount) internal view returns (uint256) {
+        address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
+        MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
+
+        uint256 cashValue = calculator.getExpiredCashValue(_otoken);
+
+        return cashValue.mul(_amount).div(1e18);
     }
 }
