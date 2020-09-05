@@ -505,9 +505,11 @@ contract Controller is ReentrancyGuard, Ownable {
         require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         require(_args.from == msg.sender, "Controller: burner address and msg.sender address mismatch");
 
-        vaults[_args.owner][_args.vaultId]._removeShort(_args.otoken, _args.amount, _args.index);
-
         OtokenInterface otoken = OtokenInterface(_args.otoken);
+
+        require(now <= otoken.expiryTimestamp(), "Controller: can not burn expired otoken");
+
+        vaults[_args.owner][_args.vaultId]._removeShort(_args.otoken, _args.amount, _args.index);
 
         otoken.burnOtoken(_args.from, _args.amount);
 

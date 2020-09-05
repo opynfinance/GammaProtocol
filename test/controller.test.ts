@@ -1981,6 +1981,46 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
           )
         })
       })
+
+      it('should mint without depositing collater and burn at the same transaction', async () => {
+        const vaultCounter = new BigNumber('1')
+        const amountToMint = new BigNumber('1')
+        const actionArgs = [
+          {
+            actionType: ActionType.MintShortOption,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: shortOtoken.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: amountToMint.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.BurnShortOption,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: shortOtoken.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: amountToMint.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+        const vaultBefore = await controller.getVault(accountOwner1, vaultCounter)
+
+        await controller.operate(actionArgs, {from: accountOwner1})
+
+        const senderShortBalanceAfter = new BigNumber(await shortOtoken.balanceOf(accountOwner1))
+        const vaultAfter = await controller.getVault(accountOwner1, vaultCounter)
+
+        assert.equal(vaultAfter.shortOtokens.length, 1, 'Vault short otoken array length mismatch')
+        assert.equal(
+          senderShortBalanceAfter.toString(),
+          senderShortBalanceAfter.toString(),
+          'Sender short otoken amount mismatch',
+        )
+      })
     })
 
     describe('Burn short otoken', () => {
@@ -1994,7 +2034,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
             actionType: ActionType.BurnShortOption,
             owner: accountOwner1,
             sender: accountOwner1,
-            asset: usdc.address,
+            asset: shortOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: shortOtokenToBurn.toNumber(),
             index: '1',
@@ -2022,7 +2062,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
             actionType: ActionType.BurnShortOption,
             owner: accountOwner1,
             sender: accountOperator1,
-            asset: usdc.address,
+            asset: shortOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: shortOtokenToBurn.toNumber(),
             index: '1',
@@ -2151,6 +2191,112 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
           shortOtokenToBurn.toString(),
           'Short otoken amount in vault after burn mismatch',
         )
+      })
+
+      describe('Burn expired otoken', () => {
+        let expiredShortOtoken: MockOtokenInstance
+
+        before(async () => {
+          const vaultCounterBefore = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+          const expiryTime = new BigNumber(60 * 60) // after 1 hour
+          expiredShortOtoken = await MockOtoken.new()
+          // init otoken
+          await expiredShortOtoken.init(
+            addressBook.address,
+            weth.address,
+            usdc.address,
+            usdc.address,
+            new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+            new BigNumber(await time.latest()).plus(expiryTime),
+            true,
+          )
+
+          // whitelist otoken to be minted
+          await whitelist.whitelistOtoken(expiredShortOtoken.address, {from: owner})
+
+          const collateralToDeposit = new BigNumber(await expiredShortOtoken.strikePrice()).dividedBy(1e18)
+          const amountToMint = new BigNumber('1')
+          const actionArgs = [
+            {
+              actionType: ActionType.OpenVault,
+              owner: accountOwner1,
+              sender: accountOwner1,
+              asset: ZERO_ADDR,
+              vaultId: vaultCounterBefore.toNumber() + 1,
+              amount: '0',
+              index: '0',
+              data: ZERO_ADDR,
+            },
+            {
+              actionType: ActionType.MintShortOption,
+              owner: accountOwner1,
+              sender: accountOwner1,
+              asset: expiredShortOtoken.address,
+              vaultId: vaultCounterBefore.toNumber() + 1,
+              amount: amountToMint.toNumber(),
+              index: '0',
+              data: ZERO_ADDR,
+            },
+            {
+              actionType: ActionType.DepositCollateral,
+              owner: accountOwner1,
+              sender: accountOwner1,
+              asset: usdc.address,
+              vaultId: vaultCounterBefore.toNumber() + 1,
+              amount: collateralToDeposit.toNumber(),
+              index: '0',
+              data: ZERO_ADDR,
+            },
+          ]
+
+          const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+          const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
+
+          await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
+          await controller.operate(actionArgs, {from: accountOwner1})
+
+          const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+          const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
+
+          assert.equal(
+            marginPoolBalanceAfter.minus(marginPoolBalanceBefore).toString(),
+            collateralToDeposit.toString(),
+            'Margin pool collateral asset balance mismatch',
+          )
+          assert.equal(
+            senderBalanceBefore.minus(senderBalanceAfter).toString(),
+            collateralToDeposit.toString(),
+            'Sender collateral asset balance mismatch',
+          )
+        })
+
+        it('should revert burning an expired long otoken', async () => {
+          // increment time after expiredLongOtoken expiry
+          await time.increase(3601) // increase time with one hour in seconds
+
+          const vaultId = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+          const vault = await controller.getVault(accountOwner1, vaultId)
+          const shortAmountToBurn = new BigNumber('1')
+          const actionArgs = [
+            {
+              actionType: ActionType.BurnShortOption,
+              owner: accountOwner1,
+              sender: accountOwner1,
+              asset: expiredShortOtoken.address,
+              vaultId: vaultId.toNumber(),
+              amount: shortAmountToBurn.toNumber(),
+              index: '0',
+              data: ZERO_ADDR,
+            },
+          ]
+
+          assert.equal(await controller.isExpired(expiredShortOtoken.address), true, 'Long otoken is not expired yet')
+
+          await expectRevert(
+            controller.operate(actionArgs, {from: accountOwner1}),
+            'Controller: can not burn expired otoken',
+          )
+        })
       })
     })
   })
