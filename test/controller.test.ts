@@ -1531,6 +1531,9 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
         true,
       )
 
+      // whitelist short otoken to be used in the protocol
+      await whitelist.whitelistOtoken(shortOtoken.address, {from: owner})
+
       // give free money
       await longOtoken.mintOtoken(accountOwner1, new BigNumber('100'))
       await longOtoken.mintOtoken(accountOperator1, new BigNumber('100'))
@@ -1544,7 +1547,6 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
         const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
         assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-        const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e18)
         const amountToMint = new BigNumber('1')
         const actionArgs = [
           {
@@ -1557,11 +1559,36 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
             index: '0',
             data: ZERO_ADDR,
           },
+        ]
+
+        await expectRevert(
+          controller.operate(actionArgs, {from: random}),
+          'Controller: msg.sender is not authorized to run action',
+        )
+      })
+
+      it('should revert minting using un-marginable collateral asset', async () => {
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+        const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e18)
+        const amountToMint = new BigNumber('1')
+        const actionArgs = [
+          {
+            actionType: ActionType.MintShortOption,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: shortOtoken.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: amountToMint.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
           {
             actionType: ActionType.DepositCollateral,
             owner: accountOwner1,
-            sender: random,
-            asset: usdc.address,
+            sender: accountOwner1,
+            asset: weth.address,
             vaultId: vaultCounter.toNumber(),
             amount: collateralToDeposit.toNumber(),
             index: '0',
@@ -1569,10 +1596,13 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
           },
         ]
 
-        await usdc.approve(marginPool.address, collateralToDeposit, {from: random})
+        // free money
+        await weth.mint(accountOwner1, collateralToDeposit)
+
+        await weth.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
         await expectRevert(
-          controller.operate(actionArgs, {from: random}),
-          'Controller: msg.sender is not authorized to run action',
+          controller.operate(actionArgs, {from: accountOwner1}),
+          'MarginCalculator: collateral asset not marginable for short asset',
         )
       })
 
@@ -1774,7 +1804,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
         )
       })
 
-      it('should withdraw exceeded collateral from naked short position when net value ', async () => {
+      it('should withdraw exceeded collateral from naked short position when net value > 0 ', async () => {
         const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
         assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
@@ -1857,6 +1887,8 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
           true,
         )
 
+        await whitelist.whitelistOtoken(invalidShortOtoken.address, {from: owner})
+
         const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
         assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
@@ -1890,6 +1922,64 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
           controller.operate(actionArgs, {from: accountOwner1}),
           'MarginCalculator: Too many short otokens in the vault.',
         )
+      })
+
+      describe('Mint un-whitelisted short otoken', () => {
+        it('should revert minting an otoken that is not whitelisted in Whitelist module', async () => {
+          const expiryTime = new BigNumber(60 * 60 * 24) // after 1 day
+
+          const notWhitelistedShortOtoken: MockOtokenInstance = await MockOtoken.new()
+          await notWhitelistedShortOtoken.init(
+            addressBook.address,
+            weth.address,
+            usdc.address,
+            usdc.address,
+            new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+            new BigNumber(await time.latest()).plus(expiryTime),
+            true,
+          )
+
+          const collateralToDeposit = new BigNumber(await notWhitelistedShortOtoken.strikePrice()).dividedBy(1e18)
+          const amountToMint = new BigNumber('1')
+          const actionArgs = [
+            {
+              actionType: ActionType.OpenVault,
+              owner: accountOperator1,
+              sender: accountOperator1,
+              asset: ZERO_ADDR,
+              vaultId: '1',
+              amount: '0',
+              index: '0',
+              data: ZERO_ADDR,
+            },
+            {
+              actionType: ActionType.MintShortOption,
+              owner: accountOperator1,
+              sender: accountOperator1,
+              asset: notWhitelistedShortOtoken.address,
+              vaultId: '1',
+              amount: amountToMint.toNumber(),
+              index: '0',
+              data: ZERO_ADDR,
+            },
+            {
+              actionType: ActionType.DepositCollateral,
+              owner: accountOperator1,
+              sender: accountOperator1,
+              asset: usdc.address,
+              vaultId: '1',
+              amount: collateralToDeposit.toNumber(),
+              index: '0',
+              data: ZERO_ADDR,
+            },
+          ]
+
+          await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOperator1})
+          await expectRevert(
+            controller.operate(actionArgs, {from: accountOperator1}),
+            'Controller: otoken is not whitelisted to be minted',
+          )
+        })
       })
     })
 
@@ -2017,7 +2107,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
         )
       })
 
-      it('should remove short otoken address from short otokens array if amount is equal to zero after burnign', async () => {
+      it('should remove short otoken address from short otokens array if amount is equal to zero after burning', async () => {
         // send back all short otoken to owner
         const operatorShortBalance = new BigNumber(await shortOtoken.balanceOf(accountOperator1))
         await shortOtoken.transfer(accountOwner1, operatorShortBalance, {from: accountOperator1})

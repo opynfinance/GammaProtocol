@@ -38,7 +38,7 @@ contract MockMarginCalculator {
         // ensure the number of collateral, long and short array is valid.
         _checkIsValidSpread(_vault);
         // ensure that the collateral asset is valid for the short asset
-        require(_isMarginableCollateral(_vault), "MarginCalculator: collateral asset nor marginable for short asset");
+        require(_isMarginableCollateral(_vault), "MarginCalculator: collateral asset not marginable for short asset");
         // ensure the long asset is valid for the short asset.
         require(_isMarginableLong(_vault), "MarginCalculator: long asset not marginable for short asset");
 

@@ -93,6 +93,14 @@ contract Controller is ReentrancyGuard, Ownable {
         uint256 vaultId,
         uint256 amount
     );
+    /// @notice emits an event when a short otoken get minted into a vault
+    event ShortOtokenMinted(
+        address indexed otoken,
+        address indexed AccountOwner,
+        address indexed to,
+        uint256 vaultId,
+        uint256 amount
+    );
     /// @notice emits an event when a short otoken get burned from a vaukt
     event ShortOtokenBurned(
         address indexed otoken,
@@ -437,7 +445,7 @@ contract Controller is ReentrancyGuard, Ownable {
 
     /**
      * @notice withdraw collateral asset from vault
-     * @dev only account owner or operator can withdraw long option from vault
+     * @dev only account owner or operator can withdraw collateral option from vault
      * @param _args WithdrawArgs structure
      */
     function _withdrawCollateral(Actions.WithdrawArgs memory _args)
@@ -471,7 +479,7 @@ contract Controller is ReentrancyGuard, Ownable {
 
     /**
      * @notice mint option into vault
-     * @dev only account owner or operator can withdraw long option from vault
+     * @dev only account owner or operator can mint short otoken into vault
      * @param _args MintArgs structure
      */
     function _mintOtoken(Actions.MintArgs memory _args)
@@ -481,6 +489,11 @@ contract Controller is ReentrancyGuard, Ownable {
     {
         require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         require(_args.to == msg.sender, "Controller: minter address and msg.sender address mismatch");
+
+        address whitelistModule = AddressBookInterface(addressBook).getWhitelist();
+        WhitelistInterface whitelist = WhitelistInterface(whitelistModule);
+
+        require(whitelist.isWhitelistedOtoken(_args.otoken), "Controller: otoken is not whitelisted to be minted");
 
         OtokenInterface otoken = OtokenInterface(_args.otoken);
 
