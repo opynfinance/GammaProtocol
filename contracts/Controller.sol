@@ -101,6 +101,15 @@ contract Controller is ReentrancyGuard, Ownable {
         uint256 vaultId,
         uint256 amount
     );
+    /// @notice emits an event when a exercise action execute
+    event Exercise(
+        address indexed otoken,
+        address indexed from,
+        address indexed exerciser,
+        uint256 otokenBurned,
+        uint256 cashValue,
+        uint256 payout
+    );
 
     /**
      * @notice modifier check if protocol is not paused
@@ -200,7 +209,7 @@ contract Controller is ReentrancyGuard, Ownable {
      * @param _otoken The address of the relevant oToken.
      * @return A boolean which is true if and only if the price is finalized.
      */
-    function isPriceFinalized(address _otoken) external view returns (bool) {
+    function isPriceFinalized(address _otoken) public view returns (bool) {
         address oracleModule = AddressBookInterface(addressBook).getOracle();
         OracleInterface oracle = OracleInterface(oracleModule);
 
@@ -285,6 +294,8 @@ contract Controller is ReentrancyGuard, Ownable {
                 vault = _mintOtoken(Actions._parseMintArgs(action));
             } else if (actionType == Actions.ActionType.BurnShortOption) {
                 vault = _burnOtoken(Actions._parseBurnArgs(action));
+            } else if (actionType == Actions.ActionType.Exercise) {
+                _exercise(Actions._parseExerciseArgs(action));
             }
         }
 
@@ -522,7 +533,29 @@ contract Controller is ReentrancyGuard, Ownable {
      * @notice exercise option
      * @param _args ExerciseArgs structure
      */
-    // function _exercise(Actions.ExerciseArgs memory _args) internal {}
+    function _exercise(Actions.ExerciseArgs memory _args) internal {
+        OtokenInterface otoken = OtokenInterface(_args.otoken);
+
+        require(now > otoken.expiryTimestamp(), "Controller: can not exercise un-expired otoken");
+
+        require(isPriceFinalized(_args.otoken), "Controller: otoken underlying asset price is not finalized yet");
+
+        address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
+        MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
+
+        uint256 cashValue = calculator.getExpiredCashValue(_args.otoken);
+
+        uint256 payout = cashValue.mul(_args.amount);
+
+        otoken.burnOtoken(msg.sender, _args.amount);
+
+        address marginPoolModule = AddressBookInterface(addressBook).getMarginPool();
+        MarginPoolInterface marginPool = MarginPoolInterface(marginPoolModule);
+
+        marginPool.transferToUser(_args.otoken, _args.exerciser, payout);
+
+        emit Exercise(_args.otoken, msg.sender, _args.exerciser, _args.amount, cashValue, payout);
+    }
 
     /**
      * @notice settle vault option

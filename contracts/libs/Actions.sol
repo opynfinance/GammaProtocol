@@ -246,6 +246,7 @@ library Actions {
      */
     function _parseExerciseArgs(ActionArgs memory _args) internal pure returns (ExerciseArgs memory) {
         require(_args.actionType == ActionType.Exercise, "Actions: can only parse arguments for exercise actions");
+        require(_args.sender != address(0), "Actions: cannot exercise to an invalid account");
 
         return ExerciseArgs({exerciser: _args.sender, otoken: _args.asset, amount: _args.amount});
     }
