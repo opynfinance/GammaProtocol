@@ -3,15 +3,18 @@ import {
   OracleInstance,
   MockChainlinkAggregatorInstance,
   MockERC20Instance,
+  MockCTokenInstance,
 } from '../../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
 const {expectRevert, time} = require('@openzeppelin/test-helpers')
 
 const ChainlinkPricer = artifacts.require('ChainLinkPricer.sol')
+const CompoundPricer = artifacts.require('ChainLinkPricer.sol')
 const Oracle = artifacts.require('Oracle.sol')
 const MockChainlinkAggregator = artifacts.require('MockChainlinkAggregator.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
+const MockCTOken = artifacts.require('MockCToken.sol')
 
 /**
  * scale number with 1e8
@@ -19,38 +22,37 @@ const MockERC20 = artifacts.require('MockERC20.sol')
  */
 const toChainLinkPrice = (num: number) => new BigNumber(num).times(1e8).integerValue()
 
-contract('ChainlinkPricer + Oracle', ([owner, disputer]) => {
+contract('Pricer + Oracle', ([owner, disputer]) => {
   let wethAggregator: MockChainlinkAggregatorInstance
   let weth: MockERC20Instance
-  let pricer: ChainLinkPricerInstance
+  let wethPricer: ChainLinkPricerInstance
   let oracle: OracleInstance
 
   const lockingPeriod = 60 * 10
   const disputePeriod = 60 * 20
 
-  before('Deployment', async () => {
+  before('Deploy Pricer', async () => {
     // deploy mock contracts
     oracle = await Oracle.new({from: owner})
     wethAggregator = await MockChainlinkAggregator.new()
     weth = await MockERC20.new('WETH', 'WETH', 18)
 
     oracle = await Oracle.new()
-    //
-    pricer = await ChainlinkPricer.new(weth.address, wethAggregator.address, oracle.address)
+    wethPricer = await ChainlinkPricer.new(weth.address, wethAggregator.address, oracle.address)
   })
 
-  describe('get live Price', () => {
+  describe('get live price from chainlink', () => {
     // aggregator have price in 1e8
     const ethPrice = toChainLinkPrice(300)
     before('mock data in weth aggregator', async () => {
       await wethAggregator.setLatestAnswer(ethPrice)
     })
-    before('should set the pricer and locking period, dispute period in oracle without revert.', async () => {
-      await oracle.setAssetPricer(weth.address, pricer.address)
+    before('should set the wethPricer and locking period, dispute period in oracle without revert.', async () => {
+      await oracle.setAssetPricer(weth.address, wethPricer.address)
 
-      await oracle.setLockingPeriod(pricer.address, lockingPeriod)
-      await oracle.setDisputePeriod(pricer.address, disputePeriod)
-      await oracle.setAssetPricer(weth.address, pricer.address)
+      await oracle.setLockingPeriod(wethPricer.address, lockingPeriod)
+      await oracle.setDisputePeriod(wethPricer.address, disputePeriod)
+      await oracle.setAssetPricer(weth.address, wethPricer.address)
     })
     it('should return the price in 1e18 from oracle', async () => {
       const expectedResult = new BigNumber(300).times(1e18)
@@ -66,7 +68,7 @@ contract('ChainlinkPricer + Oracle', ([owner, disputer]) => {
     })
     it('should revert if price is lower than 0', async () => {
       await wethAggregator.setLatestAnswer(-1)
-      await expectRevert(pricer.getPrice(), 'ChainLinkPricer: price is lower than 0')
+      await expectRevert(wethPricer.getPrice(), 'ChainLinkPricer: price is lower than 0')
       await expectRevert(oracle.getPrice(weth.address), 'ChainLinkPricer: price is lower than 0')
     })
   })
@@ -105,7 +107,7 @@ contract('ChainlinkPricer + Oracle', ([owner, disputer]) => {
       }
       const roundId = 1
       await expectRevert(
-        pricer.setExpiryPriceToOralce(expiryTimestamp, roundId),
+        wethPricer.setExpiryPriceToOralce(expiryTimestamp, roundId),
         'Oracle: locking period is not over yet.',
       )
     })
@@ -117,7 +119,7 @@ contract('ChainlinkPricer + Oracle', ([owner, disputer]) => {
         await time.increaseTo(expiryTimestamp + lockingPeriod + 10)
       }
       const roundId = 1
-      await pricer.setExpiryPriceToOralce(expiryTimestamp, roundId)
+      await wethPricer.setExpiryPriceToOralce(expiryTimestamp, roundId)
       const [priceFromOracle, isFinalized] = await oracle.getExpiryPrice(weth.address, expiryTimestamp)
       assert.equal(p1.toString(), priceFromOracle.toString())
       assert.equal(isFinalized, false)
@@ -127,7 +129,7 @@ contract('ChainlinkPricer + Oracle', ([owner, disputer]) => {
     it('should revert when trying to submit again', async () => {
       const expiryTimestamp = (t0 + t1) / 2 // between t0 and t1
       const roundId = 1
-      await expectRevert(pricer.setExpiryPriceToOralce(expiryTimestamp, roundId), 'Oracle: dispute period started')
+      await expectRevert(wethPricer.setExpiryPriceToOralce(expiryTimestamp, roundId), 'Oracle: dispute period started')
       const priceFromOracle = await oracle.getExpiryPrice(weth.address, expiryTimestamp)
       assert.equal(p1.toString(), priceFromOracle[0].toString())
     })
