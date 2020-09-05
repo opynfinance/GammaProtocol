@@ -93,14 +93,6 @@ contract Controller is ReentrancyGuard, Ownable {
         uint256 vaultId,
         uint256 amount
     );
-    /// @notice emits an event when a short otoken get minted into a vault
-    event ShortOtokenMinted(
-        address indexed otoken,
-        address indexed AccountOwner,
-        address indexed to,
-        uint256 vaultId,
-        uint256 amount
-    );
     /// @notice emits an event when a short otoken get burned from a vaukt
     event ShortOtokenBurned(
         address indexed otoken,
@@ -170,14 +162,6 @@ contract Controller is ReentrancyGuard, Ownable {
      */
     //function redeemForEmergency(address _owner, uint256 _vaultId) external isNotPaused isAuthorized(args.owner) {
     //}
-
-    /**
-     * @notice set batch underlying asset price
-     * @param _otoken otoken address
-     * @param _roundsBack chainlink round number relative to specific timestamp
-     */
-    // function setBatchUnderlyingPrice(address _otoken, uint256 _roundsBack) external {
-    // }
 
     /**
      * @notice check if a specific address is an operator for an owner account
@@ -559,7 +543,7 @@ contract Controller is ReentrancyGuard, Ownable {
         return ((_vaultId > 0) && (_vaultId <= accountVaultCounter[_accountOwner]));
     }
 
-    function isNotEmpty(address[] memory _array) internal view returns (bool) {
+    function isNotEmpty(address[] memory _array) internal pure returns (bool) {
         return (_array.length > 0) && (_array[0] != address(0));
     }
 }
