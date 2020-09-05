@@ -588,16 +588,16 @@ contract Controller is ReentrancyGuard, Ownable {
 
         uint256 payout = 0;
 
+        address marginPoolModule = AddressBookInterface(addressBook).getMarginPool();
+        MarginPoolInterface marginPool = MarginPoolInterface(marginPoolModule);
+
         if (isNotEmpty(vault.longOtokens)) {
             OtokenInterface longOtoken = OtokenInterface(vault.longOtokens[0]);
 
-            longOtoken.burnOtoken(msg.sender, vault.longAmounts[0]);
+            longOtoken.burnOtoken(marginPoolModule, vault.longAmounts[0]);
         }
 
         vaults[_args.owner][_args.vaultId]._clearVault();
-
-        address marginPoolModule = AddressBookInterface(addressBook).getMarginPool();
-        MarginPoolInterface marginPool = MarginPoolInterface(marginPoolModule);
 
         marginPool.transferToUser(shortOtoken.collateralAsset(), _args.to, payout);
 
