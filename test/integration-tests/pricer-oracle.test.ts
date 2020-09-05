@@ -4,17 +4,19 @@ import {
   MockChainlinkAggregatorInstance,
   MockERC20Instance,
   MockCTokenInstance,
+  CompoundPricerInstance,
 } from '../../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
-
+import {underlyingPriceToCtokenPrice} from '../compoundPricer.test'
+import {createScaledNumber} from '../utils'
 const {expectRevert, time} = require('@openzeppelin/test-helpers')
 
 const ChainlinkPricer = artifacts.require('ChainLinkPricer.sol')
-const CompoundPricer = artifacts.require('ChainLinkPricer.sol')
+const CompoundPricer = artifacts.require('CompoundPricer.sol')
 const Oracle = artifacts.require('Oracle.sol')
 const MockChainlinkAggregator = artifacts.require('MockChainlinkAggregator.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
-const MockCTOken = artifacts.require('MockCToken.sol')
+const MockCToken = artifacts.require('MockCToken.sol')
 
 /**
  * scale number with 1e8
@@ -24,8 +26,12 @@ const toChainLinkPrice = (num: number) => new BigNumber(num).times(1e8).integerV
 
 contract('Pricer + Oracle', ([owner, disputer]) => {
   let wethAggregator: MockChainlinkAggregatorInstance
+  // mock tokens
   let weth: MockERC20Instance
+  let ceth: MockCTokenInstance
+  // pricer instances
   let wethPricer: ChainLinkPricerInstance
+  let cethPricer: CompoundPricerInstance
   let oracle: OracleInstance
 
   const lockingPeriod = 60 * 10
@@ -36,12 +42,14 @@ contract('Pricer + Oracle', ([owner, disputer]) => {
     oracle = await Oracle.new({from: owner})
     wethAggregator = await MockChainlinkAggregator.new()
     weth = await MockERC20.new('WETH', 'WETH', 18)
+    ceth = await MockCToken.new('cETH', 'cETH')
 
     oracle = await Oracle.new()
     wethPricer = await ChainlinkPricer.new(weth.address, wethAggregator.address, oracle.address)
+    cethPricer = await CompoundPricer.new(ceth.address, weth.address, wethPricer.address, oracle.address)
   })
 
-  describe('get live price from chainlink', () => {
+  describe('get live price from chainlink pricer', () => {
     // aggregator have price in 1e8
     const ethPrice = toChainLinkPrice(300)
     before('mock data in weth aggregator', async () => {
@@ -66,14 +74,42 @@ contract('Pricer + Oracle', ([owner, disputer]) => {
       const priceFromOracle = await oracle.getPrice(weth.address)
       assert.equal(priceFromOracle.toString(), expectedResult.toString())
     })
-    it('should revert if price is lower than 0', async () => {
-      await wethAggregator.setLatestAnswer(-1)
-      await expectRevert(wethPricer.getPrice(), 'ChainLinkPricer: price is lower than 0')
-      await expectRevert(oracle.getPrice(weth.address), 'ChainLinkPricer: price is lower than 0')
+  })
+
+  describe('get live price from compound pricer', () => {
+    const initPrice = toChainLinkPrice(300)
+    const initPrice1e18 = new BigNumber(300).times(1e18)
+    const initExchangeRate = new BigNumber('211619877757422')
+    before('set cToken exchange rate', async () => {
+      await ceth.setExchangeRate(initExchangeRate)
+      // init eth price at 300
+      await wethAggregator.setLatestAnswer(initPrice)
+    })
+    it('should revert if pricer is not set', async () => {
+      await expectRevert(oracle.getPrice(ceth.address), 'Oracle: Pricer for this asset not set.')
+    })
+    it('should set the wethPricer and locking period, dispute period in oracle without revert.', async () => {
+      await oracle.setAssetPricer(cethPricer.address, wethPricer.address)
+      await oracle.setLockingPeriod(cethPricer.address, lockingPeriod)
+      await oracle.setDisputePeriod(cethPricer.address, disputePeriod)
+      await oracle.setAssetPricer(ceth.address, cethPricer.address)
+    })
+    it('should return the price in 1e18 from oracle', async () => {
+      const expectedResult = await underlyingPriceToCtokenPrice(initPrice1e18, initExchangeRate, weth)
+      const priceFromOracle = await oracle.getPrice(ceth.address)
+      assert.equal(priceFromOracle.toString(), expectedResult.toString())
+    })
+    it('should return the new cETH price after submitting new answer in aggregator', async () => {
+      const newPrice = toChainLinkPrice(400)
+      const newPriceIn1e18 = new BigNumber(400).times(1e18)
+      const expectedResult = await underlyingPriceToCtokenPrice(newPriceIn1e18, initExchangeRate, weth)
+      await wethAggregator.setLatestAnswer(newPrice)
+      const priceFromOracle = await oracle.getPrice(ceth.address)
+      assert.equal(priceFromOracle.toString(), expectedResult.toString())
     })
   })
 
-  describe('setExpiryPrice', () => {
+  describe('set expiry price', () => {
     // time order: t0, t1, t2, t3, t4
     let t0: number, t1: number, t2: number
     // p0 = price at t0 ... etc

@@ -19,7 +19,7 @@ const CompoundPricer = artifacts.require('CompoundPricer.sol')
 // address(0)
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
-const underlyingPriceToCtokenPrice = async (
+export const underlyingPriceToCtokenPrice = async (
   underlyingPrice: BigNumber,
   exchangeRate: BigNumber,
   underlying: MockERC20Instance,
