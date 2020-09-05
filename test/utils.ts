@@ -1,3 +1,5 @@
+import {MockERC20Instance} from '../build/types/truffle-types'
+
 import BigNumber from 'bignumber.js'
 
 export type vault = {
@@ -44,4 +46,18 @@ BigNumber.config({EXPONENTIAL_AT: 30})
  */
 export const createScaledNumber = (num: number): string => {
   return new BigNumber(num).times(1e18).toString()
+}
+
+export const underlyingPriceToCtokenPrice = async (
+  underlyingPrice: BigNumber,
+  exchangeRate: BigNumber,
+  underlying: MockERC20Instance,
+) => {
+  const underlyingDecimals = new BigNumber(await underlying.decimals())
+  const cTokenDecimals = new BigNumber(8)
+  return exchangeRate
+    .times(underlyingPrice)
+    .times(new BigNumber(10).exponentiatedBy(cTokenDecimals))
+    .div(new BigNumber(10).exponentiatedBy(underlyingDecimals.plus(new BigNumber(18))))
+    .integerValue(BigNumber.ROUND_DOWN)
 }

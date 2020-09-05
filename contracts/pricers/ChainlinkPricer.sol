@@ -12,6 +12,8 @@ import {SafeMath} from "../packages/oz/SafeMath.sol";
 contract ChainLinkPricer is OpynPricerInterface {
     using SafeMath for uint256;
 
+    uint256 public constant BASE = 1e10;
+
     /// @notice the opyn oracle address
     OracleInterface public oracle;
 
@@ -45,8 +47,8 @@ contract ChainLinkPricer is OpynPricerInterface {
     function getPrice() external override view returns (uint256) {
         int256 answer = aggregator.latestAnswer();
         require(answer > 0, "ChainLinkPricer: price is lower than 0");
-        // Scaled to 1e18 from 1e8
-        return uint256(answer * 1e10);
+        // Scale chainlink answer (1e8) to 1e18
+        return uint256(answer).mul(BASE);
     }
 
     /**
@@ -61,7 +63,7 @@ contract ChainLinkPricer is OpynPricerInterface {
         uint256 roundTimestamp = aggregator.getTimestamp(_roundId);
         require(_expiryTimestamp <= roundTimestamp, "ChainLinkPricer: invalid roundId");
 
-        uint256 price = uint256(aggregator.getAnswer(_roundId));
+        uint256 price = uint256(aggregator.getAnswer(_roundId)).mul(BASE);
         oracle.setExpiryPrice(asset, _expiryTimestamp, price);
     }
 }
