@@ -305,7 +305,7 @@ contract Controller is ReentrancyGuard, Ownable {
                 vault = _burnOtoken(Actions._parseBurnArgs(action));
             } else if (actionType == Actions.ActionType.Exercise) {
                 _exercise(Actions._parseExerciseArgs(action));
-            } else if (actionType == Actions.ActionType.Exercise) {
+            } else if (actionType == Actions.ActionType.SettleVault) {
                 _settleVault(Actions._parseSettleVaultArgs(action));
             }
         }
