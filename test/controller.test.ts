@@ -2410,7 +2410,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, holder1, random
       )
     })
 
-    it('should exercise after expiry + price is finalized', async () => {
+    it('should revert exercising if cash value receiver address in equal to address zero', async () => {
       // set it as finalized in mock
       await oracle.setIsFinalized(
         await shortOtoken.underlyingAsset(),
@@ -2418,6 +2418,29 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, holder1, random
         true,
       )
 
+      const shortAmountToBurn = new BigNumber('1')
+      const actionArgs = [
+        {
+          actionType: ActionType.Exercise,
+          owner: ZERO_ADDR,
+          sender: ZERO_ADDR,
+          asset: shortOtoken.address,
+          vaultId: '0',
+          amount: shortAmountToBurn.toNumber(),
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+
+      assert.equal(await controller.isExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
+
+      await expectRevert(
+        controller.operate(actionArgs, {from: holder1}),
+        'Actions: cannot exercise to an invalid account',
+      )
+    })
+
+    it('should exercise after expiry + price is finalized', async () => {
       const shortAmountToBurn = new BigNumber('1')
       const actionArgs = [
         {
