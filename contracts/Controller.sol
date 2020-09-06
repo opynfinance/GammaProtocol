@@ -27,6 +27,9 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     using MarginAccount for MarginAccount.Vault;
     using SafeMath for uint256;
 
+    /// @notice address that have permission to execute emergency shutdown
+    address public terminator;
+
     /// @notice the protocol state, if true, then all protocol functionality are paused.
     bool public systemPaused;
 
@@ -121,12 +124,23 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         uint256 vaultId,
         uint256 payout
     );
+    /// @notice emits an event when terminator address change
+    event TerminatorUpdated(address indexed oldTerminator, address indexed newTerminator);
 
     /**
      * @notice modifier check if protocol is not paused
      */
     modifier isNotPaused {
         require(!systemPaused, "Controller: system is paused");
+
+        _;
+    }
+
+    /**
+     * @notice modifier to check if sender is terminator address
+     */
+    modifier onlyTerminator {
+        require(msg.sender == terminator, "Controller: sender is not terminator");
 
         _;
     }
@@ -146,11 +160,24 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
-     * @notice allows admin to toggle pause / emergency shutdown
+     * @notice allows terminator to toggle pause / emergency shutdown
      * @param _paused The new boolean value to set systemPaused to.
      */
-    function setSystemPaused(bool _paused) external onlyOwner {
+    function setSystemPaused(bool _paused) external onlyTerminator {
         systemPaused = _paused;
+    }
+
+    /**
+     * @notice allows owner to set terminator address
+     * @dev can only be called from owner
+     * @param _terminator new terminator address
+     */
+    function setTerminator(address _terminator) external onlyOwner {
+        require(_terminator != address(0), "Controller: terminator cannot be set to address zero");
+
+        emit TerminatorUpdated(terminator, _terminator);
+
+        terminator = _terminator;
     }
 
     /**
@@ -169,7 +196,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev can only be called when system is not paused
      * @param _actions array of actions arguments
      */
-    function operate(Actions.ActionArgs[] memory _actions) external isNotPaused nonReentrant {
+    function operate(Actions.ActionArgs[] memory _actions) external nonReentrant {
         MarginAccount.Vault memory vault = _runActions(_actions);
         _verifyFinalState(vault);
     }
@@ -352,7 +379,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev Only account owner or operator can open a vault
      * @param _args OpenVaultArgs structure
      */
-    function _openVault(Actions.OpenVaultArgs memory _args) internal isAuthorized(msg.sender, _args.owner) {
+    function _openVault(Actions.OpenVaultArgs memory _args) internal isNotPaused isAuthorized(msg.sender, _args.owner) {
         accountVaultCounter[_args.owner] = accountVaultCounter[_args.owner].add(1);
 
         require(
@@ -367,7 +394,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @notice deposit long option into vault
      * @param _args DepositArgs structure
      */
-    function _depositLong(Actions.DepositArgs memory _args) internal returns (MarginAccount.Vault memory) {
+    function _depositLong(Actions.DepositArgs memory _args) internal isNotPaused returns (MarginAccount.Vault memory) {
         require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         require(_args.from == msg.sender, "Controller: depositor address and msg.sender address mismatch");
 
@@ -402,6 +429,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     function _withdrawLong(Actions.WithdrawArgs memory _args)
         internal
+        isNotPaused
         isAuthorized(msg.sender, _args.owner)
         returns (MarginAccount.Vault memory)
     {
@@ -427,7 +455,11 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @notice deposit collateral asset into vault
      * @param _args DepositArgs structure
      */
-    function _depositCollateral(Actions.DepositArgs memory _args) internal returns (MarginAccount.Vault memory) {
+    function _depositCollateral(Actions.DepositArgs memory _args)
+        internal
+        isNotPaused
+        returns (MarginAccount.Vault memory)
+    {
         require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         require(_args.from == msg.sender, "Controller: depositor address and msg.sender address mismatch");
 
@@ -458,6 +490,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     function _withdrawCollateral(Actions.WithdrawArgs memory _args)
         internal
+        isNotPaused
         isAuthorized(msg.sender, _args.owner)
         returns (MarginAccount.Vault memory)
     {
@@ -492,6 +525,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     function _mintOtoken(Actions.MintArgs memory _args)
         internal
+        isNotPaused
         isAuthorized(msg.sender, _args.owner)
         returns (MarginAccount.Vault memory)
     {
@@ -523,6 +557,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     function _burnOtoken(Actions.BurnArgs memory _args)
         internal
+        isNotPaused
         isAuthorized(msg.sender, _args.owner)
         returns (MarginAccount.Vault memory)
     {
@@ -571,6 +606,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     function _settleVault(Actions.SettleVaultArgs memory _args)
         internal
+        isNotPaused
         isAuthorized(msg.sender, _args.owner)
         returns (MarginAccount.Vault memory)
     {
@@ -610,7 +646,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     //High Level: call arbitrary smart contract
-    //function _call(Actions.CallArgs args) internal {
+    //function _call(Actions.CallArgs args) internal isNotPaused {
     //    //Check whitelistModule.isWhitelistCallDestination(args.address)
     //    //Call args.address with args.data
     //}
