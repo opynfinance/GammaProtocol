@@ -420,7 +420,7 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
 
       await expectRevert(
         marginPool.farm(usdc.address, random, amountToFarm, {from: random}),
-        'MarginPool: invalid receiver address',
+        'MarginPool: Sender is not farmer',
       )
     })
 
