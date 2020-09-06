@@ -25,7 +25,7 @@ const MockOtoken = artifacts.require('MockOtoken.sol')
 
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
-contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([deployer, user1, user2, random]) => {
+contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, user1, user2, random]) => {
   let otokenImpl: OtokenInstance
   let otoken1: OtokenInstance
   let otoken2: OtokenInstance
@@ -49,16 +49,16 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([deployer
     randomERC20 = await MockERC20.new('RANDOM', 'RAM', 10)
 
     // Setup AddresBook
-    addressBook = await AddressBook.new({from: deployer})
+    addressBook = await AddressBook.new({from: owner})
 
-    otokenImpl = await Otoken.new({from: deployer})
-    whitelist = await Whitelist.new(addressBook.address, {from: deployer})
-    otokenFactory = await OTokenFactory.new(addressBook.address, {from: deployer})
+    otokenImpl = await Otoken.new({from: owner})
+    whitelist = await Whitelist.new(addressBook.address, {from: owner})
+    otokenFactory = await OTokenFactory.new(addressBook.address, {from: owner})
 
     // setup addressBook
-    await addressBook.setOtokenImpl(otokenImpl.address, {from: deployer})
-    await addressBook.setWhitelist(whitelist.address, {from: deployer})
-    await addressBook.setOtokenFactory(otokenFactory.address, {from: deployer})
+    await addressBook.setOtokenImpl(otokenImpl.address, {from: owner})
+    await addressBook.setWhitelist(whitelist.address, {from: owner})
+    await addressBook.setOtokenFactory(otokenFactory.address, {from: owner})
 
     // deploy the controller instance
     testController = await MockController.new()
@@ -81,8 +81,8 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([deployer
 
   describe('Market Creation after whitelisting products', () => {
     before('Whitelist product from admin', async () => {
-      await whitelist.whitelistProduct(ethAddress, usdc.address, usdc.address, {from: deployer})
-      await whitelist.whitelistProduct(ethAddress, dai.address, dai.address, {from: deployer})
+      await whitelist.whitelistProduct(ethAddress, usdc.address, usdc.address, {from: owner})
+      await whitelist.whitelistProduct(ethAddress, dai.address, dai.address, {from: owner})
     })
 
     it('Should init otoken1 with correct name and symbol', async () => {
@@ -196,7 +196,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([deployer
       await testController.testMintOtoken(otoken1.address, user1, amountToMint.toString())
       const newOtoken = await MockOtoken.new()
       // update otokenimpl address in addressbook
-      await addressBook.setOtokenImpl(newOtoken.address, {from: deployer})
+      await addressBook.setOtokenImpl(newOtoken.address, {from: owner})
 
       const balance = await otoken1.balanceOf(user1)
       assert.equal(balance.toString(), amountToMint.toString())
