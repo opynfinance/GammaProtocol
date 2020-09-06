@@ -104,8 +104,8 @@ contract Controller is ReentrancyGuard, Ownable {
     /// @notice emits an event when a exercise action execute
     event Exercise(
         address indexed otoken,
-        address indexed from,
         address indexed exerciser,
+        address indexed receiver,
         address collateralAsset,
         uint256 otokenBurned,
         uint256 payout
@@ -547,9 +547,9 @@ contract Controller is ReentrancyGuard, Ownable {
         address marginPoolModule = AddressBookInterface(addressBook).getMarginPool();
         MarginPoolInterface marginPool = MarginPoolInterface(marginPoolModule);
 
-        marginPool.transferToUser(otoken.collateralAsset(), _args.exerciser, payout);
+        marginPool.transferToUser(otoken.collateralAsset(), _args.receiver, payout);
 
-        emit Exercise(_args.otoken, msg.sender, _args.exerciser, otoken.collateralAsset(), _args.amount, payout);
+        emit Exercise(_args.otoken, msg.sender, _args.receiver, otoken.collateralAsset(), _args.amount, payout);
     }
 
     /**
