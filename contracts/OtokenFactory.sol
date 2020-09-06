@@ -76,6 +76,7 @@ contract OtokenFactory is OtokenSpawner {
 
         bytes memory initializationCalldata = abi.encodeWithSelector(
             OtokenInterface(otokenImpl).init.selector,
+            addressBook,
             _underlyingAsset,
             _strikeAsset,
             _collateralAsset,
@@ -154,6 +155,7 @@ contract OtokenFactory is OtokenSpawner {
         address otokenImpl = AddressBookInterface(addressBook).getOtokenImpl();
         bytes memory initializationCalldata = abi.encodeWithSelector(
             OtokenInterface(otokenImpl).init.selector,
+            addressBook,
             _underlyingAsset,
             _strikeAsset,
             _collateralAsset,

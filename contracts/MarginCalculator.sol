@@ -58,9 +58,11 @@ contract MarginCalculator {
      * @return netValue the amount by which the margin is above or below the required amount.
      * @return isExcess true if there's excess margin in the vault. In this case, collateral can be taken out from the vault. False if there is insufficient margin and additional collateral needs to be added to the vault to create the position.
      */
-    function getExcessMargin(MarginAccount.Vault memory _vault) public view returns (uint256, bool) {
+    function getExcessCollateral(MarginAccount.Vault memory _vault) public view returns (uint256, bool) {
         // ensure the number of collateral, long and short array is valid.
         _checkIsValidSpread(_vault);
+        // ensure that the collateral asset is valid for the short asset
+        require(_isMarginableCollateral(_vault), "MarginCalculator: collateral asset not marginable for short asset");
         // ensure the long asset is valid for the short asset.
         require(_isMarginableLong(_vault), "MarginCalculator: long asset not marginable for short asset");
 
@@ -269,6 +271,20 @@ contract MarginCalculator {
             long.strikeAsset() == short.strikeAsset() &&
             long.collateralAsset() == short.collateralAsset() &&
             long.expiryTimestamp() == short.expiryTimestamp();
+
+        return isMarginable;
+    }
+
+    /**
+     * @dev if there is a short option in the vault, ensure that the collateral asset being used is a valid margin.
+     * @param _vault the vault to check.
+     */
+    function _isMarginableCollateral(MarginAccount.Vault memory _vault) internal view returns (bool) {
+        if (_isEmptyAssetArray(_vault.collateralAssets) || _isEmptyAssetArray(_vault.shortOtokens)) return true;
+
+        OtokenInterface short = OtokenInterface(_vault.shortOtokens[0]);
+
+        bool isMarginable = short.collateralAsset() == _vault.collateralAssets[0];
 
         return isMarginable;
     }
