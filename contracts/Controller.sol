@@ -540,7 +540,7 @@ contract Controller is ReentrancyGuard, Ownable {
 
         require(isPriceFinalized(_args.otoken), "Controller: otoken underlying asset price is not finalized yet");
 
-        uint256 payout = getPayout(_args.otoken, _args.amount);
+        uint256 payout = _getPayout(_args.otoken, _args.amount);
 
         otoken.burnOtoken(msg.sender, _args.amount);
 
@@ -558,7 +558,7 @@ contract Controller is ReentrancyGuard, Ownable {
      * @param _amount amount of Otoken
      * @return payout = cashValue * amount
      */
-    function getPayout(address _otoken, uint256 _amount) internal view returns (uint256) {
+    function _getPayout(address _otoken, uint256 _amount) internal view returns (uint256) {
         address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
         MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
 
