@@ -40,7 +40,7 @@
     "build"
   ],
   "scripts": {
-    "ganache": "ganache-cli --port 8545 --defaultBalanceEther 500",
+    "ganache": "ganache-cli --port 8545 --defaultBalanceEther 500 --allowUnlimitedContractSize",
     "migrate": "truffle migrate",
     "build": "npm run compile:contracts && npm run compile:types",
     "compile:contracts": "truffle compile",

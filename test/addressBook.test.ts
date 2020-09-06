@@ -50,7 +50,6 @@ contract('AddressBook', ([owner, otokenImplAdd, marginPoolAdd, liquidationManage
   })
 
   describe('Set controller', () => {
-    // let controller: UpgradeableContractV1Instance
     let controller: ControllerInstance
 
     before(async () => {
