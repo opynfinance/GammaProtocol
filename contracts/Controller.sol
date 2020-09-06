@@ -564,7 +564,7 @@ contract Controller is ReentrancyGuard, Ownable {
     }
 
     /**
-     * @notice settle vault option
+     * @notice settle vault after expiry
      * @param _args SettleVaultArgs structure
      */
     function _settleVault(Actions.SettleVaultArgs memory _args)
