@@ -278,20 +278,6 @@ contract MarginCalculator is Initializable {
     }
 
     /**
-     * @dev if there is a short option in the vault, ensure that the collateral asset being used is a valid margin.
-     * @param _vault the vault to check.
-     */
-    function _isMarginableCollateral(MarginAccount.Vault memory _vault) internal view returns (bool) {
-        if (_isEmptyAssetArray(_vault.collateralAssets) || _isEmptyAssetArray(_vault.shortOtokens)) return true;
-
-        OtokenInterface short = OtokenInterface(_vault.shortOtokens[0]);
-
-        bool isMarginable = short.collateralAsset() == _vault.collateralAssets[0];
-
-        return isMarginable;
-    }
-
-    /**
      * @dev if there is a short option in the vault, ensure that the long option series being used is a valid margin.
      * @param _vault the vault to check.
      */
