@@ -16,7 +16,7 @@ const MarginPool = artifacts.require('MarginPool.sol')
 // address(0)
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
-contract('MarginPool', ([controllerAddress, user1, random]) => {
+contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
   const usdcToMint = ether('1000')
   const wethToMint = ether('50')
   // ERC20 mocks
@@ -173,7 +173,7 @@ contract('MarginPool', ([controllerAddress, user1, random]) => {
       // transfer to controller
       await marginPool.transferToUser(weth.address, controllerAddress, wethToTransfer, {from: controllerAddress})
       // unwrap WETH to ETH
-      await weth.withdraw(wethToTransfer)
+      await weth.withdraw(wethToTransfer, {from: controllerAddress})
       // send ETH to user
       await web3.eth.sendTransaction({from: controllerAddress, to: user1, value: wethToTransfer})
 
@@ -341,7 +341,7 @@ contract('MarginPool', ([controllerAddress, user1, random]) => {
       )
 
       // unwrap WETH to ETH
-      await weth.withdraw(wethToTransfer)
+      await weth.withdraw(wethToTransfer, {from: controllerAddress})
       // send ETH to user
       await web3.eth.sendTransaction({from: controllerAddress, to: user1, value: wethToTransfer})
 
@@ -372,6 +372,97 @@ contract('MarginPool', ([controllerAddress, user1, random]) => {
         new BigNumber(wethToTransfer).toString(),
         userWethBalanceAfter.minus(userWethBalanceBefore).toString(),
         'ETH value transfered to user mismatch',
+      )
+
+      assert.equal(
+        new BigNumber(await usdc.balanceOf(marginPool.address)).toString(),
+        new BigNumber(await marginPool.getStoredBalance(usdc.address)).toString(),
+        'USDC Stored balance and external balance mismatch',
+      )
+
+      assert.equal(
+        new BigNumber(await weth.balanceOf(marginPool.address)).toString(),
+        new BigNumber(await marginPool.getStoredBalance(weth.address)).toString(),
+        'WETH Stored balance and external balance mismatch',
+      )
+    })
+  })
+
+  describe('Farming', () => {
+    before(async () => {
+      // send more usdc to pool
+      await usdc.mint(marginPool.address, new BigNumber('100'))
+    })
+
+    it('should revert setting farmer address from non-owner', async () => {
+      await expectRevert(marginPool.setFarmer(farmer, {from: random}), 'Ownable: caller is not the owner')
+    })
+
+    it('should set farmer address when called from owner', async () => {
+      await marginPool.setFarmer(farmer, {from: owner})
+
+      assert.equal(await marginPool.farmer(), farmer, 'farmer address mismatch')
+    })
+
+    it('should revert farming when receiver address is equal to zero', async () => {
+      const poolStoredBalanceBefore = new BigNumber(await marginPool.getStoredBalance(usdc.address))
+      const poolBlanaceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+      const amountToFarm = poolBlanaceBefore.minus(poolStoredBalanceBefore)
+
+      await expectRevert(
+        marginPool.farm(usdc.address, ZERO_ADDR, amountToFarm, {from: farmer}),
+        'MarginPool: invalid receiver address',
+      )
+    })
+
+    it('should revert farming when sender is not farmer address', async () => {
+      const poolStoredBalanceBefore = new BigNumber(await marginPool.getStoredBalance(usdc.address))
+      const poolBlanaceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+      const amountToFarm = poolBlanaceBefore.minus(poolStoredBalanceBefore)
+
+      await expectRevert(
+        marginPool.farm(usdc.address, random, amountToFarm, {from: random}),
+        'MarginPool: Sender is not farmer',
+      )
+    })
+
+    it('should farm additional USDC', async () => {
+      const poolStoredBalanceBefore = new BigNumber(await marginPool.getStoredBalance(usdc.address))
+      const poolBlanaceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+      const farmerBalanceBefore = new BigNumber(await usdc.balanceOf(farmer))
+      const amountToFarm = poolBlanaceBefore.minus(poolStoredBalanceBefore)
+
+      await marginPool.farm(usdc.address, farmer, amountToFarm, {from: farmer})
+
+      const poolStoredBalanceAfter = new BigNumber(await marginPool.getStoredBalance(usdc.address))
+      const poolBlanaceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+      const farmerBalanceAfter = new BigNumber(await usdc.balanceOf(farmer))
+
+      assert.equal(
+        poolStoredBalanceBefore.toString(),
+        poolStoredBalanceAfter.toString(),
+        'Pool stored balance mismatch',
+      )
+      assert.equal(
+        poolBlanaceBefore.minus(poolBlanaceAfter).toString(),
+        amountToFarm.toString(),
+        'Pool balance mismatch',
+      )
+      assert.equal(
+        farmerBalanceAfter.minus(farmerBalanceBefore).toString(),
+        amountToFarm.toString(),
+        'Farmer balance mismatch',
+      )
+    })
+
+    it('should revert farming when amount is greater than available balance to farm', async () => {
+      const poolStoredBalanceBefore = new BigNumber(await marginPool.getStoredBalance(usdc.address))
+      const poolBlanaceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+      const amountToFarm = new BigNumber('100000000000')
+
+      await expectRevert(
+        marginPool.farm(usdc.address, farmer, amountToFarm, {from: farmer}),
+        'MarginPool: amount exceed limit',
       )
     })
   })
