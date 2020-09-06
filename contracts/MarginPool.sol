@@ -6,20 +6,22 @@ pragma solidity 0.6.10;
 import {ERC20Interface} from "./interfaces/ERC20Interface.sol";
 import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
 import {SafeMath} from "./packages/oz/SafeMath.sol";
+import {Ownable} from "./packages/oz/Ownable.sol";
 
 /**
  * @author Opyn Team
  * @title MarginPool
  * @notice contract that hold all protocol funds
  */
-contract MarginPool {
+contract MarginPool is Ownable {
     using SafeMath for uint256;
-
-    /// @notice scaling unit
-    uint256 public constant BASE_UNIT = 1e18;
 
     /// @notice AddressBook module
     address public addressBook;
+    /// @dev the address that have access to withdraw excess funds
+    address internal harvester;
+    /// @dev mapping between an assetl and balance amount in the pool
+    mapping(address => uint256) internal assetBalance;
 
     /**
      * @notice contructor
@@ -31,6 +33,11 @@ contract MarginPool {
         addressBook = _addressBook;
     }
 
+    /// @notice emit event after updating the harvester address
+    event HarvesterUpdated(address indexed oldAddress, address indexed newAddress);
+    /// @notice emit event when an asset get harvested
+    event AssetHarvested(address indexed asset, address indexed receiver, uint256 _amount);
+
     /**
      * @notice check if the sender is the Controller module
      */
@@ -39,6 +46,15 @@ contract MarginPool {
             msg.sender == AddressBookInterface(addressBook).getController(),
             "MarginPool: Sender is not Controller"
         );
+
+        _;
+    }
+
+    /**
+     * @notice check if the sender is the harvester address
+     */
+    modifier onlyHarvester() {
+        require(msg.sender == harvester, "MarginPool: Sender is not harvester");
 
         _;
     }
@@ -58,6 +74,8 @@ contract MarginPool {
         uint256 _amount
     ) public onlyController returns (bool) {
         require(_amount > 0, "MarginPool: transferToPool amount is equal to 0");
+
+        assetBalance[_asset] = assetBalance[_asset].add(_amount);
 
         // transfer val from _user to pool
         return ERC20Interface(_asset).transferFrom(_user, address(this), _amount);
@@ -79,8 +97,19 @@ contract MarginPool {
     ) public onlyController returns (bool) {
         require(_amount > 0, "MarginPool: transferToUser amount is equal to 0");
 
+        assetBalance[_asset] = assetBalance[_asset].sub(_amount);
+
         // transfer asset val from Pool to _user
         return ERC20Interface(_asset).transfer(_user, _amount);
+    }
+
+    /**
+     * @notice get asset stored balance
+     * @param _asset asset address
+     * @return asset balance
+     */
+    function getStoredBalance(address _asset) public view returns (uint256) {
+        return assetBalance[_asset];
     }
 
     /**
@@ -129,5 +158,40 @@ contract MarginPool {
             // transfer val from Pool to _pool
             require(transferToUser(_asset[i], _user[i], _amount[i]), "MarginPool: Transfer to user failed");
         }
+    }
+
+    /**
+     * @notice function to collect excess balance
+     * @dev can only be called by harvester address
+     * @param _asset asset address
+     * @param _receiver receiver address
+     * @param _amount amount to harvest
+     */
+    function harvest(
+        address _asset,
+        address _receiver,
+        uint256 _amount
+    ) external onlyHarvester {
+        require(_receiver != address(0), "MarginPool: invalid receiver address");
+
+        uint256 externalBalance = ERC20Interface(_asset).balanceOf(address(this));
+        uint256 storedBalance = getStoredBalance(_asset);
+
+        require(_amount <= externalBalance.sub(storedBalance), "MarginPool: amount exceed limit");
+
+        ERC20Interface(_asset).transfer(_receiver, _amount);
+
+        emit AssetHarvested(_asset, _receiver, _amount);
+    }
+
+    /**
+     * @notice function to set harvester address
+     * @dev can only be called by MarginPool owner
+     * @param _harvester harvester address
+     */
+    function setHarvester(address _harvester) external onlyOwner {
+        emit HarvesterUpdated(harvester, _harvester);
+
+        harvester = _harvester;
     }
 }
