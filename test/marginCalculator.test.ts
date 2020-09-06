@@ -319,7 +319,7 @@ contract('MarginCalculator', () => {
       })
 
       it('Should revert when collateral is different from collateral of short', async () => {
-        const vault = createVault(eth200Put.address, undefined, weth.address, createScaledNumber(1), undefined, 100)
+        const vault = createVault(eth200Put.address, undefined, weth.address, scaleNum(1), undefined, 100)
         await expectRevert(
           calculator.getExcessCollateral(vault),
           'MarginCalculator: collateral asset not marginable for short asset',
