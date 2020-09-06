@@ -65,8 +65,6 @@ contract MarginCalculator is Initializable {
         require(_isMarginableCollateral(_vault), "MarginCalculator: collateral asset not marginable for short asset");
         // ensure the long asset is valid for the short asset.
         require(_isMarginableLong(_vault), "MarginCalculator: long asset not marginable for short asset");
-        // ensure that the collateral asset is valid for the short asset
-        require(_isMarginableCollateral(_vault), "MarginCalculator: collateral asset not marginable for short asset");
 
         bool hasCollateral = !_isEmptyAssetArray(_vault.collateralAssets);
 
