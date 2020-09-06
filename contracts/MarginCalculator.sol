@@ -70,7 +70,7 @@ contract MarginCalculator is Initializable {
 
         // collateral amount is always positive.
         FPI.FixedPointInt memory collateralAmount = hasCollateral
-            ? _uint256ToFPI(_tokenAmountToInernalAmount(_vault.collateralAmounts[0], _vault.collateralAssets[0]))
+            ? _uint256ToFPI(_tokenAmountToInternalAmount(_vault.collateralAmounts[0], _vault.collateralAssets[0]))
             : _uint256ToFPI(0);
 
         // Vault contains no short tokens: return collateral value.
@@ -115,7 +115,7 @@ contract MarginCalculator is Initializable {
 
         bool hasLongInVault = !_isEmptyAssetArray(_vault.longOtokens);
         FPI.FixedPointInt memory longAmount = hasLongInVault
-            ? _uint256ToFPI(_tokenAmountToInernalAmount(_vault.longAmounts[0], _vault.longOtokens[0]))
+            ? _uint256ToFPI(_tokenAmountToInternalAmount(_vault.longAmounts[0], _vault.longOtokens[0]))
             : _uint256ToFPI(0);
 
         OtokenInterface short = OtokenInterface(_vault.shortOtokens[0]);
@@ -379,7 +379,7 @@ contract MarginCalculator is Initializable {
      * @return internal amount that is sacled by 1e18.
      */
 
-    function _tokenAmountToInernalAmount(uint256 _amount, address _token) internal view returns (uint256) {
+    function _tokenAmountToInternalAmount(uint256 _amount, address _token) internal view returns (uint256) {
         ERC20Interface token = ERC20Interface(_token);
         uint256 decimals = uint256(token.decimals());
         uint256 base = 18;
