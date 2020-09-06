@@ -413,6 +413,17 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
       )
     })
 
+    it('should revert farming when sender is not farmer address', async () => {
+      const poolStoredBalanceBefore = new BigNumber(await marginPool.getStoredBalance(usdc.address))
+      const poolBlanaceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+      const amountToFarm = poolBlanaceBefore.minus(poolStoredBalanceBefore)
+
+      await expectRevert(
+        marginPool.farm(usdc.address, random, amountToFarm, {from: random}),
+        'MarginPool: invalid receiver address',
+      )
+    })
+
     it('should farm additional USDC', async () => {
       const poolStoredBalanceBefore = new BigNumber(await marginPool.getStoredBalance(usdc.address))
       const poolBlanaceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
