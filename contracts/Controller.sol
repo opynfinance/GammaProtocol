@@ -27,11 +27,14 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     using MarginAccount for MarginAccount.Vault;
     using SafeMath for uint256;
 
+    AddressBookInterface public addressbook;
+    WhitelistInterface public whitelist;
+    OracleInterface public oracle;
+    MarginCalculatorInterface public calculator;
+    MarginPoolInterface public pool;
+
     /// @notice the protocol state, if true, then all protocol functionality are paused.
     bool public systemPaused;
-
-    /// @dev AddressBook module
-    address internal addressBook;
 
     /// @dev mapping between owner address and account structure
     mapping(address => uint256) internal accountVaultCounter;
@@ -45,11 +48,17 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _addressBook adressbook module
      */
     function initialize(address _addressBook, address _owner) public initializer {
+        require(_addressBook != address(0), "Controller: invalid addressbook address");
+
         __Context_init_unchained();
         __Ownable_init_unchained(_owner);
         __ReentrancyGuard_init_unchained();
 
-        addressBook = _addressBook;
+        addressbook = AddressBookInterface(_addressBook);
+        whitelist = WhitelistInterface(addressbook.getWhitelist());
+        oracle = OracleInterface(addressbook.getOracle());
+        calculator = MarginCalculatorInterface(addressbook.getMarginCalculator());
+        pool = MarginPoolInterface(addressbook.getMarginPool());
     }
 
     /// @notice emits an event when a account operator updated for a specific account owner
@@ -206,10 +215,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         // if there is no minted short option or the short option has not expired yet
         if ((vault.shortOtokens.length == 0) || (!isExpired(vault.shortOtokens[0]))) return vault;
 
-        // if there is a short option and it has expired
-        address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
-        MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
-
         (uint256 netValue, ) = calculator.getExcessCollateral(vault);
         vault.collateralAmounts[0] = netValue;
         return vault;
@@ -221,9 +226,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @return A boolean which is true if and only if the price is finalized.
      */
     function isPriceFinalized(address _otoken) public view returns (bool) {
-        address oracleModule = AddressBookInterface(addressBook).getOracle();
-        OracleInterface oracle = OracleInterface(oracleModule);
-
         OtokenInterface otoken = OtokenInterface(_otoken);
 
         address underlying = otoken.underlyingAsset();
@@ -320,9 +322,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _vault final vault state
      */
     function _verifyFinalState(MarginAccount.Vault memory _vault) internal view {
-        address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
-        MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
-
         (, bool isValidVault) = calculator.getExcessCollateral(_vault);
 
         require(isValidVault, "Controller: invalid final vault state");
@@ -371,9 +370,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         require(_args.from == msg.sender, "Controller: depositor address and msg.sender address mismatch");
 
-        address whitelistModule = AddressBookInterface(addressBook).getWhitelist();
-        WhitelistInterface whitelist = WhitelistInterface(whitelistModule);
-
         require(
             whitelist.isWhitelistedOtoken(_args.asset),
             "Controller: otoken is not whitelisted to be used as collateral"
@@ -385,10 +381,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         vaults[_args.owner][_args.vaultId]._addLong(address(otoken), _args.amount, _args.index);
 
-        address marginPoolModule = AddressBookInterface(addressBook).getMarginPool();
-        MarginPoolInterface marginPool = MarginPoolInterface(marginPoolModule);
-
-        marginPool.transferToPool(address(otoken), _args.from, _args.amount);
+        pool.transferToPool(address(otoken), _args.from, _args.amount);
 
         emit LongOtokenDeposited(address(otoken), _args.owner, _args.from, _args.vaultId, _args.amount);
 
@@ -413,10 +406,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         vaults[_args.owner][_args.vaultId]._removeLong(address(otoken), _args.amount, _args.index);
 
-        address marginPoolModule = AddressBookInterface(addressBook).getMarginPool();
-        MarginPoolInterface marginPool = MarginPoolInterface(marginPoolModule);
-
-        marginPool.transferToUser(address(otoken), _args.to, _args.amount);
+        pool.transferToUser(address(otoken), _args.to, _args.amount);
 
         emit LongOtokenWithdrawed(address(otoken), _args.owner, _args.to, _args.vaultId, _args.amount);
 
@@ -431,9 +421,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         require(_args.from == msg.sender, "Controller: depositor address and msg.sender address mismatch");
 
-        address whitelistModule = AddressBookInterface(addressBook).getWhitelist();
-        WhitelistInterface whitelist = WhitelistInterface(whitelistModule);
-
         require(
             whitelist.isWhitelistedCollateral(_args.asset),
             "Controller: asset is not whitelisted to be used as collateral"
@@ -441,10 +428,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         vaults[_args.owner][_args.vaultId]._addCollateral(_args.asset, _args.amount, _args.index);
 
-        address marginPoolModule = AddressBookInterface(addressBook).getMarginPool();
-        MarginPoolInterface marginPool = MarginPoolInterface(marginPoolModule);
-
-        marginPool.transferToPool(_args.asset, _args.from, _args.amount);
+        pool.transferToPool(_args.asset, _args.from, _args.amount);
 
         emit CollateralAssetDeposited(_args.asset, _args.owner, _args.from, _args.vaultId, _args.amount);
 
@@ -475,10 +459,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         vaults[_args.owner][_args.vaultId]._removeCollateral(_args.asset, _args.amount, _args.index);
 
-        address marginPoolModule = AddressBookInterface(addressBook).getMarginPool();
-        MarginPoolInterface marginPool = MarginPoolInterface(marginPoolModule);
-
-        marginPool.transferToUser(_args.asset, _args.to, _args.amount);
+        pool.transferToUser(_args.asset, _args.to, _args.amount);
 
         emit CollateralAssetWithdrawed(_args.asset, _args.owner, _args.to, _args.vaultId, _args.amount);
 
@@ -497,9 +478,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     {
         require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         require(_args.to == msg.sender, "Controller: minter address and msg.sender address mismatch");
-
-        address whitelistModule = AddressBookInterface(addressBook).getWhitelist();
-        WhitelistInterface whitelist = WhitelistInterface(whitelistModule);
 
         require(whitelist.isWhitelistedOtoken(_args.otoken), "Controller: otoken is not whitelisted to be minted");
 
@@ -557,10 +535,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         otoken.burnOtoken(msg.sender, _args.amount);
 
-        address marginPoolModule = AddressBookInterface(addressBook).getMarginPool();
-        MarginPoolInterface marginPool = MarginPoolInterface(marginPoolModule);
-
-        marginPool.transferToUser(otoken.collateralAsset(), _args.receiver, payout);
+        pool.transferToUser(otoken.collateralAsset(), _args.receiver, payout);
 
         emit Exercise(_args.otoken, msg.sender, _args.receiver, otoken.collateralAsset(), _args.amount, payout);
     }
@@ -588,23 +563,17 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             "Controller: otoken underlying asset price is not finalized yet"
         );
 
-        address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
-        MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
-
         (uint256 payout, ) = calculator.getExcessCollateral(vault);
-
-        address marginPoolModule = AddressBookInterface(addressBook).getMarginPool();
-        MarginPoolInterface marginPool = MarginPoolInterface(marginPoolModule);
 
         if (_isNotEmpty(vault.longOtokens)) {
             OtokenInterface longOtoken = OtokenInterface(vault.longOtokens[0]);
 
-            longOtoken.burnOtoken(marginPoolModule, vault.longAmounts[0]);
+            longOtoken.burnOtoken(address(pool), vault.longAmounts[0]);
         }
 
         vaults[_args.owner][_args.vaultId]._clearVault();
 
-        marginPool.transferToUser(shortOtoken.collateralAsset(), _args.to, payout);
+        pool.transferToUser(shortOtoken.collateralAsset(), _args.to, payout);
 
         emit VaultSettled(address(shortOtoken), _args.owner, _args.to, _args.vaultId, payout);
     }
@@ -635,9 +604,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @return payout = cashValue * amount
      */
     function _getPayout(address _otoken, uint256 _amount) internal view returns (uint256) {
-        address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
-        MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
-
         uint256 cashValue = calculator.getExpiredCashValue(_otoken);
 
         return cashValue.mul(_amount).div(1e18);
