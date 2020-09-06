@@ -115,7 +115,6 @@ contract Controller is ReentrancyGuard, Ownable {
         address indexed otoken,
         address indexed AccountOwner,
         address indexed to,
-        address collateral,
         uint256 vaultId,
         uint256 payout
     );
@@ -602,11 +601,9 @@ contract Controller is ReentrancyGuard, Ownable {
 
         vaults[_args.owner][_args.vaultId]._clearVault();
 
-        address collateralAsset = shortOtoken.collateralAsset();
+        marginPool.transferToUser(shortOtoken.collateralAsset(), _args.to, payout);
 
-        marginPool.transferToUser(collateralAsset, _args.to, payout);
-
-        emit VaultSettled(address(shortOtoken), _args.owner, _args.to, collateralAsset, _args.vaultId, payout);
+        emit VaultSettled(address(shortOtoken), _args.owner, _args.to, _args.vaultId, payout);
     }
 
     //High Level: call arbitrary smart contract
