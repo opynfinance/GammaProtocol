@@ -2846,7 +2846,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, holder1, random
       )
     })
 
-    it('should settle after expiry + price is finalized', async () => {
+    it('should settle ITM otoken after expiry + price is finalized', async () => {
       await oracle.setIsFinalized(
         await shortOtoken.underlyingAsset(),
         new BigNumber(await shortOtoken.expiryTimestamp()),
@@ -2885,6 +2885,192 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, holder1, random
         payout.toString(),
         'Sender collateral asset balance mismatch',
       )
+    })
+
+    describe('Settle multiple vault ATM and OTM', () => {
+      let firstShortOtoken: MockOtokenInstance
+      let secondShortOtoken: MockOtokenInstance
+
+      before(async () => {
+        // give free money
+        await usdc.mint(accountOwner1, new BigNumber('1000000'))
+        await usdc.mint(accountOperator1, new BigNumber('1000000'))
+        await usdc.mint(random, new BigNumber('1000000'))
+
+        let expiryTime = new BigNumber(60 * 60 * 24) // after 1 day
+
+        firstShortOtoken = await MockOtoken.new()
+        await firstShortOtoken.init(
+          addressBook.address,
+          weth.address,
+          usdc.address,
+          usdc.address,
+          new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+          new BigNumber(await time.latest()).plus(expiryTime),
+          true,
+        )
+        // whitelist otoken to be used in the protocol
+        await whitelist.whitelistOtoken(firstShortOtoken.address, {from: owner})
+        // open new vault, mint naked short, sell it to holder 1
+        let collateralToDespoit = new BigNumber(await firstShortOtoken.strikePrice()).dividedBy(1e18)
+        let amountToMint = new BigNumber('1')
+        let vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1)).plus(1)
+        let actionArgs = [
+          {
+            actionType: ActionType.OpenVault,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: ZERO_ADDR,
+            vaultId: vaultCounter.toNumber(),
+            amount: '0',
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.MintShortOption,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: firstShortOtoken.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: amountToMint.toString(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.DepositCollateral,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: usdc.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToDespoit.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+        await usdc.approve(marginPool.address, collateralToDespoit, {from: accountOwner1})
+        await controller.operate(actionArgs, {from: accountOwner1})
+
+        expiryTime = new BigNumber(60 * 60 * 24 * 2) // after 1 day
+        secondShortOtoken = await MockOtoken.new()
+        await secondShortOtoken.init(
+          addressBook.address,
+          weth.address,
+          usdc.address,
+          usdc.address,
+          new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+          new BigNumber(await time.latest()).plus(expiryTime),
+          true,
+        )
+        // whitelist otoken to be used in the protocol
+        await whitelist.whitelistOtoken(secondShortOtoken.address, {from: owner})
+        // open new vault, mint naked short, sell it to holder 1
+        collateralToDespoit = new BigNumber(await secondShortOtoken.strikePrice()).dividedBy(1e18)
+        amountToMint = new BigNumber('1')
+        vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1)).plus(1)
+        actionArgs = [
+          {
+            actionType: ActionType.OpenVault,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: ZERO_ADDR,
+            vaultId: vaultCounter.toNumber(),
+            amount: '0',
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.MintShortOption,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: secondShortOtoken.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: amountToMint.toString(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.DepositCollateral,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: usdc.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToDespoit.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+        await usdc.approve(marginPool.address, collateralToDespoit, {from: accountOwner1})
+        await controller.operate(actionArgs, {from: accountOwner1})
+
+        await time.increaseTo(await secondShortOtoken.expiryTimestamp())
+        // set price and finalize it for both otokens
+        await oracle.setExpiryPrice(
+          await firstShortOtoken.underlyingAsset(),
+          new BigNumber(await firstShortOtoken.expiryTimestamp()),
+          new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+        )
+        await oracle.setIsFinalized(
+          await firstShortOtoken.underlyingAsset(),
+          new BigNumber(await firstShortOtoken.expiryTimestamp()),
+          true,
+        )
+        await oracle.setExpiryPrice(
+          await secondShortOtoken.underlyingAsset(),
+          new BigNumber(await secondShortOtoken.expiryTimestamp()),
+          new BigNumber(250).times(new BigNumber(10).exponentiatedBy(18)),
+        )
+        await oracle.setIsFinalized(
+          await secondShortOtoken.underlyingAsset(),
+          new BigNumber(await secondShortOtoken.expiryTimestamp()),
+          true,
+        )
+      })
+
+      it('should settle multiple vaults in one transaction (ATM,OTM)', async () => {
+        const vaultCounter = new BigNumber(await controller.getAccountVaultCounter(accountOwner1))
+        const actionArgs = [
+          {
+            actionType: ActionType.SettleVault,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: secondShortOtoken.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: '0',
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.SettleVault,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: firstShortOtoken.address,
+            vaultId: vaultCounter.minus(1).toNumber(),
+            amount: '0',
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        const payout = new BigNumber('0')
+        const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
+
+        controller.operate(actionArgs, {from: accountOwner1})
+
+        const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
+
+        assert.equal(
+          marginPoolBalanceBefore.minus(marginPoolBalanceAfter).toString(),
+          payout.toString(),
+          'Margin pool collateral asset balance mismatch',
+        )
+        assert.equal(
+          senderBalanceAfter.minus(senderBalanceBefore).toString(),
+          payout.toString(),
+          'Sender collateral asset balance mismatch',
+        )
+      })
     })
   })
 
