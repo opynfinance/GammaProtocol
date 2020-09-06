@@ -39,7 +39,7 @@ enum ActionType {
   Call,
 }
 
-contract('Controller', ([owner, accountOwner1, accountOperator1, holder1, random]) => {
+contract('Controller', ([owner, accountOwner1, accountOperator1, holder1, terminator, random]) => {
   // ERC20 mock
   let usdc: MockERC20Instance
   let weth: MockERC20Instance
@@ -3216,8 +3216,17 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, holder1, random
     })
   })
 
-  describe('Pause system', () => {
-    it('should revert when pausing the system from non-owner', async () => {
+  describe('Emergency shutdown', () => {
+    it('should revert set terminator address from non-owner', async () => {
+      await expectRevert(controllerProxy.setTerminator(terminator, {from: random}), 'Ownable: caller is not the owner')
+    })
+
+    it('should set terminator address', async () => {
+      await controllerProxy.setTerminator(terminator, {from: owner})
+      assert.equal(await controllerProxy.terminator(), terminator, 'Terminator address mismatch')
+    })
+
+    it('should revert when pausing the system from address other than terminator', async () => {
       await expectRevert(controllerProxy.setSystemPaused(true, {from: random}), 'Ownable: caller is not the owner')
     })
 
@@ -3225,7 +3234,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, holder1, random
       const stateBefore = await controllerProxy.systemPaused()
       assert.equal(stateBefore, false, 'System already paused')
 
-      await controllerProxy.setSystemPaused(true)
+      await controllerProxy.setSystemPaused(true, {from: terminator})
 
       const stateAfter = await controllerProxy.systemPaused()
       assert.equal(stateAfter, true, 'System not paused')
