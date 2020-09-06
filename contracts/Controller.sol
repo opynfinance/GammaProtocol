@@ -589,7 +589,7 @@ contract Controller is ReentrancyGuard, Ownable {
         address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
         MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
 
-        (uint256 payout, ) = calculator.getExcessCollateral(_vault);
+        (uint256 payout, ) = calculator.getExcessCollateral(vault);
 
         address marginPoolModule = AddressBookInterface(addressBook).getMarginPool();
         MarginPoolInterface marginPool = MarginPoolInterface(marginPoolModule);
@@ -639,7 +639,7 @@ contract Controller is ReentrancyGuard, Ownable {
      * @param _amount amount of Otoken
      * @return payout = cashValue * amount
      */
-    function getPayout(address _otoken, uint256 _amount) internal view returns (uint256) {
+    function _getPayout(address _otoken, uint256 _amount) internal view returns (uint256) {
         address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
         MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
 
