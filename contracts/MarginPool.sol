@@ -190,8 +190,9 @@ contract MarginPool is Ownable {
      * @param _farmer farmer address
      */
     function setFarmer(address _farmer) external onlyOwner {
+        farmer = _farmer;
+
         emit FarmerUpdated(farmer, _farmer);
 
-        farmer = _farmer;
     }
 }
