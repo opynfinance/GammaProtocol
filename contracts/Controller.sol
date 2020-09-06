@@ -462,7 +462,7 @@ contract Controller is ReentrancyGuard, Ownable {
         require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
 
         MarginAccount.Vault memory vault = vaults[_args.owner][_args.vaultId];
-        if (isNotEmpty(vault.shortOtokens)) {
+        if (_isNotEmpty(vault.shortOtokens)) {
             OtokenInterface otoken = OtokenInterface(vault.shortOtokens[0]);
 
             require(
@@ -576,7 +576,7 @@ contract Controller is ReentrancyGuard, Ownable {
 
         MarginAccount.Vault memory vault = vaults[_args.owner][_args.vaultId];
 
-        require(isNotEmpty(vault.shortOtokens), "Controller: can not settle a vault with no otoken minted");
+        require(_isNotEmpty(vault.shortOtokens), "Controller: can not settle a vault with no otoken minted");
 
         OtokenInterface shortOtoken = OtokenInterface(vault.shortOtokens[0]);
 
@@ -594,7 +594,7 @@ contract Controller is ReentrancyGuard, Ownable {
         address marginPoolModule = AddressBookInterface(addressBook).getMarginPool();
         MarginPoolInterface marginPool = MarginPoolInterface(marginPoolModule);
 
-        if (isNotEmpty(vault.longOtokens)) {
+        if (_isNotEmpty(vault.longOtokens)) {
             OtokenInterface longOtoken = OtokenInterface(vault.longOtokens[0]);
 
             longOtoken.burnOtoken(marginPoolModule, vault.longAmounts[0]);
@@ -602,16 +602,11 @@ contract Controller is ReentrancyGuard, Ownable {
 
         vaults[_args.owner][_args.vaultId]._clearVault();
 
-        marginPool.transferToUser(shortOtoken.collateralAsset(), _args.to, payout);
+        address collateralAsset = shortOtoken.collateralAsset();
 
-        emit VaultSettled(
-            address(shortOtoken),
-            _args.owner,
-            _args.to,
-            shortOtoken.collateralAsset(),
-            _args.vaultId,
-            payout
-        );
+        marginPool.transferToUser(collateralAsset, _args.to, payout);
+
+        emit VaultSettled(address(shortOtoken), _args.owner, _args.to, collateralAsset, _args.vaultId, payout);
     }
 
     //High Level: call arbitrary smart contract
@@ -629,7 +624,7 @@ contract Controller is ReentrancyGuard, Ownable {
         return ((_vaultId > 0) && (_vaultId <= accountVaultCounter[_accountOwner]));
     }
 
-    function isNotEmpty(address[] memory _array) internal pure returns (bool) {
+    function _isNotEmpty(address[] memory _array) internal pure returns (bool) {
         return (_array.length > 0) && (_array[0] != address(0));
     }
 
