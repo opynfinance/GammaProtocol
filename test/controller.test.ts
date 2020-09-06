@@ -2798,7 +2798,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, holder1, random
           owner: accountOwner1,
           sender: accountOwner1,
           asset: shortOtoken.address,
-          vaultId: vaultCounter.plus(1).toNumber(),
+          vaultId: vaultCounter.plus(10000).toNumber(),
           amount: '0',
           index: '0',
           data: ZERO_ADDR,
@@ -2887,7 +2887,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, holder1, random
       )
     })
 
-    describe('Settle multiple vault ATM and OTM', () => {
+    describe('Settle multiple vaults ATM and OTM', () => {
       let firstShortOtoken: MockOtokenInstance
       let secondShortOtoken: MockOtokenInstance
 
@@ -3002,7 +3002,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, holder1, random
         await usdc.approve(marginPool.address, collateralToDespoit, {from: accountOwner1})
         await controller.operate(actionArgs, {from: accountOwner1})
 
-        await time.increaseTo(await secondShortOtoken.expiryTimestamp())
+        await time.increaseTo(new BigNumber(await secondShortOtoken.expiryTimestamp()).plus(1000).toString())
         // set price and finalize it for both otokens
         await oracle.setExpiryPrice(
           await firstShortOtoken.underlyingAsset(),
@@ -3051,7 +3051,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, holder1, random
           },
         ]
 
-        const payout = new BigNumber('0')
+        const payout = new BigNumber('400')
         const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
         const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
 

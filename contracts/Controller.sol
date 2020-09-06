@@ -276,8 +276,8 @@ contract Controller is ReentrancyGuard, Ownable {
             Actions.ActionType actionType = action.actionType;
 
             if (
-                (actionType != Actions.ActionType.SettleVault) ||
-                (actionType != Actions.ActionType.Exercise) ||
+                (actionType != Actions.ActionType.SettleVault) &&
+                (actionType != Actions.ActionType.Exercise) &&
                 (actionType != Actions.ActionType.Call)
             ) {
                 // check if this action is manipulating the same vault as all other actions, other than SettleVault
