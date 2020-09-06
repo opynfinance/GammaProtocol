@@ -16,7 +16,7 @@ const MarginPool = artifacts.require('MarginPool.sol')
 // address(0)
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
-contract('MarginPool', ([owner, controllerAddress, harvester, user1, random]) => {
+contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
   const usdcToMint = ether('1000')
   const wethToMint = ether('50')
   // ERC20 mocks
@@ -173,7 +173,7 @@ contract('MarginPool', ([owner, controllerAddress, harvester, user1, random]) =>
       // transfer to controller
       await marginPool.transferToUser(weth.address, controllerAddress, wethToTransfer, {from: controllerAddress})
       // unwrap WETH to ETH
-      await weth.withdraw(wethToTransfer)
+      await weth.withdraw(wethToTransfer, {from: controllerAddress})
       // send ETH to user
       await web3.eth.sendTransaction({from: controllerAddress, to: user1, value: wethToTransfer})
 
@@ -341,7 +341,7 @@ contract('MarginPool', ([owner, controllerAddress, harvester, user1, random]) =>
       )
 
       // unwrap WETH to ETH
-      await weth.withdraw(wethToTransfer)
+      await weth.withdraw(wethToTransfer, {from: controllerAddress})
       // send ETH to user
       await web3.eth.sendTransaction({from: controllerAddress, to: user1, value: wethToTransfer})
 
@@ -389,14 +389,14 @@ contract('MarginPool', ([owner, controllerAddress, harvester, user1, random]) =>
   })
 
   describe('Harvest', () => {
-    it('should revert setting harvester address from non-owner', async () => {
-      await expectRevert(marginPool.setHarvester(harvester, {from: random}), 'Ownable: caller is not the owner')
+    it('should revert setting farmer address from non-owner', async () => {
+      await expectRevert(marginPool.setFarmer(farmer, {from: random}), 'Ownable: caller is not the owner')
     })
 
-    it('should set harvester address when called from owner', async () => {
-      await marginPool.setHarvester(harvester, {from: owner})
+    it('should set farmer address when called from owner', async () => {
+      await marginPool.setFarmer(farmer, {from: owner})
 
-      assert.equal(await marginPool.harvester(), harvester, 'Harvester address mismatch')
+      assert.equal(await marginPool.farmer(), farmer, 'farmer address mismatch')
     })
   })
 })

@@ -19,7 +19,7 @@ contract MarginPool is Ownable {
     /// @notice AddressBook module
     address public addressBook;
     /// @dev the address that have access to withdraw excess funds
-    address public harvester;
+    address public farmer;
     /// @dev mapping between an assetl and balance amount in the pool
     mapping(address => uint256) internal assetBalance;
 
@@ -33,10 +33,10 @@ contract MarginPool is Ownable {
         addressBook = _addressBook;
     }
 
-    /// @notice emit event after updating the harvester address
-    event HarvesterUpdated(address indexed oldAddress, address indexed newAddress);
+    /// @notice emit event after updating the farmer address
+    event FarmerUpdated(address indexed oldAddress, address indexed newAddress);
     /// @notice emit event when an asset get harvested
-    event AssetHarvested(address indexed asset, address indexed receiver, uint256 _amount);
+    event AssetFarmed(address indexed asset, address indexed receiver, uint256 _amount);
 
     /**
      * @notice check if the sender is the Controller module
@@ -51,10 +51,10 @@ contract MarginPool is Ownable {
     }
 
     /**
-     * @notice check if the sender is the harvester address
+     * @notice check if the sender is the farmer address
      */
-    modifier onlyHarvester() {
-        require(msg.sender == harvester, "MarginPool: Sender is not harvester");
+    modifier onlyFarmer() {
+        require(msg.sender == farmer, "MarginPool: Sender is not farmer");
 
         _;
     }
@@ -162,16 +162,16 @@ contract MarginPool is Ownable {
 
     /**
      * @notice function to collect excess balance
-     * @dev can only be called by harvester address
+     * @dev can only be called by farmer address
      * @param _asset asset address
      * @param _receiver receiver address
      * @param _amount amount to harvest
      */
-    function harvest(
+    function farm(
         address _asset,
         address _receiver,
         uint256 _amount
-    ) external onlyHarvester {
+    ) external onlyFarmer {
         require(_receiver != address(0), "MarginPool: invalid receiver address");
 
         uint256 externalBalance = ERC20Interface(_asset).balanceOf(address(this));
@@ -181,17 +181,17 @@ contract MarginPool is Ownable {
 
         ERC20Interface(_asset).transfer(_receiver, _amount);
 
-        emit AssetHarvested(_asset, _receiver, _amount);
+        emit AssetFarmed(_asset, _receiver, _amount);
     }
 
     /**
-     * @notice function to set harvester address
+     * @notice function to set farmer address
      * @dev can only be called by MarginPool owner
-     * @param _harvester harvester address
+     * @param _farmer farmer address
      */
-    function setHarvester(address _harvester) external onlyOwner {
-        emit HarvesterUpdated(harvester, _harvester);
+    function setFarmer(address _farmer) external onlyOwner {
+        emit FarmerUpdated(farmer, _farmer);
 
-        harvester = _harvester;
+        farmer = _farmer;
     }
 }
