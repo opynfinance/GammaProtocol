@@ -586,7 +586,10 @@ contract Controller is ReentrancyGuard, Ownable {
             "Controller: otoken underlying asset price is not finalized yet"
         );
 
-        uint256 payout = 0;
+        address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
+        MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
+
+        (uint256 payout, ) = calculator.getExcessCollateral(_vault);
 
         address marginPoolModule = AddressBookInterface(addressBook).getMarginPool();
         MarginPoolInterface marginPool = MarginPoolInterface(marginPoolModule);
