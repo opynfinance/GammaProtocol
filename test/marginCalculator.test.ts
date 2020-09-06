@@ -131,6 +131,12 @@ contract('MarginCalculator', () => {
     )
   })
 
+  describe('Deployment test', () => {
+    it('should revert deploying Calculator with addressbook address equal to zero', async () => {
+      await expectRevert(MarginCalculator.new(ZERO_ADDR), 'MarginCalculator: invalid addressbook')
+    })
+  })
+
   describe('Get cash value tests', () => {
     let closeExpiry: number
     let put: MockOtokenInstance
