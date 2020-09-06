@@ -61,6 +61,8 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
   let controllerProxy: ControllerInstance
 
   before('Deployment', async () => {
+    // addressbook deployment
+    addressBook = await AddressBook.new()
     // ERC20 deployment
     usdc = await MockERC20.new('USDC', 'USDC', 8)
     weth = await MockERC20.new('WETH', 'WETH', 18)
@@ -76,8 +78,6 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
       1753776000, // 07/29/2025 @ 8:00am (UTC)
       true,
     )
-    // addressbook deployment
-    addressBook = await AddressBook.new()
     // deploy Oracle module
     oracle = await MockOracle.new(addressBook.address, {from: owner})
     // calculator deployment
@@ -95,7 +95,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
     // set whitelist module address
     await addressBook.setWhitelist(whitelist.address)
     // deploy Controller module
-    controllerImplementation = await Controller.new(addressBook.address)
+    controllerImplementation = await Controller.new()
 
     // set controller address in AddressBook
     await addressBook.setController(controllerImplementation.address, {from: owner})
