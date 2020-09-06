@@ -93,13 +93,22 @@ contract Controller is ReentrancyGuard, Ownable {
         uint256 vaultId,
         uint256 amount
     );
-    /// @notice emits an event when a short otoken get burned from a vaukt
+    /// @notice emits an event when a short otoken get burned from a vault
     event ShortOtokenBurned(
         address indexed otoken,
         address indexed AccountOwner,
         address indexed from,
         uint256 vaultId,
         uint256 amount
+    );
+    /// @notice emits an event when a exercise action execute
+    event Exercise(
+        address indexed otoken,
+        address indexed exerciser,
+        address indexed receiver,
+        address collateralAsset,
+        uint256 otokenBurned,
+        uint256 payout
     );
 
     /**
@@ -200,7 +209,7 @@ contract Controller is ReentrancyGuard, Ownable {
      * @param _otoken The address of the relevant oToken.
      * @return A boolean which is true if and only if the price is finalized.
      */
-    function isPriceFinalized(address _otoken) external view returns (bool) {
+    function isPriceFinalized(address _otoken) public view returns (bool) {
         address oracleModule = AddressBookInterface(addressBook).getOracle();
         OracleInterface oracle = OracleInterface(oracleModule);
 
@@ -285,6 +294,8 @@ contract Controller is ReentrancyGuard, Ownable {
                 vault = _mintOtoken(Actions._parseMintArgs(action));
             } else if (actionType == Actions.ActionType.BurnShortOption) {
                 vault = _burnOtoken(Actions._parseBurnArgs(action));
+            } else if (actionType == Actions.ActionType.Exercise) {
+                _exercise(Actions._parseExerciseArgs(action));
             }
         }
 
@@ -522,7 +533,39 @@ contract Controller is ReentrancyGuard, Ownable {
      * @notice exercise option
      * @param _args ExerciseArgs structure
      */
-    // function _exercise(Actions.ExerciseArgs memory _args) internal {}
+    function _exercise(Actions.ExerciseArgs memory _args) internal {
+        OtokenInterface otoken = OtokenInterface(_args.otoken);
+
+        require(now > otoken.expiryTimestamp(), "Controller: can not exercise un-expired otoken");
+
+        require(isPriceFinalized(_args.otoken), "Controller: otoken underlying asset price is not finalized yet");
+
+        uint256 payout = _getPayout(_args.otoken, _args.amount);
+
+        otoken.burnOtoken(msg.sender, _args.amount);
+
+        address marginPoolModule = AddressBookInterface(addressBook).getMarginPool();
+        MarginPoolInterface marginPool = MarginPoolInterface(marginPoolModule);
+
+        marginPool.transferToUser(otoken.collateralAsset(), _args.receiver, payout);
+
+        emit Exercise(_args.otoken, msg.sender, _args.receiver, otoken.collateralAsset(), _args.amount, payout);
+    }
+
+    /**
+     * @notice get Otoken payout after expiry
+     * @param _otoken Otoken address
+     * @param _amount amount of Otoken
+     * @return payout = cashValue * amount
+     */
+    function _getPayout(address _otoken, uint256 _amount) internal view returns (uint256) {
+        address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
+        MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
+
+        uint256 cashValue = calculator.getExpiredCashValue(_otoken);
+
+        return cashValue.mul(_amount).div(1e18);
+    }
 
     /**
      * @notice settle vault option
