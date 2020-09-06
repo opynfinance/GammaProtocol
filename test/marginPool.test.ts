@@ -388,7 +388,7 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
     })
   })
 
-  describe('Harvest', () => {
+  describe('Farming', () => {
     it('should revert setting farmer address from non-owner', async () => {
       await expectRevert(marginPool.setFarmer(farmer, {from: random}), 'Ownable: caller is not the owner')
     })
@@ -397,6 +397,49 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
       await marginPool.setFarmer(farmer, {from: owner})
 
       assert.equal(await marginPool.farmer(), farmer, 'farmer address mismatch')
+    })
+
+    it('should revert farming when receiver address is equal to zero', async () => {
+      // send more usdc to pool
+      await usdc.mint(marginPool.address, new BigNumber('100'))
+
+      const poolStoredBalanceBefore = new BigNumber(await marginPool.getStoredBalance(usdc.address))
+      const poolBlanaceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+      const amountToFarm = poolBlanaceBefore.minus(poolStoredBalanceBefore)
+
+      await expectRevert(
+        marginPool.farm(usdc.address, ZERO_ADDR, amountToFarm, {from: farmer}),
+        'MarginPool: invalid receiver address',
+      )
+    })
+
+    it('should farm additional USDC', async () => {
+      const poolStoredBalanceBefore = new BigNumber(await marginPool.getStoredBalance(usdc.address))
+      const poolBlanaceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+      const farmerBalanceBefore = new BigNumber(await usdc.balanceOf(farmer))
+      const amountToFarm = poolBlanaceBefore.minus(poolStoredBalanceBefore)
+
+      await marginPool.farm(usdc.address, farmer, amountToFarm, {from: farmer})
+
+      const poolStoredBalanceAfter = new BigNumber(await marginPool.getStoredBalance(usdc.address))
+      const poolBlanaceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+      const farmerBalanceAfter = new BigNumber(await usdc.balanceOf(farmer))
+
+      assert.equal(
+        poolStoredBalanceBefore.toString(),
+        poolStoredBalanceAfter.toString(),
+        'Pool stored balance mismatch',
+      )
+      assert.equal(
+        poolBlanaceBefore.minus(poolBlanaceAfter).toString(),
+        amountToFarm.toString(),
+        'Pool balance mismatch',
+      )
+      assert.equal(
+        farmerBalanceAfter.minus(farmerBalanceBefore).toString(),
+        amountToFarm.toString(),
+        'Farmer balance mismatch',
+      )
     })
   })
 })
