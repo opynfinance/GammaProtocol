@@ -68,7 +68,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
     testController = await MockController.at(await addressBook.getController())
   })
 
-  describe('Market Creation before whitelisting', () => {
+  describe('Otoken Creation before whitelisting', () => {
     it('Should revert before admin whitelist any product', async () => {
       await expectRevert(
         otokenFactory.createOtoken(weth.address, usdc.address, usdc.address, strikePrice, expiry, isPut, {
@@ -79,7 +79,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
     })
   })
 
-  describe('Market Creation after whitelisting products', () => {
+  describe('Otoken Creation after whitelisting products', () => {
     before('Whitelist product from admin', async () => {
       await whitelist.whitelistProduct(weth.address, usdc.address, usdc.address, {from: owner})
       await whitelist.whitelistProduct(weth.address, dai.address, dai.address, {from: owner})
@@ -246,6 +246,22 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
       // Only MockOtoken has this method, if it return true that means we created a MockOtoken instance.
       const inited = await mockedToken.inited()
       assert.isTrue(inited)
+    })
+  })
+
+  describe('Market creation after addressbook update', () => {
+    before('update the factory address in the address book', async () => {
+      await addressBook.setOtokenFactory(random)
+    })
+
+    it('should revert when trying to create oToken', async () => {
+      const newStrikePrice = createScaled(400)
+      await expectRevert(
+        otokenFactory.createOtoken(weth.address, usdc.address, usdc.address, newStrikePrice, expiry, isPut, {
+          from: user1,
+        }),
+        'WhiteList: Sender is not Otoken Factory',
+      )
     })
   })
 })
