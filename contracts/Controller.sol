@@ -43,24 +43,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /// @dev mapping between account owner and account operator
     mapping(address => mapping(address => bool)) internal operators;
 
-    /**
-     * @notice initalize deployed contract
-     * @param _addressBook adressbook module
-     */
-    function initialize(address _addressBook, address _owner) public initializer {
-        require(_addressBook != address(0), "Controller: invalid addressbook address");
-
-        __Context_init_unchained();
-        __Ownable_init_unchained(_owner);
-        __ReentrancyGuard_init_unchained();
-
-        addressbook = AddressBookInterface(_addressBook);
-        whitelist = WhitelistInterface(addressbook.getWhitelist());
-        oracle = OracleInterface(addressbook.getOracle());
-        calculator = MarginCalculatorInterface(addressbook.getMarginCalculator());
-        pool = MarginPoolInterface(addressbook.getMarginPool());
-    }
-
     /// @notice emits an event when a account operator updated for a specific account owner
     event AccountOperatorUpdated(address indexed accountOwner, address indexed operator, bool isSet);
     /// @notice emits an event when new vault get opened
@@ -155,6 +137,21 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
+     * @notice initalize deployed contract
+     * @param _addressBook adressbook module
+     */
+    function initialize(address _addressBook, address _owner) external initializer {
+        require(_addressBook != address(0), "Controller: invalid addressbook address");
+
+        __Context_init_unchained();
+        __Ownable_init_unchained(_owner);
+        __ReentrancyGuard_init_unchained();
+
+        addressbook = AddressBookInterface(_addressBook);
+        refreshConfigInternal();
+    }
+
+    /**
      * @notice allows admin to toggle pause / emergency shutdown
      * @param _paused The new boolean value to set systemPaused to.
      */
@@ -171,6 +168,13 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         operators[msg.sender][_operator] = _isOperator;
 
         emit AccountOperatorUpdated(msg.sender, _operator, _isOperator);
+    }
+
+    /**
+     * @dev updates the lending pool core configuration
+     */
+    function refreshConfiguration() external onlyOwner {
+        refreshConfigInternal();
     }
 
     /**
@@ -607,5 +611,15 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         uint256 cashValue = calculator.getExpiredCashValue(_otoken);
 
         return cashValue.mul(_amount).div(1e18);
+    }
+
+    /**
+     * @dev updates the internal configuration of the controller
+     */
+    function refreshConfigInternal() internal {
+        whitelist = WhitelistInterface(addressbook.getWhitelist());
+        oracle = OracleInterface(addressbook.getOracle());
+        calculator = MarginCalculatorInterface(addressbook.getMarginCalculator());
+        pool = MarginPoolInterface(addressbook.getMarginPool());
     }
 }
