@@ -16,7 +16,7 @@ const MarginPool = artifacts.require('MarginPool.sol')
 // address(0)
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
-contract('MarginPool', ([controllerAddress, user1, random]) => {
+contract('MarginPool', ([owner, controllerAddress, harvester, user1, random]) => {
   const usdcToMint = ether('1000')
   const wethToMint = ether('50')
   // ERC20 mocks
@@ -373,6 +373,30 @@ contract('MarginPool', ([controllerAddress, user1, random]) => {
         userWethBalanceAfter.minus(userWethBalanceBefore).toString(),
         'ETH value transfered to user mismatch',
       )
+
+      assert.equal(
+        new BigNumber(await usdc.balanceOf(marginPool.address)).toString(),
+        new BigNumber(await marginPool.getStoredBalance(usdc.address)).toString(),
+        'USDC Stored balance and external balance mismatch',
+      )
+
+      assert.equal(
+        new BigNumber(await weth.balanceOf(marginPool.address)).toString(),
+        new BigNumber(await marginPool.getStoredBalance(weth.address)).toString(),
+        'WETH Stored balance and external balance mismatch',
+      )
+    })
+  })
+
+  describe('Harvest', () => {
+    it('should revert setting harvester address from non-owner', async () => {
+      await expectRevert(marginPool.setHarvester(harvester, {from: random}), 'Ownable: caller is not the owner')
+    })
+
+    it('should set harvester address when called from owner', async () => {
+      await marginPool.setHarvester(harvester, {from: owner})
+
+      assert.equal(await marginPool.harvester(), harvester, 'Harvester address mismatch')
     })
   })
 })

@@ -19,7 +19,7 @@ contract MarginPool is Ownable {
     /// @notice AddressBook module
     address public addressBook;
     /// @dev the address that have access to withdraw excess funds
-    address internal harvester;
+    address public harvester;
     /// @dev mapping between an assetl and balance amount in the pool
     mapping(address => uint256) internal assetBalance;
 
