@@ -9,11 +9,12 @@ import {
 } from '../../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 import {assert} from 'chai'
-
+import {createScaledNumber as createScaled} from '../utils'
 const {expectRevert} = require('@openzeppelin/test-helpers')
 
 const MockController = artifacts.require('MockController.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
+
 // real contract instances for Testing
 const Otoken = artifacts.require('Otoken.sol')
 const OTokenFactory = artifacts.require('OtokenFactory.sol')
@@ -22,8 +23,6 @@ const Whitelist = artifacts.require('Whitelist.sol')
 
 // used for testing change of Otoken impl address in AddressBook
 const MockOtoken = artifacts.require('MockOtoken.sol')
-
-const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
 contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, user1, user2, random]) => {
   let otokenImpl: OtokenInstance
@@ -34,18 +33,19 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
   let whitelist: WhitelistInstance
   let usdc: MockERC20Instance
   let dai: MockERC20Instance
+  let weth: MockERC20Instance
   let randomERC20: MockERC20Instance
 
   let testController: MockControllerInstance
 
-  const ethAddress = ZERO_ADDR
-  const strikePrice = new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18))
+  const strikePrice = createScaled(200)
   const isPut = true
   const expiry = 1753776000 // 07/29/2025 @ 8:00am (UTC)
 
   before('Deploy addressBook, otoken logic, whitelist, Factory contract', async () => {
     usdc = await MockERC20.new('USDC', 'USDC', 6)
     dai = await MockERC20.new('DAI', 'DAI', 18)
+    weth = await MockERC20.new('wETH', 'WETH', 18)
     randomERC20 = await MockERC20.new('RANDOM', 'RAM', 10)
 
     // Setup AddresBook
@@ -71,7 +71,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
   describe('Market Creation before whitelisting', () => {
     it('Should revert before admin whitelist any product', async () => {
       await expectRevert(
-        otokenFactory.createOtoken(ethAddress, usdc.address, usdc.address, strikePrice, expiry, isPut, {
+        otokenFactory.createOtoken(weth.address, usdc.address, usdc.address, strikePrice, expiry, isPut, {
           from: user1,
         }),
         'OtokenFactory: Unsupported Product',
@@ -81,44 +81,67 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
 
   describe('Market Creation after whitelisting products', () => {
     before('Whitelist product from admin', async () => {
-      await whitelist.whitelistProduct(ethAddress, usdc.address, usdc.address, {from: owner})
-      await whitelist.whitelistProduct(ethAddress, dai.address, dai.address, {from: owner})
+      await whitelist.whitelistProduct(weth.address, usdc.address, usdc.address, {from: owner})
+      await whitelist.whitelistProduct(weth.address, dai.address, dai.address, {from: owner})
     })
 
     it('Should init otoken1 with correct name and symbol', async () => {
       // otoken1: eth-usdc option
       const targetAddress1 = await otokenFactory.getTargetOtokenAddress(
-        ethAddress,
+        weth.address,
         usdc.address,
         usdc.address,
         strikePrice,
         expiry,
         isPut,
       )
-      await otokenFactory.createOtoken(ethAddress, usdc.address, usdc.address, strikePrice, expiry, isPut, {
+      await otokenFactory.createOtoken(weth.address, usdc.address, usdc.address, strikePrice, expiry, isPut, {
         from: user1,
       })
       otoken1 = await Otoken.at(targetAddress1)
-      assert.equal(await otoken1.name(), 'ETHUSDC 29-July-2025 200Put USDC Collateral')
-      assert.equal(await otoken1.symbol(), 'oETHUSDC-29JUL25-200P')
+      assert.equal(await otoken1.name(), 'WETHUSDC 29-July-2025 200Put USDC Collateral')
+      assert.equal(await otoken1.symbol(), 'oWETHUSDC-29JUL25-200P')
     })
 
     it('Should init otoken2 with correct name and symbol', async () => {
       // otoken2: eth-dai option
       const targetAddress2 = await otokenFactory.getTargetOtokenAddress(
-        ethAddress,
+        weth.address,
         dai.address,
         dai.address,
         strikePrice,
         expiry,
         isPut,
       )
-      await otokenFactory.createOtoken(ethAddress, dai.address, dai.address, strikePrice, expiry, isPut, {
+      await otokenFactory.createOtoken(weth.address, dai.address, dai.address, strikePrice, expiry, isPut, {
         from: user2,
       })
       otoken2 = await Otoken.at(targetAddress2)
-      assert.equal(await otoken2.name(), 'ETHDAI 29-July-2025 200Put DAI Collateral')
-      assert.equal(await otoken2.symbol(), 'oETHDAI-29JUL25-200P')
+      assert.equal(await otoken2.name(), 'WETHDAI 29-July-2025 200Put DAI Collateral')
+      assert.equal(await otoken2.symbol(), 'oWETHDAI-29JUL25-200P')
+    })
+
+    it('The newly created tokens should be whitelisted in the whitelist module', async () => {
+      assert.equal(await whitelist.isWhitelistedOtoken(otoken1.address), true)
+      assert.equal(await whitelist.isWhitelistedOtoken(otoken2.address), true)
+    })
+
+    it('The owner of whitelist contract can blacklist specific otoken', async () => {
+      await whitelist.blacklistOtoken(otoken1.address)
+      await whitelist.blacklistOtoken(otoken2.address)
+      assert.equal(await whitelist.isWhitelistedOtoken(otoken1.address), false)
+      assert.equal(await whitelist.isWhitelistedOtoken(otoken2.address), false)
+    })
+
+    it('should revert creating otoken after the owner blacklist the product', async () => {
+      await whitelist.blacklistProduct(weth.address, usdc.address, usdc.address)
+      const newStrikePrice = createScaled(188)
+      await expectRevert(
+        otokenFactory.createOtoken(weth.address, usdc.address, usdc.address, newStrikePrice, expiry, isPut, {
+          from: user1,
+        }),
+        'OtokenFactory: Unsupported Product',
+      )
     })
 
     it('Should revert when calling init after createOtoken', async () => {
@@ -140,7 +163,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
         addressBook.address,
         randomERC20.address,
         randomERC20.address,
-        ethAddress,
+        weth.address,
         strikePrice,
         expiry,
         isPut,
@@ -191,7 +214,12 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
   })
 
   describe('Otoken Implementation address upgrade ', () => {
-    const amountToMint = new BigNumber(10).times(new BigNumber(10).exponentiatedBy(18))
+    const amountToMint = createScaled(10)
+
+    before('whitelist product again', async () => {
+      await whitelist.whitelistProduct(weth.address, usdc.address, usdc.address, {from: owner})
+    })
+
     it('should not affect existing otoken instances', async () => {
       await testController.testMintOtoken(otoken1.address, user1, amountToMint.toString())
       const newOtoken = await MockOtoken.new()
@@ -205,14 +233,14 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
     it('should deploy MockOtoken after upgrade', async () => {
       const newExpiry = expiry + 86400
       const address = await otokenFactory.getTargetOtokenAddress(
-        ethAddress,
+        weth.address,
         usdc.address,
         usdc.address,
         strikePrice,
         newExpiry,
         isPut,
       )
-      await otokenFactory.createOtoken(ethAddress, usdc.address, usdc.address, strikePrice, newExpiry, isPut)
+      await otokenFactory.createOtoken(weth.address, usdc.address, usdc.address, strikePrice, newExpiry, isPut)
 
       const mockedToken: MockOtokenInstance = await MockOtoken.at(address)
       // Only MockOtoken has this method, if it return true that means we created a MockOtoken instance.
