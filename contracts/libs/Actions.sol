@@ -97,8 +97,8 @@ library Actions {
     }
 
     struct ExerciseArgs {
-        // The address from which we transfer the otokens, to which we pay out the cash difference if the option is ITM.
-        address exerciser;
+        // The address to which we pay out the cash difference if the option is ITM.
+        address receiver;
         // The otoken that is to be exercised
         address otoken;
         // The amount of otokens that is to be exercised
@@ -246,8 +246,9 @@ library Actions {
      */
     function _parseExerciseArgs(ActionArgs memory _args) internal pure returns (ExerciseArgs memory) {
         require(_args.actionType == ActionType.Exercise, "Actions: can only parse arguments for exercise actions");
+        require(_args.sender != address(0), "Actions: cannot exercise to an invalid account");
 
-        return ExerciseArgs({exerciser: _args.sender, otoken: _args.asset, amount: _args.amount});
+        return ExerciseArgs({receiver: _args.sender, otoken: _args.asset, amount: _args.amount});
     }
 
     /**
