@@ -93,7 +93,7 @@ contract Controller is ReentrancyGuard, Ownable {
         uint256 vaultId,
         uint256 amount
     );
-    /// @notice emits an event when a short otoken get burned from a vaukt
+    /// @notice emits an event when a short otoken get burned from a vault
     event ShortOtokenBurned(
         address indexed otoken,
         address indexed AccountOwner,
@@ -104,8 +104,8 @@ contract Controller is ReentrancyGuard, Ownable {
     /// @notice emits an event when a exercise action execute
     event Exercise(
         address indexed otoken,
-        address indexed from,
         address indexed exerciser,
+        address indexed receiver,
         address collateralAsset,
         uint256 otokenBurned,
         uint256 payout
@@ -551,16 +551,16 @@ contract Controller is ReentrancyGuard, Ownable {
 
         require(isPriceFinalized(_args.otoken), "Controller: otoken underlying asset price is not finalized yet");
 
-        uint256 payout = getPayout(_args.otoken, _args.amount);
+        uint256 payout = _getPayout(_args.otoken, _args.amount);
 
         otoken.burnOtoken(msg.sender, _args.amount);
 
         address marginPoolModule = AddressBookInterface(addressBook).getMarginPool();
         MarginPoolInterface marginPool = MarginPoolInterface(marginPoolModule);
 
-        marginPool.transferToUser(otoken.collateralAsset(), _args.exerciser, payout);
+        marginPool.transferToUser(otoken.collateralAsset(), _args.receiver, payout);
 
-        emit Exercise(_args.otoken, msg.sender, _args.exerciser, otoken.collateralAsset(), _args.amount, payout);
+        emit Exercise(_args.otoken, msg.sender, _args.receiver, otoken.collateralAsset(), _args.amount, payout);
     }
 
     /**
