@@ -2158,8 +2158,6 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, random]) => {
         const vaultBefore = await controller.getVault(accountOwner1, vaultCounter)
 
         const shortOtokenToBurn = new BigNumber(vaultBefore.shortAmounts[0])
-        console.log(shortOtokenToBurn.toString())
-        console.log(new BigNumber(await shortOtoken.balanceOf(accountOwner1)).toString())
         const actionArgs = [
           {
             actionType: ActionType.BurnShortOption,
