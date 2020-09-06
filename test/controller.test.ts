@@ -2343,45 +2343,8 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, holder1, random
           data: ZERO_ADDR,
         },
       ]
-      const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
-      const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
-      const senderShortBalanceBefore = new BigNumber(await shortOtoken.balanceOf(accountOwner1))
-
       await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
       await controller.operate(actionArgs, {from: accountOwner1})
-
-      const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
-      const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
-      const senderShortBalanceAfter = new BigNumber(await shortOtoken.balanceOf(accountOwner1))
-      const vaultAfter = await controller.getVault(accountOwner1, vaultCounter)
-      assert.equal(
-        marginPoolBalanceAfter.minus(marginPoolBalanceBefore).toString(),
-        collateralToDeposit.toString(),
-        'Margin pool collateral asset balance mismatch',
-      )
-      assert.equal(
-        senderBalanceBefore.minus(senderBalanceAfter).toString(),
-        collateralToDeposit.toString(),
-        'Sender collateral asset balance mismatch',
-      )
-      assert.equal(vaultAfter.collateralAssets.length, 1, 'Vault collateral asset array length mismatch')
-      assert.equal(vaultAfter.shortOtokens.length, 1, 'Vault short otoken array length mismatch')
-      assert.equal(
-        vaultAfter.collateralAssets[0],
-        usdc.address,
-        'Collateral asset address deposited into vault mismatch',
-      )
-      assert.equal(
-        vaultAfter.shortOtokens[0],
-        shortOtoken.address,
-        'Short otoken address deposited into vault mismatch',
-      )
-      assert.equal(
-        senderShortBalanceAfter.minus(senderShortBalanceBefore).toString(),
-        amountToMint.toString(),
-        'Short otoken amount minted mismatch',
-      )
-
       // transger minted short ototken to hodler`
       shortOtoken.transfer(holder1, amountToMint, {from: accountOwner1})
     })
