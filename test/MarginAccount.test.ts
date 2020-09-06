@@ -59,6 +59,15 @@ contract('MarginAccount', ([deployer, controller]) => {
       assert.equal(vault.shortAmounts[vault.shortAmounts.length - 1], new BigNumber(10))
     })
 
+    it('should revert when adding 0 short', async () => {
+      const vaultCounter = new BigNumber(0)
+
+      await expectRevert(
+        marginAccountTester.testAddShort(vaultCounter, otoken.address, 0, 0),
+        'MarginAccount: invalid short otoken amount',
+      )
+    })
+
     it('should add a different short otokens to a different index', async () => {
       const vaultCounter = new BigNumber(0)
 

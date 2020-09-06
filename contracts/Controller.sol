@@ -64,7 +64,7 @@ contract Controller is ReentrancyGuard, Ownable {
     /// @notice emits an event when a long otoken is withdrawed from a vault
     event LongOtokenWithdrawed(
         address indexed otoken,
-        address indexedAccountOwner,
+        address indexed AccountOwner,
         address indexed to,
         uint256 vaultId,
         uint256 amount
@@ -80,8 +80,24 @@ contract Controller is ReentrancyGuard, Ownable {
     /// @notice emits an event when a collateral asset is withdrawed from a vault
     event CollateralAssetWithdrawed(
         address indexed asset,
-        address indexedAccountOwner,
+        address indexed AccountOwner,
         address indexed to,
+        uint256 vaultId,
+        uint256 amount
+    );
+    /// @notice emits an event when a short otoken get minted into a vault
+    event ShortOtokenMinted(
+        address indexed otoken,
+        address indexed AccountOwner,
+        address indexed to,
+        uint256 vaultId,
+        uint256 amount
+    );
+    /// @notice emits an event when a short otoken get burned from a vaukt
+    event ShortOtokenBurned(
+        address indexed otoken,
+        address indexed AccountOwner,
+        address indexed from,
         uint256 vaultId,
         uint256 amount
     );
@@ -146,14 +162,6 @@ contract Controller is ReentrancyGuard, Ownable {
      */
     //function redeemForEmergency(address _owner, uint256 _vaultId) external isNotPaused isAuthorized(args.owner) {
     //}
-
-    /**
-     * @notice set batch underlying asset price
-     * @param _otoken otoken address
-     * @param _roundsBack chainlink round number relative to specific timestamp
-     */
-    // function setBatchUnderlyingPrice(address _otoken, uint256 _roundsBack) external {
-    // }
 
     /**
      * @notice check if a specific address is an operator for an owner account
@@ -273,6 +281,10 @@ contract Controller is ReentrancyGuard, Ownable {
                 vault = _depositCollateral(Actions._parseDepositArgs(action));
             } else if (actionType == Actions.ActionType.WithdrawCollateral) {
                 vault = _withdrawCollateral(Actions._parseWithdrawArgs(action));
+            } else if (actionType == Actions.ActionType.MintShortOption) {
+                vault = _mintOtoken(Actions._parseMintArgs(action));
+            } else if (actionType == Actions.ActionType.BurnShortOption) {
+                vault = _burnOtoken(Actions._parseBurnArgs(action));
             }
         }
 
@@ -417,7 +429,7 @@ contract Controller is ReentrancyGuard, Ownable {
 
     /**
      * @notice withdraw collateral asset from vault
-     * @dev only account owner or operator can withdraw long option from vault
+     * @dev only account owner or operator can withdraw collateral option from vault
      * @param _args WithdrawArgs structure
      */
     function _withdrawCollateral(Actions.WithdrawArgs memory _args)
@@ -451,17 +463,60 @@ contract Controller is ReentrancyGuard, Ownable {
 
     /**
      * @notice mint option into vault
-     * @dev only account owner or operator can withdraw long option from vault
+     * @dev only account owner or operator can mint short otoken into vault
      * @param _args MintArgs structure
      */
-    // function _mintOtoken(Actions.MintArgs memory _args) internal isAuthorized(_args.owner) {}
+    function _mintOtoken(Actions.MintArgs memory _args)
+        internal
+        isAuthorized(msg.sender, _args.owner)
+        returns (MarginAccount.Vault memory)
+    {
+        require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+        require(_args.to == msg.sender, "Controller: minter address and msg.sender address mismatch");
+
+        address whitelistModule = AddressBookInterface(addressBook).getWhitelist();
+        WhitelistInterface whitelist = WhitelistInterface(whitelistModule);
+
+        require(whitelist.isWhitelistedOtoken(_args.otoken), "Controller: otoken is not whitelisted to be minted");
+
+        OtokenInterface otoken = OtokenInterface(_args.otoken);
+
+        require(now <= otoken.expiryTimestamp(), "Controller: can not mint expired otoken");
+
+        vaults[_args.owner][_args.vaultId]._addShort(_args.otoken, _args.amount, _args.index);
+
+        otoken.mintOtoken(_args.to, _args.amount);
+
+        emit ShortOtokenMinted(_args.otoken, _args.owner, _args.to, _args.vaultId, _args.amount);
+
+        return vaults[_args.owner][_args.vaultId];
+    }
 
     /**
      * @notice burn option
      * @dev only account owner or operator can withdraw long option from vault
      * @param _args MintArgs structure
      */
-    // function _burnOtoken(Actions.BurnArgs memory _args) internal {}
+    function _burnOtoken(Actions.BurnArgs memory _args)
+        internal
+        isAuthorized(msg.sender, _args.owner)
+        returns (MarginAccount.Vault memory)
+    {
+        require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+        require(_args.from == msg.sender, "Controller: burner address and msg.sender address mismatch");
+
+        OtokenInterface otoken = OtokenInterface(_args.otoken);
+
+        require(now <= otoken.expiryTimestamp(), "Controller: can not burn expired otoken");
+
+        vaults[_args.owner][_args.vaultId]._removeShort(_args.otoken, _args.amount, _args.index);
+
+        otoken.burnOtoken(_args.from, _args.amount);
+
+        emit ShortOtokenBurned(_args.otoken, _args.owner, _args.from, _args.vaultId, _args.amount);
+
+        return vaults[_args.owner][_args.vaultId];
+    }
 
     /**
      * @notice exercise option
@@ -490,7 +545,7 @@ contract Controller is ReentrancyGuard, Ownable {
         return ((_vaultId > 0) && (_vaultId <= accountVaultCounter[_accountOwner]));
     }
 
-    function isNotEmpty(address[] memory _array) internal view returns (bool) {
+    function isNotEmpty(address[] memory _array) internal pure returns (bool) {
         return (_array.length > 0) && (_array[0] != address(0));
     }
 }
