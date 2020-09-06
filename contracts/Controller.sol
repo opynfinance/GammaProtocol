@@ -93,7 +93,7 @@ contract Controller is ReentrancyGuard, Ownable {
         uint256 vaultId,
         uint256 amount
     );
-    /// @notice emits an event when a short otoken get burned from a vaukt
+    /// @notice emits an event when a short otoken get burned from a vault
     event ShortOtokenBurned(
         address indexed otoken,
         address indexed AccountOwner,
