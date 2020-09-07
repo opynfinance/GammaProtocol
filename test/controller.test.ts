@@ -22,6 +22,7 @@ const MockWhitelistModule = artifacts.require('MockWhitelistModule.sol')
 const AddressBook = artifacts.require('AddressBook.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
+const MarginAccount = artifacts.require('MarginAccount.sol')
 
 // address(0)
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
@@ -39,7 +40,7 @@ enum ActionType {
   Call,
 }
 
-contract('Controller', ([owner, accountOwner1, accountOperator1, holder1, random]) => {
+contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, holder1, random]) => {
   // ERC20 mock
   let usdc: MockERC20Instance
   let weth: MockERC20Instance
@@ -80,6 +81,8 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, holder1, random
     // set whitelist module address
     await addressBook.setWhitelist(whitelist.address)
     // deploy Controller module
+    const lib = await MarginAccount.new()
+    await Controller.link('MarginAccount', lib.address)
     controllerImplementation = await Controller.new()
 
     // set controller address in AddressBook
@@ -213,6 +216,37 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, holder1, random
       await expectRevert(
         controllerProxy.operate(actionArgs, {from: accountOwner1}),
         'Controller: can not run actions on different vaults',
+      )
+    })
+
+    it('should revert opening multiple vaults for different owners in the same operate call', async () => {
+      await controllerProxy.setOperator(accountOwner1, true, {from: accountOwner2})
+      const actionArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: accountOwner1,
+          sender: accountOwner1,
+          asset: ZERO_ADDR,
+          vaultId: '1',
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.OpenVault,
+          owner: accountOwner2,
+          sender: accountOwner1,
+          asset: ZERO_ADDR,
+          vaultId: '1',
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+
+      await expectRevert(
+        controllerProxy.operate(actionArgs, {from: accountOwner1}),
+        'Controller: can not run actions for different owners',
       )
     })
 
