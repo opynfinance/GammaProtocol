@@ -166,21 +166,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
-     * @notice initalize deployed contract
-     * @param _addressBook adressbook module
-     */
-    function initialize(address _addressBook, address _owner) external initializer {
-        require(_addressBook != address(0), "Controller: invalid addressbook address");
-
-        __Context_init_unchained();
-        __Ownable_init_unchained(_owner);
-        __ReentrancyGuard_init_unchained();
-
-        addressbook = AddressBookInterface(_addressBook);
-        _refreshConfigInternal();
-    }
-
-    /**
      * @notice allows admin to toggle pause / emergency shutdown
      * @param _paused The new boolean value to set systemPaused to.
      */
