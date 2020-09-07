@@ -27,11 +27,11 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     using MarginAccount for MarginAccount.Vault;
     using SafeMath for uint256;
 
-    AddressBookInterface internal addressbook;
-    WhitelistInterface internal whitelist;
-    OracleInterface internal oracle;
-    MarginCalculatorInterface internal calculator;
-    MarginPoolInterface internal pool;
+    AddressBookInterface public addressbook;
+    WhitelistInterface public whitelist;
+    OracleInterface public oracle;
+    MarginCalculatorInterface public calculator;
+    MarginPoolInterface public pool;
 
     /// @notice the protocol state, if true, then all protocol functionality are paused.
     bool public systemPaused;
