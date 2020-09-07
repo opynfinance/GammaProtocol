@@ -43,18 +43,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /// @dev mapping between account owner and account operator
     mapping(address => mapping(address => bool)) internal operators;
 
-    /**
-     * @notice initalize deployed contract
-     * @param _addressBook adressbook module
-     */
-    function initialize(address _addressBook, address _owner) public initializer {
-        __Context_init_unchained();
-        __Ownable_init_unchained(_owner);
-        __ReentrancyGuard_init_unchained();
-
-        addressBook = _addressBook;
-    }
-
     /// @notice emits an event when a account operator updated for a specific account owner
     event AccountOperatorUpdated(address indexed accountOwner, address indexed operator, bool isSet);
     /// @notice emits an event when new vault get opened
