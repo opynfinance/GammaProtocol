@@ -1,5 +1,7 @@
 pragma solidity =0.6.10;
 
+pragma experimental ABIEncoderV2;
+
 import {SafeMath} from "../packages/oz/SafeMath.sol";
 
 /**
@@ -40,7 +42,7 @@ library MarginAccount {
         address _shortOtoken,
         uint256 _amount,
         uint256 _index
-    ) internal {
+    ) external {
         require(_amount > 0, "MarginAccount: invalid short otoken amount");
 
         // Valid indexes in any array are between 0 and array.length - 1.
@@ -71,7 +73,7 @@ library MarginAccount {
         address _shortOtoken,
         uint256 _amount,
         uint256 _index
-    ) internal {
+    ) external {
         // Check that the removed short otoken exists in the vault
         require(
             (_index < _vault.shortOtokens.length) && (_vault.shortOtokens[_index] == _shortOtoken),
@@ -97,7 +99,7 @@ library MarginAccount {
         address _longOtoken,
         uint256 _amount,
         uint256 _index
-    ) internal {
+    ) external {
         require(_amount > 0, "MarginAccount: invalid long otoken amount");
 
         // Valid indexes in any array are between 0 and array.length - 1.
@@ -128,7 +130,7 @@ library MarginAccount {
         address _longOtoken,
         uint256 _amount,
         uint256 _index
-    ) internal {
+    ) external {
         // Check that the removed long token exists in the vault
         require(
             (_index < _vault.longOtokens.length) && (_vault.longOtokens[_index] == _longOtoken),
@@ -154,7 +156,7 @@ library MarginAccount {
         address _collateralAsset,
         uint256 _amount,
         uint256 _index
-    ) internal {
+    ) external {
         require(_amount > 0, "MarginAccount: invalid collateral amount");
 
         // Valid indexes in any array are between 0 and array.length - 1.
@@ -186,7 +188,7 @@ library MarginAccount {
         address _collateralAsset,
         uint256 _amount,
         uint256 _index
-    ) internal {
+    ) external {
         // Check the token is the same as vault.collateral[idx]
         require(
             (_index < _vault.collateralAssets.length) && (_vault.collateralAssets[_index] == _collateralAsset),
@@ -204,7 +206,7 @@ library MarginAccount {
      * @dev remove everything in a vault. Reset short, long and collateral assets and amounts arrays to an empty array.
      * @param _vault The vault that the user is clearing.
      */
-    function _clearVault(Vault storage _vault) internal {
+    function _clearVault(Vault storage _vault) external {
         delete _vault.shortAmounts;
         delete _vault.longAmounts;
         delete _vault.collateralAmounts;
