@@ -3,8 +3,6 @@
  */
 pragma solidity 0.6.10;
 
-pragma experimental ABIEncoderV2;
-
 import "../packages/oz/SignedSafeMath.sol";
 
 /**
@@ -20,11 +18,11 @@ library FixedPointInt256 {
     }
 
     /**
-     * @notice Constructs an `FixedPointInt` from an unscaled int, e.g., `b=5` gets stored externally as `5**18`.
+     * @notice Constructs an `FixedPointInt` from an unscaled int, e.g., `b=5` gets stored internally as `5**18`.
      * @param a int to convert into a FixedPoint.
      * @return the converted FixedPoint.
      */
-    function fromUnscaledInt(int256 a) external pure returns (FixedPointInt memory) {
+    function fromUnscaledInt(int256 a) internal pure returns (FixedPointInt memory) {
         return FixedPointInt(a.mul(SCALING_FACTOR));
     }
 
@@ -34,7 +32,7 @@ library FixedPointInt256 {
      * @param b FixedPoint
      * @return sum of two signed integer
      */
-    function add(FixedPointInt memory a, FixedPointInt memory b) external pure returns (FixedPointInt memory) {
+    function add(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (FixedPointInt memory) {
         return FixedPointInt(a.value.add(b.value));
     }
 
@@ -44,7 +42,7 @@ library FixedPointInt256 {
      * @param b FixedPoint
      * @return difference of two fixed point
      */
-    function sub(FixedPointInt memory a, FixedPointInt memory b) external pure returns (FixedPointInt memory) {
+    function sub(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (FixedPointInt memory) {
         return FixedPointInt(a.value.sub(b.value));
     }
 
@@ -55,7 +53,7 @@ library FixedPointInt256 {
      * @param b FixedPoint
      * @return mul of two fixed point
      */
-    function mul(FixedPointInt memory a, FixedPointInt memory b) external pure returns (FixedPointInt memory) {
+    function mul(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (FixedPointInt memory) {
         return FixedPointInt((a.value.mul(b.value)).add(SCALING_FACTOR / 2) / SCALING_FACTOR);
     }
 
@@ -66,7 +64,7 @@ library FixedPointInt256 {
      * @param b FixedPoint
      * @return div of two signed integer
      */
-    function div(FixedPointInt memory a, FixedPointInt memory b) external pure returns (FixedPointInt memory) {
+    function div(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (FixedPointInt memory) {
         return FixedPointInt((a.value.mul(SCALING_FACTOR)).add(b.value / 2) / b.value);
     }
 
@@ -76,7 +74,7 @@ library FixedPointInt256 {
      * @param b signed integer
      * @return min of two signed integer
      */
-    function min(FixedPointInt memory a, FixedPointInt memory b) external pure returns (FixedPointInt memory) {
+    function min(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (FixedPointInt memory) {
         return a.value < b.value ? a : b;
     }
 
@@ -86,7 +84,7 @@ library FixedPointInt256 {
      * @param b signed integer
      * @return max of two signed integer
      */
-    function max(FixedPointInt memory a, FixedPointInt memory b) external pure returns (FixedPointInt memory) {
+    function max(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (FixedPointInt memory) {
         return a.value > b.value ? a : b;
     }
 
@@ -96,7 +94,7 @@ library FixedPointInt256 {
      * @param b a signed integer
      * @return True if equal, or False.
      */
-    function isEqual(FixedPointInt memory a, FixedPointInt memory b) external pure returns (bool) {
+    function isEqual(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (bool) {
         return a.value == b.value;
     }
 
@@ -106,7 +104,7 @@ library FixedPointInt256 {
      * @param b a signed integer
      * @return True if `a > b`, or False.
      */
-    function isGreaterThan(FixedPointInt memory a, FixedPointInt memory b) external pure returns (bool) {
+    function isGreaterThan(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (bool) {
         return a.value > b.value;
     }
 
@@ -116,7 +114,7 @@ library FixedPointInt256 {
      * @param b a signed integer
      * @return True if `a >= b`, or False.
      */
-    function isGreaterThanOrEqual(FixedPointInt memory a, FixedPointInt memory b) external pure returns (bool) {
+    function isGreaterThanOrEqual(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (bool) {
         return a.value >= b.value;
     }
 
@@ -126,7 +124,7 @@ library FixedPointInt256 {
      * @param b a signed integer
      * @return True if `a < b`, or False.
      */
-    function isLessThan(FixedPointInt memory a, FixedPointInt memory b) external pure returns (bool) {
+    function isLessThan(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (bool) {
         return a.value < b.value;
     }
 
@@ -136,7 +134,7 @@ library FixedPointInt256 {
      * @param b a signed integer
      * @return True if `a <= b`, or False.
      */
-    function isLessThanOrEqual(FixedPointInt memory a, FixedPointInt memory b) external pure returns (bool) {
+    function isLessThanOrEqual(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (bool) {
         return a.value <= b.value;
     }
 }

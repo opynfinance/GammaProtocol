@@ -3,8 +3,6 @@
  */
 pragma solidity 0.6.10;
 
-pragma experimental ABIEncoderV2;
-
 /**
  *
  */
@@ -147,7 +145,7 @@ library Actions {
      * @param _args The general action arguments structure
      * @return The arguments for a open vault action
      */
-    function _parseOpenVaultArgs(ActionArgs memory _args) external pure returns (OpenVaultArgs memory) {
+    function _parseOpenVaultArgs(ActionArgs memory _args) internal pure returns (OpenVaultArgs memory) {
         require(_args.actionType == ActionType.OpenVault, "Actions: can only parse arguments for open vault actions");
         require(_args.owner != address(0), "Actions: cannot open vault for an invalid account");
 
@@ -159,7 +157,7 @@ library Actions {
      * @param _args The general action arguments structure
      * @return The arguments for a mint action
      */
-    function _parseMintArgs(ActionArgs memory _args) external pure returns (MintArgs memory) {
+    function _parseMintArgs(ActionArgs memory _args) internal pure returns (MintArgs memory) {
         require(_args.actionType == ActionType.MintShortOption, "Actions: can only parse arguments for mint actions");
         require(_args.owner != address(0), "Actions: cannot mint from an invalid account");
 
@@ -179,7 +177,7 @@ library Actions {
      * @param _args The general action arguments structure
      * @return The arguments for a burn action
      */
-    function _parseBurnArgs(ActionArgs memory _args) external pure returns (BurnArgs memory) {
+    function _parseBurnArgs(ActionArgs memory _args) internal pure returns (BurnArgs memory) {
         require(_args.actionType == ActionType.BurnShortOption, "Actions: can only parse arguments for burn actions");
         require(_args.owner != address(0), "Actions: cannot burn from an invalid account");
 
@@ -199,7 +197,7 @@ library Actions {
      * @param _args The general action arguments structure
      * @return The arguments for a deposit action
      */
-    function _parseDepositArgs(ActionArgs memory _args) external pure returns (DepositArgs memory) {
+    function _parseDepositArgs(ActionArgs memory _args) internal pure returns (DepositArgs memory) {
         require(
             (_args.actionType == ActionType.DepositLongOption) || (_args.actionType == ActionType.DepositCollateral),
             "Actions: can only parse arguments for deposit actions"
@@ -222,7 +220,7 @@ library Actions {
      * @param _args The general action arguments structure
      * @return The arguments for a withdraw action
      */
-    function _parseWithdrawArgs(ActionArgs memory _args) external pure returns (WithdrawArgs memory) {
+    function _parseWithdrawArgs(ActionArgs memory _args) internal pure returns (WithdrawArgs memory) {
         require(
             (_args.actionType == ActionType.WithdrawLongOption) || (_args.actionType == ActionType.WithdrawCollateral),
             "Actions: can only parse arguments for withdraw actions"
@@ -246,7 +244,7 @@ library Actions {
      * @param _args The general action arguments structure
      * @return The arguments for a exercise action
      */
-    function _parseExerciseArgs(ActionArgs memory _args) external pure returns (ExerciseArgs memory) {
+    function _parseExerciseArgs(ActionArgs memory _args) internal pure returns (ExerciseArgs memory) {
         require(_args.actionType == ActionType.Exercise, "Actions: can only parse arguments for exercise actions");
         require(_args.sender != address(0), "Actions: cannot exercise to an invalid account");
 
@@ -258,7 +256,7 @@ library Actions {
      * @param _args The general action arguments structure
      * @return The arguments for a settle vault action
      */
-    function _parseSettleVaultArgs(ActionArgs memory _args) external pure returns (SettleVaultArgs memory) {
+    function _parseSettleVaultArgs(ActionArgs memory _args) internal pure returns (SettleVaultArgs memory) {
         require(
             _args.actionType == ActionType.SettleVault,
             "Actions: can only parse arguments for settle vault actions"
@@ -273,7 +271,7 @@ library Actions {
      * @param _args The general action arguments structure
      * @return The arguments for a call action
      */
-    function _parseCallArgs(ActionArgs memory _args) external pure returns (CallArgs memory) {
+    function _parseCallArgs(ActionArgs memory _args) internal pure returns (CallArgs memory) {
         require(_args.actionType == ActionType.Call, "Actions: can only parse arguments for call actions");
         require(_args.sender != address(0), "Actions: target address cannot be address(0)");
 
