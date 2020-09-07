@@ -3285,11 +3285,11 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
 
       // referesh controller configuration
       await controllerProxy.refreshConfiguration()
-
-      assert.equal(await controllerProxy.oracle(), oracle.address, 'Oracle address mismatch after refresh')
-      assert.equal(await controllerProxy.calculator(), calculator.address, 'Calculator address mismatch after refresh')
-      assert.equal(await controllerProxy.pool(), marginPool.address, 'Oracle address mismatch after refresh')
-      assert.equal(await controllerProxy.whitelist(), whitelist.address, 'Oracle address mismatch after refresh')
+      const [_whitelist, _oracle, _calculator, _pool] = await controllerProxy.getConfiguration()
+      assert.equal(_oracle, oracle.address, 'Oracle address mismatch after refresh')
+      assert.equal(_calculator, calculator.address, 'Calculator address mismatch after refresh')
+      assert.equal(_pool, marginPool.address, 'Oracle address mismatch after refresh')
+      assert.equal(_whitelist, whitelist.address, 'Oracle address mismatch after refresh')
     })
   })
 })
