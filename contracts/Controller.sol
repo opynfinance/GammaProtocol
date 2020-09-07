@@ -371,7 +371,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _args DepositArgs structure
      */
     function _depositLong(Actions.DepositArgs memory _args) internal returns (MarginAccount.Vault memory) {
-        require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+        require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         require(_args.from == msg.sender, "Controller: depositor address and msg.sender address mismatch");
 
         require(
@@ -402,7 +402,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         isAuthorized(msg.sender, _args.owner)
         returns (MarginAccount.Vault memory)
     {
-        require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+        require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
 
         OtokenInterface otoken = OtokenInterface(_args.asset);
 
@@ -422,7 +422,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _args DepositArgs structure
      */
     function _depositCollateral(Actions.DepositArgs memory _args) internal returns (MarginAccount.Vault memory) {
-        require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+        require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         require(_args.from == msg.sender, "Controller: depositor address and msg.sender address mismatch");
 
         require(
@@ -449,7 +449,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         isAuthorized(msg.sender, _args.owner)
         returns (MarginAccount.Vault memory)
     {
-        require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+        require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
 
         MarginAccount.Vault memory vault = vaults[_args.owner][_args.vaultId];
         if (_isNotEmpty(vault.shortOtokens)) {
@@ -480,7 +480,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         isAuthorized(msg.sender, _args.owner)
         returns (MarginAccount.Vault memory)
     {
-        require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+        require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         require(_args.to == msg.sender, "Controller: minter address and msg.sender address mismatch");
 
         require(whitelist.isWhitelistedOtoken(_args.otoken), "Controller: otoken is not whitelisted to be minted");
@@ -508,7 +508,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         isAuthorized(msg.sender, _args.owner)
         returns (MarginAccount.Vault memory)
     {
-        require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+        require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         require(_args.from == msg.sender, "Controller: burner address and msg.sender address mismatch");
 
         OtokenInterface otoken = OtokenInterface(_args.otoken);
@@ -553,7 +553,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         isAuthorized(msg.sender, _args.owner)
         returns (MarginAccount.Vault memory)
     {
-        require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+        require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
 
         MarginAccount.Vault memory vault = vaults[_args.owner][_args.vaultId];
 
@@ -593,7 +593,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _accountOwner account owner address
      * @param _vaultId vault id
      */
-    function checkVaultId(address _accountOwner, uint256 _vaultId) internal view returns (bool) {
+    function _checkVaultId(address _accountOwner, uint256 _vaultId) internal view returns (bool) {
         return ((_vaultId > 0) && (_vaultId <= accountVaultCounter[_accountOwner]));
     }
 
