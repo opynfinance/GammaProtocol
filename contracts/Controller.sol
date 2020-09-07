@@ -148,7 +148,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         __ReentrancyGuard_init_unchained();
 
         addressbook = AddressBookInterface(_addressBook);
-        refreshConfigInternal();
+        _refreshConfigInternal();
     }
 
     /**
@@ -174,7 +174,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev updates the lending pool core configuration
      */
     function refreshConfiguration() external onlyOwner {
-        refreshConfigInternal();
+        _refreshConfigInternal();
     }
 
     /**
@@ -616,7 +616,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /**
      * @dev updates the internal configuration of the controller
      */
-    function refreshConfigInternal() internal {
+    function _refreshConfigInternal() internal {
         whitelist = WhitelistInterface(addressbook.getWhitelist());
         oracle = OracleInterface(addressbook.getOracle());
         calculator = MarginCalculatorInterface(addressbook.getMarginCalculator());
