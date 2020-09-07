@@ -575,18 +575,12 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             longOtoken.burnOtoken(address(pool), vault.longAmounts[0]);
         }
 
-        vaults[_args.owner][_args.vaultId]._clearVault();
+        delete vaults[_args.owner][_args.vaultId];
 
         pool.transferToUser(shortOtoken.collateralAsset(), _args.to, payout);
 
         emit VaultSettled(address(shortOtoken), _args.owner, _args.to, _args.vaultId, payout);
     }
-
-    //High Level: call arbitrary smart contract
-    //function _call(Actions.CallArgs args) internal {
-    //    //Check whitelistModule.isWhitelistCallDestination(args.address)
-    //    //Call args.address with args.data
-    //}
 
     /**
      * @notice function to check the validity of a specific vault id
