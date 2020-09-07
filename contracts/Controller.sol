@@ -285,9 +285,9 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             uint256
         )
     {
-        address vaultOwner = address(0);
-        uint256 vaultId = 0;
-        bool vaultUpdated = false;
+        address vaultOwner;
+        uint256 vaultId; // 0
+        bool vaultUpdated; // false
 
         for (uint256 i = 0; i < _actions.length; i++) {
             Actions.ActionArgs memory action = _actions[i];
