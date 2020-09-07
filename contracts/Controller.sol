@@ -207,6 +207,26 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
+     * @notice return the configuration detail
+     * @return whitelist the address of the whitelist module
+     * @return oracle the address of the oracle module
+     * @return calculator the address of the calculator module
+     * @return pool the address of the pool module
+     */
+    function getConfiguration()
+        external
+        view
+        returns (
+            address,
+            address,
+            address,
+            address
+        )
+    {
+        return (address(whitelist), address(oracle), address(calculator), address(pool));
+    }
+
+    /**
      * @notice Return a vault's balances. If the vault doesn't have a short option or the short option has not expired, then the vault's collateral balances are returned. If the short option has expired, the collateral balance the vault has is dependent on if the option expired ITM or OTM.
      * @dev if vault has no short option or the issued option is not expired yet, return the vault, else call get excess margin and return it as collateral amount inside Vault struct.
      * @param _owner account owner.
