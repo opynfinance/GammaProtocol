@@ -575,7 +575,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             longOtoken.burnOtoken(address(pool), vault.longAmounts[0]);
         }
 
-        vaults[_args.owner][_args.vaultId]._clearVault();
+        delete vaults[_args.owner][_args.vaultId];
 
         pool.transferToUser(shortOtoken.collateralAsset(), _args.to, payout);
 

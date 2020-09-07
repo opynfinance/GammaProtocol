@@ -67,8 +67,4 @@ contract MarginAccountTester {
     ) external {
         vault[msg.sender][_vaultIndex]._removeCollateral(_collateralAsset, _amount, _index);
     }
-
-    function testClearVault(uint256 _vaultIndex) external {
-        vault[msg.sender][_vaultIndex]._clearVault();
-    }
 }
