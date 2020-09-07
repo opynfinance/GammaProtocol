@@ -199,8 +199,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _actions array of actions arguments
      */
     function operate(Actions.ActionArgs[] memory _actions) external nonReentrant {
-        (bool vaultUpdated, address owner, uint256 vaultId) = _runActions(_actions);
-        if (vaultUpdated) _verifyFinalState(owner, vaultId);
+        (bool vaultUpdated, address vaultOwner, uint256 vaultId) = _runActions(_actions);
+        if (vaultUpdated) _verifyFinalState(vaultOwner, vaultId);
     }
 
     /**
