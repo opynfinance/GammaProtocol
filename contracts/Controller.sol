@@ -183,8 +183,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _actions array of actions arguments
      */
     function operate(Actions.ActionArgs[] memory _actions) external isNotPaused nonReentrant {
-        MarginAccount.Vault memory vault = _runActions(_actions);
-        _verifyFinalState(vault);
+        (bool vaultUpdated, address owner, uint256 vaultId) = _runActions(_actions);
+        if (vaultUpdated) _verifyFinalState(owner, vaultId);
     }
 
     /**
@@ -274,11 +274,17 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev For each action in the action Array, run the corresponding action
      * @param _actions An array of type Actions.ActionArgs[] which expresses which actions the user want to execute.
      */
-    function _runActions(Actions.ActionArgs[] memory _actions) internal returns (MarginAccount.Vault memory) {
-        MarginAccount.Vault memory vault;
-
-        uint256 prevActionVaultId = 0;
-        bool isActionVaultStored = false;
+    function _runActions(Actions.ActionArgs[] memory _actions)
+        internal
+        returns (
+            bool,
+            address,
+            uint256
+        )
+    {
+        address vaultOwner = address(0);
+        uint256 vaultId = 0;
+        bool updateVault = false;
 
         for (uint256 i = 0; i < _actions.length; i++) {
             Actions.ActionArgs memory action = _actions[i];
@@ -290,28 +296,29 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
                 (actionType != Actions.ActionType.Call)
             ) {
                 // check if this action is manipulating the same vault as all other actions, other than SettleVault
-                require(
-                    !isActionVaultStored || prevActionVaultId == action.vaultId,
-                    "Controller: can not run actions on different vaults"
-                );
-                isActionVaultStored = true;
-                prevActionVaultId = action.vaultId;
+                if (updateVault) {
+                    require(vaultOwner == action.owner, "Controller: can not run actions for different owners");
+                    require(vaultId == action.vaultId, "Controller: can not run actions on different vaults");
+                }
+                updateVault = true;
+                vaultId = action.vaultId;
+                vaultOwner = action.owner;
             }
 
             if (actionType == Actions.ActionType.OpenVault) {
                 _openVault(Actions._parseOpenVaultArgs(action));
             } else if (actionType == Actions.ActionType.DepositLongOption) {
-                vault = _depositLong(Actions._parseDepositArgs(action));
+                _depositLong(Actions._parseDepositArgs(action));
             } else if (actionType == Actions.ActionType.WithdrawLongOption) {
-                vault = _withdrawLong(Actions._parseWithdrawArgs(action));
+                _withdrawLong(Actions._parseWithdrawArgs(action));
             } else if (actionType == Actions.ActionType.DepositCollateral) {
-                vault = _depositCollateral(Actions._parseDepositArgs(action));
+                _depositCollateral(Actions._parseDepositArgs(action));
             } else if (actionType == Actions.ActionType.WithdrawCollateral) {
-                vault = _withdrawCollateral(Actions._parseWithdrawArgs(action));
+                _withdrawCollateral(Actions._parseWithdrawArgs(action));
             } else if (actionType == Actions.ActionType.MintShortOption) {
-                vault = _mintOtoken(Actions._parseMintArgs(action));
+                _mintOtoken(Actions._parseMintArgs(action));
             } else if (actionType == Actions.ActionType.BurnShortOption) {
-                vault = _burnOtoken(Actions._parseBurnArgs(action));
+                _burnOtoken(Actions._parseBurnArgs(action));
             } else if (actionType == Actions.ActionType.Exercise) {
                 _exercise(Actions._parseExerciseArgs(action));
             } else if (actionType == Actions.ActionType.SettleVault) {
@@ -319,14 +326,16 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             }
         }
 
-        return vault;
+        return (updateVault, vaultOwner, vaultId);
     }
 
     /**
      * @notice verify vault final state after executing all actions
-     * @param _vault final vault state
+     * @param _owner final vault state
+     * @param _vaultId the vault id of the final vault
      */
-    function _verifyFinalState(MarginAccount.Vault memory _vault) internal view {
+    function _verifyFinalState(address _owner, uint256 _vaultId) internal view {
+        MarginAccount.Vault memory _vault = vaults[_owner][_vaultId];
         (, bool isValidVault) = calculator.getExcessCollateral(_vault);
 
         require(isValidVault, "Controller: invalid final vault state");
@@ -352,7 +361,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @notice deposit long option into vault
      * @param _args DepositArgs structure
      */
-    function _depositLong(Actions.DepositArgs memory _args) internal returns (MarginAccount.Vault memory) {
+    function _depositLong(Actions.DepositArgs memory _args) internal {
         require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         require(_args.from == msg.sender, "Controller: depositor address and msg.sender address mismatch");
 
@@ -370,8 +379,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         pool.transferToPool(address(otoken), _args.from, _args.amount);
 
         emit LongOtokenDeposited(address(otoken), _args.owner, _args.from, _args.vaultId, _args.amount);
-
-        return vaults[_args.owner][_args.vaultId];
     }
 
     /**
@@ -379,11 +386,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev Only account owner or operator can withdraw long option from vault
      * @param _args WithdrawArgs structure
      */
-    function _withdrawLong(Actions.WithdrawArgs memory _args)
-        internal
-        isAuthorized(msg.sender, _args.owner)
-        returns (MarginAccount.Vault memory)
-    {
+    function _withdrawLong(Actions.WithdrawArgs memory _args) internal isAuthorized(msg.sender, _args.owner) {
         require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
 
         OtokenInterface otoken = OtokenInterface(_args.asset);
@@ -395,15 +398,13 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         pool.transferToUser(address(otoken), _args.to, _args.amount);
 
         emit LongOtokenWithdrawed(address(otoken), _args.owner, _args.to, _args.vaultId, _args.amount);
-
-        return vaults[_args.owner][_args.vaultId];
     }
 
     /**
      * @notice deposit collateral asset into vault
      * @param _args DepositArgs structure
      */
-    function _depositCollateral(Actions.DepositArgs memory _args) internal returns (MarginAccount.Vault memory) {
+    function _depositCollateral(Actions.DepositArgs memory _args) internal {
         require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         require(_args.from == msg.sender, "Controller: depositor address and msg.sender address mismatch");
 
@@ -417,8 +418,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         pool.transferToPool(_args.asset, _args.from, _args.amount);
 
         emit CollateralAssetDeposited(_args.asset, _args.owner, _args.from, _args.vaultId, _args.amount);
-
-        return vaults[_args.owner][_args.vaultId];
     }
 
     /**
@@ -426,11 +425,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev only account owner or operator can withdraw collateral option from vault
      * @param _args WithdrawArgs structure
      */
-    function _withdrawCollateral(Actions.WithdrawArgs memory _args)
-        internal
-        isAuthorized(msg.sender, _args.owner)
-        returns (MarginAccount.Vault memory)
-    {
+    function _withdrawCollateral(Actions.WithdrawArgs memory _args) internal isAuthorized(msg.sender, _args.owner) {
         require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
 
         MarginAccount.Vault memory vault = vaults[_args.owner][_args.vaultId];
@@ -448,8 +443,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         pool.transferToUser(_args.asset, _args.to, _args.amount);
 
         emit CollateralAssetWithdrawed(_args.asset, _args.owner, _args.to, _args.vaultId, _args.amount);
-
-        return vaults[_args.owner][_args.vaultId];
     }
 
     /**
@@ -457,11 +450,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev only account owner or operator can mint short otoken into vault
      * @param _args MintArgs structure
      */
-    function _mintOtoken(Actions.MintArgs memory _args)
-        internal
-        isAuthorized(msg.sender, _args.owner)
-        returns (MarginAccount.Vault memory)
-    {
+    function _mintOtoken(Actions.MintArgs memory _args) internal isAuthorized(msg.sender, _args.owner) {
         require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         require(_args.to == msg.sender, "Controller: minter address and msg.sender address mismatch");
 
@@ -476,8 +465,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         otoken.mintOtoken(_args.to, _args.amount);
 
         emit ShortOtokenMinted(_args.otoken, _args.owner, _args.to, _args.vaultId, _args.amount);
-
-        return vaults[_args.owner][_args.vaultId];
     }
 
     /**
@@ -485,11 +472,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev only account owner or operator can withdraw long option from vault
      * @param _args MintArgs structure
      */
-    function _burnOtoken(Actions.BurnArgs memory _args)
-        internal
-        isAuthorized(msg.sender, _args.owner)
-        returns (MarginAccount.Vault memory)
-    {
+    function _burnOtoken(Actions.BurnArgs memory _args) internal isAuthorized(msg.sender, _args.owner) {
         require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         require(_args.from == msg.sender, "Controller: burner address and msg.sender address mismatch");
 
@@ -502,8 +485,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         otoken.burnOtoken(_args.from, _args.amount);
 
         emit ShortOtokenBurned(_args.otoken, _args.owner, _args.from, _args.vaultId, _args.amount);
-
-        return vaults[_args.owner][_args.vaultId];
     }
 
     /**
