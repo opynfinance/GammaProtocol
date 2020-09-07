@@ -277,8 +277,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     function _runActions(Actions.ActionArgs[] memory _actions) internal returns (MarginAccount.Vault memory) {
         MarginAccount.Vault memory vault;
 
-        uint256 prevActionVaultId;
-        bool isActionVaultStored;
+        uint256 prevActionVaultId = 0;
+        bool isActionVaultStored = false;
 
         for (uint256 i = 0; i < _actions.length; i++) {
             Actions.ActionArgs memory action = _actions[i];
@@ -290,11 +290,12 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
                 (actionType != Actions.ActionType.Call)
             ) {
                 // check if this action is manipulating the same vault as all other actions, other than SettleVault
-                (prevActionVaultId, isActionVaultStored) = _checkActionsVaults(
-                    prevActionVaultId,
-                    action.vaultId,
-                    isActionVaultStored
+                require(
+                    !isActionVaultStored || prevActionVaultId == action.vaultId,
+                    "Controller: can not run actions on different vaults"
                 );
+                isActionVaultStored = true;
+                prevActionVaultId = action.vaultId;
             }
 
             if (actionType == Actions.ActionType.OpenVault) {
@@ -329,25 +330,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         (, bool isValidVault) = calculator.getExcessCollateral(_vault);
 
         require(isValidVault, "Controller: invalid final vault state");
-    }
-
-    /**
-     * @dev check that prev vault id is equal to current vault id
-     * @param _prevActionVaultId previous vault id
-     * @param _currActionVaultId current vault id
-     * @param _isActionVaultStored a bool to indicate if a first check is done or not
-     * @return current vault id and true as first check is done
-     */
-    function _checkActionsVaults(
-        uint256 _prevActionVaultId,
-        uint256 _currActionVaultId,
-        bool _isActionVaultStored
-    ) internal pure returns (uint256, bool) {
-        if (_isActionVaultStored) {
-            require(_prevActionVaultId == _currActionVaultId, "Controller: can not run actions on different vaults");
-        }
-
-        return (_currActionVaultId, true);
     }
 
     /**
