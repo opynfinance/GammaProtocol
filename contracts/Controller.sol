@@ -93,6 +93,23 @@ contract Controller is ReentrancyGuard, Ownable {
         uint256 vaultId,
         uint256 amount
     );
+    /// @notice emits an event when a short otoken get burned from a vault
+    event ShortOtokenBurned(
+        address indexed otoken,
+        address indexed AccountOwner,
+        address indexed from,
+        uint256 vaultId,
+        uint256 amount
+    );
+    /// @notice emits an event when a exercise action execute
+    event Exercise(
+        address indexed otoken,
+        address indexed exerciser,
+        address indexed receiver,
+        address collateralAsset,
+        uint256 otokenBurned,
+        uint256 payout
+    );
 
     /**
      * @notice modifier check if protocol is not paused
@@ -156,14 +173,6 @@ contract Controller is ReentrancyGuard, Ownable {
     //}
 
     /**
-     * @notice set batch underlying asset price
-     * @param _otoken otoken address
-     * @param _roundsBack chainlink round number relative to specific timestamp
-     */
-    // function setBatchUnderlyingPrice(address _otoken, uint256 _roundsBack) external {
-    // }
-
-    /**
      * @notice check if a specific address is an operator for an owner account
      * @param _owner account owner address
      * @param _operator account operator address
@@ -200,7 +209,7 @@ contract Controller is ReentrancyGuard, Ownable {
      * @param _otoken The address of the relevant oToken.
      * @return A boolean which is true if and only if the price is finalized.
      */
-    function isPriceFinalized(address _otoken) external view returns (bool) {
+    function isPriceFinalized(address _otoken) public view returns (bool) {
         address oracleModule = AddressBookInterface(addressBook).getOracle();
         OracleInterface oracle = OracleInterface(oracleModule);
 
@@ -283,6 +292,10 @@ contract Controller is ReentrancyGuard, Ownable {
                 vault = _withdrawCollateral(Actions._parseWithdrawArgs(action));
             } else if (actionType == Actions.ActionType.MintShortOption) {
                 vault = _mintOtoken(Actions._parseMintArgs(action));
+            } else if (actionType == Actions.ActionType.BurnShortOption) {
+                vault = _burnOtoken(Actions._parseBurnArgs(action));
+            } else if (actionType == Actions.ActionType.Exercise) {
+                _exercise(Actions._parseExerciseArgs(action));
             }
         }
 
@@ -495,13 +508,64 @@ contract Controller is ReentrancyGuard, Ownable {
      * @dev only account owner or operator can withdraw long option from vault
      * @param _args MintArgs structure
      */
-    // function _burnOtoken(Actions.BurnArgs memory _args) internal {}
+    function _burnOtoken(Actions.BurnArgs memory _args)
+        internal
+        isAuthorized(msg.sender, _args.owner)
+        returns (MarginAccount.Vault memory)
+    {
+        require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+        require(_args.from == msg.sender, "Controller: burner address and msg.sender address mismatch");
+
+        OtokenInterface otoken = OtokenInterface(_args.otoken);
+
+        require(now <= otoken.expiryTimestamp(), "Controller: can not burn expired otoken");
+
+        vaults[_args.owner][_args.vaultId]._removeShort(_args.otoken, _args.amount, _args.index);
+
+        otoken.burnOtoken(_args.from, _args.amount);
+
+        emit ShortOtokenBurned(_args.otoken, _args.owner, _args.from, _args.vaultId, _args.amount);
+
+        return vaults[_args.owner][_args.vaultId];
+    }
 
     /**
      * @notice exercise option
      * @param _args ExerciseArgs structure
      */
-    // function _exercise(Actions.ExerciseArgs memory _args) internal {}
+    function _exercise(Actions.ExerciseArgs memory _args) internal {
+        OtokenInterface otoken = OtokenInterface(_args.otoken);
+
+        require(now > otoken.expiryTimestamp(), "Controller: can not exercise un-expired otoken");
+
+        require(isPriceFinalized(_args.otoken), "Controller: otoken underlying asset price is not finalized yet");
+
+        uint256 payout = _getPayout(_args.otoken, _args.amount);
+
+        otoken.burnOtoken(msg.sender, _args.amount);
+
+        address marginPoolModule = AddressBookInterface(addressBook).getMarginPool();
+        MarginPoolInterface marginPool = MarginPoolInterface(marginPoolModule);
+
+        marginPool.transferToUser(otoken.collateralAsset(), _args.receiver, payout);
+
+        emit Exercise(_args.otoken, msg.sender, _args.receiver, otoken.collateralAsset(), _args.amount, payout);
+    }
+
+    /**
+     * @notice get Otoken payout after expiry
+     * @param _otoken Otoken address
+     * @param _amount amount of Otoken
+     * @return payout = cashValue * amount
+     */
+    function _getPayout(address _otoken, uint256 _amount) internal view returns (uint256) {
+        address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
+        MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
+
+        uint256 cashValue = calculator.getExpiredCashValue(_otoken);
+
+        return cashValue.mul(_amount).div(1e18);
+    }
 
     /**
      * @notice settle vault option
@@ -524,7 +588,7 @@ contract Controller is ReentrancyGuard, Ownable {
         return ((_vaultId > 0) && (_vaultId <= accountVaultCounter[_accountOwner]));
     }
 
-    function isNotEmpty(address[] memory _array) internal view returns (bool) {
+    function isNotEmpty(address[] memory _array) internal pure returns (bool) {
         return (_array.length > 0) && (_array[0] != address(0));
     }
 }

@@ -10,6 +10,8 @@ interface OracleInterface {
 
     function getPricer(address _asset) external view returns (address);
 
+    function getPrice(address _asset) external view returns (uint256);
+
     function getPricerLockingPeriod(address _pricer) external view returns (uint256);
 
     function getPricerDisputePeriod(address _pricer) external view returns (uint256);
