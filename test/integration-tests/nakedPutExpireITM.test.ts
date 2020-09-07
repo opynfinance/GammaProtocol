@@ -38,7 +38,7 @@ enum ActionType {
   Call,
 }
 
-contract('Naked Put Post Expiry Option flow', ([admin, accountOwner1, accountOperator1, buyer]) => {
+contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, buyer]) => {
   const reverter = new Reverter(web3)
 
   let expiry: number
@@ -124,7 +124,7 @@ contract('Naked Put Post Expiry Option flow', ([admin, accountOwner1, accountOpe
     vaultCounter = vaultCounterBefore.toNumber() + 1
   })
 
-  describe('Integration test: Sell a naked short put', () => {
+  describe('Integration test: Sell a naked put and close it after expires ITM', () => {
     it('Seller should be able to open a short put option', async () => {
       const actionArgs = [
         {

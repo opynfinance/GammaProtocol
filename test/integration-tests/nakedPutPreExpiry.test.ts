@@ -124,7 +124,7 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, buye
     vaultCounter = vaultCounterBefore.toNumber() + 1
   })
 
-  describe('Integration test: Sell a naked short put', () => {
+  describe('Integration test: Sell a naked short put and close it before expiry', () => {
     it('Seller should be able to open a short put option', async () => {
       // Keep track of balances before
       const ownerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
