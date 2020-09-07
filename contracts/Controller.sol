@@ -33,8 +33,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     MarginCalculatorInterface internal calculator;
     MarginPoolInterface internal pool;
 
-    /// @dev the protocol state, if true, then all protocol functionality are paused.
-    bool internal systemPaused;
+    /// @notice the protocol state, if true, then all protocol functionality are paused.
+    bool public systemPaused;
 
     /// @dev mapping between owner address and account structure
     mapping(address => uint256) internal accountVaultCounter;
