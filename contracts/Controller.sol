@@ -164,21 +164,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         __ReentrancyGuard_init_unchained();
 
         addressbook = AddressBookInterface(_addressBook);
-        refreshConfigInternal();
-    }
-
-    /**
-     * @notice initalize deployed contract
-     * @param _addressBook adressbook module
-     */
-    function initialize(address _addressBook, address _owner) external initializer {
-        require(_addressBook != address(0), "Controller: invalid addressbook address");
-
-        __Context_init_unchained();
-        __Ownable_init_unchained(_owner);
-        __ReentrancyGuard_init_unchained();
-
-        addressbook = AddressBookInterface(_addressBook);
         _refreshConfigInternal();
     }
 
@@ -235,6 +220,26 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     function isOperator(address _owner, address _operator) external view returns (bool) {
         return operators[_owner][_operator];
+    }
+
+    /**
+     * @notice return the configuration detail
+     * @return whitelist the address of the whitelist module
+     * @return oracle the address of the oracle module
+     * @return calculator the address of the calculator module
+     * @return pool the address of the pool module
+     */
+    function getConfiguration()
+        external
+        view
+        returns (
+            address,
+            address,
+            address,
+            address
+        )
+    {
+        return (address(whitelist), address(oracle), address(calculator), address(pool));
     }
 
     /**
@@ -396,7 +401,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _args DepositArgs structure
      */
     function _depositLong(Actions.DepositArgs memory _args) internal notPaused {
-        require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+        require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         require(_args.from == msg.sender, "Controller: depositor address and msg.sender address mismatch");
 
         require(
@@ -425,7 +430,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         notPaused
         onlyAuthorized(msg.sender, _args.owner)
     {
-        require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+        require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
 
         OtokenInterface otoken = OtokenInterface(_args.asset);
 
@@ -443,7 +448,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _args DepositArgs structure
      */
     function _depositCollateral(Actions.DepositArgs memory _args) internal notPaused {
-        require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+        require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         require(_args.from == msg.sender, "Controller: depositor address and msg.sender address mismatch");
 
         require(
@@ -468,7 +473,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         notPaused
         onlyAuthorized(msg.sender, _args.owner)
     {
-        require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+        require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
 
         MarginAccount.Vault memory vault = getVault(_args.owner, _args.vaultId);
         if (_isNotEmpty(vault.shortOtokens)) {
@@ -493,7 +498,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _args MintArgs structure
      */
     function _mintOtoken(Actions.MintArgs memory _args) internal notPaused onlyAuthorized(msg.sender, _args.owner) {
-        require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+        require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         require(_args.to == msg.sender, "Controller: minter address and msg.sender address mismatch");
 
         require(whitelist.isWhitelistedOtoken(_args.otoken), "Controller: otoken is not whitelisted to be minted");
@@ -515,7 +520,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _args MintArgs structure
      */
     function _burnOtoken(Actions.BurnArgs memory _args) internal notPaused onlyAuthorized(msg.sender, _args.owner) {
-        require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+        require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         require(_args.from == msg.sender, "Controller: burner address and msg.sender address mismatch");
 
         OtokenInterface otoken = OtokenInterface(_args.otoken);
@@ -558,7 +563,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         onlyAuthorized(msg.sender, _args.owner)
         returns (MarginAccount.Vault memory)
     {
-        require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+        require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
 
         MarginAccount.Vault memory vault = getVault(_args.owner, _args.vaultId);
 
@@ -598,7 +603,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _accountOwner account owner address
      * @param _vaultId vault id
      */
-    function checkVaultId(address _accountOwner, uint256 _vaultId) internal view returns (bool) {
+    function _checkVaultId(address _accountOwner, uint256 _vaultId) internal view returns (bool) {
         return ((_vaultId > 0) && (_vaultId <= accountVaultCounter[_accountOwner]));
     }
 
