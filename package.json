@@ -40,7 +40,7 @@
     "build"
   ],
   "scripts": {
-    "ganache": "ganache-cli --port 8545",
+    "ganache": "ganache-cli --port 8545 --defaultBalanceEther 500",
     "migrate": "truffle migrate",
     "build": "npm run compile:contracts && npm run compile:types",
     "compile:contracts": "truffle compile",
@@ -53,7 +53,7 @@
     "lint:tests:prettier:fix": "prettier --write \"test/**/*.ts\"",
     "test": "CI=true truffle test",
     "test:unit": "truffle test ./test/unit-tests/*.ts",
-    "test:integration": "truffle test ./test/integration-tests/*.ts",
+    "test:integration": "truffle test ./test/integration-tests/nakedPutExpireITM.test.ts",
     "coverage": "truffle run coverage",
     "contract-size": "truffle run contract-size --checkMaxSize"
   },

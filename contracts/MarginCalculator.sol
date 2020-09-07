@@ -4,7 +4,6 @@
 pragma solidity 0.6.10;
 pragma experimental ABIEncoderV2;
 
-import {Initializable} from "./packages/oz/upgradeability/Initializable.sol";
 import {SafeMath} from "./packages/oz/SafeMath.sol";
 import {OtokenInterface} from "./interfaces/OtokenInterface.sol";
 import {OracleInterface} from "./interfaces/OracleInterface.sol";
@@ -18,13 +17,16 @@ import {MarginAccount} from "./libs/MarginAccount.sol";
  * @author Opyn
  * @notice Calculator module that check if a given vault is valid.
  */
-contract MarginCalculator is Initializable {
+contract MarginCalculator {
     using SafeMath for uint256;
     using FixedPointInt256 for FixedPointInt256.FixedPointInt;
     using FixedPointInt256 for int256;
+
     address public addressBook;
 
-    function init(address _addressBook) external initializer {
+    constructor(address _addressBook) public {
+        require(_addressBook != address(0), "MarginCalculator: invalid addressbook");
+
         addressBook = _addressBook;
     }
 
