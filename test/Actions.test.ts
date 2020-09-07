@@ -226,7 +226,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
       await actionTester.testParseExerciseAction(data)
 
       const depositArgs = await actionTester.getExerciseArgs()
-      assert.equal(depositArgs.exerciser, random)
+      assert.equal(depositArgs.receiver, random)
       assert.equal(depositArgs.otoken, asset)
       assert.equal(depositArgs.amount, new BN(amount))
     })

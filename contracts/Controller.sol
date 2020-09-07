@@ -5,9 +5,10 @@ pragma solidity =0.6.10;
 
 pragma experimental ABIEncoderV2;
 
-import {Ownable} from "./packages/oz/Ownable.sol";
+import {OwnableUpgradeSafe} from "./packages/oz/upgradeability/OwnableUpgradeSafe.sol";
+import {ReentrancyGuardUpgradeSafe} from "./packages/oz/upgradeability/ReentrancyGuardUpgradeSafe.sol";
+import {Initializable} from "./packages/oz/upgradeability/Initializable.sol";
 import {SafeMath} from "./packages/oz/SafeMath.sol";
-import {ReentrancyGuard} from "./packages/oz/ReentrancyGuard.sol";
 import {MarginAccount} from "./libs/MarginAccount.sol";
 import {Actions} from "./libs/Actions.sol";
 import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
@@ -22,7 +23,7 @@ import {MarginPoolInterface} from "./interfaces/MarginPoolInterface.sol";
  * @title Controller
  * @notice contract that
  */
-contract Controller is ReentrancyGuard, Ownable {
+contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgradeSafe {
     using MarginAccount for MarginAccount.Vault;
     using SafeMath for uint256;
 
@@ -40,11 +41,13 @@ contract Controller is ReentrancyGuard, Ownable {
     mapping(address => mapping(address => bool)) internal operators;
 
     /**
-     * @notice contructor
+     * @notice initalize deployed contract
      * @param _addressBook adressbook module
      */
-    constructor(address _addressBook) public {
-        require(_addressBook != address(0), "Controller: Invalid address book");
+    function initialize(address _addressBook, address _owner) public initializer {
+        __Context_init_unchained();
+        __Ownable_init_unchained(_owner);
+        __ReentrancyGuard_init_unchained();
 
         addressBook = _addressBook;
     }
@@ -93,13 +96,30 @@ contract Controller is ReentrancyGuard, Ownable {
         uint256 vaultId,
         uint256 amount
     );
-    /// @notice emits an event when a short otoken get burned from a vaukt
+    /// @notice emits an event when a short otoken get burned from a vault
     event ShortOtokenBurned(
         address indexed otoken,
         address indexed AccountOwner,
         address indexed from,
         uint256 vaultId,
         uint256 amount
+    );
+    /// @notice emits an event when a exercise action execute
+    event Exercise(
+        address indexed otoken,
+        address indexed exerciser,
+        address indexed receiver,
+        address collateralAsset,
+        uint256 otokenBurned,
+        uint256 payout
+    );
+    /// @notice emits an event when a vault is settlted
+    event VaultSettled(
+        address indexed otoken,
+        address indexed AccountOwner,
+        address indexed to,
+        uint256 vaultId,
+        uint256 payout
     );
 
     /**
@@ -200,7 +220,7 @@ contract Controller is ReentrancyGuard, Ownable {
      * @param _otoken The address of the relevant oToken.
      * @return A boolean which is true if and only if the price is finalized.
      */
-    function isPriceFinalized(address _otoken) external view returns (bool) {
+    function isPriceFinalized(address _otoken) public view returns (bool) {
         address oracleModule = AddressBookInterface(addressBook).getOracle();
         OracleInterface oracle = OracleInterface(oracleModule);
 
@@ -259,8 +279,8 @@ contract Controller is ReentrancyGuard, Ownable {
             Actions.ActionType actionType = action.actionType;
 
             if (
-                (actionType != Actions.ActionType.SettleVault) ||
-                (actionType != Actions.ActionType.Exercise) ||
+                (actionType != Actions.ActionType.SettleVault) &&
+                (actionType != Actions.ActionType.Exercise) &&
                 (actionType != Actions.ActionType.Call)
             ) {
                 // check if this action is manipulating the same vault as all other actions, other than SettleVault
@@ -285,6 +305,10 @@ contract Controller is ReentrancyGuard, Ownable {
                 vault = _mintOtoken(Actions._parseMintArgs(action));
             } else if (actionType == Actions.ActionType.BurnShortOption) {
                 vault = _burnOtoken(Actions._parseBurnArgs(action));
+            } else if (actionType == Actions.ActionType.Exercise) {
+                _exercise(Actions._parseExerciseArgs(action));
+            } else if (actionType == Actions.ActionType.SettleVault) {
+                _settleVault(Actions._parseSettleVaultArgs(action));
             }
         }
 
@@ -440,7 +464,7 @@ contract Controller is ReentrancyGuard, Ownable {
         require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
 
         MarginAccount.Vault memory vault = vaults[_args.owner][_args.vaultId];
-        if (isNotEmpty(vault.shortOtokens)) {
+        if (_isNotEmpty(vault.shortOtokens)) {
             OtokenInterface otoken = OtokenInterface(vault.shortOtokens[0]);
 
             require(
@@ -522,13 +546,68 @@ contract Controller is ReentrancyGuard, Ownable {
      * @notice exercise option
      * @param _args ExerciseArgs structure
      */
-    // function _exercise(Actions.ExerciseArgs memory _args) internal {}
+    function _exercise(Actions.ExerciseArgs memory _args) internal {
+        OtokenInterface otoken = OtokenInterface(_args.otoken);
+
+        require(now > otoken.expiryTimestamp(), "Controller: can not exercise un-expired otoken");
+
+        require(isPriceFinalized(_args.otoken), "Controller: otoken underlying asset price is not finalized yet");
+
+        uint256 payout = _getPayout(_args.otoken, _args.amount);
+
+        otoken.burnOtoken(msg.sender, _args.amount);
+
+        address marginPoolModule = AddressBookInterface(addressBook).getMarginPool();
+        MarginPoolInterface marginPool = MarginPoolInterface(marginPoolModule);
+
+        marginPool.transferToUser(otoken.collateralAsset(), _args.receiver, payout);
+
+        emit Exercise(_args.otoken, msg.sender, _args.receiver, otoken.collateralAsset(), _args.amount, payout);
+    }
 
     /**
-     * @notice settle vault option
+     * @notice settle vault after expiry
      * @param _args SettleVaultArgs structure
      */
-    // function _settleVault(Actions.SettleVaultArgs memory _args) internal {}
+    function _settleVault(Actions.SettleVaultArgs memory _args)
+        internal
+        isAuthorized(msg.sender, _args.owner)
+        returns (MarginAccount.Vault memory)
+    {
+        require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+
+        MarginAccount.Vault memory vault = vaults[_args.owner][_args.vaultId];
+
+        require(_isNotEmpty(vault.shortOtokens), "Controller: can not settle a vault with no otoken minted");
+
+        OtokenInterface shortOtoken = OtokenInterface(vault.shortOtokens[0]);
+
+        require(now > shortOtoken.expiryTimestamp(), "Controller: can not settle vault with un-expired otoken");
+        require(
+            isPriceFinalized(address(shortOtoken)),
+            "Controller: otoken underlying asset price is not finalized yet"
+        );
+
+        address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
+        MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
+
+        (uint256 payout, ) = calculator.getExcessCollateral(vault);
+
+        address marginPoolModule = AddressBookInterface(addressBook).getMarginPool();
+        MarginPoolInterface marginPool = MarginPoolInterface(marginPoolModule);
+
+        if (_isNotEmpty(vault.longOtokens)) {
+            OtokenInterface longOtoken = OtokenInterface(vault.longOtokens[0]);
+
+            longOtoken.burnOtoken(marginPoolModule, vault.longAmounts[0]);
+        }
+
+        vaults[_args.owner][_args.vaultId]._clearVault();
+
+        marginPool.transferToUser(shortOtoken.collateralAsset(), _args.to, payout);
+
+        emit VaultSettled(address(shortOtoken), _args.owner, _args.to, _args.vaultId, payout);
+    }
 
     //High Level: call arbitrary smart contract
     //function _call(Actions.CallArgs args) internal {
@@ -545,7 +624,22 @@ contract Controller is ReentrancyGuard, Ownable {
         return ((_vaultId > 0) && (_vaultId <= accountVaultCounter[_accountOwner]));
     }
 
-    function isNotEmpty(address[] memory _array) internal pure returns (bool) {
+    function _isNotEmpty(address[] memory _array) internal pure returns (bool) {
         return (_array.length > 0) && (_array[0] != address(0));
+    }
+
+    /**
+     * @notice get Otoken payout after expiry
+     * @param _otoken Otoken address
+     * @param _amount amount of Otoken
+     * @return payout = cashValue * amount
+     */
+    function _getPayout(address _otoken, uint256 _amount) internal view returns (uint256) {
+        address calculatorModule = AddressBookInterface(addressBook).getMarginCalculator();
+        MarginCalculatorInterface calculator = MarginCalculatorInterface(calculatorModule);
+
+        uint256 cashValue = calculator.getExpiredCashValue(_otoken);
+
+        return cashValue.mul(_amount).div(1e18);
     }
 }
