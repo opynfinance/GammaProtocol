@@ -116,9 +116,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /**
      * @notice modifier check if protocol is not paused
      */
-    modifier isNotPaused {
-        require(!systemPaused, "Controller: system is paused");
-
+    modifier notPaused {
+        _isNotPaused();
         _;
     }
 
@@ -127,13 +126,28 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _sender sender address
      * @param _accountOwner account owner address
      */
-    modifier isAuthorized(address _sender, address _accountOwner) {
+    modifier onlyAuthorized(address _sender, address _accountOwner) {
+        _isAuthorized(_sender, _accountOwner);
+        _;
+    }
+
+    /**
+     * @dev check the system is not paused
+     */
+    function _isNotPaused() internal view {
+        require(!systemPaused, "Controller: system is paused");
+    }
+
+    /**
+     * @dev check the sender is an authorized operator.
+     * @param _sender msg.sender
+     * @param _accountOwner owner of a vault
+     */
+    function _isAuthorized(address _sender, address _accountOwner) internal view {
         require(
             (_sender == _accountOwner) || (operators[_accountOwner][_sender]),
             "Controller: msg.sender is not authorized to run action"
         );
-
-        _;
     }
 
     /**
@@ -182,7 +196,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev can only be called when system is not paused
      * @param _actions array of actions arguments
      */
-    function operate(Actions.ActionArgs[] memory _actions) external isNotPaused nonReentrant {
+    function operate(Actions.ActionArgs[] memory _actions) external notPaused nonReentrant {
         (bool vaultUpdated, address owner, uint256 vaultId) = _runActions(_actions);
         if (vaultUpdated) _verifyFinalState(owner, vaultId);
     }
@@ -193,7 +207,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _owner The owner of the vault we will clear
      * @param _vaultId The vaultId for the vault we will clear, within the user's MarginAccount.Account struct
      */
-    //function redeemForEmergency(address _owner, uint256 _vaultId) external isNotPaused isAuthorized(args.owner) {
+    //function redeemForEmergency(address _owner, uint256 _vaultId) external notPaused onlyAuthorized(args.owner) {
     //}
 
     /**
@@ -349,7 +363,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev Only account owner or operator can open a vault
      * @param _args OpenVaultArgs structure
      */
-    function _openVault(Actions.OpenVaultArgs memory _args) internal isAuthorized(msg.sender, _args.owner) {
+    function _openVault(Actions.OpenVaultArgs memory _args) internal onlyAuthorized(msg.sender, _args.owner) {
         accountVaultCounter[_args.owner] = accountVaultCounter[_args.owner].add(1);
 
         require(
@@ -389,7 +403,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev Only account owner or operator can withdraw long option from vault
      * @param _args WithdrawArgs structure
      */
-    function _withdrawLong(Actions.WithdrawArgs memory _args) internal isAuthorized(msg.sender, _args.owner) {
+    function _withdrawLong(Actions.WithdrawArgs memory _args) internal onlyAuthorized(msg.sender, _args.owner) {
         require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
 
         OtokenInterface otoken = OtokenInterface(_args.asset);
@@ -428,7 +442,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev only account owner or operator can withdraw collateral option from vault
      * @param _args WithdrawArgs structure
      */
-    function _withdrawCollateral(Actions.WithdrawArgs memory _args) internal isAuthorized(msg.sender, _args.owner) {
+    function _withdrawCollateral(Actions.WithdrawArgs memory _args) internal onlyAuthorized(msg.sender, _args.owner) {
         require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
 
         MarginAccount.Vault memory vault = getVault(_args.owner, _args.vaultId);
@@ -453,7 +467,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev only account owner or operator can mint short otoken into vault
      * @param _args MintArgs structure
      */
-    function _mintOtoken(Actions.MintArgs memory _args) internal isAuthorized(msg.sender, _args.owner) {
+    function _mintOtoken(Actions.MintArgs memory _args) internal onlyAuthorized(msg.sender, _args.owner) {
         require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         require(_args.to == msg.sender, "Controller: minter address and msg.sender address mismatch");
 
@@ -475,7 +489,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev only account owner or operator can withdraw long option from vault
      * @param _args MintArgs structure
      */
-    function _burnOtoken(Actions.BurnArgs memory _args) internal isAuthorized(msg.sender, _args.owner) {
+    function _burnOtoken(Actions.BurnArgs memory _args) internal onlyAuthorized(msg.sender, _args.owner) {
         require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         require(_args.from == msg.sender, "Controller: burner address and msg.sender address mismatch");
 
@@ -516,7 +530,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     function _settleVault(Actions.SettleVaultArgs memory _args)
         internal
-        isAuthorized(msg.sender, _args.owner)
+        onlyAuthorized(msg.sender, _args.owner)
         returns (MarginAccount.Vault memory)
     {
         require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
