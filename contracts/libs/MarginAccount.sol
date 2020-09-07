@@ -199,4 +199,17 @@ library MarginAccount {
             delete _vault.collateralAssets[_index];
         }
     }
+
+    /**
+     * @dev remove everything in a vault. Reset short, long and collateral assets and amounts arrays to an empty array.
+     * @param _vault The vault that the user is clearing.
+     */
+    function _clearVault(Vault storage _vault) internal {
+        delete _vault.shortAmounts;
+        delete _vault.longAmounts;
+        delete _vault.collateralAmounts;
+        delete _vault.shortOtokens;
+        delete _vault.longOtokens;
+        delete _vault.collateralAssets;
+    }
 }

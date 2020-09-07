@@ -389,4 +389,19 @@ contract('MarginAccount', ([deployer, controller]) => {
       )
     })
   })
+
+  describe('Clear vault', () => {
+    it('should clear vault', async () => {
+      const vaultCounter = new BigNumber(0)
+
+      await marginAccountTester.testClearVault(vaultCounter)
+      const vault = await marginAccountTester.getVault(vaultCounter)
+      assert.equal(vault.shortAmounts.length, 0, 'shortAmounts length should be 0')
+      assert.equal(vault.longAmounts.length, 0, 'longAmounts length should be 0')
+      assert.equal(vault.collateralAmounts.length, 0, 'collateralAmounts length should be 0')
+      assert.equal(vault.shortOtokens.length, 0, 'shortOtokens length should be 0')
+      assert.equal(vault.longOtokens.length, 0, 'longOtokens length should be 0')
+      assert.equal(vault.collateralAssets.length, 0, 'collateralAssets length should be 0')
+    })
+  })
 })
