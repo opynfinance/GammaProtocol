@@ -162,7 +162,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         __ReentrancyGuard_init_unchained();
 
         addressbook = AddressBookInterface(_addressBook);
-        refreshConfigInternal();
+        _refreshConfigInternal();
     }
 
     /**
