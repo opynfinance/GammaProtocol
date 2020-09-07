@@ -22,6 +22,7 @@ const MockWhitelistModule = artifacts.require('MockWhitelistModule.sol')
 const AddressBook = artifacts.require('AddressBook.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
+const MarginAccount = artifacts.require('MarginAccount.sol')
 
 // address(0)
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
@@ -39,7 +40,7 @@ enum ActionType {
   Call,
 }
 
-contract('Controller', ([owner, accountOwner1, accountOperator1, holder1, random]) => {
+contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, holder1, random]) => {
   // ERC20 mock
   let usdc: MockERC20Instance
   let weth: MockERC20Instance
@@ -80,6 +81,8 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, holder1, random
     // set whitelist module address
     await addressBook.setWhitelist(whitelist.address)
     // deploy Controller module
+    const lib = await MarginAccount.new()
+    await Controller.link('MarginAccount', lib.address)
     controllerImplementation = await Controller.new()
 
     // set controller address in AddressBook
@@ -213,6 +216,37 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, holder1, random
       await expectRevert(
         controllerProxy.operate(actionArgs, {from: accountOwner1}),
         'Controller: can not run actions on different vaults',
+      )
+    })
+
+    it('should revert opening multiple vaults for different owners in the same operate call', async () => {
+      await controllerProxy.setOperator(accountOwner1, true, {from: accountOwner2})
+      const actionArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: accountOwner1,
+          sender: accountOwner1,
+          asset: ZERO_ADDR,
+          vaultId: '1',
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.OpenVault,
+          owner: accountOwner2,
+          sender: accountOwner1,
+          asset: ZERO_ADDR,
+          vaultId: '1',
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+
+      await expectRevert(
+        controllerProxy.operate(actionArgs, {from: accountOwner1}),
+        'Controller: can not run actions for different owners',
       )
     })
 
@@ -3229,6 +3263,33 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, holder1, random
 
       const stateAfter = await controllerProxy.systemPaused()
       assert.equal(stateAfter, true, 'System not paused')
+    })
+  })
+
+  describe('Refresh configuration', () => {
+    it('should revert refreshing configuration from address other than owner', async () => {
+      await expectRevert(controllerProxy.refreshConfiguration({from: random}), 'Ownable: caller is not the owner')
+    })
+
+    it('should refresh configuratiom', async () => {
+      // update modules
+      const oracle = await MockOracle.new(addressBook.address, {from: owner})
+      const calculator = await MockMarginCalculator.new(addressBook.address, {from: owner})
+      const marginPool = await MarginPool.new(addressBook.address, {from: owner})
+      const whitelist = await MockWhitelistModule.new({from: owner})
+
+      await addressBook.setOracle(oracle.address)
+      await addressBook.setMarginCalculator(calculator.address)
+      await addressBook.setMarginPool(marginPool.address)
+      await addressBook.setWhitelist(whitelist.address)
+
+      // referesh controller configuration
+      await controllerProxy.refreshConfiguration()
+      const [_whitelist, _oracle, _calculator, _pool] = await controllerProxy.getConfiguration()
+      assert.equal(_oracle, oracle.address, 'Oracle address mismatch after refresh')
+      assert.equal(_calculator, calculator.address, 'Calculator address mismatch after refresh')
+      assert.equal(_pool, marginPool.address, 'Oracle address mismatch after refresh')
+      assert.equal(_whitelist, whitelist.address, 'Oracle address mismatch after refresh')
     })
   })
 })

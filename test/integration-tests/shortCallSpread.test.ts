@@ -73,8 +73,7 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buy
     // initiate addressbook first.
     addressBook = await AddressBook.new()
     // setup calculator
-    calculator = await MarginCalculator.new()
-    await calculator.init(addressBook.address)
+    calculator = await MarginCalculator.new(addressBook.address)
     // setup margin pool
     marginPool = await MarginPool.new(addressBook.address)
     // setup controller module

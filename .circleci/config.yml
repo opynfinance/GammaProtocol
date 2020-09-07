@@ -46,6 +46,7 @@ jobs:
           key: gamma-{{ .Environment.CIRCLE_SHA1 }}
           paths:
             - ~/gammaprotocol
+
   lint:
     working_directory: ~/gammaprotocol
     docker:

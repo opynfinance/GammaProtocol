@@ -23,6 +23,7 @@ const MarginCalculator = artifacts.require('MarginCalculator.sol')
 const MockWhitelist = artifacts.require('MockWhitelistModule.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
+const MarginAccount = artifacts.require('MarginAccount.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
 enum ActionType {
@@ -77,6 +78,8 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, buye
     // setup margin pool
     marginPool = await MarginPool.new(addressBook.address)
     // setup controller module
+    const lib = await MarginAccount.new()
+    await Controller.link('MarginAccount', lib.address)
     controllerImplementation = await Controller.new(addressBook.address)
     // setup mock Oracle module
     oracle = await MockOracle.new(addressBook.address)
@@ -98,6 +101,7 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, buye
 
     const controllerProxyAddress = await addressBook.getController()
     controllerProxy = await Controller.at(controllerProxyAddress)
+    await controllerProxy.refreshConfiguration()
 
     ethPut = await Otoken.new()
     await ethPut.init(

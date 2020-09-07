@@ -23,6 +23,7 @@ const MarginCalculator = artifacts.require('MarginCalculator.sol')
 const MockWhitelist = artifacts.require('MockWhitelistModule.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
+const MarginAccount = artifacts.require('MarginAccount.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
 enum ActionType {
@@ -38,7 +39,7 @@ enum ActionType {
   Call,
 }
 
-contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, buyer]) => {
+contract('Naked Call Option flow', ([admin, accountOwner1, accountOperator1, buyer]) => {
   const reverter = new Reverter(web3)
 
   let expiry: number
@@ -76,8 +77,9 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, buye
     // setup margin pool
     marginPool = await MarginPool.new(addressBook.address)
     // setup controllerProxy module
+    const lib = await MarginAccount.new()
+    await Controller.link('MarginAccount', lib.address)
     controllerImplementation = await Controller.new(addressBook.address)
-    controllerProxy = await Controller.new(addressBook.address)
     // setup mock Oracle module
     oracle = await MockOracle.new(addressBook.address)
     // setup mock whitelist module
@@ -98,6 +100,7 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, buye
 
     const controllerProxyAddress = await addressBook.getController()
     controllerProxy = await Controller.at(controllerProxyAddress)
+    await controllerProxy.refreshConfiguration()
 
     ethCall = await Otoken.new()
     await ethCall.init(
@@ -124,7 +127,7 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, buye
     vaultCounter = vaultCounterBefore.toNumber() + 1
   })
 
-  describe('Integration test: Sell a naked short call and close it after expiry', () => {
+  describe('Integration test: Sell a naked put and close it after expires ITM', () => {
     it('Seller should be able to open a short call option', async () => {
       const actionArgs = [
         {
@@ -264,6 +267,9 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, buye
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
       const ownerOtokenBalanceBefore = new BigNumber(await ethCall.balanceOf(buyer))
       const marginPoolOtokenSupplyBefore = new BigNumber(await ethCall.totalSupply())
+
+      const cashedValue = await calculator.getExpiredCashValue(ethCall.address)
+      console.log(cashedValue.toString())
 
       const actionArgs = [
         {

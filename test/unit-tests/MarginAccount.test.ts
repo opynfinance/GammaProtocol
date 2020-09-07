@@ -12,6 +12,8 @@ const Otoken = artifacts.require('Otoken.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
 const MarginAccountTester = artifacts.require('MarginAccountTester.sol')
 const MockAddressBook = artifacts.require('MockAddressBook')
+const MarginAccount = artifacts.require('MarginAccount.sol')
+
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 const ETH_ADDR = ZERO_ADDR
 
@@ -47,6 +49,8 @@ contract('MarginAccount', ([deployer, controller]) => {
       from: deployer,
     })
     // margin account
+    const lib = await MarginAccount.new()
+    await MarginAccountTester.link('MarginAccount', lib.address)
     marginAccountTester = await MarginAccountTester.new()
   })
 

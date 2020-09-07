@@ -23,6 +23,7 @@ const MarginCalculator = artifacts.require('MarginCalculator.sol')
 const Oracle = artifacts.require('Oracle.sol')
 const AddressBook = artifacts.require('AddressBook.sol')
 const Whitelist = artifacts.require('Whitelist.sol')
+const MarginAccount = artifacts.require('MarginAccount.sol')
 
 contract('AddressBook', ([owner, otokenImplAdd, marginPoolAdd, liquidationManagerImpl, random]) => {
   // ERC20 mocks
@@ -50,10 +51,11 @@ contract('AddressBook', ([owner, otokenImplAdd, marginPoolAdd, liquidationManage
   })
 
   describe('Set controller', () => {
-    // let controller: UpgradeableContractV1Instance
     let controller: ControllerInstance
 
     before(async () => {
+      const lib = await MarginAccount.new()
+      await Controller.link('MarginAccount', lib.address)
       controller = await Controller.new()
     })
 
