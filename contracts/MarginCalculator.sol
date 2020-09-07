@@ -4,7 +4,6 @@
 pragma solidity 0.6.10;
 pragma experimental ABIEncoderV2;
 
-import {Initializable} from "./packages/oz/upgradeability/Initializable.sol";
 import {SafeMath} from "./packages/oz/SafeMath.sol";
 import {OtokenInterface} from "./interfaces/OtokenInterface.sol";
 import {OracleInterface} from "./interfaces/OracleInterface.sol";
@@ -19,13 +18,15 @@ import {MarginAccount} from "./libs/MarginAccount.sol";
  * @author Opyn
  * @notice Calculator module that check if a given vault is valid.
  */
-contract MarginCalculator is Initializable {
+contract MarginCalculator {
     using SafeMath for uint256;
     using FPI for FPI.FixedPointInt;
     using FPI for int256;
     address public addressBook;
 
-    function init(address _addressBook) external initializer {
+    constructor(address _addressBook) public {
+        require(_addressBook != address(0), "MarginCalculator: invalid addressbook");
+
         addressBook = _addressBook;
     }
 
@@ -315,7 +316,6 @@ contract MarginCalculator is Initializable {
     function _getUnderlyingPrice(address _otoken) internal view returns (uint256 price, bool isFinalized) {
         OracleInterface oracle = OracleInterface(AddressBookInterface(addressBook).getOracle());
         OtokenInterface otoken = OtokenInterface(_otoken);
-        // return (otoken.expiryTimestamp(), true);
         return oracle.getExpiryPrice(otoken.underlyingAsset(), otoken.expiryTimestamp());
     }
 
