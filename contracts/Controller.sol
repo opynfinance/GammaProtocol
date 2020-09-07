@@ -273,6 +273,9 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @notice Execute actions on a certain vault
      * @dev For each action in the action Array, run the corresponding action
      * @param _actions An array of type Actions.ActionArgs[] which expresses which actions the user want to execute.
+     * @return bool vaultUpdated, indicated if any vault is manipulated
+     * @return address owner the vault owner if a vault is updated
+     * @return uint256 vaultId the vault Id if a vault is updated
      */
     function _runActions(Actions.ActionArgs[] memory _actions)
         internal
@@ -284,7 +287,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     {
         address vaultOwner = address(0);
         uint256 vaultId = 0;
-        bool updateVault = false;
+        bool vaultUpdated = false;
 
         for (uint256 i = 0; i < _actions.length; i++) {
             Actions.ActionArgs memory action = _actions[i];
@@ -296,11 +299,11 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
                 (actionType != Actions.ActionType.Call)
             ) {
                 // check if this action is manipulating the same vault as all other actions, other than SettleVault
-                if (updateVault) {
+                if (vaultUpdated) {
                     require(vaultOwner == action.owner, "Controller: can not run actions for different owners");
                     require(vaultId == action.vaultId, "Controller: can not run actions on different vaults");
                 }
-                updateVault = true;
+                vaultUpdated = true;
                 vaultId = action.vaultId;
                 vaultOwner = action.owner;
             }
@@ -326,7 +329,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             }
         }
 
-        return (updateVault, vaultOwner, vaultId);
+        return (vaultUpdated, vaultOwner, vaultId);
     }
 
     /**
