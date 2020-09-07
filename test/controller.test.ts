@@ -3227,7 +3227,7 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, holder1, termin
     })
 
     it('should revert when pausing the system from address other than terminator', async () => {
-      await expectRevert(controllerProxy.setSystemPaused(true, {from: random}), 'Ownable: caller is not the owner')
+      await expectRevert(controllerProxy.setSystemPaused(true, {from: random}), 'Controller: sender is not terminator')
     })
 
     it('should pause system', async () => {
