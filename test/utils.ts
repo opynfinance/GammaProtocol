@@ -38,6 +38,10 @@ export const createVault = (
 
 BigNumber.config({EXPONENTIAL_AT: 30})
 
+export const createTokenAmount = (num: number, decimals = 18) => {
+  return new BigNumber(num).times(new BigNumber(10).pow(decimals)).toString()
+}
+
 /**
  * Create a number string that scales numbers to 1e18
  * @param num
