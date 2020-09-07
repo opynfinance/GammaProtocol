@@ -22,6 +22,7 @@ const MockWhitelistModule = artifacts.require('MockWhitelistModule.sol')
 const AddressBook = artifacts.require('AddressBook.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
+const MarginAccount = artifacts.require('MarginAccount.sol')
 
 // address(0)
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
@@ -80,6 +81,8 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, holder1, random
     // set whitelist module address
     await addressBook.setWhitelist(whitelist.address)
     // deploy Controller module
+    const lib = await MarginAccount.new()
+    await Controller.link('MarginAccount', lib.address)
     controllerImplementation = await Controller.new()
 
     // set controller address in AddressBook
