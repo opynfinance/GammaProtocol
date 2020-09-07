@@ -96,7 +96,7 @@ contract MarginCalculator is Initializable {
 
         // convert from internal amount to token's native amount
         uint256 excessCollateralExternal = hasCollateral
-            ? _inernalAmountToTokenAmount(excessCollateralInternal, _vault.collateralAssets[0])
+            ? _internalAmountToTokenAmount(excessCollateralInternal, _vault.collateralAssets[0])
             : excessCollateralInternal;
 
         return (excessCollateralExternal, isExcess);
@@ -404,7 +404,7 @@ contract MarginCalculator is Initializable {
      *      Input:  1                    =>    Output:  100     rUSDC
      * @return token amount in its native form.
      */
-    function _inernalAmountToTokenAmount(uint256 _amount, address _token) internal view returns (uint256) {
+    function _internalAmountToTokenAmount(uint256 _amount, address _token) internal view returns (uint256) {
         ERC20Interface token = ERC20Interface(_token);
         uint256 decimals = uint256(token.decimals());
         uint256 base = 18;
