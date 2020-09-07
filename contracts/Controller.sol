@@ -338,7 +338,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _vaultId the vault id of the final vault
      */
     function _verifyFinalState(address _owner, uint256 _vaultId) internal view {
-        MarginAccount.Vault memory _vault = vaults[_owner][_vaultId];
+        MarginAccount.Vault memory _vault = getVault(_owner, _vaultId);
         (, bool isValidVault) = calculator.getExcessCollateral(_vault);
 
         require(isValidVault, "Controller: invalid final vault state");
@@ -431,7 +431,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     function _withdrawCollateral(Actions.WithdrawArgs memory _args) internal isAuthorized(msg.sender, _args.owner) {
         require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
 
-        MarginAccount.Vault memory vault = vaults[_args.owner][_args.vaultId];
+        MarginAccount.Vault memory vault = getVault(_args.owner, _args.vaultId);
         if (_isNotEmpty(vault.shortOtokens)) {
             OtokenInterface otoken = OtokenInterface(vault.shortOtokens[0]);
 
@@ -521,7 +521,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     {
         require(checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
 
-        MarginAccount.Vault memory vault = vaults[_args.owner][_args.vaultId];
+        MarginAccount.Vault memory vault = getVault(_args.owner, _args.vaultId);
 
         require(_isNotEmpty(vault.shortOtokens), "Controller: can not settle a vault with no otoken minted");
 
