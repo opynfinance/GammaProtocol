@@ -3234,4 +3234,31 @@ contract('Controller', ([owner, accountOwner1, accountOperator1, holder1, random
       assert.equal(stateAfter, true, 'System not paused')
     })
   })
+
+  describe('Refresh configuration', () => {
+    it('should revert refreshing configuration from address other than owner', async () => {
+      await expectRevert(controllerProxy.refreshConfiguration({from: random}), 'Ownable: caller is not the owner')
+    })
+
+    it('should refresh configuratiom', async () => {
+      // update modules
+      const oracle = await MockOracle.new(addressBook.address, {from: owner})
+      const calculator = await MockMarginCalculator.new(addressBook.address, {from: owner})
+      const marginPool = await MarginPool.new(addressBook.address, {from: owner})
+      const whitelist = await MockWhitelistModule.new({from: owner})
+
+      await addressBook.setOracle(oracle.address)
+      await addressBook.setMarginCalculator(calculator.address)
+      await addressBook.setMarginPool(marginPool.address)
+      await addressBook.setWhitelist(whitelist.address)
+
+      // referesh controller configuration
+      await controllerProxy.refreshConfiguration()
+
+      assert.equal(await controllerProxy.oracle(), oracle.address, 'Oracle address mismatch after refresh')
+      assert.equal(await controllerProxy.calculator(), calculator.address, 'Calculator address mismatch after refresh')
+      assert.equal(await controllerProxy.pool(), marginPool.address, 'Oracle address mismatch after refresh')
+      assert.equal(await controllerProxy.whitelist(), whitelist.address, 'Oracle address mismatch after refresh')
+    })
+  })
 })
