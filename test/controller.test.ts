@@ -2542,6 +2542,87 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
       )
     })
 
+    it('should exercise call option correctly', async () => {
+      const expiry = new BigNumber(await time.latest()).plus(new BigNumber(60 * 60)).toNumber()
+      const call: MockOtokenInstance = await MockOtoken.new()
+      await call.init(
+        addressBook.address,
+        weth.address,
+        usdc.address,
+        weth.address,
+        createTokenAmount(200, 18),
+        expiry,
+        false,
+      )
+
+      await whitelist.whitelistOtoken(call.address)
+      const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
+      const amountCollateral = createTokenAmount(1, wethDecimals)
+      await weth.mint(accountOwner1, amountCollateral)
+      await weth.approve(marginPool.address, amountCollateral, {from: accountOwner1})
+      const amountOtoken = createTokenAmount(1, 18)
+      const actionArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: accountOwner1,
+          sender: accountOwner1,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounter.toNumber(),
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.DepositCollateral,
+          owner: accountOwner1,
+          sender: accountOwner1,
+          asset: weth.address,
+          vaultId: vaultCounter.toNumber(),
+          amount: amountCollateral,
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.MintShortOption,
+          owner: accountOwner1,
+          sender: accountOwner1,
+          asset: call.address,
+          vaultId: vaultCounter.toNumber(),
+          amount: amountOtoken,
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+
+      await controllerProxy.operate(actionArgs, {from: accountOwner1})
+      await call.transfer(holder1, amountOtoken, {from: accountOwner1})
+
+      await time.increaseTo(expiry + 10)
+      await oracle.setExpiryPrice(weth.address, expiry, createTokenAmount(400, 18))
+      await oracle.setExpiryPrice(usdc.address, expiry, createTokenAmount(1, 18))
+      await oracle.setIsFinalized(weth.address, expiry, true)
+      await oracle.setIsFinalized(usdc.address, expiry, true)
+      const exerciseArgs = [
+        {
+          actionType: ActionType.Exercise,
+          owner: ZERO_ADDR,
+          sender: holder1,
+          asset: call.address,
+          vaultId: '0',
+          amount: amountOtoken,
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+
+      const expectedPayout = createTokenAmount(0.5, 18)
+
+      const userBalanceBefore = new BigNumber(await weth.balanceOf(holder1))
+      await controllerProxy.operate(exerciseArgs, {from: holder1})
+      const userBalanceAfter = new BigNumber(await weth.balanceOf(holder1))
+      assert.equal(userBalanceAfter.minus(userBalanceBefore).toString(), expectedPayout)
+    })
+
     describe('Exercise multiple Otokens', () => {
       let firstOtoken: MockOtokenInstance
       let secondOtoken: MockOtokenInstance
