@@ -2060,8 +2060,6 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
             data: ZERO_ADDR,
           },
         ]
-        const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
-
         await controllerProxy.operate(actionArgs, {from: accountOwner1})
 
         const senderShortBalanceAfter = new BigNumber(await putOtoken.balanceOf(accountOwner1))
@@ -2322,7 +2320,6 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           await time.increase(3601) // increase time with one hour in seconds
 
           const vaultId = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          const vault = await controllerProxy.getVault(accountOwner1, vaultId)
           const shortAmountToBurn = new BigNumber('1')
           const actionArgs = [
             {
@@ -2789,7 +2786,6 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
       await usdc.mint(random, new BigNumber('1000000'))
       // open new vault, mint naked short, sell it to holder 1
       const collateralToDespoit = new BigNumber(await putOtoken.strikePrice()).dividedBy(1e18)
-      const amountToMint = new BigNumber('1')
       const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
       const actionArgs = [
         {
