@@ -5,7 +5,6 @@ import {
   MockOracleInstance,
   MockOtokenInstance,
 } from '../build/types/truffle-types'
-import BigNumber from 'bignumber.js'
 import {createVault, createScaledNumber as scaleNum, createTokenAmount} from './utils'
 import {assert} from 'chai'
 
