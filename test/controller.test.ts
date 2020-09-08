@@ -62,7 +62,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
     // addressbook deployment
     addressBook = await AddressBook.new()
     // ERC20 deployment
-    usdc = await MockERC20.new('USDC', 'USDC', 8)
+    usdc = await MockERC20.new('USDC', 'USDC', 6)
     weth = await MockERC20.new('WETH', 'WETH', 18)
     // deploy Oracle module
     oracle = await MockOracle.new(addressBook.address, {from: owner})
@@ -1557,13 +1557,13 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
 
   describe('Short otoken', () => {
     let longOtoken: MockOtokenInstance
-    let shortOtoken: MockOtokenInstance
+    let putOtoken: MockOtokenInstance
 
     before(async () => {
       const expiryTime = new BigNumber(60 * 60 * 24) // after 1 day
 
       longOtoken = await MockOtoken.new()
-      shortOtoken = await MockOtoken.new()
+      putOtoken = await MockOtoken.new()
       // init otoken
       await longOtoken.init(
         addressBook.address,
@@ -1574,7 +1574,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         new BigNumber(await time.latest()).plus(expiryTime),
         true,
       )
-      await shortOtoken.init(
+      await putOtoken.init(
         addressBook.address,
         weth.address,
         usdc.address,
@@ -1585,7 +1585,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
       )
 
       // whitelist short otoken to be used in the protocol
-      await whitelist.whitelistOtoken(shortOtoken.address, {from: owner})
+      await whitelist.whitelistOtoken(putOtoken.address, {from: owner})
 
       // give free money
       await longOtoken.mintOtoken(accountOwner1, new BigNumber('100'))
@@ -1606,7 +1606,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
             actionType: ActionType.MintShortOption,
             owner: accountOwner1,
             sender: random,
-            asset: shortOtoken.address,
+            asset: putOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: amountToMint.toNumber(),
             index: '0',
@@ -1624,14 +1624,14 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-        const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e18)
+        const collateralToDeposit = new BigNumber(await putOtoken.strikePrice()).dividedBy(1e18)
         const amountToMint = new BigNumber('1')
         const actionArgs = [
           {
             actionType: ActionType.MintShortOption,
             owner: accountOwner1,
             sender: accountOwner1,
-            asset: shortOtoken.address,
+            asset: putOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: amountToMint.toNumber(),
             index: '0',
@@ -1663,14 +1663,14 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-        const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e18)
+        const collateralToDeposit = new BigNumber(await putOtoken.strikePrice()).dividedBy(1e18)
         const amountToMint = new BigNumber('1')
         const actionArgs = [
           {
             actionType: ActionType.MintShortOption,
             owner: accountOwner1,
             sender: accountOwner1,
-            asset: shortOtoken.address,
+            asset: putOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: amountToMint.toNumber(),
             index: '0',
@@ -1690,7 +1690,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
 
         const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
         const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
-        const senderShortBalanceBefore = new BigNumber(await shortOtoken.balanceOf(accountOwner1))
+        const senderShortBalanceBefore = new BigNumber(await putOtoken.balanceOf(accountOwner1))
         const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
 
         await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
@@ -1698,7 +1698,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
 
         const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
         const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
-        const senderShortBalanceAfter = new BigNumber(await shortOtoken.balanceOf(accountOwner1))
+        const senderShortBalanceAfter = new BigNumber(await putOtoken.balanceOf(accountOwner1))
         const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
 
         assert.equal(
@@ -1720,7 +1720,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         )
         assert.equal(
           vaultAfter.shortOtokens[0],
-          shortOtoken.address,
+          putOtoken.address,
           'Short otoken address deposited into vault mismatch',
         )
         assert.equal(
@@ -1746,14 +1746,14 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-        const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e18)
+        const collateralToDeposit = new BigNumber(await putOtoken.strikePrice()).dividedBy(1e18)
         const amountToMint = new BigNumber('1')
         const actionArgs = [
           {
             actionType: ActionType.MintShortOption,
             owner: accountOwner1,
             sender: accountOperator1,
-            asset: shortOtoken.address,
+            asset: putOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: amountToMint.toNumber(),
             index: '0',
@@ -1773,7 +1773,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
 
         const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
         const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOperator1))
-        const senderShortBalanceBefore = new BigNumber(await shortOtoken.balanceOf(accountOperator1))
+        const senderShortBalanceBefore = new BigNumber(await putOtoken.balanceOf(accountOperator1))
         const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
 
         await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOperator1})
@@ -1781,7 +1781,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
 
         const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
         const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOperator1))
-        const senderShortBalanceAfter = new BigNumber(await shortOtoken.balanceOf(accountOperator1))
+        const senderShortBalanceAfter = new BigNumber(await putOtoken.balanceOf(accountOperator1))
         const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
 
         assert.equal(
@@ -1803,7 +1803,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         )
         assert.equal(
           vaultAfter.shortOtokens[0],
-          shortOtoken.address,
+          putOtoken.address,
           'Short otoken address deposited into vault mismatch',
         )
         assert.equal(
@@ -2043,7 +2043,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
             actionType: ActionType.MintShortOption,
             owner: accountOwner1,
             sender: accountOwner1,
-            asset: shortOtoken.address,
+            asset: putOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: amountToMint.toNumber(),
             index: '0',
@@ -2053,7 +2053,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
             actionType: ActionType.BurnShortOption,
             owner: accountOwner1,
             sender: accountOwner1,
-            asset: shortOtoken.address,
+            asset: putOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: amountToMint.toNumber(),
             index: '0',
@@ -2064,7 +2064,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
 
         await controllerProxy.operate(actionArgs, {from: accountOwner1})
 
-        const senderShortBalanceAfter = new BigNumber(await shortOtoken.balanceOf(accountOwner1))
+        const senderShortBalanceAfter = new BigNumber(await putOtoken.balanceOf(accountOwner1))
         const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
 
         assert.equal(vaultAfter.shortOtokens.length, 1, 'Vault short otoken array length mismatch')
@@ -2081,15 +2081,15 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-        const shortOtokenToBurn = new BigNumber(await shortOtoken.balanceOf(accountOwner1))
+        const putOtokenToBurn = new BigNumber(await putOtoken.balanceOf(accountOwner1))
         const actionArgs = [
           {
             actionType: ActionType.BurnShortOption,
             owner: accountOwner1,
             sender: accountOwner1,
-            asset: shortOtoken.address,
+            asset: putOtoken.address,
             vaultId: vaultCounter.toNumber(),
-            amount: shortOtokenToBurn.toNumber(),
+            amount: putOtokenToBurn.toNumber(),
             index: '1',
             data: ZERO_ADDR,
           },
@@ -2103,21 +2103,21 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
 
       it('should revert burning when there is no enough balance', async () => {
         // transfer operator balance
-        const operatorShortBalance = new BigNumber(await shortOtoken.balanceOf(accountOperator1))
-        await shortOtoken.transfer(accountOwner1, operatorShortBalance, {from: accountOperator1})
+        const operatorShortBalance = new BigNumber(await putOtoken.balanceOf(accountOperator1))
+        await putOtoken.transfer(accountOwner1, operatorShortBalance, {from: accountOperator1})
 
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-        const shortOtokenToBurn = new BigNumber(await shortOtoken.balanceOf(accountOwner1))
+        const putOtokenToBurn = new BigNumber(await putOtoken.balanceOf(accountOwner1))
         const actionArgs = [
           {
             actionType: ActionType.BurnShortOption,
             owner: accountOwner1,
             sender: accountOperator1,
-            asset: shortOtoken.address,
+            asset: putOtoken.address,
             vaultId: vaultCounter.toNumber(),
-            amount: shortOtokenToBurn.toNumber(),
+            amount: putOtokenToBurn.toNumber(),
             index: '1',
             data: ZERO_ADDR,
           },
@@ -2129,14 +2129,14 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         )
 
         // transfer back
-        await shortOtoken.transfer(accountOperator1, operatorShortBalance, {from: accountOwner1})
+        await putOtoken.transfer(accountOperator1, operatorShortBalance, {from: accountOwner1})
       })
 
       it('should revert burning when called from an address other than account owner or operator', async () => {
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-        const shortOtokenToBurn = new BigNumber(await shortOtoken.balanceOf(accountOwner1))
+        const putOtokenToBurn = new BigNumber(await putOtoken.balanceOf(accountOwner1))
         const actionArgs = [
           {
             actionType: ActionType.BurnShortOption,
@@ -2144,7 +2144,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
             sender: accountOwner1,
             asset: usdc.address,
             vaultId: vaultCounter.toNumber(),
-            amount: shortOtokenToBurn.toNumber(),
+            amount: putOtokenToBurn.toNumber(),
             index: '1',
             data: ZERO_ADDR,
           },
@@ -2162,84 +2162,80 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
 
         const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
 
-        const shortOtokenToBurn = new BigNumber(await shortOtoken.balanceOf(accountOperator1))
+        const putOtokenToBurn = new BigNumber(await putOtoken.balanceOf(accountOperator1))
         const actionArgs = [
           {
             actionType: ActionType.BurnShortOption,
             owner: accountOwner1,
             sender: accountOperator1,
-            asset: shortOtoken.address,
+            asset: putOtoken.address,
             vaultId: vaultCounter.toNumber(),
-            amount: shortOtokenToBurn.toNumber(),
+            amount: putOtokenToBurn.toNumber(),
             index: '0',
             data: ZERO_ADDR,
           },
         ]
-        const sellerBalanceBefore = new BigNumber(await shortOtoken.balanceOf(accountOperator1))
+        const sellerBalanceBefore = new BigNumber(await putOtoken.balanceOf(accountOperator1))
 
         await controllerProxy.operate(actionArgs, {from: accountOperator1})
 
-        const sellerBalanceAfter = new BigNumber(await shortOtoken.balanceOf(accountOperator1))
+        const sellerBalanceAfter = new BigNumber(await putOtoken.balanceOf(accountOperator1))
         const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
 
         assert.equal(
           sellerBalanceBefore.minus(sellerBalanceAfter).toString(),
-          shortOtokenToBurn.toString(),
+          putOtokenToBurn.toString(),
           'Short otoken burned amount mismatch',
         )
         assert.equal(vaultAfter.shortOtokens.length, 1, 'Vault short otoken array length mismatch')
-        assert.equal(
-          vaultAfter.shortOtokens[0],
-          shortOtoken.address,
-          'Vault short otoken address after burning mismatch',
-        )
+        assert.equal(vaultAfter.shortOtokens[0], putOtoken.address, 'Vault short otoken address after burning mismatch')
         assert.equal(
           new BigNumber(vaultBefore.shortAmounts[0]).minus(new BigNumber(vaultAfter.shortAmounts[0])).toString(),
-          shortOtokenToBurn.toString(),
+          putOtokenToBurn.toString(),
           'Short otoken amount in vault after burn mismatch',
         )
       })
 
       it('should remove short otoken address from short otokens array if amount is equal to zero after burning', async () => {
         // send back all short otoken to owner
-        const operatorShortBalance = new BigNumber(await shortOtoken.balanceOf(accountOperator1))
-        await shortOtoken.transfer(accountOwner1, operatorShortBalance, {from: accountOperator1})
+        const operatorShortBalance = new BigNumber(await putOtoken.balanceOf(accountOperator1))
+        await putOtoken.transfer(accountOwner1, operatorShortBalance, {from: accountOperator1})
 
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
         const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
 
-        const shortOtokenToBurn = new BigNumber(vaultBefore.shortAmounts[0])
+        const putOtokenToBurn = new BigNumber(vaultBefore.shortAmounts[0])
         const actionArgs = [
           {
             actionType: ActionType.BurnShortOption,
             owner: accountOwner1,
             sender: accountOwner1,
-            asset: shortOtoken.address,
+            asset: putOtoken.address,
             vaultId: vaultCounter.toNumber(),
-            amount: shortOtokenToBurn.toNumber(),
+            amount: putOtokenToBurn.toNumber(),
             index: '0',
             data: ZERO_ADDR,
           },
         ]
-        const sellerBalanceBefore = new BigNumber(await shortOtoken.balanceOf(accountOwner1))
+        const sellerBalanceBefore = new BigNumber(await putOtoken.balanceOf(accountOwner1))
 
         await controllerProxy.operate(actionArgs, {from: accountOwner1})
 
-        const sellerBalanceAfter = new BigNumber(await shortOtoken.balanceOf(accountOwner1))
+        const sellerBalanceAfter = new BigNumber(await putOtoken.balanceOf(accountOwner1))
         const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
 
         assert.equal(
           sellerBalanceBefore.minus(sellerBalanceAfter).toString(),
-          shortOtokenToBurn.toString(),
+          putOtokenToBurn.toString(),
           'Short otoken burned amount mismatch',
         )
         assert.equal(vaultAfter.shortOtokens.length, 1, 'Vault short otoken array length mismatch')
         assert.equal(vaultAfter.shortOtokens[0], ZERO_ADDR, 'Vault short otoken address after clearing mismatch')
         assert.equal(
           new BigNumber(vaultBefore.shortAmounts[0]).minus(new BigNumber(vaultAfter.shortAmounts[0])).toString(),
-          shortOtokenToBurn.toString(),
+          putOtokenToBurn.toString(),
           'Short otoken amount in vault after burn mismatch',
         )
       })
@@ -2357,14 +2353,14 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
   })
 
   describe('Exercise', () => {
-    let shortOtoken: MockOtokenInstance
+    let putOtoken: MockOtokenInstance
 
     before(async () => {
       const expiryTime = new BigNumber(60 * 60 * 24) // after 1 day
 
-      shortOtoken = await MockOtoken.new()
+      putOtoken = await MockOtoken.new()
       // init otoken
-      await shortOtoken.init(
+      await putOtoken.init(
         addressBook.address,
         weth.address,
         usdc.address,
@@ -2374,14 +2370,14 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         true,
       )
       // whitelist short otoken to be used in the protocol
-      await whitelist.whitelistOtoken(shortOtoken.address, {from: owner})
+      await whitelist.whitelistOtoken(putOtoken.address, {from: owner})
       // give free money
       await usdc.mint(accountOwner1, new BigNumber('1000000'))
       await usdc.mint(accountOperator1, new BigNumber('1000000'))
       await usdc.mint(random, new BigNumber('1000000'))
       // open new vault, mintnaked short, sell it to holder 1
       const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
-      const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e18)
+      const collateralToDeposit = new BigNumber(await putOtoken.strikePrice()).dividedBy(1e18)
       const amountToMint = new BigNumber('1')
       const actionArgs = [
         {
@@ -2398,7 +2394,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           actionType: ActionType.MintShortOption,
           owner: accountOwner1,
           sender: accountOwner1,
-          asset: shortOtoken.address,
+          asset: putOtoken.address,
           vaultId: vaultCounter.toNumber(),
           amount: amountToMint.toNumber(),
           index: '0',
@@ -2418,7 +2414,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
       await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
       await controllerProxy.operate(actionArgs, {from: accountOwner1})
       // transfer minted short otoken to hodler`
-      await shortOtoken.transfer(holder1, amountToMint, {from: accountOwner1})
+      await putOtoken.transfer(holder1, amountToMint, {from: accountOwner1})
     })
 
     it('should revert exercising un-expired otoken', async () => {
@@ -2428,7 +2424,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           actionType: ActionType.Exercise,
           owner: ZERO_ADDR,
           sender: holder1,
-          asset: shortOtoken.address,
+          asset: putOtoken.address,
           vaultId: '0',
           amount: shortAmountToBurn.toNumber(),
           index: '0',
@@ -2436,7 +2432,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         },
       ]
 
-      assert.equal(await controllerProxy.isExpired(shortOtoken.address), false, 'Short otoken is already expired')
+      assert.equal(await controllerProxy.isExpired(putOtoken.address), false, 'Short otoken is already expired')
 
       await expectRevert(
         controllerProxy.operate(actionArgs, {from: holder1}),
@@ -2449,14 +2445,14 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
       await time.increase(60 * 61 * 24) // increase time with one hour in seconds
       // set price in Oracle Mock, 150$ at expiry, expire ITM
       await oracle.setExpiryPrice(
-        await shortOtoken.underlyingAsset(),
-        new BigNumber(await shortOtoken.expiryTimestamp()),
+        await putOtoken.underlyingAsset(),
+        new BigNumber(await putOtoken.expiryTimestamp()),
         new BigNumber(150).times(new BigNumber(10).exponentiatedBy(18)),
       )
       // set it as not finalized in mock
       await oracle.setIsFinalized(
-        await shortOtoken.underlyingAsset(),
-        new BigNumber(await shortOtoken.expiryTimestamp()),
+        await putOtoken.underlyingAsset(),
+        new BigNumber(await putOtoken.expiryTimestamp()),
         false,
       )
 
@@ -2466,7 +2462,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           actionType: ActionType.Exercise,
           owner: ZERO_ADDR,
           sender: holder1,
-          asset: shortOtoken.address,
+          asset: putOtoken.address,
           vaultId: '0',
           amount: shortAmountToBurn.toNumber(),
           index: '0',
@@ -2474,7 +2470,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         },
       ]
 
-      assert.equal(await controllerProxy.isExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
+      assert.equal(await controllerProxy.isExpired(putOtoken.address), true, 'Short otoken is not expired yet')
 
       await expectRevert(
         controllerProxy.operate(actionArgs, {from: holder1}),
@@ -2485,8 +2481,8 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
     it('should revert exercising if cash value receiver address in equal to address zero', async () => {
       // set it as finalized in mock
       await oracle.setIsFinalized(
-        await shortOtoken.underlyingAsset(),
-        new BigNumber(await shortOtoken.expiryTimestamp()),
+        await putOtoken.underlyingAsset(),
+        new BigNumber(await putOtoken.expiryTimestamp()),
         true,
       )
 
@@ -2496,7 +2492,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           actionType: ActionType.Exercise,
           owner: ZERO_ADDR,
           sender: ZERO_ADDR,
-          asset: shortOtoken.address,
+          asset: putOtoken.address,
           vaultId: '0',
           amount: shortAmountToBurn.toNumber(),
           index: '0',
@@ -2504,7 +2500,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         },
       ]
 
-      assert.equal(await controllerProxy.isExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
+      assert.equal(await controllerProxy.isExpired(putOtoken.address), true, 'Short otoken is not expired yet')
 
       await expectRevert(
         controllerProxy.operate(actionArgs, {from: holder1}),
@@ -2512,32 +2508,52 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
       )
     })
 
-    it('should exercise after expiry + price is finalized', async () => {
+    it('should revert when exercising dust amount', async () => {
       const shortAmountToBurn = new BigNumber('1')
       const actionArgs = [
         {
           actionType: ActionType.Exercise,
           owner: ZERO_ADDR,
           sender: holder1,
-          asset: shortOtoken.address,
+          asset: putOtoken.address,
           vaultId: '0',
           amount: shortAmountToBurn.toNumber(),
           index: '0',
           data: ZERO_ADDR,
         },
       ]
-      assert.equal(await controllerProxy.isExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
+      await expectRevert(
+        controllerProxy.operate(actionArgs, {from: holder1}),
+        'MarginPool: transferToUser amount is equal to 0',
+      )
+    })
+
+    it('should exercise after expiry + price is finalized', async () => {
+      const shortAmountToBurn = new BigNumber(1e12)
+      const actionArgs = [
+        {
+          actionType: ActionType.Exercise,
+          owner: ZERO_ADDR,
+          sender: holder1,
+          asset: putOtoken.address,
+          vaultId: '0',
+          amount: shortAmountToBurn.toNumber(),
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+      assert.equal(await controllerProxy.isExpired(putOtoken.address), true, 'Short otoken is not expired yet')
 
       const payout = new BigNumber('50')
       const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
       const senderBalanceBefore = new BigNumber(await usdc.balanceOf(holder1))
-      const senderShortBalanceBefore = new BigNumber(await shortOtoken.balanceOf(holder1))
+      const senderShortBalanceBefore = new BigNumber(await putOtoken.balanceOf(holder1))
 
       controllerProxy.operate(actionArgs, {from: holder1})
 
       const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
       const senderBalanceAfter = new BigNumber(await usdc.balanceOf(holder1))
-      const senderShortBalanceAfter = new BigNumber(await shortOtoken.balanceOf(holder1))
+      const senderShortBalanceAfter = new BigNumber(await putOtoken.balanceOf(holder1))
 
       assert.equal(
         marginPoolBalanceBefore.minus(marginPoolBalanceAfter).toString(),
@@ -2749,14 +2765,14 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
   })
 
   describe('Settle vault', () => {
-    let shortOtoken: MockOtokenInstance
+    let putOtoken: MockOtokenInstance
 
     before(async () => {
       const expiryTime = new BigNumber(60 * 60 * 24) // after 1 day
 
-      shortOtoken = await MockOtoken.new()
+      putOtoken = await MockOtoken.new()
       // init otoken
-      await shortOtoken.init(
+      await putOtoken.init(
         addressBook.address,
         weth.address,
         usdc.address,
@@ -2766,13 +2782,13 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         true,
       )
       // whitelist otoken to be used in the protocol
-      await whitelist.whitelistOtoken(shortOtoken.address, {from: owner})
+      await whitelist.whitelistOtoken(putOtoken.address, {from: owner})
       // give free money
       await usdc.mint(accountOwner1, new BigNumber('1000000'))
       await usdc.mint(accountOperator1, new BigNumber('1000000'))
       await usdc.mint(random, new BigNumber('1000000'))
       // open new vault, mint naked short, sell it to holder 1
-      const collateralToDespoit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e18)
+      const collateralToDespoit = new BigNumber(await putOtoken.strikePrice()).dividedBy(1e18)
       const amountToMint = new BigNumber('1')
       const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
       const actionArgs = [
@@ -2808,7 +2824,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           actionType: ActionType.SettleVault,
           owner: accountOwner1,
           sender: accountOwner1,
-          asset: shortOtoken.address,
+          asset: putOtoken.address,
           vaultId: vaultCounter.toNumber(),
           amount: '0',
           index: '0',
@@ -2832,7 +2848,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           actionType: ActionType.MintShortOption,
           owner: accountOwner1,
           sender: accountOwner1,
-          asset: shortOtoken.address,
+          asset: putOtoken.address,
           vaultId: vaultCounter.toNumber(),
           amount: amountToMint.toString(),
           index: '0',
@@ -2840,7 +2856,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         },
       ]
       await controllerProxy.operate(actionArgs, {from: accountOwner1})
-      await shortOtoken.transfer(holder1, amountToMint, {from: accountOwner1})
+      await putOtoken.transfer(holder1, amountToMint, {from: accountOwner1})
 
       vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
       actionArgs = [
@@ -2848,7 +2864,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           actionType: ActionType.SettleVault,
           owner: accountOwner1,
           sender: accountOwner1,
-          asset: shortOtoken.address,
+          asset: putOtoken.address,
           vaultId: vaultCounter.toNumber(),
           amount: '0',
           index: '0',
@@ -2869,7 +2885,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           actionType: ActionType.SettleVault,
           owner: accountOwner1,
           sender: accountOwner1,
-          asset: shortOtoken.address,
+          asset: putOtoken.address,
           vaultId: vaultCounter.plus(10000).toNumber(),
           amount: '0',
           index: '0',
@@ -2885,14 +2901,14 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
       await time.increase(60 * 61 * 24) // increase time with one hour in seconds
       // set price in Oracle Mock, 150$ at expiry, expire ITM
       await oracle.setExpiryPrice(
-        await shortOtoken.underlyingAsset(),
-        new BigNumber(await shortOtoken.expiryTimestamp()),
+        await putOtoken.underlyingAsset(),
+        new BigNumber(await putOtoken.expiryTimestamp()),
         new BigNumber(150).times(new BigNumber(10).exponentiatedBy(18)),
       )
       // set it as not finalized in mock
       await oracle.setIsFinalized(
-        await shortOtoken.underlyingAsset(),
-        new BigNumber(await shortOtoken.expiryTimestamp()),
+        await putOtoken.underlyingAsset(),
+        new BigNumber(await putOtoken.expiryTimestamp()),
         false,
       )
 
@@ -2902,7 +2918,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           actionType: ActionType.SettleVault,
           owner: accountOwner1,
           sender: accountOwner1,
-          asset: shortOtoken.address,
+          asset: putOtoken.address,
           vaultId: vaultCounter.toNumber(),
           amount: '0',
           index: '0',
@@ -2910,7 +2926,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         },
       ]
 
-      assert.equal(await controllerProxy.isExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
+      assert.equal(await controllerProxy.isExpired(putOtoken.address), true, 'Short otoken is not expired yet')
 
       await expectRevert(
         controllerProxy.operate(actionArgs, {from: accountOwner1}),
@@ -2920,8 +2936,8 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
 
     it('should settle ITM otoken after expiry + price is finalized', async () => {
       await oracle.setIsFinalized(
-        await shortOtoken.underlyingAsset(),
-        new BigNumber(await shortOtoken.expiryTimestamp()),
+        await putOtoken.underlyingAsset(),
+        new BigNumber(await putOtoken.expiryTimestamp()),
         true,
       )
       const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
@@ -2930,7 +2946,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           actionType: ActionType.SettleVault,
           owner: accountOwner1,
           sender: accountOwner1,
-          asset: shortOtoken.address,
+          asset: putOtoken.address,
           vaultId: vaultCounter.toNumber(),
           amount: '0',
           index: '0',
