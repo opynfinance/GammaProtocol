@@ -237,15 +237,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
-     * @notice Iterate through a collateral array of the vault and payout collateral assets
-     * @dev can only be called when system is not paused and from an authorized address
-     * @param _owner The owner of the vault we will clear
-     * @param _vaultId The vaultId for the vault we will clear, within the user's MarginAccount.Account struct
-     */
-    //function redeemForEmergency(address _owner, uint256 _vaultId) external notPaused onlyAuthorized(args.owner) {
-    //}
-
-    /**
      * @notice check if a specific address is an operator for an owner account
      * @param _owner account owner address
      * @param _operator account operator address
@@ -626,10 +617,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     //High Level: call arbitrary smart contract
-    //function _call(Actions.CallArgs args) internal isNotPaused {
-    //    //Check whitelistModule.isWhitelistCallDestination(args.address)
-    //    //Call args.address with args.data
-    //}
+    function _call(Actions.CallArgs args) internal isNotPaused {}
 
     /**
      * @notice function to check the validity of a specific vault id
