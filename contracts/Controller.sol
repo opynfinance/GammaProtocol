@@ -558,11 +558,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @notice settle vault after expiry
      * @param _args SettleVaultArgs structure
      */
-    function _settleVault(Actions.SettleVaultArgs memory _args)
-        internal
-        onlyAuthorized(msg.sender, _args.owner)
-        returns (MarginAccount.Vault memory)
-    {
+    function _settleVault(Actions.SettleVaultArgs memory _args) internal onlyAuthorized(msg.sender, _args.owner) {
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
 
         MarginAccount.Vault memory vault = getVault(_args.owner, _args.vaultId);
@@ -585,7 +581,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             longOtoken.burnOtoken(address(pool), vault.longAmounts[0]);
         }
 
-        vaults[_args.owner][_args.vaultId]._clearVault();
+        delete vaults[_args.owner][_args.vaultId];
 
         pool.transferToUser(shortOtoken.collateralAsset(), _args.to, payout);
 
