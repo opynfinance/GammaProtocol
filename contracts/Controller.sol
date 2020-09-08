@@ -117,6 +117,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     );
     /// @notice emits an event when terminator address change
     event TerminatorUpdated(address indexed oldTerminator, address indexed newTerminator);
+    /// @notice emits an event when system pause status change
+    event EmergencyShutdown(bool isActive);
 
     /**
      * @notice modifier check if protocol is not paused
@@ -186,7 +188,11 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _paused The new boolean value to set systemPaused to.
      */
     function setSystemPaused(bool _paused) external onlyTerminator {
+        require(systemPaused != _paused, "Controller: cannot change pause status");
+
         systemPaused = _paused;
+
+        emit EmergencyShutdown(systemPaused);
     }
 
     /**
