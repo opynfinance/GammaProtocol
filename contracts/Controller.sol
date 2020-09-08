@@ -413,7 +413,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         require(now <= otoken.expiryTimestamp(), "Controller: otoken used as collateral is already expired");
 
-        vaults[_args.owner][_args.vaultId]._addLong(address(otoken), _args.amount, _args.index);
+        vaults[_args.owner][_args.vaultId].addLong(address(otoken), _args.amount, _args.index);
 
         pool.transferToPool(address(otoken), _args.from, _args.amount);
 
@@ -436,7 +436,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         require(now <= otoken.expiryTimestamp(), "Controller: can not withdraw an expired otoken");
 
-        vaults[_args.owner][_args.vaultId]._removeLong(address(otoken), _args.amount, _args.index);
+        vaults[_args.owner][_args.vaultId].removeLong(address(otoken), _args.amount, _args.index);
 
         pool.transferToUser(address(otoken), _args.to, _args.amount);
 
@@ -456,7 +456,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             "Controller: asset is not whitelisted to be used as collateral"
         );
 
-        vaults[_args.owner][_args.vaultId]._addCollateral(_args.asset, _args.amount, _args.index);
+        vaults[_args.owner][_args.vaultId].addCollateral(_args.asset, _args.amount, _args.index);
 
         pool.transferToPool(_args.asset, _args.from, _args.amount);
 
@@ -485,7 +485,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             );
         }
 
-        vaults[_args.owner][_args.vaultId]._removeCollateral(_args.asset, _args.amount, _args.index);
+        vaults[_args.owner][_args.vaultId].removeCollateral(_args.asset, _args.amount, _args.index);
 
         pool.transferToUser(_args.asset, _args.to, _args.amount);
 
@@ -507,7 +507,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         require(now <= otoken.expiryTimestamp(), "Controller: can not mint expired otoken");
 
-        vaults[_args.owner][_args.vaultId]._addShort(_args.otoken, _args.amount, _args.index);
+        vaults[_args.owner][_args.vaultId].addShort(_args.otoken, _args.amount, _args.index);
 
         otoken.mintOtoken(_args.to, _args.amount);
 
@@ -527,7 +527,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         require(now <= otoken.expiryTimestamp(), "Controller: can not burn expired otoken");
 
-        vaults[_args.owner][_args.vaultId]._removeShort(_args.otoken, _args.amount, _args.index);
+        vaults[_args.owner][_args.vaultId].removeShort(_args.otoken, _args.amount, _args.index);
 
         otoken.burnOtoken(_args.from, _args.amount);
 
