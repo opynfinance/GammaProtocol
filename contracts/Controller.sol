@@ -116,6 +116,13 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         uint256 vaultId,
         uint256 payout
     );
+    event CallExecuted(
+        address indexed from,
+        address indexed to,
+        address indexed vaultOwner,
+        uint256 vaultId,
+        bytes data
+    );
     /// @notice emits an event when terminator address change
     event TerminatorUpdated(address indexed oldTerminator, address indexed newTerminator);
     /// @notice emits an event when system pause status change
@@ -232,7 +239,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev can only be called when system is not paused
      * @param _actions array of actions arguments
      */
-    function operate(Actions.ActionArgs[] memory _actions) external nonReentrant {
+    function operate(Actions.ActionArgs[] memory _actions) external payable nonReentrant {
         (bool vaultUpdated, address vaultOwner, uint256 vaultId) = _runActions(_actions);
         if (vaultUpdated) _verifyFinalState(vaultOwner, vaultId);
     }
@@ -387,6 +394,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
                 _exercise(Actions._parseExerciseArgs(action));
             } else if (actionType == Actions.ActionType.SettleVault) {
                 _settleVault(Actions._parseSettleVaultArgs(action));
+            } else if (actionType == Actions.ActionType.Call) {
+                _call(Actions._parseCallArgs(action));
             }
         }
 
@@ -620,10 +629,17 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /**
      * @notice function to execute arbitrary calls
      * @dev cannot be called when system is paued
-     * @param _args
+     * @param _args Call action
      */
     function _call(Actions.CallArgs memory _args) internal notPaused {
-        CalleeInterface(args.callee).callFunction(msg.sender, args.account, args.data);
+        CalleeInterface(_args.callee).callFunction{value: _args.msgValue}(
+            msg.sender,
+            _args.owner,
+            _args.vaultId,
+            _args.data
+        );
+
+        emit CallExecuted(msg.sender, _args.callee, _args.owner, _args.vaultId, _args.data);
     }
 
     /**

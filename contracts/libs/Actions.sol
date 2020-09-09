@@ -140,6 +140,8 @@ library Actions {
         address callee;
         // vault id
         uint256 vaultId;
+        // tx msg.value
+        uint256 msgValue;
         // The data field for external calls
         bytes data;
     }
@@ -279,6 +281,13 @@ library Actions {
         require(_args.actionType == ActionType.Call, "Actions: can only parse arguments for call actions");
         require(_args.sender != address(0), "Actions: target address cannot be address(0)");
 
-        return CallArgs({owner: _args.owner, callee: _args.sender, data: _args.data, vaultId: _args.vaultId});
+        return
+            CallArgs({
+                owner: _args.owner,
+                callee: _args.sender,
+                vaultId: _args.vaultId,
+                msgValue: _args.amount,
+                data: _args.data
+            });
     }
 }

@@ -1,4 +1,5 @@
 import {
+  CallTesterInstance,
   MockMarginCalculatorInstance,
   MockOtokenInstance,
   MockERC20Instance,
@@ -11,8 +12,9 @@ import {
 } from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
-const {expectRevert, time} = require('@openzeppelin/test-helpers')
+const {expectRevert, expectEvent, time} = require('@openzeppelin/test-helpers')
 
+const CallTester = artifacts.require('CallTester.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
 const MockOtoken = artifacts.require('MockOtoken.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
@@ -3247,6 +3249,37 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
       )
 
       assert.equal(await controllerProxy.isExpired(expiredOtoken.address), true, 'Otoken expiry check mismatch')
+    })
+  })
+
+  describe('Call action', () => {
+    let callTester: CallTesterInstance
+
+    before(async () => {
+      callTester = await CallTester.new()
+    })
+
+    it('should call destination address', async () => {
+      const actionArgs = [
+        {
+          actionType: ActionType.Call,
+          owner: ZERO_ADDR,
+          sender: callTester.address,
+          asset: ZERO_ADDR,
+          vaultId: '0',
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+
+      expectEvent(await controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CallExecuted', {
+        from: accountOwner1,
+        to: callTester.address,
+        vaultOwner: ZERO_ADDR,
+        vaultId: '0',
+        data: ZERO_ADDR,
+      })
     })
   })
 
