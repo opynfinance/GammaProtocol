@@ -671,29 +671,6 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         )
       })
 
-      it('should revert withdrawing long otoken amount equal to zero', async () => {
-        const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-        assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
-
-        const actionArgs = [
-          {
-            actionType: ActionType.WithdrawLongOption,
-            owner: accountOwner1,
-            sender: accountOwner1,
-            asset: longOtoken.address,
-            vaultId: vaultCounter.toNumber(),
-            amount: '0',
-            index: '0',
-            data: ZERO_ADDR,
-          },
-        ]
-
-        await expectRevert(
-          controllerProxy.operate(actionArgs, {from: accountOwner1}),
-          'MarginPool: transferToUser amount is equal to 0',
-        )
-      })
-
       it('should revert withdrawing long otoken amount greater than the vault balance', async () => {
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
