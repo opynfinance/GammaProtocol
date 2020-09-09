@@ -3484,8 +3484,12 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         new BigNumber(await shortOtoken.expiryTimestamp()),
         new BigNumber(150).times(new BigNumber(10).exponentiatedBy(18)),
       )
-      // set it as finalized in mock
       await oracle.setIsFinalized(
+        await shortOtoken.underlyingAsset(),
+        new BigNumber(await shortOtoken.expiryTimestamp()),
+        true,
+      )
+      await oracle.setIsDisputePeriodOver(
         await shortOtoken.underlyingAsset(),
         new BigNumber(await shortOtoken.expiryTimestamp()),
         true,
