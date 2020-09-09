@@ -106,7 +106,7 @@ contract MarginPool is Ownable {
      * @param _asset asset address
      * @return asset balance
      */
-    function getStoredBalance(address _asset) public view returns (uint256) {
+    function getStoredBalance(address _asset) external view returns (uint256) {
         return assetBalance[_asset];
     }
 
