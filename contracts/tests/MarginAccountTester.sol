@@ -20,7 +20,7 @@ contract MarginAccountTester {
         uint256 _amount,
         uint256 _index
     ) external {
-        vault[msg.sender][_vaultIndex]._addShort(_shortOtoken, _amount, _index);
+        vault[msg.sender][_vaultIndex].addShort(_shortOtoken, _amount, _index);
     }
 
     function testRemoveShort(
@@ -29,7 +29,7 @@ contract MarginAccountTester {
         uint256 _amount,
         uint256 _index
     ) external {
-        vault[msg.sender][_vaultIndex]._removeShort(_shortOtoken, _amount, _index);
+        vault[msg.sender][_vaultIndex].removeShort(_shortOtoken, _amount, _index);
     }
 
     function testAddLong(
@@ -38,7 +38,7 @@ contract MarginAccountTester {
         uint256 _amount,
         uint256 _index
     ) external {
-        vault[msg.sender][_vaultIndex]._addLong(_longOtoken, _amount, _index);
+        vault[msg.sender][_vaultIndex].addLong(_longOtoken, _amount, _index);
     }
 
     function testRemoveLong(
@@ -47,7 +47,7 @@ contract MarginAccountTester {
         uint256 _amount,
         uint256 _index
     ) external {
-        vault[msg.sender][_vaultIndex]._removeLong(_longOtoken, _amount, _index);
+        vault[msg.sender][_vaultIndex].removeLong(_longOtoken, _amount, _index);
     }
 
     function testAddCollateral(
@@ -56,7 +56,7 @@ contract MarginAccountTester {
         uint256 _amount,
         uint256 _index
     ) external {
-        vault[msg.sender][_vaultIndex]._addCollateral(_collateralAsset, _amount, _index);
+        vault[msg.sender][_vaultIndex].addCollateral(_collateralAsset, _amount, _index);
     }
 
     function testRemoveCollateral(
@@ -65,10 +65,6 @@ contract MarginAccountTester {
         uint256 _amount,
         uint256 _index
     ) external {
-        vault[msg.sender][_vaultIndex]._removeCollateral(_collateralAsset, _amount, _index);
-    }
-
-    function testClearVault(uint256 _vaultIndex) external {
-        vault[msg.sender][_vaultIndex]._clearVault();
+        vault[msg.sender][_vaultIndex].removeCollateral(_collateralAsset, _amount, _index);
     }
 }

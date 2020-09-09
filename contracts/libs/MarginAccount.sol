@@ -37,7 +37,7 @@ library MarginAccount {
      * @param _amount The additional number of _shortOtoken the protocol is shorting from the user's vault
      * @param _index The index of _shortOtoken in the user's vault.shortOtokens array
      */
-    function _addShort(
+    function addShort(
         Vault storage _vault,
         address _shortOtoken,
         uint256 _amount,
@@ -68,7 +68,7 @@ library MarginAccount {
      * @param _amount The number of _shortOtoken the protocol is reducing the user's position by from the user's vault
      * @param _index The index of _shortOtoken in the user's vault.shortOtokens array
      */
-    function _removeShort(
+    function removeShort(
         Vault storage _vault,
         address _shortOtoken,
         uint256 _amount,
@@ -94,7 +94,7 @@ library MarginAccount {
      * @param _amount The number of _longOtoken the protocol is adding to the user's vault
      * @param _index The index of _longOtoken in the user's vault.longOtokens array
      */
-    function _addLong(
+    function addLong(
         Vault storage _vault,
         address _longOtoken,
         uint256 _amount,
@@ -125,7 +125,7 @@ library MarginAccount {
      * @param _amount The number of _longOtoken the protocol is reducing the user's long position by from the user's vault
      * @param _index The index of _longOtoken in the user's vault.longOtokens array
      */
-    function _removeLong(
+    function removeLong(
         Vault storage _vault,
         address _longOtoken,
         uint256 _amount,
@@ -151,7 +151,7 @@ library MarginAccount {
      * @param _amount The number of _collateralAsset the protocol is adding to the user's collateral position in the user's vault
      * @param _index The index of _collateralAsset in the user's vault.collateralAssets array
      */
-    function _addCollateral(
+    function addCollateral(
         Vault storage _vault,
         address _collateralAsset,
         uint256 _amount,
@@ -183,7 +183,7 @@ library MarginAccount {
      * @param _amount The number of _collateralAsset the protocol is removing from the user's collateral position in the user's vault
      * @param _index The index of _collateralAsset in the user's vault.collateralAssets array
      */
-    function _removeCollateral(
+    function removeCollateral(
         Vault storage _vault,
         address _collateralAsset,
         uint256 _amount,
@@ -200,18 +200,5 @@ library MarginAccount {
         if (_vault.collateralAmounts[_index] == 0) {
             delete _vault.collateralAssets[_index];
         }
-    }
-
-    /**
-     * @dev remove everything in a vault. Reset short, long and collateral assets and amounts arrays to an empty array.
-     * @param _vault The vault that the user is clearing.
-     */
-    function _clearVault(Vault storage _vault) external {
-        delete _vault.shortAmounts;
-        delete _vault.longAmounts;
-        delete _vault.collateralAmounts;
-        delete _vault.shortOtokens;
-        delete _vault.longOtokens;
-        delete _vault.collateralAssets;
     }
 }
