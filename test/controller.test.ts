@@ -3523,6 +3523,11 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         new BigNumber(await shortOtoken.expiryTimestamp()),
         true,
       )
+      await oracle.setIsDisputePeriodOver(
+        await shortOtoken.underlyingAsset(),
+        new BigNumber(await shortOtoken.expiryTimestamp()),
+        true,
+      )
 
       const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
       const actionArgs = [
