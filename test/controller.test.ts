@@ -2456,7 +2456,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         new BigNumber(150).times(new BigNumber(10).exponentiatedBy(18)),
       )
       // set it as not finalized in mock
-      await oracle.setIsFinalized(
+      await oracle.setIsDisputePeriodOver(
         await shortOtoken.underlyingAsset(),
         new BigNumber(await shortOtoken.expiryTimestamp()),
         false,
@@ -2487,6 +2487,11 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
     it('should revert exercising if cash value receiver address in equal to address zero', async () => {
       // set it as finalized in mock
       await oracle.setIsFinalized(
+        await shortOtoken.underlyingAsset(),
+        new BigNumber(await shortOtoken.expiryTimestamp()),
+        true,
+      )
+      await oracle.setIsDisputePeriodOver(
         await shortOtoken.underlyingAsset(),
         new BigNumber(await shortOtoken.expiryTimestamp()),
         true,
@@ -2693,7 +2698,12 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           new BigNumber(await firstOtoken.expiryTimestamp()),
           true,
         )
-        await oracle.setIsFinalized(
+        await oracle.setIsDisputePeriodOver(
+          await firstOtoken.underlyingAsset(),
+          new BigNumber(await firstOtoken.expiryTimestamp()),
+          true,
+        )
+        await oracle.setIsLockingPeriodOver(
           await secondOtoken.underlyingAsset(),
           new BigNumber(await secondOtoken.expiryTimestamp()),
           true,
@@ -2897,6 +2907,11 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         new BigNumber(await shortOtoken.expiryTimestamp()),
         false,
       )
+      await oracle.setIsDisputePeriodOver(
+        await shortOtoken.underlyingAsset(),
+        new BigNumber(await shortOtoken.expiryTimestamp()),
+        false,
+      )
 
       const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
       const actionArgs = [
@@ -2922,6 +2937,11 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
 
     it('should settle ITM otoken after expiry + price is finalized', async () => {
       await oracle.setIsFinalized(
+        await shortOtoken.underlyingAsset(),
+        new BigNumber(await shortOtoken.expiryTimestamp()),
+        true,
+      )
+      await oracle.setIsDisputePeriodOver(
         await shortOtoken.underlyingAsset(),
         new BigNumber(await shortOtoken.expiryTimestamp()),
         true,
@@ -3088,12 +3108,22 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           new BigNumber(await firstShortOtoken.expiryTimestamp()),
           true,
         )
+        await oracle.setIsDisputePeriodOver(
+          await firstShortOtoken.underlyingAsset(),
+          new BigNumber(await firstShortOtoken.expiryTimestamp()),
+          true,
+        )
         await oracle.setExpiryPrice(
           await secondShortOtoken.underlyingAsset(),
           new BigNumber(await secondShortOtoken.expiryTimestamp()),
           new BigNumber(250).times(new BigNumber(10).exponentiatedBy(18)),
         )
         await oracle.setIsFinalized(
+          await secondShortOtoken.underlyingAsset(),
+          new BigNumber(await secondShortOtoken.expiryTimestamp()),
+          true,
+        )
+        await oracle.setIsDisputePeriodOver(
           await secondShortOtoken.underlyingAsset(),
           new BigNumber(await secondShortOtoken.expiryTimestamp()),
           true,
@@ -3166,18 +3196,17 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         true,
       )
 
-      // set not finalized
+      // set finalized
       await oracle.setIsFinalized(weth.address, expiry, true)
+      await oracle.setIsDisputePeriodOver(weth.address, expiry, true)
     })
 
     it('should return false when price is pushed and dispute period not over yet', async () => {
       const priceMock = new BigNumber('200')
-      await oracle.setIsFinalized(weth.address, expiry, true)
 
       // Mock oracle returned data.
       await oracle.setIsLockingPeriodOver(weth.address, expiry, true)
       await oracle.setIsDisputePeriodOver(weth.address, expiry, false)
-      await oracle.setIsFinalized(weth.address, expiry, false)
       await oracle.setExpiryPrice(weth.address, expiry, priceMock)
 
       const expectedResutl = false
@@ -3207,7 +3236,6 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
       await oracle.setIsLockingPeriodOver(weth.address, expiry, true)
       await oracle.setIsDisputePeriodOver(weth.address, expiry, true)
       await oracle.setExpiryPrice(weth.address, expiry, priceMock)
-      await oracle.setIsFinalized(weth.address, expiry, true)
 
       const expectedResutl = true
       assert.equal(

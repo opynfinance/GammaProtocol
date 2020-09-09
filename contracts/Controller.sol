@@ -303,7 +303,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         address underlying = otoken.underlyingAsset();
         uint256 expiry = otoken.expiryTimestamp();
 
-        (, bool isFinalized) = oracle.getExpiryPrice(underlying, expiry);
+        bool isFinalized = oracle.isDisputePeriodOver(underlying, expiry);
         return isFinalized;
     }
 
@@ -447,7 +447,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         require(now <= otoken.expiryTimestamp(), "Controller: otoken used as collateral is already expired");
 
-        vaults[_args.owner][_args.vaultId]._addLong(address(otoken), _args.amount, _args.index);
+        vaults[_args.owner][_args.vaultId].addLong(address(otoken), _args.amount, _args.index);
 
         pool.transferToPool(address(otoken), _args.from, _args.amount);
 
@@ -470,7 +470,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         require(now <= otoken.expiryTimestamp(), "Controller: can not withdraw an expired otoken");
 
-        vaults[_args.owner][_args.vaultId]._removeLong(address(otoken), _args.amount, _args.index);
+        vaults[_args.owner][_args.vaultId].removeLong(address(otoken), _args.amount, _args.index);
 
         pool.transferToUser(address(otoken), _args.to, _args.amount);
 
@@ -490,7 +490,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             "Controller: asset is not whitelisted to be used as collateral"
         );
 
-        vaults[_args.owner][_args.vaultId]._addCollateral(_args.asset, _args.amount, _args.index);
+        vaults[_args.owner][_args.vaultId].addCollateral(_args.asset, _args.amount, _args.index);
 
         pool.transferToPool(_args.asset, _args.from, _args.amount);
 
@@ -519,7 +519,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             );
         }
 
-        vaults[_args.owner][_args.vaultId]._removeCollateral(_args.asset, _args.amount, _args.index);
+        vaults[_args.owner][_args.vaultId].removeCollateral(_args.asset, _args.amount, _args.index);
 
         pool.transferToUser(_args.asset, _args.to, _args.amount);
 
@@ -541,7 +541,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         require(now <= otoken.expiryTimestamp(), "Controller: can not mint expired otoken");
 
-        vaults[_args.owner][_args.vaultId]._addShort(_args.otoken, _args.amount, _args.index);
+        vaults[_args.owner][_args.vaultId].addShort(_args.otoken, _args.amount, _args.index);
 
         otoken.mintOtoken(_args.to, _args.amount);
 
@@ -561,7 +561,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         require(now <= otoken.expiryTimestamp(), "Controller: can not burn expired otoken");
 
-        vaults[_args.owner][_args.vaultId]._removeShort(_args.otoken, _args.amount, _args.index);
+        vaults[_args.owner][_args.vaultId].removeShort(_args.otoken, _args.amount, _args.index);
 
         otoken.burnOtoken(_args.from, _args.amount);
 
@@ -592,11 +592,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @notice settle vault after expiry
      * @param _args SettleVaultArgs structure
      */
-    function _settleVault(Actions.SettleVaultArgs memory _args)
-        internal
-        onlyAuthorized(msg.sender, _args.owner)
-        returns (MarginAccount.Vault memory)
-    {
+    function _settleVault(Actions.SettleVaultArgs memory _args) internal onlyAuthorized(msg.sender, _args.owner) {
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
 
         MarginAccount.Vault memory vault = getVault(_args.owner, _args.vaultId);
@@ -619,7 +615,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             longOtoken.burnOtoken(address(pool), vault.longAmounts[0]);
         }
 
-        vaults[_args.owner][_args.vaultId]._clearVault();
+        delete vaults[_args.owner][_args.vaultId];
 
         pool.transferToUser(shortOtoken.collateralAsset(), _args.to, payout);
 
