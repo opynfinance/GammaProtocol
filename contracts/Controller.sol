@@ -271,7 +271,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         address underlying = otoken.underlyingAsset();
         uint256 expiry = otoken.expiryTimestamp();
 
-        (, bool isFinalized) = oracle.getExpiryPrice(underlying, expiry);
+        bool isFinalized = oracle.isDisputePeriodOver(underlying, expiry);
         return isFinalized;
     }
 
