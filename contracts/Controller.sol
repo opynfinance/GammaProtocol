@@ -17,6 +17,7 @@ import {MarginCalculatorInterface} from "./interfaces/MarginCalculatorInterface.
 import {OracleInterface} from "./interfaces/OracleInterface.sol";
 import {WhitelistInterface} from "./interfaces/WhitelistInterface.sol";
 import {MarginPoolInterface} from "./interfaces/MarginPoolInterface.sol";
+import {CalleeInterface} from "./interfaces/CalleeInterface.sol";
 
 /**
  * @author Opyn Team
@@ -616,8 +617,14 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         emit VaultSettled(address(shortOtoken), _args.owner, _args.to, _args.vaultId, payout);
     }
 
-    //High Level: call arbitrary smart contract
-    function _call(Actions.CallArgs args) internal isNotPaused {}
+    /**
+     * @notice function to execute arbitrary calls
+     * @dev cannot be called when system is paued
+     * @param _args
+     */
+    function _call(Actions.CallArgs memory _args) internal notPaused {
+        CalleeInterface(args.callee).callFunction(msg.sender, args.account, args.data);
+    }
 
     /**
      * @notice function to check the validity of a specific vault id
