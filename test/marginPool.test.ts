@@ -3,12 +3,14 @@ import {
   MockAddressBookInstance,
   WETH9Instance,
   MarginPoolInstance,
+  MockDumbERC20Instance,
 } from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
 const {expectRevert, ether} = require('@openzeppelin/test-helpers')
 
 const MockERC20 = artifacts.require('MockERC20.sol')
+const MockDumbERC20 = artifacts.require('MockDumbERC20.sol')
 const MockAddressBook = artifacts.require('MockAddressBook.sol')
 const WETH9 = artifacts.require('WETH9.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
@@ -22,6 +24,8 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
   // ERC20 mocks
   let usdc: MockERC20Instance
   let weth: WETH9Instance
+  // DumbER20: Return false when transfer fail.
+  let dumbToken: MockDumbERC20Instance
   // addressbook module mock
   let addressBook: MockAddressBookInstance
   // margin pool
@@ -29,9 +33,11 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
 
   before('Deployment', async () => {
     // deploy USDC token
-    usdc = await MockERC20.new('USDC', 'USDC', 8)
+    usdc = await MockERC20.new('USDC', 'USDC', 6)
     // deploy WETH token for testing
     weth = await WETH9.new()
+    // deploy dumb erc20
+    dumbToken = await MockDumbERC20.new('DUSDC', 'DUSDC', 6)
     // deploy AddressBook mock
     addressBook = await MockAddressBook.new()
     // set Controller module address
@@ -124,6 +130,13 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
         'WETH value transfered into pool mismatch',
       )
     })
+
+    it('should revert when transferFrom return false on dumbERC20', async () => {
+      await expectRevert(
+        marginPool.transferToPool(dumbToken.address, user1, ether('1'), {from: controllerAddress}),
+        'MarginPool: TransferFrom failed',
+      )
+    })
   })
 
   describe('Transfer to user', () => {
@@ -191,6 +204,19 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
         userBalanceAfter.minus(userBalanceBefore).toString(),
         'ETH value transfered to user mismatch',
       )
+    })
+
+    it('should revert when transfer return false on dumbERC20', async () => {
+      await dumbToken.mint(user1, ether('1'))
+      await dumbToken.approve(marginPool.address, ether('1'), {from: user1})
+      await marginPool.transferToPool(dumbToken.address, user1, ether('1'), {from: controllerAddress})
+      // let the transfer failed
+      await dumbToken.setLocked(true)
+      await expectRevert(
+        marginPool.transferToUser(dumbToken.address, user1, ether('1'), {from: controllerAddress}),
+        'MarginPool: Transfer failed',
+      )
+      await dumbToken.setLocked(false)
     })
   })
 
@@ -456,13 +482,22 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
     })
 
     it('should revert farming when amount is greater than available balance to farm', async () => {
-      const poolStoredBalanceBefore = new BigNumber(await marginPool.getStoredBalance(usdc.address))
-      const poolBlanaceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
       const amountToFarm = new BigNumber('100000000000')
 
       await expectRevert(
         marginPool.farm(usdc.address, farmer, amountToFarm, {from: farmer}),
         'MarginPool: amount exceed limit',
+      )
+    })
+
+    it('should revert farming when transfer return false for dumbERC20', async () => {
+      const amountExcess = ether('1')
+      await dumbToken.mint(marginPool.address, amountExcess)
+      await dumbToken.setLocked(true)
+
+      await expectRevert(
+        marginPool.farm(dumbToken.address, farmer, amountExcess, {from: farmer}),
+        'MarginPool: farming failed',
       )
     })
   })
