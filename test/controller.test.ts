@@ -44,6 +44,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
   // ERC20 mock
   let usdc: MockERC20Instance
   let weth: MockERC20Instance
+  let weth2: MockERC20Instance
   // Oracle module
   let oracle: MockOracleInstance
   // calculator module
@@ -67,6 +68,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
     // ERC20 deployment
     usdc = await MockERC20.new('USDC', 'USDC', usdcDecimals)
     weth = await MockERC20.new('WETH', 'WETH', wethDecimals)
+    weth2 = await MockERC20.new('WETH', 'WETH', wethDecimals)
     // deploy Oracle module
     oracle = await MockOracle.new(addressBook.address, {from: owner})
     // calculator deployment
@@ -673,29 +675,6 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         await expectRevert(
           controllerProxy.operate(actionArgs, {from: random}),
           'Controller: msg.sender is not authorized to run action',
-        )
-      })
-
-      it('should revert withdrawing long otoken amount equal to zero', async () => {
-        const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-        assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
-
-        const actionArgs = [
-          {
-            actionType: ActionType.WithdrawLongOption,
-            owner: accountOwner1,
-            sender: accountOwner1,
-            asset: longOtoken.address,
-            vaultId: vaultCounter.toNumber(),
-            amount: '0',
-            index: '0',
-            data: ZERO_ADDR,
-          },
-        ]
-
-        await expectRevert(
-          controllerProxy.operate(actionArgs, {from: accountOwner1}),
-          'MarginPool: transferToUser amount is equal to 0',
         )
       })
 
@@ -1904,7 +1883,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           },
         ]
 
-        controllerProxy.operate(secondActionArgs, {from: accountOwner1})
+        await controllerProxy.operate(secondActionArgs, {from: accountOwner1})
 
         const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
         const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
@@ -2424,7 +2403,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         new BigNumber(150).times(new BigNumber(10).exponentiatedBy(18)),
       )
       // set it as not finalized in mock
-      await oracle.setIsFinalized(
+      await oracle.setIsDisputePeriodOver(
         await shortOtoken.underlyingAsset(),
         new BigNumber(await shortOtoken.expiryTimestamp()),
         false,
@@ -2470,6 +2449,11 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         new BigNumber(await shortOtoken.expiryTimestamp()),
         true,
       )
+      await oracle.setIsDisputePeriodOver(
+        await shortOtoken.underlyingAsset(),
+        new BigNumber(await shortOtoken.expiryTimestamp()),
+        true,
+      )
 
       const shortAmountToBurn = new BigNumber('1')
       const actionArgs = [
@@ -2490,26 +2474,6 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
       await expectRevert(
         controllerProxy.operate(actionArgs, {from: holder1}),
         'Actions: cannot exercise to an invalid account',
-      )
-    })
-
-    it('should revert when exercising dust amount', async () => {
-      const shortAmountToBurn = new BigNumber('1')
-      const actionArgs = [
-        {
-          actionType: ActionType.Exercise,
-          owner: ZERO_ADDR,
-          sender: holder1,
-          asset: shortOtoken.address,
-          vaultId: '0',
-          amount: shortAmountToBurn.toNumber(),
-          index: '0',
-          data: ZERO_ADDR,
-        },
-      ]
-      await expectRevert(
-        controllerProxy.operate(actionArgs, {from: holder1}),
-        'MarginPool: transferToUser amount is equal to 0',
       )
     })
 
@@ -2534,7 +2498,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
       const senderBalanceBefore = new BigNumber(await usdc.balanceOf(holder1))
       const senderShortBalanceBefore = new BigNumber(await shortOtoken.balanceOf(holder1))
 
-      controllerProxy.operate(actionArgs, {from: holder1})
+      await controllerProxy.operate(actionArgs, {from: holder1})
 
       const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
       const senderBalanceAfter = new BigNumber(await usdc.balanceOf(holder1))
@@ -2617,6 +2581,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
       await oracle.setExpiryPrice(usdc.address, expiry, createTokenAmount(1, 18))
       await oracle.setIsFinalized(weth.address, expiry, true)
       await oracle.setIsFinalized(usdc.address, expiry, true)
+      await oracle.setIsDisputePeriodOver(weth.address, expiry, true)
       const exerciseArgs = [
         {
           actionType: ActionType.Exercise,
@@ -2640,7 +2605,6 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
 
     it('should revert exercise option if collateral is different from underlying, and collateral price is not finalized', async () => {
       const expiry = new BigNumber(await time.latest()).plus(new BigNumber(60 * 60)).toNumber()
-      const weth2: MockERC20Instance = await MockERC20.new('WETH2', 'WETH2', 18)
 
       await whitelist.whitelistCollateral(weth2.address)
       const call: MockOtokenInstance = await MockOtoken.new()
@@ -2653,6 +2617,9 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         expiry,
         false,
       )
+
+      await oracle.setRealTimePrice(weth.address, new BigNumber(400).times(1e18))
+      await oracle.setRealTimePrice(weth2.address, new BigNumber(400).times(1e18))
 
       await whitelist.whitelistOtoken(call.address)
       const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
@@ -2673,16 +2640,6 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           data: ZERO_ADDR,
         },
         {
-          actionType: ActionType.DepositCollateral,
-          owner: accountOwner1,
-          sender: accountOwner1,
-          asset: weth2.address,
-          vaultId: vaultCounter.toNumber(),
-          amount: amountCollateral,
-          index: '0',
-          data: ZERO_ADDR,
-        },
-        {
           actionType: ActionType.MintShortOption,
           owner: accountOwner1,
           sender: accountOwner1,
@@ -2692,17 +2649,28 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           index: '0',
           data: ZERO_ADDR,
         },
+        {
+          actionType: ActionType.DepositCollateral,
+          owner: accountOwner1,
+          sender: accountOwner1,
+          asset: weth2.address,
+          vaultId: vaultCounter.toNumber(),
+          amount: amountCollateral,
+          index: '0',
+          data: ZERO_ADDR,
+        },
       ]
 
       await controllerProxy.operate(actionArgs, {from: accountOwner1})
       await call.transfer(holder1, amountOtoken, {from: accountOwner1})
 
       await time.increaseTo(expiry + 10)
+      await oracle.setIsDisputePeriodOver(weth.address, expiry, true)
+      await oracle.setIsDisputePeriodOver(usdc.address, expiry, true)
       await oracle.setExpiryPrice(weth.address, expiry, createTokenAmount(400, 18))
       await oracle.setExpiryPrice(usdc.address, expiry, createTokenAmount(1, 18))
       await oracle.setIsFinalized(weth.address, expiry, true)
       await oracle.setIsFinalized(usdc.address, expiry, true)
-      console.log(`cool`)
       const exerciseArgs = [
         {
           actionType: ActionType.Exercise,
@@ -2860,7 +2828,12 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           new BigNumber(await firstOtoken.expiryTimestamp()),
           true,
         )
-        await oracle.setIsFinalized(
+        await oracle.setIsDisputePeriodOver(
+          await firstOtoken.underlyingAsset(),
+          new BigNumber(await firstOtoken.expiryTimestamp()),
+          true,
+        )
+        await oracle.setIsDisputePeriodOver(
           await secondOtoken.underlyingAsset(),
           new BigNumber(await secondOtoken.expiryTimestamp()),
           true,
@@ -3059,6 +3032,11 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         new BigNumber(await shortOtoken.expiryTimestamp()),
         false,
       )
+      await oracle.setIsDisputePeriodOver(
+        await shortOtoken.underlyingAsset(),
+        new BigNumber(await shortOtoken.expiryTimestamp()),
+        false,
+      )
 
       const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
       const actionArgs = [
@@ -3091,6 +3069,16 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
       await oracle.setIsFinalized(weth.address, new BigNumber(await shortOtoken.expiryTimestamp()), true)
 
       await oracle.setIsFinalized(usdc.address, new BigNumber(await shortOtoken.expiryTimestamp()), true)
+      await oracle.setIsDisputePeriodOver(
+        await shortOtoken.underlyingAsset(),
+        new BigNumber(await shortOtoken.expiryTimestamp()),
+        true,
+      )
+      await oracle.setIsDisputePeriodOver(
+        await shortOtoken.underlyingAsset(),
+        new BigNumber(await shortOtoken.expiryTimestamp()),
+        true,
+      )
       const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
       const actionArgs = [
         {
@@ -3248,6 +3236,11 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           new BigNumber(await firstShortOtoken.expiryTimestamp()),
           true,
         )
+        await oracle.setIsDisputePeriodOver(
+          await firstShortOtoken.underlyingAsset(),
+          new BigNumber(await firstShortOtoken.expiryTimestamp()),
+          true,
+        )
         await oracle.setExpiryPrice(
           await secondShortOtoken.underlyingAsset(),
           new BigNumber(await secondShortOtoken.expiryTimestamp()),
@@ -3270,6 +3263,11 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         )
         await oracle.setIsFinalized(usdc.address, new BigNumber(await firstShortOtoken.expiryTimestamp()), true)
         await oracle.setIsFinalized(usdc.address, new BigNumber(await secondShortOtoken.expiryTimestamp()), true)
+        await oracle.setIsDisputePeriodOver(
+          await secondShortOtoken.underlyingAsset(),
+          new BigNumber(await secondShortOtoken.expiryTimestamp()),
+          true,
+        )
       })
 
       it('should settle multiple vaults in one transaction (ATM,OTM)', async () => {
@@ -3338,18 +3336,17 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         true,
       )
 
-      // set not finalized
+      // set finalized
       await oracle.setIsFinalized(weth.address, expiry, true)
+      await oracle.setIsDisputePeriodOver(weth.address, expiry, true)
     })
 
     it('should return false when price is pushed and dispute period not over yet', async () => {
       const priceMock = new BigNumber('200')
-      await oracle.setIsFinalized(weth.address, expiry, true)
 
       // Mock oracle returned data.
       await oracle.setIsLockingPeriodOver(weth.address, expiry, true)
       await oracle.setIsDisputePeriodOver(weth.address, expiry, false)
-      await oracle.setIsFinalized(weth.address, expiry, false)
       await oracle.setExpiryPrice(weth.address, expiry, priceMock)
 
       const expectedResutl = false
@@ -3379,7 +3376,6 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
       await oracle.setIsLockingPeriodOver(weth.address, expiry, true)
       await oracle.setIsDisputePeriodOver(weth.address, expiry, true)
       await oracle.setExpiryPrice(weth.address, expiry, priceMock)
-      await oracle.setIsFinalized(weth.address, expiry, true)
 
       const expectedResutl = true
       assert.equal(
