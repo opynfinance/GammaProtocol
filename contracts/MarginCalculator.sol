@@ -35,7 +35,7 @@ contract MarginCalculator {
      * @dev For call return = Max (0, ETH Price - oToken.strike)
      * @dev For put return Max(0, oToken.strike - ETH Price)
      * @param _otoken otoken address
-     * @return the cash value of an expired otoken, denomincated in strike asset.
+     * @return the cash value of an expired otoken, denomincated in strike asset. scaled by 1e18
      */
     function getExpiredCashValue(address _otoken) public view returns (uint256) {
         require(_otoken != address(0), "MarginCalculator: Invalid token address.");
@@ -73,6 +73,34 @@ contract MarginCalculator {
         } else {
             return underlyingToStrike > strikePrice ? underlyingToStrike.sub(strikePrice) : 0;
         }
+    }
+
+    /**
+     * @notice Return the net worth of an expired oToken in collateral.
+     * @param _otoken otoken address
+     * @return the exchange rate that shows how much collateral unit can be take out by 1 otoken unit, scaled by 1e18
+     */
+    function getExpiredPayoutRate(address _otoken) external view returns (uint256) {
+        uint256 cashValueInStrike = getExpiredCashValue(_otoken);
+
+        OtokenInterface otoken = OtokenInterface(_otoken);
+        address strike = otoken.strikeAsset();
+        address collateral = otoken.collateralAsset();
+
+        uint256 exchangeRate;
+
+        if (strike == collateral) {
+            exchangeRate = cashValueInStrike;
+        } else {
+            uint256 expiry = otoken.expiryTimestamp();
+            (uint256 strikePrice, ) = _getAssetPrice(strike, expiry);
+            (uint256 collateralPrice, ) = _getAssetPrice(collateral, expiry);
+            exchangeRate = cashValueInStrike.mul(strikePrice).div(collateralPrice);
+        }
+
+        // the exchangeRate was scaled by 1e18, if 1e18 otoken can take out 1 USDC, the exchangeRate is currently 1e18
+        // we want to return: how much USDC unit can be take out by 1 (1e18 units) otoken
+        return _internalAmountToTokenAmount(exchangeRate, collateral);
     }
 
     /**
