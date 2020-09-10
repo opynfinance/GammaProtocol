@@ -2414,7 +2414,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
       )
     })
 
-    it('should revert exercising after expiry, when price is not finalized yet', async () => {
+    it('should revert exercising after expiry, when underlying price is not finalized yet', async () => {
       // past time after expiry
       await time.increase(60 * 61 * 24) // increase time with one hour in seconds
       // set price in Oracle Mock, 150$ at expiry, expire ITM
@@ -2428,6 +2428,17 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         await shortOtoken.underlyingAsset(),
         new BigNumber(await shortOtoken.expiryTimestamp()),
         false,
+      )
+      // set strike (USDC) price
+      await oracle.setExpiryPrice(
+        await shortOtoken.strikeAsset(),
+        new BigNumber(await shortOtoken.expiryTimestamp()),
+        new BigNumber(1).times(new BigNumber(10).exponentiatedBy(18)),
+      )
+      await oracle.setIsFinalized(
+        await shortOtoken.strikeAsset(),
+        new BigNumber(await shortOtoken.expiryTimestamp()),
+        true,
       )
 
       const shortAmountToBurn = new BigNumber('1')
@@ -2752,6 +2763,13 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           new BigNumber(await secondOtoken.expiryTimestamp()),
           new BigNumber(150).times(new BigNumber(10).exponentiatedBy(18)),
         )
+        // set strike asset price (USDC)
+        await oracle.setExpiryPrice(
+          await usdc.address,
+          new BigNumber(await firstOtoken.expiryTimestamp()),
+          new BigNumber(1).times(new BigNumber(10).exponentiatedBy(18)),
+        )
+        await oracle.setIsFinalized(await usdc.address, new BigNumber(await firstOtoken.expiryTimestamp()), true)
         // set it as finalized in mock
         await oracle.setIsFinalized(
           await firstOtoken.underlyingAsset(),
@@ -2981,11 +2999,14 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
     })
 
     it('should settle ITM otoken after expiry + price is finalized', async () => {
-      await oracle.setIsFinalized(
-        await shortOtoken.underlyingAsset(),
+      await oracle.setExpiryPrice(
+        usdc.address,
         new BigNumber(await shortOtoken.expiryTimestamp()),
-        true,
+        new BigNumber(1).times(new BigNumber(10).exponentiatedBy(18)),
       )
+      await oracle.setIsFinalized(weth.address, new BigNumber(await shortOtoken.expiryTimestamp()), true)
+
+      await oracle.setIsFinalized(usdc.address, new BigNumber(await shortOtoken.expiryTimestamp()), true)
       const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
       const actionArgs = [
         {
@@ -3004,7 +3025,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
       const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
       const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
 
-      controllerProxy.operate(actionArgs, {from: accountOwner1})
+      await controllerProxy.operate(actionArgs, {from: accountOwner1})
 
       const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
       const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
@@ -3153,6 +3174,18 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           new BigNumber(await secondShortOtoken.expiryTimestamp()),
           true,
         )
+        await oracle.setExpiryPrice(
+          usdc.address,
+          new BigNumber(await firstShortOtoken.expiryTimestamp()),
+          new BigNumber(1).times(new BigNumber(10).exponentiatedBy(18)),
+        )
+        await oracle.setExpiryPrice(
+          usdc.address,
+          new BigNumber(await secondShortOtoken.expiryTimestamp()),
+          new BigNumber(1).times(new BigNumber(10).exponentiatedBy(18)),
+        )
+        await oracle.setIsFinalized(usdc.address, new BigNumber(await firstShortOtoken.expiryTimestamp()), true)
+        await oracle.setIsFinalized(usdc.address, new BigNumber(await secondShortOtoken.expiryTimestamp()), true)
       })
 
       it('should settle multiple vaults in one transaction (ATM,OTM)', async () => {
@@ -3184,7 +3217,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
         const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
 
-        controllerProxy.operate(actionArgs, {from: accountOwner1})
+        await controllerProxy.operate(actionArgs, {from: accountOwner1})
 
         const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
         const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))

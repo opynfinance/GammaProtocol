@@ -93,8 +93,10 @@ contract MarginCalculator {
             exchangeRate = cashValueInStrike;
         } else {
             uint256 expiry = otoken.expiryTimestamp();
+            // isFinalized of strike asset is already checked in getExpiredCashValue
             (uint256 strikePrice, ) = _getAssetPrice(strike, expiry);
-            (uint256 collateralPrice, ) = _getAssetPrice(collateral, expiry);
+            (uint256 collateralPrice, bool isCollateralPriceFinalized) = _getAssetPrice(collateral, expiry);
+            require(isCollateralPriceFinalized, "MarginCalculator: collateral price is not finalized");
             exchangeRate = cashValueInStrike.mul(strikePrice).div(collateralPrice);
         }
 
