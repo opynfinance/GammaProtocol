@@ -12,7 +12,7 @@ import {WETH9} from "../../packages/canonical-weth/WETH9.sol";
  * @title FlashWrap
  * @notice contract To wrap ETH
  */
-contract FlashWrap {
+contract FlashWrap is CalleeInterface {
     WETH9 public WETH;
 
     constructor(address payable weth) public {
