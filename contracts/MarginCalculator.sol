@@ -22,6 +22,7 @@ contract MarginCalculator {
     using SafeMath for uint256;
     using FPI for FPI.FixedPointInt;
     using FPI for int256;
+
     address public addressBook;
 
     constructor(address _addressBook) public {

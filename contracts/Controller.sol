@@ -33,6 +33,9 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     MarginCalculatorInterface public calculator;
     MarginPoolInterface public pool;
 
+    /// @notice address that have permission to execute emergency shutdown
+    address public terminator;
+
     /// @notice the protocol state, if true, then all protocol functionality are paused.
     bool public systemPaused;
 
@@ -112,12 +115,25 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         uint256 vaultId,
         uint256 payout
     );
+    /// @notice emits an event when terminator address change
+    event TerminatorUpdated(address indexed oldTerminator, address indexed newTerminator);
+    /// @notice emits an event when system pause status change
+    event EmergencyShutdown(bool isActive);
 
     /**
      * @notice modifier check if protocol is not paused
      */
     modifier notPaused {
         _isNotPaused();
+
+        _;
+    }
+
+    /**
+     * @notice modifier to check if sender is terminator address
+     */
+    modifier onlyTerminator {
+        require(msg.sender == terminator, "Controller: sender is not terminator");
 
         _;
     }
@@ -168,11 +184,28 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
-     * @notice allows admin to toggle pause / emergency shutdown
+     * @notice allows terminator to toggle pause / emergency shutdown
      * @param _paused The new boolean value to set systemPaused to.
      */
-    function setSystemPaused(bool _paused) external onlyOwner {
+    function setSystemPaused(bool _paused) external onlyTerminator {
+        require(systemPaused != _paused, "Controller: cannot change pause status");
+
         systemPaused = _paused;
+
+        emit EmergencyShutdown(systemPaused);
+    }
+
+    /**
+     * @notice allows owner to set terminator address
+     * @dev can only be called from owner
+     * @param _terminator new terminator address
+     */
+    function setTerminator(address _terminator) external onlyOwner {
+        require(_terminator != address(0), "Controller: terminator cannot be set to address zero");
+
+        emit TerminatorUpdated(terminator, _terminator);
+
+        terminator = _terminator;
     }
 
     /**
@@ -589,7 +622,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     //High Level: call arbitrary smart contract
-    //function _call(Actions.CallArgs args) internal {
+    //function _call(Actions.CallArgs args) internal isNotPaused {
     //    //Check whitelistModule.isWhitelistCallDestination(args.address)
     //    //Call args.address with args.data
     //}
