@@ -6,6 +6,7 @@ pragma solidity 0.6.10;
 import {ERC20Interface} from "./interfaces/ERC20Interface.sol";
 import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
 import {SafeMath} from "./packages/oz/SafeMath.sol";
+import {SafeERC20} from "./packages/oz/SafeERC20.sol";
 import {Ownable} from "./packages/oz/Ownable.sol";
 
 /**
@@ -15,6 +16,7 @@ import {Ownable} from "./packages/oz/Ownable.sol";
  */
 contract MarginPool is Ownable {
     using SafeMath for uint256;
+    using SafeERC20 for ERC20Interface;
 
     /// @notice AddressBook module
     address public addressBook;
@@ -77,7 +79,7 @@ contract MarginPool is Ownable {
         assetBalance[_asset] = assetBalance[_asset].add(_amount);
 
         // transfer val from _user to pool
-        require(ERC20Interface(_asset).transferFrom(_user, address(this), _amount), "MarginPool: TransferFrom failed");
+        ERC20Interface(_asset).safeTransferFrom(_user, address(this), _amount);
     }
 
     /**
@@ -96,7 +98,7 @@ contract MarginPool is Ownable {
         assetBalance[_asset] = assetBalance[_asset].sub(_amount);
 
         // transfer asset val from Pool to _user
-        require(ERC20Interface(_asset).transfer(_user, _amount), "MarginPool: Transfer failed");
+        ERC20Interface(_asset).safeTransfer(_user, _amount);
     }
 
     /**
@@ -175,7 +177,7 @@ contract MarginPool is Ownable {
 
         require(_amount <= externalBalance.sub(storedBalance), "MarginPool: amount exceed limit");
 
-        require(ERC20Interface(_asset).transfer(_receiver, _amount), "MarginPool: farming failed");
+        ERC20Interface(_asset).safeTransfer(_receiver, _amount);
 
         emit AssetFarmed(_asset, _receiver, _amount);
     }
