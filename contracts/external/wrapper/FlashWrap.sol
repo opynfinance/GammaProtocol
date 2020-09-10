@@ -5,6 +5,7 @@ pragma solidity 0.6.10;
 
 pragma experimental ABIEncoderV2;
 
+import {CalleeInterface} from "../../interfaces/CalleeInterface.sol";
 import {WETH9} from "../../packages/canonical-weth/WETH9.sol";
 
 /**
@@ -27,7 +28,7 @@ contract FlashWrap is CalleeInterface {
         address _vaultOwner,
         uint256 _vaultId,
         bytes memory _data
-    ) external payable {
+    ) external override payable {
         uint256 amount = msg.value;
 
         WETH.deposit{value: amount}();
