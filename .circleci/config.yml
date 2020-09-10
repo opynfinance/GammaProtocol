@@ -27,6 +27,7 @@ workflows:
           context: COVERALLS_REPO_TOKEN
           requires:
             - build
+
 jobs:
 
   checkout_and_install:
@@ -111,8 +112,7 @@ jobs:
           key: gas-{{ .Environment.CIRCLE_SHA1 }}
           paths:
             - ~/gammaprotocol/gasReporterOutput.json
-    
-      
+
   gas-report:
     working_directory: ~/gammaprotocol
     docker:
