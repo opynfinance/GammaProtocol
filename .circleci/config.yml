@@ -17,9 +17,12 @@ workflows:
           requires:
             - build
       - test:
-          context: COVERALLS_REPO_TOKEN
           requires:
             - build
+      - gas-check:
+          context: COVERALLS_REPO_TOKEN
+          requires:
+            - test
       - coverage:
           context: COVERALLS_REPO_TOKEN
           requires:
@@ -104,10 +107,19 @@ jobs:
       - run:
           name: Test Contracts 
           command: npm run test
+      
+  gas-check:
+    working_directory: ~/gammaprotocol
+    docker:
+      - image: circleci/node:10.18.0
+      - image: trufflesuite/ganache-cli:v6.10.1
+    steps:
+      - restore_cache:
+          key: gamma-contracts-build-{{ .Environment.CIRCLE_SHA1 }}
       - run: 
           name: Gas Reporter
           command: npx codechecks
-  
+
   coverage:
     working_directory: ~/gammaprotocol
     docker:
