@@ -19,7 +19,7 @@ workflows:
       - test:
           requires:
             - build
-      - gas-check:
+      - gas-report:
           context: COVERALLS_REPO_TOKEN
           requires:
             - test
@@ -107,8 +107,13 @@ jobs:
       - run:
           name: Test Contracts 
           command: npm run test
+      - save_cache:
+          key: gas-{{ .Environment.CIRCLE_SHA1 }}
+          paths:
+            - ~/gammaprotocol/gasReporterOutput.json
+    
       
-  gas-check:
+  gas-report:
     working_directory: ~/gammaprotocol
     docker:
       - image: circleci/node:10.18.0
@@ -116,6 +121,8 @@ jobs:
     steps:
       - restore_cache:
           key: gamma-contracts-build-{{ .Environment.CIRCLE_SHA1 }}
+      - restore_cache:
+          key: gas-{{ .Environment.CIRCLE_SHA1 }}
       - run: 
           name: Gas Reporter
           command: npx codechecks
