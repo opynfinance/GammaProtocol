@@ -4,7 +4,6 @@
 pragma solidity 0.6.10;
 pragma experimental ABIEncoderV2;
 
-import {OMath} from "./OMath.sol";
 import {SafeMath} from "./packages/oz/SafeMath.sol";
 import {OtokenInterface} from "./interfaces/OtokenInterface.sol";
 import {OracleInterface} from "./interfaces/OracleInterface.sol";
@@ -19,7 +18,7 @@ import {MarginAccount} from "./libs/MarginAccount.sol";
  * @author Opyn
  * @notice Calculator module that check if a given vault is valid.
  */
-contract MarginCalculator is OMath {
+contract MarginCalculator {
     using SafeMath for uint256;
     using FPI for FPI.FixedPointInt;
     using FPI for int256;
@@ -36,7 +35,7 @@ contract MarginCalculator is OMath {
      * @dev For call return = Max (0, ETH Price - oToken.strike)
      * @dev For put return Max(0, oToken.strike - ETH Price)
      * @param _otoken otoken address
-     * @return the cash value of an expired otoken
+     * @return the cash value of an expired otoken, denomincated in strike asset.
      */
     function getExpiredCashValue(address _otoken) public view returns (uint256) {
         require(_otoken != address(0), "MarginCalculator: Invalid token address.");
@@ -44,7 +43,12 @@ contract MarginCalculator is OMath {
         require(now > otoken.expiryTimestamp(), "MarginCalculator: Otoken not expired yet.");
 
         uint256 strikePrice = otoken.strikePrice();
-        (uint256 underlyingPrice, bool isFinalized) = _getUnderlyingPrice(_otoken);
+        (uint256 underlyingPrice, bool isFinalized) = _getAssetPrice(
+            otoken.underlyingAsset(),
+            otoken.expiryTimestamp()
+        );
+        // (uint256 strikeAssetPrice, bool isFinalized) = _getAssetPrice(otoken.underlyingAsset(), otoken.expiryTimestamp());
+
         require(isFinalized, "MarginCalculator: Oracle price not finalized yet.");
 
         if (otoken.isPut()) {
@@ -147,7 +151,7 @@ contract MarginCalculator is OMath {
             if (isPut) {
                 marginRequired = _getExpiredPutSpreadCashValue(shortAmount, longAmount, shortCashValue, longCashValue);
             } else {
-                (uint256 underlyingPrice, ) = _getUnderlyingPrice(address(short));
+                (uint256 underlyingPrice, ) = _getAssetPrice(short.underlyingAsset(), short.expiryTimestamp());
                 FPI.FixedPointInt memory underlyingPriceInt = _uint256ToFPI(underlyingPrice);
                 marginRequired = _getExpiredCallSpreadCashValue(
                     shortAmount,
@@ -309,15 +313,14 @@ contract MarginCalculator is OMath {
     }
 
     /**
-     * @dev internal function to get underlying price of an otoken.
-     * @param _otoken otoken address
+     * @dev internal function to get price of an asset
+     * @param _asset asset address
      * @return price the underlying asset price with 18 decimals
      * @return isFinalized the price is finalized by the oracle and can't be changed
      */
-    function _getUnderlyingPrice(address _otoken) internal view returns (uint256 price, bool isFinalized) {
+    function _getAssetPrice(address _asset, uint256 _expiry) internal view returns (uint256 price, bool isFinalized) {
         OracleInterface oracle = OracleInterface(AddressBookInterface(addressBook).getOracle());
-        OtokenInterface otoken = OtokenInterface(_otoken);
-        return oracle.getExpiryPrice(otoken.underlyingAsset(), otoken.expiryTimestamp());
+        return oracle.getExpiryPrice(_asset, _expiry);
     }
 
     /**
@@ -366,5 +369,55 @@ contract MarginCalculator is OMath {
      */
     function _isEmptyAssetArray(address[] memory _assets) internal pure returns (bool) {
         return _assets.length == 0 || _assets[0] == address(0);
+    }
+
+    /**
+     * @dev convert a uint256 amount
+     * Examples:
+     * (1)  USDC    decimals = 6
+     *      Input:  8000000 USDC =>     Output: 8 * 1e18 (8.0 USDC)
+     * (2)  cUSDC   decimals = 8
+     *      Input:  8000000 cUSDC =>    Output: 8 * 1e16 (0.08 cUSDC)
+     * (3)  rUSD    decimals = 20 (random USD)
+     *      Input:  15                    =>   Output:  0       rUSDC
+     * @return internal amount that is sacled by 1e18.
+     */
+    function _tokenAmountToInternalAmount(uint256 _amount, address _token) internal view returns (uint256) {
+        ERC20Interface token = ERC20Interface(_token);
+        uint256 decimals = uint256(token.decimals());
+        uint256 base = 18;
+        if (decimals == base) return _amount;
+        if (decimals > base) {
+            uint256 exp = decimals - base;
+            return _amount.div(10**exp);
+        } else {
+            uint256 exp = base - decimals;
+            return _amount.mul(10**exp);
+        }
+    }
+
+    /**
+     * @dev convert an internal amount (1e18) to native token amount
+     * Examples:
+     * (1)  USDC    decimals = 6
+     *      Input:  8 * 1e18 (8.0 USDC)   =>   Output:  8000000 USDC
+     * (2)  cUSDC   decimals = 8
+     *      Input:  8 * 1e16 (0.08 cUSDC) =>   Output:  8000000 cUSDC
+     * (3)  rUSD    decimals = 20 (random USD)
+     *      Input:  1                    =>    Output:  100     rUSDC
+     * @return token amount in its native form.
+     */
+    function _internalAmountToTokenAmount(uint256 _amount, address _token) internal view returns (uint256) {
+        ERC20Interface token = ERC20Interface(_token);
+        uint256 decimals = uint256(token.decimals());
+        uint256 base = 18;
+        if (decimals == base) return _amount;
+        if (decimals > base) {
+            uint256 exp = decimals - base;
+            return _amount.mul(10**exp);
+        } else {
+            uint256 exp = base - decimals;
+            return _amount.div(10**exp);
+        }
     }
 }
