@@ -134,7 +134,7 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
     it('should revert when transferFrom return false on dumbERC20', async () => {
       await expectRevert(
         marginPool.transferToPool(dumbToken.address, user1, ether('1'), {from: controllerAddress}),
-        'MarginPool: TransferFrom failed',
+        'SafeERC20: ERC20 operation did not succeed',
       )
     })
   })
@@ -207,7 +207,7 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
       await dumbToken.setLocked(true)
       await expectRevert(
         marginPool.transferToUser(dumbToken.address, user1, ether('1'), {from: controllerAddress}),
-        'MarginPool: Transfer failed',
+        'SafeERC20: ERC20 operation did not succeed',
       )
       await dumbToken.setLocked(false)
     })
@@ -454,7 +454,7 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
 
       await expectRevert(
         marginPool.farm(dumbToken.address, farmer, amountExcess, {from: farmer}),
-        'MarginPool: farming failed',
+        'SafeERC20: ERC20 operation did not succeed',
       )
     })
   })
