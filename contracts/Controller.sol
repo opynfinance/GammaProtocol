@@ -40,6 +40,9 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /// @notice the protocol state, if true, then all protocol functionality are paused.
     bool public systemPaused;
 
+    /// @notice a bool variable that if true, indicate that call action can only be executed to a whitelisted callee
+    bool public callRestricted;
+
     /// @dev mapping between owner address and account structure
     mapping(address => uint256) internal accountVaultCounter;
     /// @dev mapping between owner address and specific vault using vaultId
@@ -127,7 +130,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     event TerminatorUpdated(address indexed oldTerminator, address indexed newTerminator);
     /// @notice emits an event when system pause status change
     event EmergencyShutdown(bool isActive);
-
+    /// @notice emits an event when call action restriction is activated or deactivated
+    event CallRestricted(bool isRestricted);
     /**
      * @notice modifier check if protocol is not paused
      */
@@ -153,6 +157,18 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     modifier onlyAuthorized(address _sender, address _accountOwner) {
         _isAuthorized(_sender, _accountOwner);
+
+        _;
+    }
+
+    /**
+     * @notice modifier to check if called address is a whitelisted callee
+     * @param _callee called address
+     */
+    modifier onlyWhitelistedCallee(address _callee) {
+        if (callRestricted) {
+            require(_isCalleeWhitelisted(_callee), "Controller: callee is not a whitelisted address");
+        }
 
         _;
     }
@@ -214,6 +230,17 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         emit TerminatorUpdated(terminator, _terminator);
 
         terminator = _terminator;
+    }
+
+    /**
+     * @notice allows owner to set activate/deactivate call action restriction
+     * @dev can only be called from owner
+     * @param _isRestricted active call restriction if true
+     */
+    function setCallRestriction(bool _isRestricted) external onlyOwner {
+        callRestricted = _isRestricted;
+
+        emit CallRestricted(callRestricted);
     }
 
     /**
@@ -627,7 +654,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev cannot be called when system is paued
      * @param _args Call action
      */
-    function _call(Actions.CallArgs memory _args) internal notPaused {
+    function _call(Actions.CallArgs memory _args) internal notPaused onlyWhitelistedCallee(_args.callee) {
         CalleeInterface(_args.callee).callFunction{value: _args.msgValue}(
             msg.sender,
             _args.owner,
@@ -661,6 +688,15 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         uint256 cashValue = calculator.getExpiredCashValue(_otoken);
 
         return cashValue.mul(_amount).div(1e18);
+    }
+
+    /**
+     * @notice return if a callee address is whitelisted or not
+     * @param _callee callee address
+     * @return boolean, true if whitelisted, otherwise false
+     */
+    function _isCalleeWhitelisted(address _callee) internal view returns (bool) {
+        return whitelist.isWhitelistedCallee(_callee);
     }
 
     /**

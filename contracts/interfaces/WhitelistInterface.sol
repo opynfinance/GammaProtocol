@@ -23,4 +23,6 @@ interface WhitelistInterface {
     function whitelistCollateral(address _collateral) external;
 
     function whitelistOtoken(address _otoken) external;
+
+    function isWhitelistedCallee(address _callee) external view returns (bool);
 }
