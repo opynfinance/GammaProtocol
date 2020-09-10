@@ -101,7 +101,7 @@ jobs:
     docker:
       - image: circleci/node:10.18.0
       - image: trufflesuite/ganache-cli:v6.10.1
-        command: ganache-cli -d -l 4294967295 --defaultBalanceEther 500
+        command: ganache-cli -d --port 8545 --defaultBalanceEther 500 --allowUnlimitedContractSize
     steps:
       - restore_cache:
           key: gamma-contracts-build-{{ .Environment.CIRCLE_SHA1 }}
