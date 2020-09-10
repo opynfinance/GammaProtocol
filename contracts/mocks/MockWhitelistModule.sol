@@ -9,9 +9,10 @@ contract MockWhitelistModule {
     function whitelistProduct(
         address _underlying,
         address _strike,
-        address _collateral
+        address _collateral,
+        bool _isPut
     ) external returns (bytes32 id) {
-        id = keccak256(abi.encodePacked(_underlying, _strike, _collateral));
+        id = keccak256(abi.encodePacked(_underlying, _strike, _collateral, _isPut));
 
         _isWhitelistedProduct[id] = true;
     }
@@ -19,9 +20,10 @@ contract MockWhitelistModule {
     function isWhitelistedProduct(
         address _underlying,
         address _strike,
-        address _collateral
+        address _collateral,
+        bool _isPut
     ) external view returns (bool isValid) {
-        bytes32 id = keccak256(abi.encodePacked(_underlying, _strike, _collateral));
+        bytes32 id = keccak256(abi.encodePacked(_underlying, _strike, _collateral, _isPut));
         return _isWhitelistedProduct[id];
     }
 
