@@ -34,14 +34,16 @@ contract Whitelist is Ownable {
         bytes32 productHash,
         address indexed underlying,
         address indexed strike,
-        address indexed collateral
+        address indexed collateral,
+        bool isPut
     );
     /// @notice emitted when owner blacklist a product
     event ProductBlacklisted(
         bytes32 productHash,
         address indexed underlying,
         address indexed strike,
-        address indexed collateral
+        address indexed collateral,
+        bool isPut
     );
     /// @notice emits an event when a collateral address is whitelisted by the owner address
     event CollateralWhitelisted(address indexed collateral);
@@ -75,9 +77,10 @@ contract Whitelist is Ownable {
     function isWhitelistedProduct(
         address _underlying,
         address _strike,
-        address _collateral
+        address _collateral,
+        bool _isPut
     ) external view returns (bool) {
-        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral));
+        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
 
         return whitelistedProduct[productHash];
     }
@@ -108,17 +111,19 @@ contract Whitelist is Ownable {
      * @param _underlying asset that the option references
      * @param _strike asset that the strike price is denominated in
      * @param _collateral asset that is held as collateral against short/written options
+     * @param _isPut is this a put option, if not it is a call
      */
     function whitelistProduct(
         address _underlying,
         address _strike,
-        address _collateral
+        address _collateral,
+        bool _isPut
     ) external onlyOwner {
-        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral));
+        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
 
         whitelistedProduct[productHash] = true;
 
-        emit ProductWhitelisted(productHash, _underlying, _strike, _collateral);
+        emit ProductWhitelisted(productHash, _underlying, _strike, _collateral, _isPut);
     }
 
     /**
@@ -128,17 +133,19 @@ contract Whitelist is Ownable {
      * @param _underlying asset that the option references
      * @param _strike asset that the strike price is denominated in
      * @param _collateral asset that is held as collateral against short/written options
+     * @param _isPut is this a put option, if not it is a call
      */
     function blacklistProduct(
         address _underlying,
         address _strike,
-        address _collateral
+        address _collateral,
+        bool _isPut
     ) external onlyOwner {
-        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral));
+        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
 
         whitelistedProduct[productHash] = false;
 
-        emit ProductBlacklisted(productHash, _underlying, _strike, _collateral);
+        emit ProductBlacklisted(productHash, _underlying, _strike, _collateral, _isPut);
     }
 
     /**
