@@ -5,7 +5,6 @@ pragma solidity =0.6.10;
 
 pragma experimental ABIEncoderV2;
 
-import {OMath} from "./OMath.sol";
 import {OwnableUpgradeSafe} from "./packages/oz/upgradeability/OwnableUpgradeSafe.sol";
 import {ReentrancyGuardUpgradeSafe} from "./packages/oz/upgradeability/ReentrancyGuardUpgradeSafe.sol";
 import {Initializable} from "./packages/oz/upgradeability/Initializable.sol";
@@ -24,7 +23,7 @@ import {MarginPoolInterface} from "./interfaces/MarginPoolInterface.sol";
  * @title Controller
  * @notice contract that
  */
-contract Controller is OMath, Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgradeSafe {
+contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgradeSafe {
     using MarginAccount for MarginAccount.Vault;
     using SafeMath for uint256;
 
@@ -619,25 +618,9 @@ contract Controller is OMath, Initializable, OwnableUpgradeSafe, ReentrancyGuard
      * @return amount of collateral to payout
      */
     function _getPayout(address _otoken, uint256 _amount) internal view returns (uint256) {
-        uint256 cashValue = calculator.getExpiredCashValue(_otoken);
-        uint256 amountInStrike = cashValue.mul(_amount).div(1e18);
-
-        OtokenInterface otoken = OtokenInterface(_otoken);
-        address strike = otoken.strikeAsset();
-        address collateral = otoken.collateralAsset();
-
-        uint256 payoutAmount;
-
-        if (strike == collateral) {
-            payoutAmount = amountInStrike;
-        } else {
-            uint256 expiry = otoken.expiryTimestamp();
-            (uint256 strikePrice, ) = oracle.getExpiryPrice(strike, expiry);
-            (uint256 collateralPrice, ) = oracle.getExpiryPrice(collateral, expiry);
-            payoutAmount = amountInStrike.mul(strikePrice).div(collateralPrice);
-        }
-
-        return _internalAmountToTokenAmount(payoutAmount, collateral);
+        uint256 rate = calculator.getExpiredPayoutRate(_otoken);
+        uint256 amountInCollateral = rate.mul(_amount).div(1e18);
+        return amountInCollateral;
     }
 
     /**
