@@ -42,19 +42,36 @@ contract MarginCalculator {
         OtokenInterface otoken = OtokenInterface(_otoken);
         require(now > otoken.expiryTimestamp(), "MarginCalculator: Otoken not expired yet.");
 
+        // strike price is denominated in strike asset.
         uint256 strikePrice = otoken.strikePrice();
-        (uint256 underlyingPrice, bool isFinalized) = _getAssetPrice(
+
+        // divide price of underlying by price of strike,
+        // to get the real price of underlying denominated in strike at expiry
+        (uint256 underlyingPrice, bool isUnderlyingFinalized) = _getAssetPrice(
             otoken.underlyingAsset(),
             otoken.expiryTimestamp()
         );
-        // (uint256 strikeAssetPrice, bool isFinalized) = _getAssetPrice(otoken.underlyingAsset(), otoken.expiryTimestamp());
+        (uint256 strikeAssetPrice, bool isStrikeFinalized) = _getAssetPrice(
+            otoken.strikeAsset(),
+            otoken.expiryTimestamp()
+        );
 
-        require(isFinalized, "MarginCalculator: Oracle price not finalized yet.");
+        require(isUnderlyingFinalized, "MarginCalculator: underlying price not finalized yet.");
+        require(isStrikeFinalized, "MarginCalculator: strike price not finalized yet.");
+
+        FPI.FixedPointInt memory underlyingPriceFixedPoint = _uint256ToFPI(underlyingPrice);
+        FPI.FixedPointInt memory strikeAssetPriceFixedPoint = _uint256ToFPI(strikeAssetPrice);
+
+        FPI.FixedPointInt memory underlyingToStrikeFixedPoint = underlyingPriceFixedPoint.div(
+            strikeAssetPriceFixedPoint
+        );
+
+        uint256 underlyingToStrike = SignedConverter.intToUint(underlyingToStrikeFixedPoint.value);
 
         if (otoken.isPut()) {
-            return strikePrice > underlyingPrice ? strikePrice.sub(underlyingPrice) : 0;
+            return strikePrice > underlyingToStrike ? strikePrice.sub(underlyingToStrike) : 0;
         } else {
-            return underlyingPrice > strikePrice ? underlyingPrice.sub(strikePrice) : 0;
+            return underlyingToStrike > strikePrice ? underlyingToStrike.sub(strikePrice) : 0;
         }
     }
 
