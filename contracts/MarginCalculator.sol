@@ -37,7 +37,7 @@ contract MarginCalculator {
      * @param _otoken otoken address
      * @return the cash value of an expired otoken, denomincated in strike asset. scaled by 1e18
      */
-    function getExpiredCashValue(address _otoken) public view returns (uint256) {
+    function _getExpiredCashValue(address _otoken) internal view returns (uint256) {
         require(_otoken != address(0), "MarginCalculator: Invalid token address.");
         OtokenInterface otoken = OtokenInterface(_otoken);
         require(now > otoken.expiryTimestamp(), "MarginCalculator: Otoken not expired yet.");
@@ -81,7 +81,7 @@ contract MarginCalculator {
      * @return the exchange rate that shows how much collateral unit can be take out by 1 otoken unit, scaled by 1e18
      */
     function getExpiredPayoutRate(address _otoken) external view returns (uint256) {
-        uint256 cashValueInStrike = getExpiredCashValue(_otoken);
+        uint256 cashValueInStrike = _getExpiredCashValue(_otoken);
 
         OtokenInterface otoken = OtokenInterface(_otoken);
         address strike = otoken.strikeAsset();
@@ -93,7 +93,7 @@ contract MarginCalculator {
             exchangeRate = cashValueInStrike;
         } else {
             uint256 expiry = otoken.expiryTimestamp();
-            // isFinalized of strike asset is already checked in getExpiredCashValue
+            // isFinalized of strike asset is already checked in _getExpiredCashValue
             (uint256 strikePrice, ) = _getAssetPrice(strike, expiry);
             (uint256 collateralPrice, bool isCollateralPriceFinalized) = _getAssetPrice(collateral, expiry);
             require(isCollateralPriceFinalized, "MarginCalculator: collateral price is not finalized");
@@ -190,9 +190,9 @@ contract MarginCalculator {
                 marginRequired = _getCallSpreadMarginRequired(shortAmount, longAmount, shortStrike, longStrike);
             }
         } else {
-            FPI.FixedPointInt memory shortCashValue = _uint256ToFPI(getExpiredCashValue(address(short)));
+            FPI.FixedPointInt memory shortCashValue = _uint256ToFPI(_getExpiredCashValue(address(short)));
             FPI.FixedPointInt memory longCashValue = hasLongInVault
-                ? _uint256ToFPI(getExpiredCashValue(_vault.longOtokens[0]))
+                ? _uint256ToFPI(_getExpiredCashValue(_vault.longOtokens[0]))
                 : _uint256ToFPI(0);
 
             if (isPut) {

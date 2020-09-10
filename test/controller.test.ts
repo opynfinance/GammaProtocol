@@ -2638,6 +2638,90 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
       assert.equal(userBalanceAfter.minus(userBalanceBefore).toString(), expectedPayout)
     })
 
+    it('should revert exercise option if collateral is different from underlying, and collateral price is not finalized', async () => {
+      const expiry = new BigNumber(await time.latest()).plus(new BigNumber(60 * 60)).toNumber()
+      const weth2: MockERC20Instance = await MockERC20.new('WETH2', 'WETH2', 18)
+
+      await whitelist.whitelistCollateral(weth2.address)
+      const call: MockOtokenInstance = await MockOtoken.new()
+      await call.init(
+        addressBook.address,
+        weth.address,
+        usdc.address,
+        weth2.address,
+        createTokenAmount(200, 18),
+        expiry,
+        false,
+      )
+
+      await whitelist.whitelistOtoken(call.address)
+      const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
+      const amountCollateral = createTokenAmount(1, wethDecimals)
+      await weth2.mint(accountOwner1, amountCollateral)
+      await weth2.approve(marginPool.address, amountCollateral, {from: accountOwner1})
+
+      const amountOtoken = createTokenAmount(1, 18)
+      const actionArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: accountOwner1,
+          sender: accountOwner1,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounter.toNumber(),
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.DepositCollateral,
+          owner: accountOwner1,
+          sender: accountOwner1,
+          asset: weth2.address,
+          vaultId: vaultCounter.toNumber(),
+          amount: amountCollateral,
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.MintShortOption,
+          owner: accountOwner1,
+          sender: accountOwner1,
+          asset: call.address,
+          vaultId: vaultCounter.toNumber(),
+          amount: amountOtoken,
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+
+      await controllerProxy.operate(actionArgs, {from: accountOwner1})
+      await call.transfer(holder1, amountOtoken, {from: accountOwner1})
+
+      await time.increaseTo(expiry + 10)
+      await oracle.setExpiryPrice(weth.address, expiry, createTokenAmount(400, 18))
+      await oracle.setExpiryPrice(usdc.address, expiry, createTokenAmount(1, 18))
+      await oracle.setIsFinalized(weth.address, expiry, true)
+      await oracle.setIsFinalized(usdc.address, expiry, true)
+      console.log(`cool`)
+      const exerciseArgs = [
+        {
+          actionType: ActionType.Exercise,
+          owner: ZERO_ADDR,
+          sender: holder1,
+          asset: call.address,
+          vaultId: '0',
+          amount: amountOtoken,
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+
+      await expectRevert(
+        controllerProxy.operate(exerciseArgs, {from: holder1}),
+        'MarginCalculator: collateral price is not finalized',
+      )
+    })
+
     describe('Exercise multiple Otokens', () => {
       let firstOtoken: MockOtokenInstance
       let secondOtoken: MockOtokenInstance

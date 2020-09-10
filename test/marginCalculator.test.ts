@@ -1,6 +1,6 @@
 import {
   MockERC20Instance,
-  MarginCalculatorInstance,
+  CalculatorTesterInstance,
   MockAddressBookInstance,
   MockOracleInstance,
   MockOtokenInstance,
@@ -13,12 +13,12 @@ const MockAddressBook = artifacts.require('MockAddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const MockOtoken = artifacts.require('MockOtoken.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
-const MarginCalculator = artifacts.require('MarginCalculator.sol')
+const MarginCalculator = artifacts.require('CalculatorTester.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 contract('MarginCalculator', () => {
   let expiry: number
 
-  let calculator: MarginCalculatorInstance
+  let calculator: CalculatorTesterInstance
   let addressBook: MockAddressBookInstance
   let oracle: MockOracleInstance
   // eth puts
