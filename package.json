@@ -53,7 +53,7 @@
     "lint:tests:prettier:fix": "prettier --write \"test/**/*.ts\"",
     "test": "CI=true truffle test",
     "test:unit": "truffle test ./test/unit-tests/*.ts",
-    "test:integration": "truffle test ./test/integration-tests/nakedPutExpireITM.test.ts",
+    "test:integration": "truffle test ./test/integration-tests/*.ts",
     "coverage": "truffle run coverage",
     "contract-size": "truffle run contract-size --checkMaxSize"
   },

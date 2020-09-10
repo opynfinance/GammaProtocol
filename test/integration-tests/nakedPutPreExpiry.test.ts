@@ -5,7 +5,7 @@ import {
   MockOracleInstance,
   OtokenInstance,
   ControllerInstance,
-  MockWhitelistModuleInstance,
+  WhitelistInstance,
   MarginPoolInstance,
 } from '../../build/types/truffle-types'
 import {createVault, createScaledUint256, createScaledNumber} from '../utils'
@@ -20,7 +20,7 @@ const MockOracle = artifacts.require('MockOracle.sol')
 const Otoken = artifacts.require('Otoken.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
 const MarginCalculator = artifacts.require('MarginCalculator.sol')
-const MockWhitelist = artifacts.require('MockWhitelistModule.sol')
+const Whitelist = artifacts.require('WhitelistModule.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
 const MarginAccount = artifacts.require('MarginAccount.sol')
@@ -46,13 +46,11 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, buye
 
   let addressBook: AddressBookInstance
   let calculator: MarginCalculatorInstance
-  // controller module
   let controllerImplementation: ControllerInstance
   let controllerProxy: ControllerInstance
   let marginPool: MarginPoolInstance
+  let whitelist: WhitelistInstance
 
-  // whitelist module mock
-  let whitelist: MockWhitelistModuleInstance
   // oracle modulce mock
   let oracle: MockOracleInstance
 
@@ -84,7 +82,7 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, buye
     // setup mock Oracle module
     oracle = await MockOracle.new(addressBook.address)
     // setup mock whitelist module
-    whitelist = await MockWhitelist.new()
+    whitelist = await Whitelist.new(addressBook.address)
 
     // setup usdc and weth
     // TODO: change USDC to 6
