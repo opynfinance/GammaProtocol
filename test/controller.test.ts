@@ -2678,7 +2678,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           new BigNumber(await firstOtoken.expiryTimestamp()),
           true,
         )
-        await oracle.setIsLockingPeriodOver(
+        await oracle.setIsDisputePeriodOver(
           await secondOtoken.underlyingAsset(),
           new BigNumber(await secondOtoken.expiryTimestamp()),
           true,
