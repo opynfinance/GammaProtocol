@@ -31,51 +31,6 @@ contract MarginCalculator {
     }
 
     /**
-     * @notice Return the cash value of an expired oToken.
-     * @dev For call return = Max (0, ETH Price - oToken.strike)
-     * @dev For put return Max(0, oToken.strike - ETH Price)
-     * @param _otoken otoken address
-     * @return the cash value of an expired otoken, denomincated in strike asset. scaled by 1e18
-     */
-    function _getExpiredCashValue(address _otoken) internal view returns (uint256) {
-        require(_otoken != address(0), "MarginCalculator: Invalid token address.");
-        OtokenInterface otoken = OtokenInterface(_otoken);
-        require(now > otoken.expiryTimestamp(), "MarginCalculator: Otoken not expired yet.");
-
-        // strike price is denominated in strike asset.
-        uint256 strikePrice = otoken.strikePrice();
-
-        // divide price of underlying by price of strike,
-        // to get the real price of underlying denominated in strike at expiry
-        (uint256 underlyingPrice, bool isUnderlyingFinalized) = _getAssetPrice(
-            otoken.underlyingAsset(),
-            otoken.expiryTimestamp()
-        );
-        (uint256 strikeAssetPrice, bool isStrikeFinalized) = _getAssetPrice(
-            otoken.strikeAsset(),
-            otoken.expiryTimestamp()
-        );
-
-        require(isUnderlyingFinalized, "MarginCalculator: underlying price not finalized yet.");
-        require(isStrikeFinalized, "MarginCalculator: strike price not finalized yet.");
-
-        FPI.FixedPointInt memory underlyingPriceFixedPoint = _uint256ToFPI(underlyingPrice);
-        FPI.FixedPointInt memory strikeAssetPriceFixedPoint = _uint256ToFPI(strikeAssetPrice);
-
-        FPI.FixedPointInt memory underlyingToStrikeFixedPoint = underlyingPriceFixedPoint.div(
-            strikeAssetPriceFixedPoint
-        );
-
-        uint256 underlyingToStrike = SignedConverter.intToUint(underlyingToStrikeFixedPoint.value);
-
-        if (otoken.isPut()) {
-            return strikePrice > underlyingToStrike ? strikePrice.sub(underlyingToStrike) : 0;
-        } else {
-            return underlyingToStrike > strikePrice ? underlyingToStrike.sub(strikePrice) : 0;
-        }
-    }
-
-    /**
      * @notice Return the net worth of an expired oToken in collateral.
      * @param _otoken otoken address
      * @return the exchange rate that shows how much collateral unit can be take out by 1 otoken unit, scaled by 1e18
@@ -153,6 +108,51 @@ contract MarginCalculator {
             : excessCollateralInternal;
 
         return (excessCollateralExternal, isExcess);
+    }
+
+    /**
+     * @notice Return the cash value of an expired oToken.
+     * @dev For call return = Max (0, ETH Price - oToken.strike)
+     * @dev For put return Max(0, oToken.strike - ETH Price)
+     * @param _otoken otoken address
+     * @return the cash value of an expired otoken, denominated in strike asset. scaled by 1e18
+     */
+    function _getExpiredCashValue(address _otoken) internal view returns (uint256) {
+        require(_otoken != address(0), "MarginCalculator: Invalid token address.");
+        OtokenInterface otoken = OtokenInterface(_otoken);
+        require(now > otoken.expiryTimestamp(), "MarginCalculator: Otoken not expired yet.");
+
+        // strike price is denominated in strike asset.
+        uint256 strikePrice = otoken.strikePrice();
+
+        // divide price of underlying by price of strike,
+        // to get the real price of underlying denominated in strike at expiry
+        (uint256 underlyingPrice, bool isUnderlyingFinalized) = _getAssetPrice(
+            otoken.underlyingAsset(),
+            otoken.expiryTimestamp()
+        );
+        (uint256 strikeAssetPrice, bool isStrikeFinalized) = _getAssetPrice(
+            otoken.strikeAsset(),
+            otoken.expiryTimestamp()
+        );
+
+        require(isUnderlyingFinalized, "MarginCalculator: underlying price not finalized yet.");
+        require(isStrikeFinalized, "MarginCalculator: strike price not finalized yet.");
+
+        FPI.FixedPointInt memory underlyingPriceFixedPoint = _uint256ToFPI(underlyingPrice);
+        FPI.FixedPointInt memory strikeAssetPriceFixedPoint = _uint256ToFPI(strikeAssetPrice);
+
+        FPI.FixedPointInt memory underlyingToStrikeFixedPoint = underlyingPriceFixedPoint.div(
+            strikeAssetPriceFixedPoint
+        );
+
+        uint256 underlyingToStrike = SignedConverter.intToUint(underlyingToStrikeFixedPoint.value);
+
+        if (otoken.isPut()) {
+            return strikePrice > underlyingToStrike ? strikePrice.sub(underlyingToStrike) : 0;
+        } else {
+            return underlyingToStrike > strikePrice ? underlyingToStrike.sub(strikePrice) : 0;
+        }
     }
 
     /**
