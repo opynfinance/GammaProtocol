@@ -6,22 +6,12 @@ pragma experimental ABIEncoderV2;
 import {MarginAccount} from "../libs/MarginAccount.sol";
 
 contract MarginAccountTester {
-    using MarginAccount for MarginAccount.Account;
     using MarginAccount for MarginAccount.Vault;
 
-    mapping(address => MarginAccount.Account) private account;
     mapping(address => mapping(uint256 => MarginAccount.Vault)) private vault;
 
     function getVault(uint256 _vaultIndex) external view returns (MarginAccount.Vault memory) {
         return vault[msg.sender][_vaultIndex];
-    }
-
-    function getAccount() external view returns (MarginAccount.Account memory) {
-        return account[msg.sender];
-    }
-
-    function testOpenNewVault() external {
-        MarginAccount._openNewVault(account[msg.sender]);
     }
 
     function testAddShort(
@@ -30,7 +20,7 @@ contract MarginAccountTester {
         uint256 _amount,
         uint256 _index
     ) external {
-        vault[msg.sender][_vaultIndex]._addShort(_shortOtoken, _amount, _index);
+        vault[msg.sender][_vaultIndex].addShort(_shortOtoken, _amount, _index);
     }
 
     function testRemoveShort(
@@ -39,7 +29,7 @@ contract MarginAccountTester {
         uint256 _amount,
         uint256 _index
     ) external {
-        vault[msg.sender][_vaultIndex]._removeShort(_shortOtoken, _amount, _index);
+        vault[msg.sender][_vaultIndex].removeShort(_shortOtoken, _amount, _index);
     }
 
     function testAddLong(
@@ -48,7 +38,7 @@ contract MarginAccountTester {
         uint256 _amount,
         uint256 _index
     ) external {
-        vault[msg.sender][_vaultIndex]._addLong(_longOtoken, _amount, _index);
+        vault[msg.sender][_vaultIndex].addLong(_longOtoken, _amount, _index);
     }
 
     function testRemoveLong(
@@ -57,7 +47,7 @@ contract MarginAccountTester {
         uint256 _amount,
         uint256 _index
     ) external {
-        vault[msg.sender][_vaultIndex]._removeLong(_longOtoken, _amount, _index);
+        vault[msg.sender][_vaultIndex].removeLong(_longOtoken, _amount, _index);
     }
 
     function testAddCollateral(
@@ -66,7 +56,7 @@ contract MarginAccountTester {
         uint256 _amount,
         uint256 _index
     ) external {
-        vault[msg.sender][_vaultIndex]._addCollateral(_collateralAsset, _amount, _index);
+        vault[msg.sender][_vaultIndex].addCollateral(_collateralAsset, _amount, _index);
     }
 
     function testRemoveCollateral(
@@ -75,10 +65,6 @@ contract MarginAccountTester {
         uint256 _amount,
         uint256 _index
     ) external {
-        vault[msg.sender][_vaultIndex]._removeCollateral(_collateralAsset, _amount, _index);
-    }
-
-    function testClearVault(uint256 _vaultIndex) external {
-        vault[msg.sender][_vaultIndex]._clearVault();
+        vault[msg.sender][_vaultIndex].removeCollateral(_collateralAsset, _amount, _index);
     }
 }

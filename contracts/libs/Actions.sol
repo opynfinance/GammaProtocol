@@ -6,7 +6,6 @@ pragma solidity 0.6.10;
 /**
  *
  */
-// solhint-disable-next-line no-empty-blocks
 library Actions {
     // Possible actions that can be performed
     enum ActionType {
@@ -75,8 +74,10 @@ library Actions {
     }
 
     struct OpenVaultArgs {
-        // The address of the account owner
+        // address of the account that the vault belong to
         address owner;
+        // vault id
+        uint256 vaultId;
     }
 
     struct DepositArgs {
@@ -96,8 +97,8 @@ library Actions {
     }
 
     struct ExerciseArgs {
-        // The address from which we transfer the otokens, to which we pay out the cash difference if the option is ITM.
-        address exerciser;
+        // The address to which we pay out the cash difference if the option is ITM.
+        address receiver;
         // The otoken that is to be exercised
         address otoken;
         // The amount of otokens that is to be exercised
@@ -148,7 +149,7 @@ library Actions {
         require(_args.actionType == ActionType.OpenVault, "Actions: can only parse arguments for open vault actions");
         require(_args.owner != address(0), "Actions: cannot open vault for an invalid account");
 
-        return OpenVaultArgs({owner: _args.owner});
+        return OpenVaultArgs({owner: _args.owner, vaultId: _args.vaultId});
     }
 
     /**
@@ -245,8 +246,9 @@ library Actions {
      */
     function _parseExerciseArgs(ActionArgs memory _args) internal pure returns (ExerciseArgs memory) {
         require(_args.actionType == ActionType.Exercise, "Actions: can only parse arguments for exercise actions");
+        require(_args.sender != address(0), "Actions: cannot exercise to an invalid account");
 
-        return ExerciseArgs({exerciser: _args.sender, otoken: _args.asset, amount: _args.amount});
+        return ExerciseArgs({receiver: _args.sender, otoken: _args.asset, amount: _args.amount});
     }
 
     /**

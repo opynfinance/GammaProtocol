@@ -46,6 +46,7 @@ jobs:
           key: gamma-{{ .Environment.CIRCLE_SHA1 }}
           paths:
             - ~/gammaprotocol
+
   lint:
     working_directory: ~/gammaprotocol
     docker:
@@ -96,7 +97,7 @@ jobs:
     docker:
       - image: circleci/node:10.18.0
       - image: trufflesuite/ganache-cli:v6.10.1
-        command: ganache-cli -d -l 4294967295 --allowUnlimitedContractSize
+        command: ganache-cli -d -l 4294967295 --defaultBalanceEther 500
     steps:
       - restore_cache:
           key: gamma-contracts-build-{{ .Environment.CIRCLE_SHA1 }}

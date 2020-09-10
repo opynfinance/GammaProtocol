@@ -161,7 +161,7 @@ contract AddressBook is Ownable {
      * @param _marginCalculator margin calculator address
      */
     function setMarginCalculator(address _marginCalculator) external onlyOwner {
-        updateImpl(MARGIN_CALCULATOR, _marginCalculator);
+        setAddress(MARGIN_CALCULATOR, _marginCalculator);
     }
 
     /**
@@ -170,7 +170,7 @@ contract AddressBook is Ownable {
      * @param _liquidationManager liquidation manager address
      */
     function setLiquidationManager(address _liquidationManager) external onlyOwner {
-        updateImpl(LIQUIDATION_MANAGER, _liquidationManager);
+        setAddress(LIQUIDATION_MANAGER, _liquidationManager);
     }
 
     /**
@@ -179,7 +179,7 @@ contract AddressBook is Ownable {
      * @param _oracle oracle address
      */
     function setOracle(address _oracle) external onlyOwner {
-        updateImpl(ORACLE, _oracle);
+        setAddress(ORACLE, _oracle);
     }
 
     /**
@@ -220,7 +220,7 @@ contract AddressBook is Ownable {
     function updateImpl(bytes32 _id, address _newAddress) public onlyOwner {
         address payable proxyAddress = address(uint160(getAddress(_id)));
 
-        bytes memory params = abi.encodeWithSignature("initialize(address)", address(this));
+        bytes memory params = abi.encodeWithSignature("initialize(address,address)", address(this), owner());
 
         if (proxyAddress == address(0)) {
             OwnedUpgradeabilityProxy proxy = new OwnedUpgradeabilityProxy();
@@ -229,7 +229,7 @@ contract AddressBook is Ownable {
             proxy.upgradeToAndCall(_newAddress, params);
         } else {
             OwnedUpgradeabilityProxy proxy = OwnedUpgradeabilityProxy(proxyAddress);
-            proxy.upgradeToAndCall(_newAddress, params);
+            proxy.upgradeTo(_newAddress);
         }
     }
 }
