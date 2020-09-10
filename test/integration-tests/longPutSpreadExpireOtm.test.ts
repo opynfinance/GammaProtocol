@@ -39,7 +39,7 @@ enum ActionType {
   Call,
 }
 
-contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buyer, accountOwner2]) => {
+contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buyer, accountOwner2]) => {
   const reverter = new Reverter(web3)
   let expiry: number
 
@@ -145,7 +145,7 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buy
     vaultCounter = vaultCounterBefore.toNumber() + 1
   })
 
-  describe('Integration test: Sell a short put spread and close it before expiry', () => {
+  describe('Integration test: Sell a long put spread and close it after expires OTM', () => {
     it('Someone else mints the long option and sends it to the seller', async () => {
       const collateralToMintLong = longStrike * optionsAmount
 
@@ -241,10 +241,11 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buy
       if ((await time.latest()) < expiry) {
         await time.increaseTo(expiry + 2)
       }
-      await oracle.setIsFinalized(weth.address, expiry, true)
       const strikePriceChange = 100
       const expirySpotPrice = shortStrike + strikePriceChange
       await oracle.setExpiryPrice(weth.address, expiry, createScaledUint256(expirySpotPrice, 18))
+      await oracle.setIsDisputePeriodOver(weth.address, expiry, true)
+      await oracle.setIsFinalized(weth.address, expiry, true)
 
       // Check that after expiry, the vault excess balance has updated as expected
       const vaultStateBeforeSettlement = await calculator.getExcessCollateral(vaultBefore)

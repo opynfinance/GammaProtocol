@@ -39,7 +39,7 @@ enum ActionType {
   Call,
 }
 
-contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buyer, accountOwner2]) => {
+contract('Short Call Spread Option flow', ([admin, accountOwner1, accountOperator1, buyer, accountOwner2]) => {
   const reverter = new Reverter(web3)
   let expiry: number
 
@@ -145,7 +145,7 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buy
     vaultCounter = vaultCounterBefore.toNumber() + 1
   })
 
-  describe('Integration test: Sell a short put spread and close it before expiry', () => {
+  describe('Integration test: Sell a short call spread and close it before expiry', () => {
     it('Someone else mints the long option and sends it to the seller', async () => {
       const collateralToMintLong = optionsAmount
 
@@ -198,8 +198,8 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buy
     })
     it('Seller should be able to open a short put spread', async () => {
       // Keep track of balances before
-      const ownerUsdcBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
-      const marginPoolUsdcBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
+      const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
+      const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
 
       const ownerShortOtokenBalanceBefore = new BigNumber(await shortCall.balanceOf(accountOwner1))
       const marginPoolShortOtokenSupplyBefore = new BigNumber(await shortCall.totalSupply())
@@ -274,8 +274,8 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buy
       await controllerProxy.operate(actionArgs, {from: accountOwner1})
 
       // keep track of balances after
-      const ownerUsdcBalanceAfter = new BigNumber(await weth.balanceOf(accountOwner1))
-      const marginPoolUsdcBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
+      const ownerWethBalanceAfter = new BigNumber(await weth.balanceOf(accountOwner1))
+      const marginPoolWethBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
 
       const ownerShortOtokenBalanceAfter = new BigNumber(await shortCall.balanceOf(accountOwner1))
       const marginPoolShortOtokenSupplyAfter = new BigNumber(await shortCall.totalSupply())
@@ -286,16 +286,16 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buy
 
       // check balances before and after changed as expected
       assert.equal(
-        ownerUsdcBalanceBefore
+        ownerWethBalanceBefore
           .minus(createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()))
           .toString(),
-        ownerUsdcBalanceAfter.toString(),
+        ownerWethBalanceAfter.toString(),
       )
       assert.equal(
-        marginPoolUsdcBalanceBefore
+        marginPoolWethBalanceBefore
           .plus(createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()))
           .toString(),
-        marginPoolUsdcBalanceAfter.toString(),
+        marginPoolWethBalanceAfter.toString(),
       )
       assert.equal(
         ownerShortOtokenBalanceBefore.plus(createScaledUint256(optionsAmount, 18)).toString(),
@@ -361,8 +361,8 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buy
 
     it('deposit more collateral into the safe vault', async () => {
       // Keep track of balances before
-      const ownerUsdcBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
-      const marginPoolUsdcBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
+      const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
+      const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
 
       const actionArgs = [
         {
@@ -380,21 +380,21 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buy
       await controllerProxy.operate(actionArgs, {from: accountOwner1})
 
       // keep track of balances after
-      const ownerUsdcBalanceAfter = new BigNumber(await weth.balanceOf(accountOwner1))
-      const marginPoolUsdcBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
+      const ownerWethBalanceAfter = new BigNumber(await weth.balanceOf(accountOwner1))
+      const marginPoolWethBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
 
       // check balances before and after changed as expected
       assert.equal(
-        ownerUsdcBalanceBefore
+        ownerWethBalanceBefore
           .minus(createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()))
           .toString(),
-        ownerUsdcBalanceAfter.toString(),
+        ownerWethBalanceAfter.toString(),
       )
       assert.equal(
-        marginPoolUsdcBalanceBefore
+        marginPoolWethBalanceBefore
           .plus(createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()))
           .toString(),
-        marginPoolUsdcBalanceAfter.toString(),
+        marginPoolWethBalanceAfter.toString(),
       )
 
       // Check that there is excess margin
@@ -441,8 +441,8 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buy
     })
     it('withdraw excess collateral from the safe vault', async () => {
       // Keep track of balances before
-      const ownerUsdcBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
-      const marginPoolUsdcBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
+      const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
+      const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
 
       const actionArgs = [
         {
@@ -460,21 +460,21 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buy
       await controllerProxy.operate(actionArgs, {from: accountOwner1})
 
       // keep track of balances after
-      const ownerUsdcBalanceAfter = new BigNumber(await weth.balanceOf(accountOwner1))
-      const marginPoolUsdcBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
+      const ownerWethBalanceAfter = new BigNumber(await weth.balanceOf(accountOwner1))
+      const marginPoolWethBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
 
       // check balances before and after changed as expected
       assert.equal(
-        ownerUsdcBalanceBefore
+        ownerWethBalanceBefore
           .plus(createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()))
           .toString(),
-        ownerUsdcBalanceAfter.toString(),
+        ownerWethBalanceAfter.toString(),
       )
       assert.equal(
-        marginPoolUsdcBalanceBefore
+        marginPoolWethBalanceBefore
           .minus(createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()))
           .toString(),
-        marginPoolUsdcBalanceAfter.toString(),
+        marginPoolWethBalanceAfter.toString(),
       )
 
       // Check that we end at a valid state with no extra collateral
@@ -560,8 +560,8 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buy
 
     it('should be able to close out the short spread position', async () => {
       // Keep track of balances before
-      const ownerUsdcBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
-      const marginPoolUsdcBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
+      const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
+      const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
       const ownerShortOtokenBalanceBefore = new BigNumber(await shortCall.balanceOf(accountOwner1))
       const marginPoolShortOtokenSupplyBefore = new BigNumber(await shortCall.totalSupply())
 
@@ -611,8 +611,8 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buy
       await controllerProxy.operate(actionArgs, {from: accountOwner1})
 
       // keep track of balances after
-      const ownerUsdcBalanceAfter = new BigNumber(await weth.balanceOf(accountOwner1))
-      const marginPoolUsdcBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
+      const ownerWethBalanceAfter = new BigNumber(await weth.balanceOf(accountOwner1))
+      const marginPoolWethBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
 
       const ownerShortOtokenBalanceAfter = new BigNumber(await shortCall.balanceOf(accountOwner1))
       const marginPoolShortOtokenSupplyAfter = new BigNumber(await shortCall.totalSupply())
@@ -623,16 +623,16 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buy
 
       // check balances before and after changed as expected
       assert.equal(
-        ownerUsdcBalanceBefore
+        ownerWethBalanceBefore
           .plus(createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()))
           .toString(),
-        ownerUsdcBalanceAfter.toString(),
+        ownerWethBalanceAfter.toString(),
       )
       assert.equal(
-        marginPoolUsdcBalanceBefore
+        marginPoolWethBalanceBefore
           .minus(createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()))
           .toString(),
-        marginPoolUsdcBalanceAfter.toString(),
+        marginPoolWethBalanceAfter.toString(),
       )
       assert.equal(
         ownerShortOtokenBalanceBefore.minus(createScaledUint256(optionsAmount, 18)).toString(),

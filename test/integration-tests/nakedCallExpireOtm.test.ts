@@ -182,10 +182,11 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, buye
       if ((await time.latest()) < expiry) {
         await time.increaseTo(expiry + 2)
       }
-      await oracle.setIsFinalized(weth.address, expiry, true)
       const strikePriceChange = 100
       const expirySpotPrice = strikePrice - strikePriceChange
       await oracle.setExpiryPrice(weth.address, expiry, createScaledUint256(expirySpotPrice, 18))
+      await oracle.setIsDisputePeriodOver(weth.address, expiry, true)
+      await oracle.setIsFinalized(weth.address, expiry, true)
 
       // Check that after expiry, the vault excess balance has updated as expected
       const vaultStateBeforeSettlement = await calculator.getExcessCollateral(vaultBefore)

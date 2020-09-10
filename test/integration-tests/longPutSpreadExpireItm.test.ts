@@ -37,7 +37,7 @@ enum ActionType {
   Call,
 }
 
-contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buyer, accountOwner2]) => {
+contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buyer, accountOwner2]) => {
   let expiry: number
 
   let addressBook: AddressBookInstance
@@ -142,7 +142,7 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buy
     vaultCounter = vaultCounterBefore.toNumber() + 1
   })
 
-  describe('Integration test: Sell a short put spread and close it before expiry', () => {
+  describe('Integration test: Sell a long put spread and close it after expires ITM', () => {
     it('Someone else mints the long option and sends it to the seller', async () => {
       const collateralToMintLong = longStrike * optionsAmount
 
@@ -238,9 +238,10 @@ contract('Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buy
       if ((await time.latest()) < expiry) {
         await time.increaseTo(expiry + 2)
       }
-      await oracle.setIsFinalized(weth.address, expiry, true)
       const expirySpotPrice = 150
       await oracle.setExpiryPrice(weth.address, expiry, createScaledUint256(expirySpotPrice, 18))
+      await oracle.setIsDisputePeriodOver(weth.address, expiry, true)
+      await oracle.setIsFinalized(weth.address, expiry, true)
 
       const collateralPayout = Math.min(
         (longStrike - shortStrike) * optionsAmount,

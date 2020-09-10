@@ -39,7 +39,7 @@ enum ActionType {
   Call,
 }
 
-contract('Short Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buyer, accountOwner2]) => {
+contract('Short Call Spread Option flow', ([admin, accountOwner1, accountOperator1, buyer, accountOwner2]) => {
   const reverter = new Reverter(web3)
   let expiry: number
 
@@ -58,13 +58,13 @@ contract('Short Put Spread Option flow', ([admin, accountOwner1, accountOperator
   let dai: MockERC20Instance
   let weth: MockERC20Instance
 
-  let shortPut: OtokenInstance
-  let longPut: OtokenInstance
-  const shortStrike = 300
+  let shortCall: OtokenInstance
+  let longCall: OtokenInstance
+  const shortStrike = 100
   const longStrike = 200
 
   const optionsAmount = 10
-  const collateralAmount = Math.abs(shortStrike - longStrike) * optionsAmount
+  const collateralAmount = (Math.abs(longStrike - shortStrike) * optionsAmount) / longStrike
 
   let vaultCounter: number
 
@@ -104,50 +104,59 @@ contract('Short Put Spread Option flow', ([admin, accountOwner1, accountOperator
     controllerProxy = await Controller.at(controllerProxyAddress)
     await controllerProxy.refreshConfiguration()
 
-    longPut = await Otoken.new()
-    await longPut.init(
+    longCall = await Otoken.new()
+    await longCall.init(
       addressBook.address,
       weth.address,
       usdc.address,
-      usdc.address,
+      weth.address,
       createScaledUint256(longStrike, 18),
       expiry,
-      true,
+      false,
     )
 
-    shortPut = await Otoken.new()
-    await shortPut.init(
+    shortCall = await Otoken.new()
+    await shortCall.init(
       addressBook.address,
       weth.address,
       usdc.address,
-      usdc.address,
+      weth.address,
       createScaledUint256(shortStrike, 18),
       expiry,
-      true,
+      false,
     )
 
     // setup the whitelist module
-    await whitelist.whitelistOtoken(longPut.address)
-    await whitelist.whitelistOtoken(shortPut.address)
-    await whitelist.whitelistCollateral(usdc.address)
+    await whitelist.whitelistOtoken(longCall.address)
+    await whitelist.whitelistOtoken(shortCall.address)
+    await whitelist.whitelistCollateral(weth.address)
 
-    // mint usdc to user
-    usdc.mint(accountOwner1, createScaledUint256(2 * collateralAmount, (await usdc.decimals()).toNumber()))
-    usdc.mint(accountOwner2, createScaledUint256(longStrike * optionsAmount, (await usdc.decimals()).toNumber()))
-    usdc.mint(buyer, createScaledUint256(longStrike * optionsAmount, (await usdc.decimals()).toNumber()))
+    // mint weth to user
+    weth.mint(accountOwner1, createScaledUint256(2 * collateralAmount, (await weth.decimals()).toNumber()))
+    weth.mint(accountOwner2, createScaledUint256(longStrike * optionsAmount, (await weth.decimals()).toNumber()))
+    weth.mint(buyer, createScaledUint256(longStrike * optionsAmount, (await weth.decimals()).toNumber()))
 
-    // have the user approve all the usdc transfers
-    usdc.approve(marginPool.address, '10000000000000000000000', {from: accountOwner1})
-    usdc.approve(marginPool.address, '10000000000000000000000000000000000000000', {from: accountOwner2})
-    usdc.approve(marginPool.address, '10000000000000000000000000000', {from: buyer})
+    // have the user approve all the weth transfers
+    weth.approve(marginPool.address, '10000000000000000000000', {from: accountOwner1})
+    weth.approve(marginPool.address, '10000000000000000000000000000000000000000', {from: accountOwner2})
+    weth.approve(marginPool.address, '10000000000000000000000000000', {from: buyer})
 
     const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
     vaultCounter = vaultCounterBefore.toNumber() + 1
   })
 
-  describe('Integration test: Sell a short put spread and close it after expires OTM', () => {
+  describe('Integration test: Sell a short call spread and close it after expires OTM', () => {
     it('Someone else mints the long option and sends it to the seller', async () => {
-      const collateralToMintLong = longStrike * optionsAmount
+      const collateralToMintLong = optionsAmount
+
+      const vault = {
+        shortOtokens: [longCall.address],
+        longOtokens: [],
+        collateralAssets: [weth.address],
+        shortAmounts: [createScaledUint256(optionsAmount, 18)],
+        longAmounts: [],
+        collateralAmounts: [createScaledUint256(optionsAmount, 18)],
+      }
 
       const actionArgsBuyer = [
         {
@@ -164,7 +173,7 @@ contract('Short Put Spread Option flow', ([admin, accountOwner1, accountOperator
           actionType: ActionType.MintShortOption,
           owner: accountOwner2,
           sender: accountOwner2,
-          asset: longPut.address,
+          asset: longCall.address,
           vaultId: vaultCounter,
           amount: createScaledUint256(optionsAmount, 18),
           index: '0',
@@ -174,9 +183,9 @@ contract('Short Put Spread Option flow', ([admin, accountOwner1, accountOperator
           actionType: ActionType.DepositCollateral,
           owner: accountOwner2,
           sender: accountOwner2,
-          asset: usdc.address,
+          asset: weth.address,
           vaultId: vaultCounter,
-          amount: createScaledUint256(collateralToMintLong, (await usdc.decimals()).toNumber()),
+          amount: createScaledUint256(collateralToMintLong, (await weth.decimals()).toNumber()),
           index: '0',
           data: ZERO_ADDR,
         },
@@ -185,7 +194,7 @@ contract('Short Put Spread Option flow', ([admin, accountOwner1, accountOperator
       await controllerProxy.operate(actionArgsBuyer, {from: accountOwner2})
 
       // buyer sells their long put option to owner
-      longPut.transfer(accountOwner1, createScaledUint256(optionsAmount, 18), {from: accountOwner2})
+      longCall.transfer(accountOwner1, createScaledUint256(optionsAmount, 18), {from: accountOwner2})
 
       const actionArgsSeller = [
         {
@@ -202,7 +211,7 @@ contract('Short Put Spread Option flow', ([admin, accountOwner1, accountOperator
           actionType: ActionType.MintShortOption,
           owner: accountOwner1,
           sender: accountOwner1,
-          asset: shortPut.address,
+          asset: shortCall.address,
           vaultId: vaultCounter,
           amount: createScaledUint256(optionsAmount, 18),
           index: '0',
@@ -212,9 +221,9 @@ contract('Short Put Spread Option flow', ([admin, accountOwner1, accountOperator
           actionType: ActionType.DepositCollateral,
           owner: accountOwner1,
           sender: accountOwner1,
-          asset: usdc.address,
+          asset: weth.address,
           vaultId: vaultCounter,
-          amount: createScaledUint256(collateralAmount, (await usdc.decimals()).toNumber()),
+          amount: createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()),
           index: '0',
           data: ZERO_ADDR,
         },
@@ -222,7 +231,7 @@ contract('Short Put Spread Option flow', ([admin, accountOwner1, accountOperator
           actionType: ActionType.DepositLongOption,
           owner: accountOwner1,
           sender: accountOwner1,
-          asset: longPut.address,
+          asset: longCall.address,
           vaultId: vaultCounter,
           amount: createScaledUint256(optionsAmount, 18),
           index: '0',
@@ -230,16 +239,16 @@ contract('Short Put Spread Option flow', ([admin, accountOwner1, accountOperator
         },
       ]
 
-      await longPut.approve(marginPool.address, '1000000000000000000000', {from: accountOwner1})
+      await longCall.approve(marginPool.address, '1000000000000000000000', {from: accountOwner1})
       await controllerProxy.operate(actionArgsSeller, {from: accountOwner1})
     })
 
-    it('Seller: close an OTM position after expiry', async () => {
+    it('Seller: close an ITM position after expiry', async () => {
       // Keep track of balances before
-      const ownerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
-      const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
-      const ownerOtokenBalanceBefore = new BigNumber(await shortPut.balanceOf(accountOwner1))
-      const marginPoolOtokenSupplyBefore = new BigNumber(await shortPut.totalSupply())
+      const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
+      const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
+      const ownerOtokenBalanceBefore = new BigNumber(await shortCall.balanceOf(accountOwner1))
+      const marginPoolOtokenSupplyBefore = new BigNumber(await shortCall.totalSupply())
 
       // Check that we start at a valid state
       const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
@@ -251,17 +260,19 @@ contract('Short Put Spread Option flow', ([admin, accountOwner1, accountOperator
       if ((await time.latest()) < expiry) {
         await time.increaseTo(expiry + 2)
       }
-      const strikePriceChange = 100
-      const expirySpotPrice = shortStrike + strikePriceChange
+      const strikePriceChange = 50
+      const expirySpotPrice = shortStrike - strikePriceChange
       await oracle.setExpiryPrice(weth.address, expiry, createScaledUint256(expirySpotPrice, 18))
       await oracle.setIsDisputePeriodOver(weth.address, expiry, true)
       await oracle.setIsFinalized(weth.address, expiry, true)
+
+      const collateralPayout = Math.max(collateralAmount - (strikePriceChange * optionsAmount) / expirySpotPrice, 0)
 
       // Check that after expiry, the vault excess balance has updated as expected
       const vaultStateBeforeSettlement = await calculator.getExcessCollateral(vaultBefore)
       assert.equal(
         vaultStateBeforeSettlement[0].toString(),
-        createScaledUint256(collateralAmount, (await usdc.decimals()).toNumber()),
+        createScaledUint256(collateralPayout, (await usdc.decimals()).toNumber()),
       )
       assert.equal(vaultStateBeforeSettlement[1], true)
 
@@ -281,24 +292,24 @@ contract('Short Put Spread Option flow', ([admin, accountOwner1, accountOperator
       await controllerProxy.operate(actionArgs, {from: accountOwner1})
 
       // keep track of balances after
-      const ownerUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
-      const marginPoolUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+      const ownerWethBalanceAfter = new BigNumber(await weth.balanceOf(accountOwner1))
+      const marginPoolWethBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
 
-      const ownerOtokenBalanceAfter = new BigNumber(await shortPut.balanceOf(accountOwner1))
-      const marginPoolOtokenSupplyAfter = new BigNumber(await shortPut.totalSupply())
+      const ownerOtokenBalanceAfter = new BigNumber(await shortCall.balanceOf(accountOwner1))
+      const marginPoolOtokenSupplyAfter = new BigNumber(await shortCall.totalSupply())
 
       // check balances before and after changed as expected
       assert.equal(
-        ownerUsdcBalanceBefore
-          .plus(createScaledUint256(collateralAmount, (await usdc.decimals()).toNumber()))
+        ownerWethBalanceBefore
+          .plus(createScaledUint256(collateralPayout, (await weth.decimals()).toNumber()))
           .toString(),
-        ownerUsdcBalanceAfter.toString(),
+        ownerWethBalanceAfter.toString(),
       )
       assert.equal(
-        marginPoolUsdcBalanceBefore
-          .minus(createScaledUint256(collateralAmount, (await usdc.decimals()).toNumber()))
+        marginPoolWethBalanceBefore
+          .minus(createScaledUint256(collateralPayout, (await weth.decimals()).toNumber()))
           .toString(),
-        marginPoolUsdcBalanceAfter.toString(),
+        marginPoolWethBalanceAfter.toString(),
       )
       assert.equal(ownerOtokenBalanceBefore.toString(), ownerOtokenBalanceAfter.toString())
       assert.equal(marginPoolOtokenSupplyBefore.toString(), marginPoolOtokenSupplyAfter.toString())
@@ -323,22 +334,25 @@ contract('Short Put Spread Option flow', ([admin, accountOwner1, accountOperator
       assert.equal(vaultAfter.longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
     })
 
-    it('Buyer: exercise OTM put option after expiry', async () => {
+    it('Buyer: exercise ITM put option after expiry', async () => {
       // owner sells their put option
-      shortPut.transfer(buyer, createScaledUint256(optionsAmount, 18), {from: accountOwner1})
+      shortCall.transfer(buyer, createScaledUint256(optionsAmount, 18), {from: accountOwner1})
+      // oracle orice decreases
+      const strikePriceChange = 50
+      const expirySpotPrice = shortStrike - strikePriceChange
 
       // Keep track of balances before
-      const ownerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(buyer))
-      const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
-      const ownerOtokenBalanceBefore = new BigNumber(await shortPut.balanceOf(buyer))
-      const marginPoolOtokenSupplyBefore = new BigNumber(await shortPut.totalSupply())
+      const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(buyer))
+      const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
+      const ownerOtokenBalanceBefore = new BigNumber(await shortCall.balanceOf(buyer))
+      const marginPoolOtokenSupplyBefore = new BigNumber(await shortCall.totalSupply())
 
       const actionArgs = [
         {
           actionType: ActionType.Exercise,
           owner: buyer,
           sender: buyer,
-          asset: shortPut.address,
+          asset: shortCall.address,
           vaultId: '0',
           amount: createScaledUint256(optionsAmount, 18),
           index: '0',
@@ -346,23 +360,34 @@ contract('Short Put Spread Option flow', ([admin, accountOwner1, accountOperator
         },
       ]
 
-      await shortPut.approve(marginPool.address, createScaledUint256(optionsAmount, 18), {from: buyer})
-      await expectRevert(
-        controllerProxy.operate(actionArgs, {from: buyer}),
-        'MarginPool: transferToUser amount is equal to 0',
-      )
+      await shortCall.approve(marginPool.address, createScaledUint256(optionsAmount, 18), {from: buyer})
+      await controllerProxy.operate(actionArgs, {from: buyer})
 
       // keep track of balances after
-      const ownerUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(buyer))
-      const marginPoolUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
-      const ownerOtokenBalanceAfter = new BigNumber(await shortPut.balanceOf(buyer))
-      const marginPoolOtokenSupplyAfter = new BigNumber(await shortPut.totalSupply())
+      const ownerWethBalanceAfter = new BigNumber(await weth.balanceOf(buyer))
+      const marginPoolWethBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
+      const ownerOtokenBalanceAfter = new BigNumber(await shortCall.balanceOf(buyer))
+      const marginPoolOtokenSupplyAfter = new BigNumber(await shortCall.totalSupply())
+
+      const payout = (strikePriceChange * optionsAmount) / expirySpotPrice
 
       // check balances before and after changed as expected
-      assert.equal(ownerUsdcBalanceBefore.toString(), ownerUsdcBalanceAfter.toString())
-      assert.equal(marginPoolUsdcBalanceBefore.toString(), marginPoolUsdcBalanceAfter.toString())
-      assert.equal(ownerOtokenBalanceBefore.toString(), ownerOtokenBalanceAfter.toString())
-      assert.equal(marginPoolOtokenSupplyBefore.toString(), marginPoolOtokenSupplyAfter.toString())
+      assert.equal(
+        ownerWethBalanceBefore.plus(createScaledUint256(payout, (await weth.decimals()).toNumber())).toString(),
+        ownerWethBalanceAfter.toString(),
+      )
+      assert.equal(
+        marginPoolWethBalanceBefore.minus(createScaledUint256(payout, (await weth.decimals()).toNumber())).toString(),
+        marginPoolWethBalanceAfter.toString(),
+      )
+      assert.equal(
+        ownerOtokenBalanceBefore.minus(createScaledUint256(optionsAmount, 18)).toString(),
+        ownerOtokenBalanceAfter.toString(),
+      )
+      assert.equal(
+        marginPoolOtokenSupplyBefore.minus(createScaledUint256(optionsAmount, 18)).toString(),
+        marginPoolOtokenSupplyAfter.toString(),
+      )
     })
   })
 })
