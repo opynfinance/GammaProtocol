@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-
+/* solhint-disable */
 pragma solidity ^0.6.0;
 
 import "../../interfaces/ERC20Interface.sol";
