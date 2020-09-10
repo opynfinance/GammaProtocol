@@ -436,7 +436,11 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     function _depositLong(Actions.DepositArgs memory _args) internal notPaused {
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
-        require(_args.from == msg.sender, "Controller: depositor address and msg.sender address mismatch");
+        // require(_args.from == msg.sender, "Controller: depositor address and msg.sender address mismatch");
+        require(
+            (_args.from == msg.sender) || (_args.from == _args.owner),
+            "Controller: cannot deposit long otoken from this address"
+        );
 
         require(
             whitelist.isWhitelistedOtoken(_args.asset),
@@ -483,7 +487,11 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     function _depositCollateral(Actions.DepositArgs memory _args) internal notPaused {
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
-        require(_args.from == msg.sender, "Controller: depositor address and msg.sender address mismatch");
+        // require(_args.from == msg.sender, "Controller: depositor address and msg.sender address mismatch");
+        require(
+            (_args.from == msg.sender) || (_args.from == _args.owner),
+            "Controller: cannot deposit collateral from this address"
+        );
 
         require(
             whitelist.isWhitelistedCollateral(_args.asset),
@@ -533,7 +541,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     function _mintOtoken(Actions.MintArgs memory _args) internal notPaused onlyAuthorized(msg.sender, _args.owner) {
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
-        require(_args.to == msg.sender, "Controller: minter address and msg.sender address mismatch");
+        // require(_args.to == msg.sender, "Controller: minter address and msg.sender address mismatch");
 
         require(whitelist.isWhitelistedOtoken(_args.otoken), "Controller: otoken is not whitelisted to be minted");
 
@@ -555,7 +563,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     function _burnOtoken(Actions.BurnArgs memory _args) internal notPaused onlyAuthorized(msg.sender, _args.owner) {
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
-        require(_args.from == msg.sender, "Controller: burner address and msg.sender address mismatch");
+        // require(_args.from == msg.sender, "Controller: burner address and msg.sender address mismatch");
+        require((_args.from == msg.sender) || (_args.from == _args.owner), "Controller: cannot burn from this address");
 
         OtokenInterface otoken = OtokenInterface(_args.otoken);
 
