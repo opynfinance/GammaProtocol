@@ -66,19 +66,18 @@ contract MarginPool is Ownable {
      * @param _asset address of asset to transfer
      * @param _user address of user to transfer assets from
      * @param _amount amount of token to transfer from _user, scaled to 1e18 of precision
-     * @return true if successful transfer
      */
     function transferToPool(
         address _asset,
         address _user,
         uint256 _amount
-    ) public onlyController returns (bool) {
+    ) public onlyController {
         require(_amount > 0, "MarginPool: transferToPool amount is equal to 0");
 
         assetBalance[_asset] = assetBalance[_asset].add(_amount);
 
         // transfer val from _user to pool
-        return ERC20Interface(_asset).transferFrom(_user, address(this), _amount);
+        require(ERC20Interface(_asset).transferFrom(_user, address(this), _amount), "MarginPool: TransferFrom failed");
     }
 
     /**
@@ -88,19 +87,18 @@ contract MarginPool is Ownable {
      * @param _asset address of asset to transfer
      * @param _user address of user to transfer assets to
      * @param _amount amount of token to transfer to _user, scaled to 1e18 of precision
-     * @return true if successful transfer
      */
     function transferToUser(
         address _asset,
         address payable _user,
         uint256 _amount
-    ) public onlyController returns (bool) {
+    ) public onlyController {
         require(_amount > 0, "MarginPool: transferToUser amount is equal to 0");
 
         assetBalance[_asset] = assetBalance[_asset].sub(_amount);
 
         // transfer asset val from Pool to _user
-        return ERC20Interface(_asset).transfer(_user, _amount);
+        require(ERC20Interface(_asset).transfer(_user, _amount), "MarginPool: Transfer failed");
     }
 
     /**
@@ -108,7 +106,7 @@ contract MarginPool is Ownable {
      * @param _asset asset address
      * @return asset balance
      */
-    function getStoredBalance(address _asset) public view returns (uint256) {
+    function getStoredBalance(address _asset) external view returns (uint256) {
         return assetBalance[_asset];
     }
 
@@ -132,7 +130,7 @@ contract MarginPool is Ownable {
 
         for (uint256 i = 0; i < _asset.length; i++) {
             // transfer val from _user to pool
-            require(transferToPool(_asset[i], _user[i], _amount[i]), "MarginPool: Transfer to pool failed");
+            transferToPool(_asset[i], _user[i], _amount[i]);
         }
     }
 
@@ -156,7 +154,7 @@ contract MarginPool is Ownable {
 
         for (uint256 i = 0; i < _asset.length; i++) {
             // transfer val from Pool to _pool
-            require(transferToUser(_asset[i], _user[i], _amount[i]), "MarginPool: Transfer to user failed");
+            transferToUser(_asset[i], _user[i], _amount[i]);
         }
     }
 
@@ -175,11 +173,11 @@ contract MarginPool is Ownable {
         require(_receiver != address(0), "MarginPool: invalid receiver address");
 
         uint256 externalBalance = ERC20Interface(_asset).balanceOf(address(this));
-        uint256 storedBalance = getStoredBalance(_asset);
+        uint256 storedBalance = assetBalance[_asset];
 
         require(_amount <= externalBalance.sub(storedBalance), "MarginPool: amount exceed limit");
 
-        ERC20Interface(_asset).transfer(_receiver, _amount);
+        require(ERC20Interface(_asset).transfer(_receiver, _amount), "MarginPool: farming failed");
 
         emit AssetFarmed(_asset, _receiver, _amount);
     }
