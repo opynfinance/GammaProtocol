@@ -3756,7 +3756,7 @@ contract(
         assert.equal(await controllerProxy.terminator(), terminator, 'Terminator address mismatch')
       })
 
-      it('should revert when trigerring emergency shutdown the system from address other than pauser', async () => {
+      it('should revert when trigerring emergency shutdown the system from address other than terminator', async () => {
         await expectRevert(
           controllerProxy.setEmergencyShutdown(true, {from: random}),
           'Controller: sender is not terminator',
