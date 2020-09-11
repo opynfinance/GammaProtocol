@@ -7,6 +7,7 @@ import {
   ControllerInstance,
   WhitelistInstance,
   MarginPoolInstance,
+  OtokenFactoryInstance,
 } from '../../build/types/truffle-types'
 import {createVault, createScaledUint256, createScaledNumber} from '../utils'
 import {assert} from 'chai'
@@ -20,10 +21,11 @@ const MockOracle = artifacts.require('MockOracle.sol')
 const Otoken = artifacts.require('Otoken.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
 const MarginCalculator = artifacts.require('MarginCalculator.sol')
-const Whitelist = artifacts.require('WhitelistModule.sol')
+const Whitelist = artifacts.require('Whitelist.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
 const MarginAccount = artifacts.require('MarginAccount.sol')
+const OTokenFactory = artifacts.require('OtokenFactory.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
 enum ActionType {
@@ -50,6 +52,8 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, buye
   let controllerProxy: ControllerInstance
   let marginPool: MarginPoolInstance
   let whitelist: WhitelistInstance
+  let otokenImplementation: OtokenInstance
+  let otokenFactory: OtokenFactoryInstance
 
   // oracle modulce mock
   let oracle: MockOracleInstance
@@ -67,22 +71,8 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, buye
 
   before('set up contracts', async () => {
     const now = (await time.latest()).toNumber()
-    expiry = now + time.duration.days(500).toNumber()
-
-    // initiate addressbook first.
-    addressBook = await AddressBook.new()
-    // setup calculator
-    calculator = await MarginCalculator.new(addressBook.address)
-    // setup margin pool
-    marginPool = await MarginPool.new(addressBook.address)
-    // setup controller module
-    const lib = await MarginAccount.new()
-    await Controller.link('MarginAccount', lib.address)
-    controllerImplementation = await Controller.new(addressBook.address)
-    // setup mock Oracle module
-    oracle = await MockOracle.new(addressBook.address)
-    // setup mock whitelist module
-    whitelist = await Whitelist.new(addressBook.address)
+    const multiplier = (now - 28800) / 86400
+    expiry = (Number(multiplier.toFixed(0)) + 1) * 86400 + time.duration.days(30).toNumber() + 28800
 
     // setup usdc and weth
     // TODO: change USDC to 6
@@ -90,20 +80,51 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, buye
     dai = await MockERC20.new('DAI', 'DAI', 18)
     weth = await MockERC20.new('WETH', 'WETH', 18)
 
+    // initiate addressbook first.
+    addressBook = await AddressBook.new()
+    // setup calculator
+    calculator = await MarginCalculator.new(addressBook.address)
+    // setup margin pool
+    marginPool = await MarginPool.new(addressBook.address)
+    // setup margin account
+    const lib = await MarginAccount.new()
+    // setup controller module
+    await Controller.link('MarginAccount', lib.address)
+    controllerImplementation = await Controller.new(addressBook.address)
+    // setup mock Oracle module
+    oracle = await MockOracle.new(addressBook.address)
+    // setup whitelist module
+    whitelist = await Whitelist.new(addressBook.address)
+    await whitelist.whitelistCollateral(usdc.address)
+    whitelist.whitelistProduct(weth.address, usdc.address, usdc.address, true)
+    whitelist.whitelistProduct(weth.address, usdc.address, weth.address, false)
+    // setup otoken
+    otokenImplementation = await Otoken.new()
+    // setup factory
+    otokenFactory = await OTokenFactory.new(addressBook.address)
+
     // setup address book
     await addressBook.setOracle(oracle.address)
     await addressBook.setController(controllerImplementation.address)
     await addressBook.setMarginCalculator(calculator.address)
     await addressBook.setWhitelist(whitelist.address)
     await addressBook.setMarginPool(marginPool.address)
+    await addressBook.setOtokenFactory(otokenFactory.address)
+    await addressBook.setOtokenImpl(otokenImplementation.address)
 
     const controllerProxyAddress = await addressBook.getController()
     controllerProxy = await Controller.at(controllerProxyAddress)
     await controllerProxy.refreshConfiguration()
 
-    ethPut = await Otoken.new()
-    await ethPut.init(
-      addressBook.address,
+    await otokenFactory.createOtoken(
+      weth.address,
+      usdc.address,
+      usdc.address,
+      createScaledUint256(strikePrice, 18),
+      expiry,
+      true,
+    )
+    const ethPutAddress = await otokenFactory.getOtoken(
       weth.address,
       usdc.address,
       usdc.address,
@@ -112,9 +133,7 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, buye
       true,
     )
 
-    // setup the whitelist module
-    await whitelist.whitelistOtoken(ethPut.address)
-    await whitelist.whitelistCollateral(usdc.address)
+    ethPut = await Otoken.at(ethPutAddress)
 
     // mint usdc to user
     usdc.mint(accountOwner1, createScaledUint256(2 * collateralAmount, (await usdc.decimals()).toNumber()))

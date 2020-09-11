@@ -5,14 +5,13 @@ import {
   MockOracleInstance,
   OtokenInstance,
   ControllerInstance,
-  MockWhitelistModuleInstance,
+  WhitelistInstance,
   MarginPoolInstance,
+  OtokenFactoryInstance,
 } from '../../build/types/truffle-types'
 import {createVault, createScaledUint256} from '../utils'
 import {assert} from 'chai'
 import BigNumber from 'bignumber.js'
-
-import Reverter from '../Reverter'
 
 const {expectRevert, time} = require('@openzeppelin/test-helpers')
 const AddressBook = artifacts.require('AddressBook.sol')
@@ -20,10 +19,11 @@ const MockOracle = artifacts.require('MockOracle.sol')
 const Otoken = artifacts.require('Otoken.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
 const MarginCalculator = artifacts.require('MarginCalculator.sol')
-const MockWhitelist = artifacts.require('MockWhitelistModule.sol')
+const Whitelist = artifacts.require('Whitelist.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
 const MarginAccount = artifacts.require('MarginAccount.sol')
+const OTokenFactory = artifacts.require('OtokenFactory.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
 enum ActionType {
@@ -40,7 +40,6 @@ enum ActionType {
 }
 
 contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buyer, accountOwner2]) => {
-  const reverter = new Reverter(web3)
   let expiry: number
 
   let addressBook: AddressBookInstance
@@ -48,9 +47,10 @@ contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1
   let controllerProxy: ControllerInstance
   let controllerImplementation: ControllerInstance
   let marginPool: MarginPoolInstance
+  let whitelist: WhitelistInstance
+  let otokenImplementation: OtokenInstance
+  let otokenFactory: OtokenFactoryInstance
 
-  // whitelist module mock
-  let whitelist: MockWhitelistModuleInstance
   // oracle modulce mock
   let oracle: MockOracleInstance
 
@@ -70,7 +70,13 @@ contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1
 
   before('set up contracts', async () => {
     const now = (await time.latest()).toNumber()
-    expiry = now + time.duration.days(30).toNumber()
+    const multiplier = (now - 28800) / 86400
+    expiry = (Number(multiplier.toFixed(0)) + 1) * 86400 + time.duration.days(30).toNumber() + 28800
+    // setup usdc and weth
+    // TODO: make usdc 6 decimals
+    usdc = await MockERC20.new('USDC', 'USDC', 18)
+    dai = await MockERC20.new('DAI', 'DAI', 18)
+    weth = await MockERC20.new('WETH', 'WETH', 18)
 
     // initiate addressbook first.
     addressBook = await AddressBook.new()
@@ -78,20 +84,22 @@ contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1
     calculator = await MarginCalculator.new(addressBook.address)
     // setup margin pool
     marginPool = await MarginPool.new(addressBook.address)
-    // setup controllerProxy module
+    // setup margin account
     const lib = await MarginAccount.new()
+    // setup controllerProxy module
     await Controller.link('MarginAccount', lib.address)
     controllerImplementation = await Controller.new(addressBook.address)
     // setup mock Oracle module
     oracle = await MockOracle.new(addressBook.address)
-    // setup mock whitelist module
-    whitelist = await MockWhitelist.new()
-
-    // setup usdc and weth
-    // TODO: make usdc 6 decimals
-    usdc = await MockERC20.new('USDC', 'USDC', 18)
-    dai = await MockERC20.new('DAI', 'DAI', 18)
-    weth = await MockERC20.new('WETH', 'WETH', 18)
+    // setup whitelist module
+    whitelist = await Whitelist.new(addressBook.address)
+    await whitelist.whitelistCollateral(usdc.address)
+    whitelist.whitelistProduct(weth.address, usdc.address, usdc.address, true)
+    whitelist.whitelistProduct(weth.address, usdc.address, weth.address, false)
+    // setup otoken
+    otokenImplementation = await Otoken.new()
+    // setup factory
+    otokenFactory = await OTokenFactory.new(addressBook.address)
 
     // setup address book
     await addressBook.setOracle(oracle.address)
@@ -99,14 +107,14 @@ contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1
     await addressBook.setMarginCalculator(calculator.address)
     await addressBook.setWhitelist(whitelist.address)
     await addressBook.setMarginPool(marginPool.address)
+    await addressBook.setOtokenFactory(otokenFactory.address)
+    await addressBook.setOtokenImpl(otokenImplementation.address)
 
     const controllerProxyAddress = await addressBook.getController()
     controllerProxy = await Controller.at(controllerProxyAddress)
     await controllerProxy.refreshConfiguration()
 
-    longPut = await Otoken.new()
-    await longPut.init(
-      addressBook.address,
+    await otokenFactory.createOtoken(
       weth.address,
       usdc.address,
       usdc.address,
@@ -115,9 +123,7 @@ contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1
       true,
     )
 
-    shortPut = await Otoken.new()
-    await shortPut.init(
-      addressBook.address,
+    await otokenFactory.createOtoken(
       weth.address,
       usdc.address,
       usdc.address,
@@ -126,10 +132,27 @@ contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1
       true,
     )
 
-    // setup the whitelist module
-    await whitelist.whitelistOtoken(longPut.address)
-    await whitelist.whitelistOtoken(shortPut.address)
-    await whitelist.whitelistCollateral(usdc.address)
+    const longPutAddress = await otokenFactory.getOtoken(
+      weth.address,
+      usdc.address,
+      usdc.address,
+      createScaledUint256(longStrike, 18),
+      expiry,
+      true,
+    )
+
+    longPut = await Otoken.at(longPutAddress)
+
+    const shortPutAddress = await otokenFactory.getOtoken(
+      weth.address,
+      usdc.address,
+      usdc.address,
+      createScaledUint256(shortStrike, 18),
+      expiry,
+      true,
+    )
+
+    shortPut = await Otoken.at(shortPutAddress)
 
     // mint usdc to user
     usdc.mint(accountOwner1, createScaledUint256(2 * collateralAmount, (await usdc.decimals()).toNumber()))
@@ -265,10 +288,7 @@ contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1
         },
       ]
 
-      await expectRevert(
-        controllerProxy.operate(actionArgs, {from: accountOwner1}),
-        'MarginPool: transferToUser amount is equal to 0',
-      )
+      await controllerProxy.operate(actionArgs, {from: accountOwner1})
 
       // keep track of balances after
       const ownerUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
@@ -327,10 +347,7 @@ contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1
       ]
 
       await shortPut.approve(marginPool.address, createScaledUint256(optionsAmount, 18), {from: buyer})
-      await expectRevert(
-        controllerProxy.operate(actionArgs, {from: buyer}),
-        'MarginPool: transferToUser amount is equal to 0',
-      )
+      await controllerProxy.operate(actionArgs, {from: buyer})
 
       // keep track of balances after
       const ownerUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(buyer))
@@ -341,8 +358,14 @@ contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1
       // check balances before and after changed as expected
       assert.equal(ownerUsdcBalanceBefore.toString(), ownerUsdcBalanceAfter.toString())
       assert.equal(marginPoolUsdcBalanceBefore.toString(), marginPoolUsdcBalanceAfter.toString())
-      assert.equal(ownerOtokenBalanceBefore.toString(), ownerOtokenBalanceAfter.toString())
-      assert.equal(marginPoolOtokenSupplyBefore.toString(), marginPoolOtokenSupplyAfter.toString())
+      assert.equal(
+        ownerOtokenBalanceBefore.minus(createScaledUint256(optionsAmount, 18)).toString(),
+        ownerOtokenBalanceAfter.toString(),
+      )
+      assert.equal(
+        marginPoolOtokenSupplyBefore.minus(createScaledUint256(optionsAmount, 18)).toString(),
+        marginPoolOtokenSupplyAfter.toString(),
+      )
     })
   })
 })
