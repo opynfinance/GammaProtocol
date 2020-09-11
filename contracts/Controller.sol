@@ -132,6 +132,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     event EmergencyShutdown(bool isActive);
     /// @notice emits an event when call action restriction is activated or deactivated
     event CallRestricted(bool isRestricted);
+
     /**
      * @notice modifier check if protocol is not paused
      */

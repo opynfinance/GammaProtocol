@@ -3264,7 +3264,63 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
       callTester = await CallTester.new()
     })
 
-    it('should call destination address', async () => {
+    it('should call any arbitrary destination address when restriction is not activated', async () => {
+      const actionArgs = [
+        {
+          actionType: ActionType.Call,
+          owner: ZERO_ADDR,
+          sender: callTester.address,
+          asset: ZERO_ADDR,
+          vaultId: '0',
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+
+      expectEvent(await controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CallExecuted', {
+        from: accountOwner1,
+        to: callTester.address,
+        vaultOwner: ZERO_ADDR,
+        vaultId: '0',
+        data: ZERO_ADDR,
+      })
+    })
+
+    it('should revert activating call action restriction from non-owner', async () => {
+      await expectRevert(controllerProxy.setCallRestriction(true, {from: random}), 'Ownable: caller is not the owner')
+    })
+
+    it('should activate call action restriction from owner', async () => {
+      await controllerProxy.setCallRestriction(true, {from: owner})
+
+      assert.equal(await controllerProxy.callRestricted(), true, 'Call action restriction activation failed')
+    })
+
+    it('should revert calling any arbitrary address when call restriction is activated', async () => {
+      const actionArgs = [
+        {
+          actionType: ActionType.Call,
+          owner: ZERO_ADDR,
+          sender: callTester.address,
+          asset: ZERO_ADDR,
+          vaultId: '0',
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+
+      await expectRevert(
+        controllerProxy.operate(actionArgs, {from: accountOwner1}),
+        'Controller: callee is not a whitelisted address',
+      )
+    })
+
+    it('should call whitelisted callee address when restriction is activated', async () => {
+      // whitelist callee
+      await whitelist.whitelisteCallee(callTester.address, {from: owner})
+
       const actionArgs = [
         {
           actionType: ActionType.Call,
