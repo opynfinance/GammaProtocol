@@ -18,6 +18,8 @@ contract Whitelist is Ownable {
     mapping(address => bool) internal whitelistedCollateral;
     /// @dev mapping to track whitelisted otokens
     mapping(address => bool) internal whitelistedOtoken;
+    /// @dev mapping to track whistelisted callee for call action
+    mapping(address => bool) internal whitelistedCallee;
 
     /**
      * @dev constructor
@@ -53,6 +55,10 @@ contract Whitelist is Ownable {
     event OtokenWhitelisted(address indexed otoken);
     /// @notice emitted when owner blacklist an otoken
     event OtokenBlacklisted(address indexed otoken);
+    /// @notice emitted when owner whitelist a callee address
+    event CalleeWhitelisted(address indexed _callee);
+    /// @notice emitted when owner blacklist a callee address
+    event CalleeBlacklisted(address indexed _callee);
 
     /**
      * @notice check if the sender is the Otoken Factory module
@@ -95,13 +101,21 @@ contract Whitelist is Ownable {
     }
 
     /**
-     * @notice whitelist a product
      * @notice check if an otoken is whitelisted
      * @param _otoken otoken address
      * @return boolean, true if otoken is whitelisted
      */
     function isWhitelistedOtoken(address _otoken) external view returns (bool) {
         return whitelistedOtoken[_otoken];
+    }
+
+    /**
+     * @notice check if a callee address is whitelisted for call acton
+     * @param _callee destination address
+     * @return boolean, true if address is whitelisted
+     */
+    function isWhitelistedCallee(address _callee) external view returns (bool) {
+        return whitelistedCallee[_callee];
     }
 
     /**
@@ -190,5 +204,27 @@ contract Whitelist is Ownable {
         whitelistedOtoken[_otokenAddress] = false;
 
         emit OtokenBlacklisted(_otokenAddress);
+    }
+
+    /**
+     * @notice allow Owner to whitelisted a callee address
+     * @dev can only be called from the owner address
+     * @param _callee callee address
+     */
+    function whitelisteCallee(address _callee) external onlyOwner {
+        whitelistedCallee[_callee] = true;
+
+        emit CalleeWhitelisted(_callee);
+    }
+
+    /**
+     * @notice allow owner to blacklist a destination address for call action
+     * @dev can only be called from the owner's address
+     * @param _callee callee address
+     */
+    function blacklistCallee(address _callee) external onlyOwner {
+        whitelistedCallee[_callee] = false;
+
+        emit CalleeBlacklisted(_callee);
     }
 }

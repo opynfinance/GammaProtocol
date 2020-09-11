@@ -34,6 +34,19 @@ contract MockOracle {
         return realTimePrice[_asset];
     }
 
+    // set bunch of things at expiry in 1 function
+    function setExpiryPriceFinalizedAllPeiodOver(
+        address _asset,
+        uint256 _expiryTimestamp,
+        uint256 _price,
+        bool _isFinalized
+    ) external {
+        storedPrice[_asset][_expiryTimestamp] = _price;
+        isFinalized[_asset][_expiryTimestamp] = _isFinalized;
+        _isDisputePeriodOver[_asset][_expiryTimestamp] = _isFinalized;
+        _isLockingPeriodOver[_asset][_expiryTimestamp] = _isFinalized;
+    }
+
     // let the pricer set expiry price to oracle.
     function setExpiryPrice(
         address _asset,

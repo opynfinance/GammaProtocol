@@ -3,6 +3,8 @@
  */
 pragma solidity 0.6.10;
 
+import {MarginAccount} from "./MarginAccount.sol";
+
 /**
  *
  */
@@ -136,6 +138,10 @@ library Actions {
         address owner;
         // The address of the callee contract
         address callee;
+        // vault id
+        uint256 vaultId;
+        // tx msg.value
+        uint256 msgValue;
         // The data field for external calls
         bytes data;
     }
@@ -275,6 +281,13 @@ library Actions {
         require(_args.actionType == ActionType.Call, "Actions: can only parse arguments for call actions");
         require(_args.sender != address(0), "Actions: target address cannot be address(0)");
 
-        return CallArgs({owner: _args.owner, callee: _args.sender, data: _args.data});
+        return
+            CallArgs({
+                owner: _args.owner,
+                callee: _args.sender,
+                vaultId: _args.vaultId,
+                msgValue: _args.amount,
+                data: _args.data
+            });
     }
 }

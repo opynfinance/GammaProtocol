@@ -6,7 +6,7 @@ pragma experimental ABIEncoderV2;
 import {MarginAccount} from "../libs/MarginAccount.sol";
 
 interface MarginCalculatorInterface {
-    function getExpiredCashValue(address _otoken) external view returns (uint256);
+    function getExpiredPayoutRate(address _otoken) external view returns (uint256);
 
     function getExcessCollateral(MarginAccount.Vault memory _vault)
         external
