@@ -36,7 +36,7 @@ contract PayableProxyController is ReentrancyGuard {
         require(msg.sender == address(weth), "PayableProxyController: Cannot receive ETH"); // coverage-disable-line
     }
 
-    function operate(Actions.ActionArgs[] memory _actions, address payable sendEthTo) public payable nonReentrant {
+    function operate(Actions.ActionArgs[] memory _actions, address payable sendEthTo) external payable nonReentrant {
         // create WETH from ETH
         if (msg.value != 0) {
             weth.deposit{value: msg.value}();

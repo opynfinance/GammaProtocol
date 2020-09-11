@@ -27,7 +27,7 @@ const AddressBook = artifacts.require('AddressBook.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
 const MarginAccount = artifacts.require('MarginAccount.sol')
-const PayableProxyController = artifacts.require('MarginAccount.sol')
+const PayableProxyController = artifacts.require('PayableProxyController.sol')
 
 // address(0)
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
@@ -153,12 +153,13 @@ contract(
         ]
 
         const marginPoolBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
-        // const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
 
-        await controllerProxy.operate(actionArgs, {from: accountOwner1, value: collateralToDeposit.toString()})
+        await payableProxyController.operate(actionArgs, accountOwner1, {
+          from: accountOwner1,
+          value: collateralToDeposit.toString(),
+        })
 
         const marginPoolBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
-        // const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
         const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
 
         assert.equal(
@@ -166,11 +167,6 @@ contract(
           collateralToDeposit.toString(),
           'Margin pool balance collateral asset balance mismatch',
         )
-        // assert.equal(
-        //   senderBalanceBefore.minus(senderBalanceAfter).toString(),
-        //   collateralToDeposit.toString(),
-        //   'Sender balance collateral asset balance mismatch',
-        // )
         assert.equal(vaultAfter.collateralAssets.length, 1, 'Vault collateral assets array length mismatch')
         assert.equal(
           vaultAfter.collateralAssets[0],
