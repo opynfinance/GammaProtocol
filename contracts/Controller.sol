@@ -608,13 +608,15 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         (uint256 payout, ) = calculator.getExcessCollateral(vault);
 
-        if (_isNotEmpty(vault.longOtokens)) {
-            OtokenInterface longOtoken = OtokenInterface(vault.longOtokens[0]);
-
-            longOtoken.burnOtoken(address(pool), vault.longAmounts[0]);
-        }
+        address[] memory cachLongTokens = vault.longOtokens;
+        uint256[] memory cachLongAmounts = vault.longAmounts;
 
         delete vaults[_args.owner][_args.vaultId];
+
+        if (_isNotEmpty(cachLongTokens)) {
+            OtokenInterface longOtoken = OtokenInterface(cachLongTokens[0]);
+            longOtoken.burnOtoken(address(pool), cachLongAmounts[0]);
+        }
 
         pool.transferToUser(shortOtoken.collateralAsset(), _args.to, payout);
 
