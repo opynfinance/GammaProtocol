@@ -1,3 +1,6 @@
+/**
+ * SPDX-License-Identifier: UNLICENSED
+ */
 pragma solidity =0.6.10;
 
 pragma experimental ABIEncoderV2;
@@ -5,8 +8,7 @@ pragma experimental ABIEncoderV2;
 import {SafeMath} from "../packages/oz/SafeMath.sol";
 
 /**
- * SPDX-License-Identifier: UNLICENSED
- * @dev The MarginAccount is a library that provides Controller with an Account of Vault structs, and
+ * @notice The MarginAccount is a library that provides Controller with an Account of Vault structs, and
  * the functions that manipulate vaults. Vaults describe positions that users have.
  */
 library MarginAccount {
