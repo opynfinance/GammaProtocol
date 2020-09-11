@@ -8,6 +8,7 @@ module.exports = {
     'Migrations.sol',
     'mocks/',
     'packages/',
+    'contracts/Controller.sol',
     'echidna/'
   ]
 }
