@@ -17,6 +17,7 @@ import {MarginCalculatorInterface} from "./interfaces/MarginCalculatorInterface.
 import {OracleInterface} from "./interfaces/OracleInterface.sol";
 import {WhitelistInterface} from "./interfaces/WhitelistInterface.sol";
 import {MarginPoolInterface} from "./interfaces/MarginPoolInterface.sol";
+import {CalleeInterface} from "./interfaces/CalleeInterface.sol";
 
 /**
  * @author Opyn Team
@@ -38,6 +39,9 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
     /// @notice the protocol state, if true, then all protocol functionality are paused.
     bool public systemPaused;
+
+    /// @notice a bool variable that if true, indicate that call action can only be executed to a whitelisted callee
+    bool public callRestricted;
 
     /// @dev mapping between owner address and account structure
     mapping(address => uint256) internal accountVaultCounter;
@@ -115,10 +119,19 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         uint256 vaultId,
         uint256 payout
     );
+    event CallExecuted(
+        address indexed from,
+        address indexed to,
+        address indexed vaultOwner,
+        uint256 vaultId,
+        bytes data
+    );
     /// @notice emits an event when terminator address change
     event TerminatorUpdated(address indexed oldTerminator, address indexed newTerminator);
     /// @notice emits an event when system pause status change
     event EmergencyShutdown(bool isActive);
+    /// @notice emits an event when call action restriction is activated or deactivated
+    event CallRestricted(bool isRestricted);
 
     /**
      * @notice modifier check if protocol is not paused
@@ -145,6 +158,18 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     modifier onlyAuthorized(address _sender, address _accountOwner) {
         _isAuthorized(_sender, _accountOwner);
+
+        _;
+    }
+
+    /**
+     * @notice modifier to check if called address is a whitelisted callee
+     * @param _callee called address
+     */
+    modifier onlyWhitelistedCallee(address _callee) {
+        if (callRestricted) {
+            require(_isCalleeWhitelisted(_callee), "Controller: callee is not a whitelisted address");
+        }
 
         _;
     }
@@ -209,6 +234,17 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
+     * @notice allows owner to set activate/deactivate call action restriction
+     * @dev can only be called from owner
+     * @param _isRestricted active call restriction if true
+     */
+    function setCallRestriction(bool _isRestricted) external onlyOwner {
+        callRestricted = _isRestricted;
+
+        emit CallRestricted(callRestricted);
+    }
+
+    /**
      * @notice allows a user to set and unset an operate which can act on their behalf on their vaults. Only the vault owner can update the operator privileges.
      * @param _operator The operator that sender wants to give privileges to or revoke them from.
      * @param _isOperator The new boolean value that expresses if sender is giving or revoking privileges from _operator.
@@ -231,19 +267,10 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev can only be called when system is not paused
      * @param _actions array of actions arguments
      */
-    function operate(Actions.ActionArgs[] memory _actions) external nonReentrant {
+    function operate(Actions.ActionArgs[] memory _actions) external payable nonReentrant {
         (bool vaultUpdated, address vaultOwner, uint256 vaultId) = _runActions(_actions);
         if (vaultUpdated) _verifyFinalState(vaultOwner, vaultId);
     }
-
-    /**
-     * @notice Iterate through a collateral array of the vault and payout collateral assets
-     * @dev can only be called when system is not paused and from an authorized address
-     * @param _owner The owner of the vault we will clear
-     * @param _vaultId The vaultId for the vault we will clear, within the user's MarginAccount.Account struct
-     */
-    //function redeemForEmergency(address _owner, uint256 _vaultId) external notPaused onlyAuthorized(args.owner) {
-    //}
 
     /**
      * @notice check if a specific address is an operator for an owner account
@@ -395,6 +422,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
                 _exercise(Actions._parseExerciseArgs(action));
             } else if (actionType == Actions.ActionType.SettleVault) {
                 _settleVault(Actions._parseSettleVaultArgs(action));
+            } else if (actionType == Actions.ActionType.Call) {
+                _call(Actions._parseCallArgs(action));
             }
         }
 
@@ -621,11 +650,21 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         emit VaultSettled(address(shortOtoken), _args.owner, _args.to, _args.vaultId, payout);
     }
 
-    //High Level: call arbitrary smart contract
-    //function _call(Actions.CallArgs args) internal isNotPaused {
-    //    //Check whitelistModule.isWhitelistCallDestination(args.address)
-    //    //Call args.address with args.data
-    //}
+    /**
+     * @notice function to execute arbitrary calls
+     * @dev cannot be called when system is paued
+     * @param _args Call action
+     */
+    function _call(Actions.CallArgs memory _args) internal notPaused onlyWhitelistedCallee(_args.callee) {
+        CalleeInterface(_args.callee).callFunction{value: _args.msgValue}(
+            msg.sender,
+            _args.owner,
+            _args.vaultId,
+            _args.data
+        );
+
+        emit CallExecuted(msg.sender, _args.callee, _args.owner, _args.vaultId, _args.data);
+    }
 
     /**
      * @notice function to check the validity of a specific vault id
@@ -650,6 +689,15 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         uint256 cashValue = calculator.getExpiredCashValue(_otoken);
 
         return cashValue.mul(_amount).div(1e18);
+    }
+
+    /**
+     * @notice return if a callee address is whitelisted or not
+     * @param _callee callee address
+     * @return boolean, true if whitelisted, otherwise false
+     */
+    function _isCalleeWhitelisted(address _callee) internal view returns (bool) {
+        return whitelist.isWhitelistedCallee(_callee);
     }
 
     /**

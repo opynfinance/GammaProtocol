@@ -9,13 +9,15 @@ pragma solidity 0.6.10;
 interface CalleeInterface {
     /**
      * Allows users to send this contract arbitrary data.
-     * @param sender The msg.sender to Controller
-     * @param owner The vault owner
-     * @param data Arbitrary data given by the sender
+     * @param _sender The msg.sender to Controller
+     * @param _vaultOwner The vault owner
+     * @param _vaultId The vault id
+     * @param _data Arbitrary data given by the sender
      */
     function callFunction(
-        address sender,
-        address owner,
-        bytes memory data
-    ) external;
+        address payable _sender,
+        address _vaultOwner,
+        uint256 _vaultId,
+        bytes memory _data
+    ) external payable;
 }
