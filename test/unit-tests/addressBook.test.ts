@@ -9,7 +9,7 @@ import {
   ControllerInstance,
   MarginCalculatorInstance,
   OracleInstance,
-} from '../build/types/truffle-types'
+} from '../../build/types/truffle-types'
 
 const {expectRevert} = require('@openzeppelin/test-helpers')
 
