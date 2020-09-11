@@ -15,7 +15,7 @@ interface CalleeInterface {
      * @param _data Arbitrary data given by the sender
      */
     function callFunction(
-        address _sender,
+        address payable _sender,
         address _vaultOwner,
         uint256 _vaultId,
         bytes memory _data

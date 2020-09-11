@@ -18,6 +18,8 @@ contract Whitelist is Ownable {
     mapping(address => bool) internal whitelistedCollateral;
     /// @dev mapping to track whitelisted otokens
     mapping(address => bool) internal whitelistedOtoken;
+    /// @dev mapping to track whistelisted callee for call action
+    mapping(address => bool) internal whitelistedCallee;
 
     /**
      * @dev constructor
@@ -34,14 +36,16 @@ contract Whitelist is Ownable {
         bytes32 productHash,
         address indexed underlying,
         address indexed strike,
-        address indexed collateral
+        address indexed collateral,
+        bool isPut
     );
     /// @notice emitted when owner blacklist a product
     event ProductBlacklisted(
         bytes32 productHash,
         address indexed underlying,
         address indexed strike,
-        address indexed collateral
+        address indexed collateral,
+        bool isPut
     );
     /// @notice emits an event when a collateral address is whitelisted by the owner address
     event CollateralWhitelisted(address indexed collateral);
@@ -51,6 +55,10 @@ contract Whitelist is Ownable {
     event OtokenWhitelisted(address indexed otoken);
     /// @notice emitted when owner blacklist an otoken
     event OtokenBlacklisted(address indexed otoken);
+    /// @notice emitted when owner whitelist a callee address
+    event CalleeWhitelisted(address indexed _callee);
+    /// @notice emitted when owner blacklist a callee address
+    event CalleeBlacklisted(address indexed _callee);
 
     /**
      * @notice check if the sender is the Otoken Factory module
@@ -75,9 +83,10 @@ contract Whitelist is Ownable {
     function isWhitelistedProduct(
         address _underlying,
         address _strike,
-        address _collateral
+        address _collateral,
+        bool _isPut
     ) external view returns (bool) {
-        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral));
+        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
 
         return whitelistedProduct[productHash];
     }
@@ -92,7 +101,6 @@ contract Whitelist is Ownable {
     }
 
     /**
-     * @notice whitelist a product
      * @notice check if an otoken is whitelisted
      * @param _otoken otoken address
      * @return boolean, true if otoken is whitelisted
@@ -102,23 +110,34 @@ contract Whitelist is Ownable {
     }
 
     /**
+     * @notice check if a callee address is whitelisted for call acton
+     * @param _callee destination address
+     * @return boolean, true if address is whitelisted
+     */
+    function isWhitelistedCallee(address _callee) external view returns (bool) {
+        return whitelistedCallee[_callee];
+    }
+
+    /**
      * @notice allow owner to whitelist product
      * @dev a product is the hash of the underlying, collateral and strike assets
      * can only be called from owner address
      * @param _underlying asset that the option references
      * @param _strike asset that the strike price is denominated in
      * @param _collateral asset that is held as collateral against short/written options
+     * @param _isPut is this a put option, if not it is a call
      */
     function whitelistProduct(
         address _underlying,
         address _strike,
-        address _collateral
+        address _collateral,
+        bool _isPut
     ) external onlyOwner {
-        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral));
+        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
 
         whitelistedProduct[productHash] = true;
 
-        emit ProductWhitelisted(productHash, _underlying, _strike, _collateral);
+        emit ProductWhitelisted(productHash, _underlying, _strike, _collateral, _isPut);
     }
 
     /**
@@ -128,17 +147,19 @@ contract Whitelist is Ownable {
      * @param _underlying asset that the option references
      * @param _strike asset that the strike price is denominated in
      * @param _collateral asset that is held as collateral against short/written options
+     * @param _isPut is this a put option, if not it is a call
      */
     function blacklistProduct(
         address _underlying,
         address _strike,
-        address _collateral
+        address _collateral,
+        bool _isPut
     ) external onlyOwner {
-        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral));
+        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
 
         whitelistedProduct[productHash] = false;
 
-        emit ProductBlacklisted(productHash, _underlying, _strike, _collateral);
+        emit ProductBlacklisted(productHash, _underlying, _strike, _collateral, _isPut);
     }
 
     /**
@@ -183,5 +204,27 @@ contract Whitelist is Ownable {
         whitelistedOtoken[_otokenAddress] = false;
 
         emit OtokenBlacklisted(_otokenAddress);
+    }
+
+    /**
+     * @notice allow Owner to whitelisted a callee address
+     * @dev can only be called from the owner address
+     * @param _callee callee address
+     */
+    function whitelisteCallee(address _callee) external onlyOwner {
+        whitelistedCallee[_callee] = true;
+
+        emit CalleeWhitelisted(_callee);
+    }
+
+    /**
+     * @notice allow owner to blacklist a destination address for call action
+     * @dev can only be called from the owner's address
+     * @param _callee callee address
+     */
+    function blacklistCallee(address _callee) external onlyOwner {
+        whitelistedCallee[_callee] = false;
+
+        emit CalleeBlacklisted(_callee);
     }
 }
