@@ -34,11 +34,17 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     MarginCalculatorInterface public calculator;
     MarginPoolInterface public pool;
 
+    /// @notice address that have permission to pause system
+    address public pauser;
+
     /// @notice address that have permission to execute emergency shutdown
     address public terminator;
 
-    /// @notice the protocol state, if true, then all protocol functionality are paused.
+    /// @notice the protocol state, if true, then all protocol functionality are paused other than the exercise and settle vault
     bool public systemPaused;
+
+    /// @notice the protocol state, if true, all protocol functionalities are down
+    bool public systemShutdown;
 
     /// @notice a bool variable that if true, indicate that call action can only be executed to a whitelisted callee
     bool public callRestricted;
@@ -128,7 +134,11 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     );
     /// @notice emits an event when terminator address change
     event TerminatorUpdated(address indexed oldTerminator, address indexed newTerminator);
-    /// @notice emits an event when system pause status change
+    /// @notice emits an event when pauser address change
+    event PauserUpdated(address indexed oldPauser, address indexed newPauser);
+    /// @notice emtis an event when system is paused
+    event SystemPaused(bool isActive);
+    /// @notice emits an event when system shutdown status change
     event EmergencyShutdown(bool isActive);
     /// @notice emits an event when call action restriction is activated or deactivated
     event CallRestricted(bool isRestricted);
@@ -143,10 +153,28 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
+     * @notice modifier check if protocol is not in emergency shutdown state
+     */
+    modifier notShutdown {
+        _isNotShutdown();
+
+        _;
+    }
+
+    /**
      * @notice modifier to check if sender is terminator address
      */
     modifier onlyTerminator {
         require(msg.sender == terminator, "Controller: sender is not terminator");
+
+        _;
+    }
+
+    /**
+     * @notice modifier to check if sender is shutdowner address
+     */
+    modifier onlyPauser {
+        require(msg.sender == pauser, "Controller: sender is not pauser");
 
         _;
     }
@@ -182,6 +210,13 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
+     * @dev check the system is not in emergency shutdown state
+     */
+    function _isNotShutdown() internal view {
+        require(!systemShutdown, "Controller: system is in emergency shutdown state");
+    }
+
+    /**
      * @dev check the sender is an authorized operator.
      * @param _sender msg.sender
      * @param _accountOwner owner of a vault
@@ -209,15 +244,29 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
-     * @notice allows terminator to toggle pause / emergency shutdown
+     * @notice allows pauser to toggle pause function
+     * @dev can only be called from pauser
      * @param _paused The new boolean value to set systemPaused to.
      */
-    function setSystemPaused(bool _paused) external onlyTerminator {
+    function setSystemPaused(bool _paused) external onlyPauser {
         require(systemPaused != _paused, "Controller: cannot change pause status");
 
         systemPaused = _paused;
 
-        emit EmergencyShutdown(systemPaused);
+        emit SystemPaused(systemPaused);
+    }
+
+    /**
+     * @notice allows pauser to toggle pause function
+     * @dev cal only be called from terminator
+     * @param _shutdown The new boolean value to set systemShutdown to.
+     */
+    function setEmergencyShutdown(bool _shutdown) external onlyTerminator {
+        require(systemShutdown != _shutdown, "Controller: cannot change shutdown status");
+
+        systemShutdown = _shutdown;
+
+        emit EmergencyShutdown(systemShutdown);
     }
 
     /**
@@ -231,6 +280,19 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         emit TerminatorUpdated(terminator, _terminator);
 
         terminator = _terminator;
+    }
+
+    /**
+     * @notice allows owner to set pauser address
+     * @dev can only be called from owner
+     * @param _pauser new pauser address
+     */
+    function setPauser(address _pauser) external onlyOwner {
+        require(_pauser != address(0), "Controller: pauser cannot be set to address zero");
+
+        emit PauserUpdated(pauser, _pauser);
+
+        pauser = _pauser;
     }
 
     /**
@@ -267,7 +329,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev can only be called when system is not paused
      * @param _actions array of actions arguments
      */
-    function operate(Actions.ActionArgs[] memory _actions) external payable nonReentrant {
+    function operate(Actions.ActionArgs[] memory _actions) external payable nonReentrant notShutdown {
         (bool vaultUpdated, address vaultOwner, uint256 vaultId) = _runActions(_actions);
         if (vaultUpdated) _verifyFinalState(vaultOwner, vaultId);
     }
