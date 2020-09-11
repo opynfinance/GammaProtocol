@@ -6,7 +6,8 @@ interface WhitelistInterface {
     function isWhitelistedProduct(
         address _underlying,
         address _strike,
-        address _collateral
+        address _collateral,
+        bool _isPut
     ) external view returns (bool);
 
     function isWhitelistedCollateral(address _collateral) external view returns (bool);
@@ -17,7 +18,8 @@ interface WhitelistInterface {
     function whitelistProduct(
         address _underlying,
         address _strike,
-        address _collateral
+        address _collateral,
+        bool _isPut
     ) external;
 
     function whitelistCollateral(address _collateral) external;

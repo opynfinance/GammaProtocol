@@ -81,8 +81,8 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([deployer
 
   describe('Market Creation after whitelisting products', () => {
     before('Whitelist product from admin', async () => {
-      await whitelist.whitelistProduct(ethAddress, usdc.address, usdc.address, {from: deployer})
-      await whitelist.whitelistProduct(ethAddress, dai.address, dai.address, {from: deployer})
+      await whitelist.whitelistProduct(ethAddress, usdc.address, usdc.address, isPut, {from: deployer})
+      await whitelist.whitelistProduct(ethAddress, dai.address, dai.address, isPut, {from: deployer})
     })
 
     it('Should init otoken1 with correct name and symbol', async () => {
