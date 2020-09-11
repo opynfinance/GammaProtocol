@@ -403,7 +403,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         )
 
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-        const collateralToDeposit = createTokenAmount(20, 18)
+        const collateralToDeposit = createTokenAmount(20, wethDecimals)
         const actionArgs = [
           {
             actionType: ActionType.DepositLongOption,
@@ -448,7 +448,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
 
       it('should execute depositing long otoken into vault in multiple actions', async () => {
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-        const collateralToDeposit = new BigNumber(createTokenAmount(20, 6))
+        const collateralToDeposit = new BigNumber(createTokenAmount(20, usdcDecimals))
         const actionArgs = [
           {
             actionType: ActionType.DepositLongOption,
@@ -505,7 +505,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
 
       it('should revert depositing long otoken from a sender different than arg.from', async () => {
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-        const collateralToDeposit = createTokenAmount(20, 18)
+        const collateralToDeposit = createTokenAmount(20, wethDecimals)
         const actionArgs = [
           {
             actionType: ActionType.DepositLongOption,
@@ -568,7 +568,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         await whitelist.whitelistOtoken(expiredLongOtoken.address)
 
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-        const collateralToDeposit = createTokenAmount(200, 6)
+        const collateralToDeposit = createTokenAmount(200, usdcDecimals)
         const actionArgs = [
           {
             actionType: ActionType.DepositLongOption,
@@ -2397,11 +2397,13 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
       // past time after expiry
       await time.increase(60 * 61 * 24) // increase time with one hour in seconds
       // set price in Oracle Mock, 150$ at expiry, expire ITM
-      await oracle.setExpiryPrice(
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(
         await shortOtoken.underlyingAsset(),
         new BigNumber(await shortOtoken.expiryTimestamp()),
-        new BigNumber(150).times(new BigNumber(10).exponentiatedBy(18)),
+        new BigNumber(150).times(1e18),
+        true,
       )
+
       // set it as not finalized in mock
       await oracle.setIsDisputePeriodOver(
         await shortOtoken.underlyingAsset(),
@@ -2409,14 +2411,10 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         false,
       )
       // set strike (USDC) price
-      await oracle.setExpiryPrice(
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(
         await shortOtoken.strikeAsset(),
         new BigNumber(await shortOtoken.expiryTimestamp()),
-        new BigNumber(1).times(new BigNumber(10).exponentiatedBy(18)),
-      )
-      await oracle.setIsFinalized(
-        await shortOtoken.strikeAsset(),
-        new BigNumber(await shortOtoken.expiryTimestamp()),
+        new BigNumber(1).times(1e18),
         true,
       )
 
@@ -2577,11 +2575,8 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
       await call.transfer(holder1, amountOtoken, {from: accountOwner1})
 
       await time.increaseTo(expiry + 10)
-      await oracle.setExpiryPrice(weth.address, expiry, createTokenAmount(400, 18))
-      await oracle.setExpiryPrice(usdc.address, expiry, createTokenAmount(1, 18))
-      await oracle.setIsFinalized(weth.address, expiry, true)
-      await oracle.setIsFinalized(usdc.address, expiry, true)
-      await oracle.setIsDisputePeriodOver(weth.address, expiry, true)
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(400, 18), true)
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1, 18), true)
       const exerciseArgs = [
         {
           actionType: ActionType.Exercise,
@@ -2665,12 +2660,8 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
       await call.transfer(holder1, amountOtoken, {from: accountOwner1})
 
       await time.increaseTo(expiry + 10)
-      await oracle.setIsDisputePeriodOver(weth.address, expiry, true)
-      await oracle.setIsDisputePeriodOver(usdc.address, expiry, true)
-      await oracle.setExpiryPrice(weth.address, expiry, createTokenAmount(400, 18))
-      await oracle.setExpiryPrice(usdc.address, expiry, createTokenAmount(1, 18))
-      await oracle.setIsFinalized(weth.address, expiry, true)
-      await oracle.setIsFinalized(usdc.address, expiry, true)
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(400, 18), true)
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1, 18), true)
       const exerciseArgs = [
         {
           actionType: ActionType.Exercise,
@@ -2805,37 +2796,24 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         // past time after expiry
         await time.increase(60 * 61 * 24)
         // set price in Oracle Mock, 150$ at expiry, expire ITM
-        await oracle.setExpiryPrice(
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(
           await firstOtoken.underlyingAsset(),
           new BigNumber(await firstOtoken.expiryTimestamp()),
-          new BigNumber(150).times(new BigNumber(10).exponentiatedBy(18)),
-        )
-        await oracle.setExpiryPrice(
-          await secondOtoken.underlyingAsset(),
-          new BigNumber(await secondOtoken.expiryTimestamp()),
-          new BigNumber(150).times(new BigNumber(10).exponentiatedBy(18)),
-        )
-        // set strike asset price (USDC)
-        await oracle.setExpiryPrice(
-          await usdc.address,
-          new BigNumber(await firstOtoken.expiryTimestamp()),
-          new BigNumber(1).times(new BigNumber(10).exponentiatedBy(18)),
-        )
-        await oracle.setIsFinalized(await usdc.address, new BigNumber(await firstOtoken.expiryTimestamp()), true)
-        // set it as finalized in mock
-        await oracle.setIsFinalized(
-          await firstOtoken.underlyingAsset(),
-          new BigNumber(await firstOtoken.expiryTimestamp()),
+          new BigNumber(150).times(1e18),
           true,
         )
-        await oracle.setIsDisputePeriodOver(
-          await firstOtoken.underlyingAsset(),
-          new BigNumber(await firstOtoken.expiryTimestamp()),
-          true,
-        )
-        await oracle.setIsDisputePeriodOver(
+
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(
           await secondOtoken.underlyingAsset(),
           new BigNumber(await secondOtoken.expiryTimestamp()),
+          new BigNumber(150).times(1e18),
+          true,
+        )
+
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(
+          usdc.address,
+          new BigNumber(await firstOtoken.expiryTimestamp()),
+          new BigNumber(1).times(1e18),
           true,
         )
 
@@ -3021,11 +2999,9 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
       // past time after expiry
       await time.increase(60 * 61 * 24) // increase time with one hour in seconds
       // set price in Oracle Mock, 150$ at expiry, expire ITM
-      await oracle.setExpiryPrice(
-        await shortOtoken.underlyingAsset(),
-        new BigNumber(await shortOtoken.expiryTimestamp()),
-        new BigNumber(150).times(new BigNumber(10).exponentiatedBy(18)),
-      )
+      const expiry = new BigNumber(await shortOtoken.expiryTimestamp())
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(150, 18), true)
+
       // set it as not finalized in mock
       await oracle.setIsFinalized(
         await shortOtoken.underlyingAsset(),
@@ -3061,24 +3037,10 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
     })
 
     it('should settle ITM otoken after expiry + price is finalized', async () => {
-      await oracle.setExpiryPrice(
-        usdc.address,
-        new BigNumber(await shortOtoken.expiryTimestamp()),
-        new BigNumber(1).times(new BigNumber(10).exponentiatedBy(18)),
-      )
-      await oracle.setIsFinalized(weth.address, new BigNumber(await shortOtoken.expiryTimestamp()), true)
+      const expiry = new BigNumber(await shortOtoken.expiryTimestamp())
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(150, 18), true)
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1, 18), true)
 
-      await oracle.setIsFinalized(usdc.address, new BigNumber(await shortOtoken.expiryTimestamp()), true)
-      await oracle.setIsDisputePeriodOver(
-        await shortOtoken.underlyingAsset(),
-        new BigNumber(await shortOtoken.expiryTimestamp()),
-        true,
-      )
-      await oracle.setIsDisputePeriodOver(
-        await shortOtoken.underlyingAsset(),
-        new BigNumber(await shortOtoken.expiryTimestamp()),
-        true,
-      )
       const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
       const actionArgs = [
         {
@@ -3223,54 +3185,18 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         ]
         await usdc.approve(marginPool.address, collateralToDespoit, {from: accountOwner1})
         await controllerProxy.operate(actionArgs, {from: accountOwner1})
-
-        await time.increaseTo(new BigNumber(await secondShortOtoken.expiryTimestamp()).plus(1000).toString())
-        // set price and finalize it for both otokens
-        await oracle.setExpiryPrice(
-          await firstShortOtoken.underlyingAsset(),
-          new BigNumber(await firstShortOtoken.expiryTimestamp()),
-          new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
-        )
-        await oracle.setIsFinalized(
-          await firstShortOtoken.underlyingAsset(),
-          new BigNumber(await firstShortOtoken.expiryTimestamp()),
-          true,
-        )
-        await oracle.setIsDisputePeriodOver(
-          await firstShortOtoken.underlyingAsset(),
-          new BigNumber(await firstShortOtoken.expiryTimestamp()),
-          true,
-        )
-        await oracle.setExpiryPrice(
-          await secondShortOtoken.underlyingAsset(),
-          new BigNumber(await secondShortOtoken.expiryTimestamp()),
-          new BigNumber(250).times(new BigNumber(10).exponentiatedBy(18)),
-        )
-        await oracle.setIsFinalized(
-          await secondShortOtoken.underlyingAsset(),
-          new BigNumber(await secondShortOtoken.expiryTimestamp()),
-          true,
-        )
-        await oracle.setExpiryPrice(
-          usdc.address,
-          new BigNumber(await firstShortOtoken.expiryTimestamp()),
-          new BigNumber(1).times(new BigNumber(10).exponentiatedBy(18)),
-        )
-        await oracle.setExpiryPrice(
-          usdc.address,
-          new BigNumber(await secondShortOtoken.expiryTimestamp()),
-          new BigNumber(1).times(new BigNumber(10).exponentiatedBy(18)),
-        )
-        await oracle.setIsFinalized(usdc.address, new BigNumber(await firstShortOtoken.expiryTimestamp()), true)
-        await oracle.setIsFinalized(usdc.address, new BigNumber(await secondShortOtoken.expiryTimestamp()), true)
-        await oracle.setIsDisputePeriodOver(
-          await secondShortOtoken.underlyingAsset(),
-          new BigNumber(await secondShortOtoken.expiryTimestamp()),
-          true,
-        )
       })
 
       it('should settle multiple vaults in one transaction (ATM,OTM)', async () => {
+        await time.increaseTo(new BigNumber(await secondShortOtoken.expiryTimestamp()).plus(1000).toString())
+        // set price and finalize it for both otokens
+        const expiry = new BigNumber(await firstShortOtoken.expiryTimestamp())
+        const expiry2 = new BigNumber(await secondShortOtoken.expiryTimestamp())
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(200, 18), true)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1, 18), true)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry2, createTokenAmount(200, 18), true)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry2, createTokenAmount(1, 18), true)
+
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         const actionArgs = [
           {
@@ -3441,8 +3367,8 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
       // whitelist otoken to be minted
       await whitelist.whitelistOtoken(shortOtoken.address, {from: owner})
 
-      const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e18)
-      const amountToMint = new BigNumber('1')
+      const collateralToDeposit = createTokenAmount(200, usdcDecimals)
+      const amountToMint = createTokenAmount(1, 18) // mint 1 otoken
       const actionArgs = [
         {
           actionType: ActionType.OpenVault,
@@ -3460,7 +3386,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           sender: accountOwner1,
           asset: shortOtoken.address,
           vaultId: vaultCounterBefore.toNumber() + 1,
-          amount: amountToMint.toNumber(),
+          amount: amountToMint,
           index: '0',
           data: ZERO_ADDR,
         },
@@ -3470,7 +3396,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           sender: accountOwner1,
           asset: usdc.address,
           vaultId: vaultCounterBefore.toNumber() + 1,
-          amount: collateralToDeposit.toNumber(),
+          amount: collateralToDeposit,
           index: '0',
           data: ZERO_ADDR,
         },
@@ -3621,23 +3547,12 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
       // past time after expiry
       await time.increase(60 * 61) // increase time with one hour in seconds
       // set price in Oracle Mock, 150$ at expiry, expire ITM
-      await oracle.setExpiryPrice(
-        await shortOtoken.underlyingAsset(),
-        new BigNumber(await shortOtoken.expiryTimestamp()),
-        new BigNumber(150).times(new BigNumber(10).exponentiatedBy(18)),
-      )
-      await oracle.setIsFinalized(
-        await shortOtoken.underlyingAsset(),
-        new BigNumber(await shortOtoken.expiryTimestamp()),
-        true,
-      )
-      await oracle.setIsDisputePeriodOver(
-        await shortOtoken.underlyingAsset(),
-        new BigNumber(await shortOtoken.expiryTimestamp()),
-        true,
-      )
+      const expiry = new BigNumber(await shortOtoken.expiryTimestamp())
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, new BigNumber(150).times(1e18), true)
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, new BigNumber(1).times(1e18), true)
 
       const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
+
       const actionArgs = [
         {
           actionType: ActionType.SettleVault,
@@ -3651,11 +3566,11 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         },
       ]
 
-      const payout = new BigNumber('150')
+      const payout = createTokenAmount(150, usdcDecimals)
       const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
       const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
 
-      controllerProxy.operate(actionArgs, {from: accountOwner1})
+      await controllerProxy.operate(actionArgs, {from: accountOwner1})
 
       const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
       const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
@@ -3673,7 +3588,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
     })
 
     it('should exercise when system is paused', async () => {
-      const shortAmountToBurn = new BigNumber('1')
+      const shortAmountToBurn = createTokenAmount(1, 18)
       // transfer to holder
       await shortOtoken.transfer(holder1, shortAmountToBurn, {from: accountOwner1})
 
@@ -3684,19 +3599,19 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           sender: holder1,
           asset: shortOtoken.address,
           vaultId: '0',
-          amount: shortAmountToBurn.toNumber(),
+          amount: shortAmountToBurn,
           index: '0',
           data: ZERO_ADDR,
         },
       ]
       assert.equal(await controllerProxy.isExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
 
-      const payout = new BigNumber('50')
+      const payout = createTokenAmount(50, usdcDecimals)
       const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
       const senderBalanceBefore = new BigNumber(await usdc.balanceOf(holder1))
       const senderShortBalanceBefore = new BigNumber(await shortOtoken.balanceOf(holder1))
 
-      controllerProxy.operate(actionArgs, {from: holder1})
+      await controllerProxy.operate(actionArgs, {from: holder1})
 
       const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
       const senderBalanceAfter = new BigNumber(await usdc.balanceOf(holder1))

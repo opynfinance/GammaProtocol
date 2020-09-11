@@ -1,5 +1,7 @@
 import BigNumber from 'bignumber.js'
 
+import {MockOracleInstance} from '../build/types/truffle-types'
+
 export type vault = {
   shortAmounts: (BigNumber | string | number)[]
   longAmounts: (BigNumber | string | number)[]
