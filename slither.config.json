@@ -1,8 +1,8 @@
 {
-  "detectors_to_exclude": "timestamp,naming-convention,pragma,solc-version,constable-states,uninitialized-local",
+  "detectors_to_exclude": "timestamp,naming-convention,pragma,solc-version,constable-states,uninitialized-local,unused-state",
   "filter_paths": "Migrations.sol|packages|mocks|tests",
   "truffle_version": "5.1.32",
   "exclude_optimization": false,
-  "exclude_informational": true,
+  "exclude_informational": false,
   "exclude_low": true
 }
