@@ -3751,7 +3751,7 @@ contract(
         )
       })
 
-      it('should set pauser address', async () => {
+      it('should set terminator address', async () => {
         await controllerProxy.setTerminator(terminator, {from: owner})
         assert.equal(await controllerProxy.terminator(), terminator, 'Terminator address mismatch')
       })
