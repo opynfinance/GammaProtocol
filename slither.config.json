@@ -3,6 +3,6 @@
   "filter_paths": "Migrations.sol|packages|mocks|tests",
   "truffle_version": "5.1.32",
   "exclude_optimization": false,
-  "exclude_informational": false,
+  "exclude_informational": true,
   "exclude_low": true
 }
