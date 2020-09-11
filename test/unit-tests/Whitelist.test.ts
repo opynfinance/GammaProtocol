@@ -1,4 +1,4 @@
-import {MockERC20Instance, MockAddressBookInstance, WhitelistInstance} from '../build/types/truffle-types'
+import {MockERC20Instance, MockAddressBookInstance, WhitelistInstance} from '../../build/types/truffle-types'
 
 const {expectEvent, expectRevert} = require('@openzeppelin/test-helpers')
 

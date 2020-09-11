@@ -729,7 +729,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
-     * @notice function to check the validity of a specific vault id
+     * @notice function to check if a vault id is valid
      * @param _accountOwner account owner address
      * @param _vaultId vault id
      */
@@ -744,13 +744,12 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /**
      * @notice get Otoken payout after expiry
      * @param _otoken Otoken address
-     * @param _amount amount of Otoken
-     * @return payout = cashValue * amount
+     * @param _amount amount of Otoken. Always in 1e18
+     * @return amount of collateral to payout
      */
     function _getPayout(address _otoken, uint256 _amount) internal view returns (uint256) {
-        uint256 cashValue = calculator.getExpiredCashValue(_otoken);
-
-        return cashValue.mul(_amount).div(1e18);
+        uint256 rate = calculator.getExpiredPayoutRate(_otoken);
+        return rate.mul(_amount).div(1e18);
     }
 
     /**
