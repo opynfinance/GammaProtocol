@@ -4,4 +4,4 @@ coverage
 coverage.json
 .env
 gasReporterOutput.json
-contracts/crytic-export/
+*contracts/crytic-export/
