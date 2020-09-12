@@ -2,8 +2,8 @@
   "node_version": "12.16.3",
   "solc": "0.6.10",
   "echidna": {
-    "target": ["contracts/echidna/PropertyTests.sol"],
-    "contract": ["PropertyTests"],
+    "target": "contracts/echidna/PropertyTests.sol",
+    "contract": "PropertyTests",
     "config": "echidna-config.yaml"
   }
 }
