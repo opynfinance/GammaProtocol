@@ -1,10 +1,8 @@
 {
   "node_version": "12.16.3",
   "solc": "0.6.10",
-  "use_yarn": true,
   "echidna": {
-    "target": "echidna/*.sol",
-    "contract": "PropertiesOtokenTransferable",
-    "config": "echidna/config.yaml"
+    "contract": "OtokenERC20",
+    "config": "config.yaml"
   }
 }
