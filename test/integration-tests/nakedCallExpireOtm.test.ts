@@ -198,9 +198,13 @@ contract('Naked Call Option flow', ([admin, accountOwner1, accountOperator1, buy
       }
       const strikePriceChange = 100
       const expirySpotPrice = strikePrice - strikePriceChange
-      await oracle.setExpiryPrice(weth.address, expiry, createScaledUint256(expirySpotPrice, 18))
-      await oracle.setIsDisputePeriodOver(weth.address, expiry, true)
-      await oracle.setIsFinalized(weth.address, expiry, true)
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(
+        weth.address,
+        expiry,
+        createScaledUint256(expirySpotPrice, 18),
+        true,
+      )
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createScaledUint256(1, 18), true)
 
       // Check that after expiry, the vault excess balance has updated as expected
       const vaultStateBeforeSettlement = await calculator.getExcessCollateral(vaultBefore)
@@ -292,10 +296,7 @@ contract('Naked Call Option flow', ([admin, accountOwner1, accountOperator1, buy
       ]
 
       await ethCall.approve(marginPool.address, createScaledUint256(optionsAmount, 18), {from: buyer})
-      await expectRevert(
-        controllerProxy.operate(actionArgs, {from: buyer}),
-        'MarginPool: transferToUser amount is equal to 0',
-      )
+      await controllerProxy.operate(actionArgs, {from: buyer})
 
       // keep track of balances after
       const ownerWethBalanceAfter = new BigNumber(await weth.balanceOf(buyer))
@@ -306,8 +307,14 @@ contract('Naked Call Option flow', ([admin, accountOwner1, accountOperator1, buy
       // check balances before and after changed as expected
       assert.equal(ownerWethBalanceBefore.toString(), ownerWethBalanceAfter.toString())
       assert.equal(marginPoolWethBalanceBefore.toString(), marginPoolWethBalanceAfter.toString())
-      assert.equal(ownerOtokenBalanceBefore.toString(), ownerOtokenBalanceAfter.toString())
-      assert.equal(marginPoolOtokenSupplyBefore.toString(), marginPoolOtokenSupplyAfter.toString())
+      assert.equal(
+        ownerOtokenBalanceBefore.minus(createScaledUint256(optionsAmount, 18)).toString(),
+        ownerOtokenBalanceAfter.toString(),
+      )
+      assert.equal(
+        marginPoolOtokenSupplyBefore.minus(createScaledUint256(optionsAmount, 18)).toString(),
+        marginPoolOtokenSupplyAfter.toString(),
+      )
     })
   })
 })

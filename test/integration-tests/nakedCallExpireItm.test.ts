@@ -198,9 +198,13 @@ contract('Naked Call Option flow', ([admin, accountOwner1, accountOperator1, buy
       }
       const strikePriceChange = 100
       const expirySpotPrice = strikePrice + strikePriceChange
-      await oracle.setExpiryPrice(weth.address, expiry, createScaledUint256(expirySpotPrice, 18))
-      await oracle.setIsDisputePeriodOver(weth.address, expiry, true)
-      await oracle.setIsFinalized(weth.address, expiry, true)
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(
+        weth.address,
+        expiry,
+        createScaledUint256(expirySpotPrice, 18),
+        true,
+      )
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createScaledUint256(1, 18), true)
 
       const collateralPayout = collateralAmount - (strikePriceChange * optionsAmount) / expirySpotPrice
 
@@ -282,9 +286,6 @@ contract('Naked Call Option flow', ([admin, accountOwner1, accountOperator1, buy
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
       const ownerOtokenBalanceBefore = new BigNumber(await ethCall.balanceOf(buyer))
       const marginPoolOtokenSupplyBefore = new BigNumber(await ethCall.totalSupply())
-
-      const cashedValue = await calculator.getExpiredCashValue(ethCall.address)
-      console.log(cashedValue.toString())
 
       const actionArgs = [
         {

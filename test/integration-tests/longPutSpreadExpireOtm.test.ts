@@ -266,9 +266,13 @@ contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1
       }
       const strikePriceChange = 100
       const expirySpotPrice = shortStrike + strikePriceChange
-      await oracle.setExpiryPrice(weth.address, expiry, createScaledUint256(expirySpotPrice, 18))
-      await oracle.setIsDisputePeriodOver(weth.address, expiry, true)
-      await oracle.setIsFinalized(weth.address, expiry, true)
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(
+        weth.address,
+        expiry,
+        createScaledUint256(expirySpotPrice, 18),
+        true,
+      )
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createScaledUint256(1, 18), true)
 
       // Check that after expiry, the vault excess balance has updated as expected
       const vaultStateBeforeSettlement = await calculator.getExcessCollateral(vaultBefore)

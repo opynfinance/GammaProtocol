@@ -5,14 +5,13 @@ import {
   MockOracleInstance,
   OtokenInstance,
   ControllerInstance,
-  MockWhitelistModuleInstance,
+  WhitelistInstance,
   MarginPoolInstance,
+  OtokenFactoryInstance,
 } from '../../build/types/truffle-types'
 import {createVault, createScaledUint256} from '../utils'
 import {assert} from 'chai'
 import BigNumber from 'bignumber.js'
-
-import Reverter from '../Reverter'
 
 const {expectRevert, time} = require('@openzeppelin/test-helpers')
 const AddressBook = artifacts.require('AddressBook.sol')
@@ -20,10 +19,11 @@ const MockOracle = artifacts.require('MockOracle.sol')
 const Otoken = artifacts.require('Otoken.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
 const MarginCalculator = artifacts.require('MarginCalculator.sol')
-const MockWhitelist = artifacts.require('MockWhitelistModule.sol')
+const Whitelist = artifacts.require('Whitelist.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
 const MarginAccount = artifacts.require('MarginAccount.sol')
+const OTokenFactory = artifacts.require('OtokenFactory.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
 enum ActionType {
@@ -40,7 +40,6 @@ enum ActionType {
 }
 
 contract('Short Call Spread Option flow', ([admin, accountOwner1, accountOperator1, buyer, accountOwner2]) => {
-  const reverter = new Reverter(web3)
   let expiry: number
 
   let addressBook: AddressBookInstance
@@ -48,9 +47,10 @@ contract('Short Call Spread Option flow', ([admin, accountOwner1, accountOperato
   let controllerProxy: ControllerInstance
   let controllerImplementation: ControllerInstance
   let marginPool: MarginPoolInstance
+  let whitelist: WhitelistInstance
+  let otokenImplementation: OtokenInstance
+  let otokenFactory: OtokenFactoryInstance
 
-  // whitelist module mock
-  let whitelist: MockWhitelistModuleInstance
   // oracle modulce mock
   let oracle: MockOracleInstance
 
@@ -70,7 +70,13 @@ contract('Short Call Spread Option flow', ([admin, accountOwner1, accountOperato
 
   before('set up contracts', async () => {
     const now = (await time.latest()).toNumber()
-    expiry = now + time.duration.days(30).toNumber()
+    const multiplier = (now - 28800) / 86400
+    expiry = (Number(multiplier.toFixed(0)) + 1) * 86400 + time.duration.days(30).toNumber() + 28800
+    // setup usdc and weth
+    // TODO: make usdc 6 decimals
+    usdc = await MockERC20.new('USDC', 'USDC', 18)
+    dai = await MockERC20.new('DAI', 'DAI', 18)
+    weth = await MockERC20.new('WETH', 'WETH', 18)
 
     // initiate addressbook first.
     addressBook = await AddressBook.new()
@@ -78,20 +84,22 @@ contract('Short Call Spread Option flow', ([admin, accountOwner1, accountOperato
     calculator = await MarginCalculator.new(addressBook.address)
     // setup margin pool
     marginPool = await MarginPool.new(addressBook.address)
-    // setup controllerProxy module
+    // setup margin account
     const lib = await MarginAccount.new()
+    // setup controllerProxy module
     await Controller.link('MarginAccount', lib.address)
     controllerImplementation = await Controller.new(addressBook.address)
     // setup mock Oracle module
     oracle = await MockOracle.new(addressBook.address)
-    // setup mock whitelist module
-    whitelist = await MockWhitelist.new()
-
-    // setup usdc and weth
-    // TODO: make usdc 6 decimals
-    usdc = await MockERC20.new('USDC', 'USDC', 18)
-    dai = await MockERC20.new('DAI', 'DAI', 18)
-    weth = await MockERC20.new('WETH', 'WETH', 18)
+    // setup whitelist module
+    whitelist = await Whitelist.new(addressBook.address)
+    await whitelist.whitelistCollateral(weth.address)
+    whitelist.whitelistProduct(weth.address, usdc.address, usdc.address, true)
+    whitelist.whitelistProduct(weth.address, usdc.address, weth.address, false)
+    // setup otoken
+    otokenImplementation = await Otoken.new()
+    // setup factory
+    otokenFactory = await OTokenFactory.new(addressBook.address)
 
     // setup address book
     await addressBook.setOracle(oracle.address)
@@ -99,14 +107,14 @@ contract('Short Call Spread Option flow', ([admin, accountOwner1, accountOperato
     await addressBook.setMarginCalculator(calculator.address)
     await addressBook.setWhitelist(whitelist.address)
     await addressBook.setMarginPool(marginPool.address)
+    await addressBook.setOtokenFactory(otokenFactory.address)
+    await addressBook.setOtokenImpl(otokenImplementation.address)
 
     const controllerProxyAddress = await addressBook.getController()
     controllerProxy = await Controller.at(controllerProxyAddress)
     await controllerProxy.refreshConfiguration()
 
-    longCall = await Otoken.new()
-    await longCall.init(
-      addressBook.address,
+    await otokenFactory.createOtoken(
       weth.address,
       usdc.address,
       weth.address,
@@ -115,9 +123,7 @@ contract('Short Call Spread Option flow', ([admin, accountOwner1, accountOperato
       false,
     )
 
-    shortCall = await Otoken.new()
-    await shortCall.init(
-      addressBook.address,
+    await otokenFactory.createOtoken(
       weth.address,
       usdc.address,
       weth.address,
@@ -126,10 +132,27 @@ contract('Short Call Spread Option flow', ([admin, accountOwner1, accountOperato
       false,
     )
 
-    // setup the whitelist module
-    await whitelist.whitelistOtoken(longCall.address)
-    await whitelist.whitelistOtoken(shortCall.address)
-    await whitelist.whitelistCollateral(weth.address)
+    const longCallAddress = await otokenFactory.getOtoken(
+      weth.address,
+      usdc.address,
+      weth.address,
+      createScaledUint256(longStrike, 18),
+      expiry,
+      false,
+    )
+
+    longCall = await Otoken.at(longCallAddress)
+
+    const shortCallAddress = await otokenFactory.getOtoken(
+      weth.address,
+      usdc.address,
+      weth.address,
+      createScaledUint256(shortStrike, 18),
+      expiry,
+      false,
+    )
+
+    shortCall = await Otoken.at(shortCallAddress)
 
     // mint weth to user
     weth.mint(accountOwner1, createScaledUint256(2 * collateralAmount, (await weth.decimals()).toNumber()))
@@ -260,11 +283,15 @@ contract('Short Call Spread Option flow', ([admin, accountOwner1, accountOperato
       if ((await time.latest()) < expiry) {
         await time.increaseTo(expiry + 2)
       }
-      const strikePriceChange = 100
-      const expirySpotPrice = shortStrike + strikePriceChange
-      await oracle.setExpiryPrice(weth.address, expiry, createScaledUint256(expirySpotPrice, 18))
-      await oracle.setIsDisputePeriodOver(weth.address, expiry, true)
-      await oracle.setIsFinalized(weth.address, expiry, true)
+      const strikePriceChange = 50
+      const expirySpotPrice = shortStrike - strikePriceChange
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(
+        weth.address,
+        expiry,
+        createScaledUint256(expirySpotPrice, 18),
+        true,
+      )
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createScaledUint256(1, 18), true)
 
       // Check that after expiry, the vault excess balance has updated as expected
       // TODO: what should this be? Should this be denominated in USD or ETH?

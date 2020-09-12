@@ -76,7 +76,7 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, buye
 
     // setup usdc and weth
     // TODO: change USDC to 6
-    usdc = await MockERC20.new('USDC', 'USDC', 18)
+    usdc = await MockERC20.new('USDC', 'USDC', 6)
     dai = await MockERC20.new('DAI', 'DAI', 18)
     weth = await MockERC20.new('WETH', 'WETH', 18)
 
@@ -265,7 +265,7 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, buye
       )
       assert.equal(
         vaultAfter.collateralAmounts[0].toString(),
-        createScaledUint256(collateralAmount, 18),
+        createScaledUint256(collateralAmount, (await usdc.decimals()).toNumber()),
         'Incorrect amount of collateral stored in the vault',
       )
     })
@@ -411,7 +411,7 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, buye
       )
       assert.equal(
         vaultAfter.collateralAmounts[0].toString(),
-        createScaledUint256(collateralAmount, 18),
+        createScaledUint256(collateralAmount, (await usdc.decimals()).toNumber()),
         'Incorrect amount of collateral stored in the vault',
       )
     })

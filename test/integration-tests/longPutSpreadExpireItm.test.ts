@@ -266,9 +266,13 @@ contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1
         await time.increaseTo(expiry + 2)
       }
       const expirySpotPrice = 150
-      await oracle.setExpiryPrice(weth.address, expiry, createScaledUint256(expirySpotPrice, 18))
-      await oracle.setIsDisputePeriodOver(weth.address, expiry, true)
-      await oracle.setIsFinalized(weth.address, expiry, true)
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(
+        weth.address,
+        expiry,
+        createScaledUint256(expirySpotPrice, 18),
+        true,
+      )
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createScaledUint256(1, 18), true)
 
       const collateralPayout = Math.min(
         (longStrike - shortStrike) * optionsAmount,
