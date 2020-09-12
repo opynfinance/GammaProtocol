@@ -11,10 +11,6 @@ import "../interfaces/AddressBookInterface.sol";
 
 contract OtokenERC20 is CryticUtils, Otoken {
     constructor() public {
-        // Existing addresses:
-        // - crytic_owner: If the contract has an owner, it must be crytic_owner
-        // - crytic_user: Legitimate user
-        // - crytic_attacker: Attacker
         _initializeForFuzzer();
     }
 
