@@ -1,10 +1,11 @@
 /* SPDX-License-Identifier: UNLICENSED */
 pragma solidity =0.6.10;
-import {ERC20Initializable} from "../packages/oz/upgradeability/ERC20Initializable.sol";
-import {SafeMath} from "../packages/oz/SafeMath.sol";
-import {Strings} from "../packages/oz/Strings.sol";
-import {BokkyPooBahsDateTimeLibrary} from "../packages/BokkyPooBahsDateTimeLibrary.sol";
-import {EchidnaMockAddressBook} from "./mocks/EchidnaMockAddressBook.sol";
+
+import {ERC20Initializable} from "../../packages/oz/upgradeability/ERC20Initializable.sol";
+import {SafeMath} from "../../packages/oz/SafeMath.sol";
+import {Strings} from "../../packages/oz/Strings.sol";
+import {BokkyPooBahsDateTimeLibrary} from "../../packages/BokkyPooBahsDateTimeLibrary.sol";
+import {AddressBookInterface} from "../../interfaces/AddressBookInterface.sol";
 
 /**
  * @title Otoken
@@ -12,7 +13,7 @@ import {EchidnaMockAddressBook} from "./mocks/EchidnaMockAddressBook.sol";
  * @notice Otoken is the ERC20 token for an option.
  * @dev The Otoken inherits ERC20Initializable because we need to use the init instead of constructor.
  */
-abstract contract TestOtoken is ERC20Initializable {
+contract Otoken is ERC20Initializable {
     using SafeMath for uint256;
 
     /// @notice address of the addressBook module
@@ -38,10 +39,6 @@ abstract contract TestOtoken is ERC20Initializable {
 
     uint256 private constant STRIKE_PRICE_DIGITS = 1e18;
 
-    constructor() public {
-        addressBook = address(new EchidnaMockAddressBook());
-    }
-
     /**
      * @notice initialize the otoken.
      * @param _underlyingAsset asset that the option references
@@ -52,6 +49,7 @@ abstract contract TestOtoken is ERC20Initializable {
      * @param _isPut is this a put option, if not it is a call
      */
     function init(
+        address _addressBook,
         address _underlyingAsset,
         address _strikeAsset,
         address _collateralAsset,
@@ -59,6 +57,7 @@ abstract contract TestOtoken is ERC20Initializable {
         uint256 _expiry,
         bool _isPut
     ) external initializer {
+        addressBook = _addressBook;
         underlyingAsset = _underlyingAsset;
         strikeAsset = _strikeAsset;
         collateralAsset = _collateralAsset;
@@ -228,12 +227,12 @@ abstract contract TestOtoken is ERC20Initializable {
     ) internal override {
         if (from == address(0)) {
             require(
-                msg.sender == EchidnaMockAddressBook(addressBook).getController(),
+                msg.sender == AddressBookInterface(addressBook).getController(),
                 "Otoken: Only Controller can mint Otokens."
             );
         } else if (to == address(0)) {
             require(
-                msg.sender == EchidnaMockAddressBook(addressBook).getController(),
+                msg.sender == AddressBookInterface(addressBook).getController(),
                 "Otoken: Only Controller can burn Otokens."
             );
         }

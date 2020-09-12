@@ -1,10 +1,15 @@
 /* SPDX-License-Identifier: UNLICENSED */
 pragma solidity =0.6.10;
 
-import "./interfaces/CryticInterface.sol";
-import "./TestOtoken.sol";
+import "./CryticUtils.sol";
+import "../Otoken.sol";
 
-contract PropertiesOtokenTransferable is CryticInterface, TestOtoken {
+contract PropertiesOtokenTransferable is CryticUtils, Otoken {
+    uint256 internal initialTotalSupply;
+    uint256 internal initialBalance_owner;
+    uint256 internal initialBalance_user;
+    uint256 internal initialBalance_attacker;
+
     constructor() public {
         // Existing addresses:
         // - crytic_owner: If the contract has an owner, it must be crytic_owner
@@ -26,37 +31,34 @@ contract PropertiesOtokenTransferable is CryticInterface, TestOtoken {
         initialBalance_attacker = balanceOf(crytic_attacker);
     }
 
-    function crytic_zero_always_empty_ERC20Properties() public returns (bool) {
+    function echidna_always_empty() public returns (bool) {
         return this.balanceOf(address(0x0)) == 0;
     }
 
-    function crytic_approve_overwrites() public returns (bool) {
-        bool approve_return;
-        approve_return = approve(crytic_user, 10);
-        require(approve_return);
-        approve_return = approve(crytic_user, 20);
-        require(approve_return);
-        return this.allowance(msg.sender, crytic_user) == 20;
+    function echidna_approve_overwrites() public returns (bool) {
+        assert(approve(crytic_user, 20));
+        assert(approve(crytic_user, 10));
+        return this.allowance(msg.sender, crytic_user) == 10;
     }
 
-    function crytic_less_than_total_ERC20Properties() public returns (bool) {
+    function echidna_less_than_total() public returns (bool) {
         return this.balanceOf(msg.sender) <= totalSupply();
     }
 
-    function crytic_totalSupply_consistant_ERC20Properties() public returns (bool) {
+    function echidna_totalSupply_consistant() public returns (bool) {
         return
             this.balanceOf(crytic_owner) + this.balanceOf(crytic_user) + this.balanceOf(crytic_attacker) <=
             totalSupply();
     }
 
-    function crytic_revert_transfer_to_zero_ERC20PropertiesTransferable() public returns (bool) {
+    function echidna_revert_transfer_to_zero() public returns (bool) {
         if (this.balanceOf(msg.sender) == 0) {
             revert();
         }
         return transfer(address(0x0), this.balanceOf(msg.sender));
     }
 
-    function crytic_revert_transferFrom_to_zero_ERC20PropertiesTransferable() public returns (bool) {
+    function echidna_revert_transferFrom_to_zero() public returns (bool) {
         uint256 balance = this.balanceOf(msg.sender);
         if (balance == 0) {
             revert();
@@ -65,14 +67,14 @@ contract PropertiesOtokenTransferable is CryticInterface, TestOtoken {
         return transferFrom(msg.sender, address(0x0), this.balanceOf(msg.sender));
     }
 
-    function crytic_self_transferFrom_ERC20PropertiesTransferable() public returns (bool) {
+    function echidna_self_transferFrom() public returns (bool) {
         uint256 balance = this.balanceOf(msg.sender);
         bool approve_return = approve(msg.sender, balance);
         bool transfer_return = transferFrom(msg.sender, msg.sender, balance);
         return (this.balanceOf(msg.sender) == balance) && approve_return && transfer_return;
     }
 
-    function crytic_self_transferFrom_to_other_ERC20PropertiesTransferable() public returns (bool) {
+    function echidna_self_transferFrom_to_other() public returns (bool) {
         uint256 balance = this.balanceOf(msg.sender);
         bool approve_return = approve(msg.sender, balance);
         address other = crytic_user;
@@ -83,13 +85,13 @@ contract PropertiesOtokenTransferable is CryticInterface, TestOtoken {
         return (this.balanceOf(msg.sender) == 0) && approve_return && transfer_return;
     }
 
-    function crytic_self_transfer_ERC20PropertiesTransferable() public returns (bool) {
+    function echidna_self_transfer() public returns (bool) {
         uint256 balance = this.balanceOf(msg.sender);
         bool transfer_return = transfer(msg.sender, balance);
         return (this.balanceOf(msg.sender) == balance) && transfer_return;
     }
 
-    function crytic_transfer_to_other_ERC20PropertiesTransferable() public returns (bool) {
+    function echidna_transfer_to_other() public returns (bool) {
         uint256 balance = this.balanceOf(msg.sender);
         address other = crytic_user;
         if (other == msg.sender) {
@@ -102,7 +104,7 @@ contract PropertiesOtokenTransferable is CryticInterface, TestOtoken {
         return true;
     }
 
-    function crytic_revert_transfer_to_user_ERC20PropertiesTransferable() public returns (bool) {
+    function echidna_revert_transfer_to_user() public returns (bool) {
         uint256 balance = this.balanceOf(msg.sender);
         if (balance == (2**256 - 1)) return true;
         bool transfer_other = transfer(crytic_user, balance + 1);
