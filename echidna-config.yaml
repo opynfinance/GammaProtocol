@@ -10,3 +10,8 @@ psender: "0xf17f52151EbEF6C7334FAD080c5704D77216b732"
 stopOnFail: true
 
 testLimit: 10000
+
+coverage: true
+
+corpusDir: "contracts/echidna/corpus"
+#directory to save the corpus; by default is disabled

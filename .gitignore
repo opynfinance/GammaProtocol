@@ -5,3 +5,4 @@ coverage.json
 .env
 gasReporterOutput.json
 **/crytic-export/
+contracts/echidna/corpus/**.txt
