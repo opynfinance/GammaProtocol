@@ -2,8 +2,8 @@
   "node_version": "12.16.3",
   "solc": "0.6.10",
   "echidna": {
-    "target": "contracts/echidna/otokenErc20.sol",
-    "contract": "OtokenERC20",
+    "target": ["contracts/echidna/otokenErc20.sol"],
+    "contract": ["OtokenERC20"],
     "config": "contracts/echidna/echidna-config.yaml"
   }
 }
