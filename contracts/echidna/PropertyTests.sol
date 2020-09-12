@@ -2,14 +2,14 @@
 /* solhint-disable */
 pragma solidity =0.6.10;
 
-import "./CryticUtils.sol";
+import "./EchidnaUtils.sol";
 // import "./EchidnaAddressBook.sol";
 import "../Otoken.sol";
 import "../mocks/MockAddressBook.sol";
 import "../mocks/MockERC20.sol";
 import "../interfaces/AddressBookInterface.sol";
 
-contract OtokenERC20 is CryticUtils, Otoken {
+contract PropertyTests is EchidnaUtils, Otoken {
     constructor() public {
         _initializeForFuzzer();
     }
