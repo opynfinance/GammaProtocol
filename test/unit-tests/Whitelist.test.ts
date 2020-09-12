@@ -1,4 +1,4 @@
-import {MockERC20Instance, MockAddressBookInstance, WhitelistInstance} from '../build/types/truffle-types'
+import {MockERC20Instance, MockAddressBookInstance, WhitelistInstance} from '../../build/types/truffle-types'
 
 const {expectEvent, expectRevert} = require('@openzeppelin/test-helpers')
 
@@ -8,7 +8,7 @@ const Whitelist = artifacts.require('Whitelist.sol')
 // address(0)
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
-contract('Whitelist', ([owner, otokenFactoryAddress, random, newOwner]) => {
+contract('Whitelist', ([owner, otokenFactoryAddress, random, newOwner, callee]) => {
   // ERC20 mocks
   let usdc: MockERC20Instance
   let dai: MockERC20Instance
@@ -166,6 +166,38 @@ contract('Whitelist', ([owner, otokenFactoryAddress, random, newOwner]) => {
 
       const isWhitelistedCollateral = await whitelist.isWhitelistedCollateral(usdc.address)
       assert.equal(isWhitelistedCollateral, false, 'fail: collateral not blacklisted')
+    })
+  })
+
+  describe('Whitelist callee', () => {
+    it('should revert whitelisting callee from non-owner address', async () => {
+      await expectRevert(whitelist.whitelisteCallee(callee, {from: random}), 'Ownable: caller is not the owner')
+    })
+
+    it('should whitelist callee from owner address', async () => {
+      const whitelistTx = await whitelist.whitelisteCallee(callee, {from: owner})
+
+      expectEvent(whitelistTx, 'CalleeWhitelisted')
+
+      const isWHitelistedCallee = await whitelist.isWhitelistedCallee(callee)
+      assert.equal(isWHitelistedCallee, true, 'callee not whitelisted')
+    })
+  })
+
+  describe('blacklist callee', () => {
+    it('should revert blacklisting callee from non-owner address', async () => {
+      await expectRevert(whitelist.blacklistCallee(callee, {from: random}), 'Ownable: caller is not the owner')
+    })
+
+    it('should blacklist callee from owner address', async () => {
+      assert.equal(await whitelist.isWhitelistedCallee(callee), true, 'callee not whitelisted')
+
+      const blacklistTx = await whitelist.blacklistCallee(callee, {from: owner})
+
+      expectEvent(blacklistTx, 'CalleeBlacklisted')
+
+      const isWhitelistedCallee = await whitelist.isWhitelistedCallee(callee)
+      assert.equal(isWhitelistedCallee, false, 'callee is not blacklisted')
     })
   })
 

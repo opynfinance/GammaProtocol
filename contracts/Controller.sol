@@ -17,6 +17,7 @@ import {MarginCalculatorInterface} from "./interfaces/MarginCalculatorInterface.
 import {OracleInterface} from "./interfaces/OracleInterface.sol";
 import {WhitelistInterface} from "./interfaces/WhitelistInterface.sol";
 import {MarginPoolInterface} from "./interfaces/MarginPoolInterface.sol";
+import {CalleeInterface} from "./interfaces/CalleeInterface.sol";
 
 /**
  * @author Opyn Team
@@ -33,11 +34,20 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     MarginCalculatorInterface public calculator;
     MarginPoolInterface public pool;
 
+    /// @notice address that have permission to pause system
+    address public pauser;
+
     /// @notice address that have permission to execute emergency shutdown
     address public terminator;
 
-    /// @notice the protocol state, if true, then all protocol functionality are paused.
+    /// @notice the protocol state, if true, then all protocol functionality are paused other than the exercise and settle vault
     bool public systemPaused;
+
+    /// @notice the protocol state, if true, all protocol functionalities are down
+    bool public systemShutdown;
+
+    /// @notice a bool variable that if true, indicate that call action can only be executed to a whitelisted callee
+    bool public callRestricted;
 
     /// @dev mapping between owner address and account structure
     mapping(address => uint256) internal accountVaultCounter;
@@ -115,10 +125,23 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         uint256 vaultId,
         uint256 payout
     );
+    event CallExecuted(
+        address indexed from,
+        address indexed to,
+        address indexed vaultOwner,
+        uint256 vaultId,
+        bytes data
+    );
     /// @notice emits an event when terminator address change
     event TerminatorUpdated(address indexed oldTerminator, address indexed newTerminator);
-    /// @notice emits an event when system pause status change
+    /// @notice emits an event when pauser address change
+    event PauserUpdated(address indexed oldPauser, address indexed newPauser);
+    /// @notice emtis an event when system is paused
+    event SystemPaused(bool isActive);
+    /// @notice emits an event when system shutdown status change
     event EmergencyShutdown(bool isActive);
+    /// @notice emits an event when call action restriction is activated or deactivated
+    event CallRestricted(bool isRestricted);
 
     /**
      * @notice modifier check if protocol is not paused
@@ -130,10 +153,28 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
+     * @notice modifier check if protocol is not in emergency shutdown state
+     */
+    modifier notShutdown {
+        _isNotShutdown();
+
+        _;
+    }
+
+    /**
      * @notice modifier to check if sender is terminator address
      */
     modifier onlyTerminator {
         require(msg.sender == terminator, "Controller: sender is not terminator");
+
+        _;
+    }
+
+    /**
+     * @notice modifier to check if sender is shutdowner address
+     */
+    modifier onlyPauser {
+        require(msg.sender == pauser, "Controller: sender is not pauser");
 
         _;
     }
@@ -150,10 +191,29 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
+     * @notice modifier to check if called address is a whitelisted callee
+     * @param _callee called address
+     */
+    modifier onlyWhitelistedCallee(address _callee) {
+        if (callRestricted) {
+            require(_isCalleeWhitelisted(_callee), "Controller: callee is not a whitelisted address");
+        }
+
+        _;
+    }
+
+    /**
      * @dev check the system is not paused
      */
     function _isNotPaused() internal view {
         require(!systemPaused, "Controller: system is paused");
+    }
+
+    /**
+     * @dev check the system is not in emergency shutdown state
+     */
+    function _isNotShutdown() internal view {
+        require(!systemShutdown, "Controller: system is in emergency shutdown state");
     }
 
     /**
@@ -184,15 +244,29 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
-     * @notice allows terminator to toggle pause / emergency shutdown
+     * @notice allows pauser to toggle pause function
+     * @dev can only be called from pauser
      * @param _paused The new boolean value to set systemPaused to.
      */
-    function setSystemPaused(bool _paused) external onlyTerminator {
+    function setSystemPaused(bool _paused) external onlyPauser {
         require(systemPaused != _paused, "Controller: cannot change pause status");
 
         systemPaused = _paused;
 
-        emit EmergencyShutdown(systemPaused);
+        emit SystemPaused(systemPaused);
+    }
+
+    /**
+     * @notice allows pauser to toggle pause function
+     * @dev cal only be called from terminator
+     * @param _shutdown The new boolean value to set systemShutdown to.
+     */
+    function setEmergencyShutdown(bool _shutdown) external onlyTerminator {
+        require(systemShutdown != _shutdown, "Controller: cannot change shutdown status");
+
+        systemShutdown = _shutdown;
+
+        emit EmergencyShutdown(systemShutdown);
     }
 
     /**
@@ -206,6 +280,30 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         emit TerminatorUpdated(terminator, _terminator);
 
         terminator = _terminator;
+    }
+
+    /**
+     * @notice allows owner to set pauser address
+     * @dev can only be called from owner
+     * @param _pauser new pauser address
+     */
+    function setPauser(address _pauser) external onlyOwner {
+        require(_pauser != address(0), "Controller: pauser cannot be set to address zero");
+
+        emit PauserUpdated(pauser, _pauser);
+
+        pauser = _pauser;
+    }
+
+    /**
+     * @notice allows owner to set activate/deactivate call action restriction
+     * @dev can only be called from owner
+     * @param _isRestricted active call restriction if true
+     */
+    function setCallRestriction(bool _isRestricted) external onlyOwner {
+        callRestricted = _isRestricted;
+
+        emit CallRestricted(callRestricted);
     }
 
     /**
@@ -231,19 +329,10 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev can only be called when system is not paused
      * @param _actions array of actions arguments
      */
-    function operate(Actions.ActionArgs[] memory _actions) external nonReentrant {
+    function operate(Actions.ActionArgs[] memory _actions) external payable nonReentrant notShutdown {
         (bool vaultUpdated, address vaultOwner, uint256 vaultId) = _runActions(_actions);
         if (vaultUpdated) _verifyFinalState(vaultOwner, vaultId);
     }
-
-    /**
-     * @notice Iterate through a collateral array of the vault and payout collateral assets
-     * @dev can only be called when system is not paused and from an authorized address
-     * @param _owner The owner of the vault we will clear
-     * @param _vaultId The vaultId for the vault we will clear, within the user's MarginAccount.Account struct
-     */
-    //function redeemForEmergency(address _owner, uint256 _vaultId) external notPaused onlyAuthorized(args.owner) {
-    //}
 
     /**
      * @notice check if a specific address is an operator for an owner account
@@ -395,6 +484,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
                 _exercise(Actions._parseExerciseArgs(action));
             } else if (actionType == Actions.ActionType.SettleVault) {
                 _settleVault(Actions._parseSettleVaultArgs(action));
+            } else if (actionType == Actions.ActionType.Call) {
+                _call(Actions._parseCallArgs(action));
             }
         }
 
@@ -621,14 +712,24 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         emit VaultSettled(address(shortOtoken), _args.owner, _args.to, _args.vaultId, payout);
     }
 
-    //High Level: call arbitrary smart contract
-    //function _call(Actions.CallArgs args) internal isNotPaused {
-    //    //Check whitelistModule.isWhitelistCallDestination(args.address)
-    //    //Call args.address with args.data
-    //}
+    /**
+     * @notice function to execute arbitrary calls
+     * @dev cannot be called when system is paued
+     * @param _args Call action
+     */
+    function _call(Actions.CallArgs memory _args) internal notPaused onlyWhitelistedCallee(_args.callee) {
+        CalleeInterface(_args.callee).callFunction{value: _args.msgValue}(
+            msg.sender,
+            _args.owner,
+            _args.vaultId,
+            _args.data
+        );
+
+        emit CallExecuted(msg.sender, _args.callee, _args.owner, _args.vaultId, _args.data);
+    }
 
     /**
-     * @notice function to check the validity of a specific vault id
+     * @notice function to check if a vault id is valid
      * @param _accountOwner account owner address
      * @param _vaultId vault id
      */
@@ -643,13 +744,21 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /**
      * @notice get Otoken payout after expiry
      * @param _otoken Otoken address
-     * @param _amount amount of Otoken
-     * @return payout = cashValue * amount
+     * @param _amount amount of Otoken. Always in 1e18
+     * @return amount of collateral to payout
      */
     function _getPayout(address _otoken, uint256 _amount) internal view returns (uint256) {
-        uint256 cashValue = calculator.getExpiredCashValue(_otoken);
+        uint256 rate = calculator.getExpiredPayoutRate(_otoken);
+        return rate.mul(_amount).div(1e18);
+    }
 
-        return cashValue.mul(_amount).div(1e18);
+    /**
+     * @notice return if a callee address is whitelisted or not
+     * @param _callee callee address
+     * @return boolean, true if whitelisted, otherwise false
+     */
+    function _isCalleeWhitelisted(address _callee) internal view returns (bool) {
+        return whitelist.isWhitelistedCallee(_callee);
     }
 
     /**

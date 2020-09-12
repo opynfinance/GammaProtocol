@@ -4,7 +4,7 @@ import {
   WETH9Instance,
   MarginPoolInstance,
   MockDumbERC20Instance,
-} from '../build/types/truffle-types'
+} from '../../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
 const {expectRevert, ether} = require('@openzeppelin/test-helpers')
