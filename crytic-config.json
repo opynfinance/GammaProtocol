@@ -3,6 +3,6 @@
   "solc": "0.6.10",
   "use_yarn": true,
   "echidna": {
-    "contract": "contracts/echidna/PropertiesOtokenTransferable.sol"
+    "contract": "PropertiesOtokenTransferable.sol"
   }
 }
