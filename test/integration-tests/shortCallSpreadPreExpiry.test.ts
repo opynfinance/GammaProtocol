@@ -73,10 +73,9 @@ contract('Short Call Spread Option flow', ([admin, accountOwner1, accountOperato
     const multiplier = (now - 28800) / 86400
     expiry = (Number(multiplier.toFixed(0)) + 1) * 86400 + time.duration.days(30).toNumber() + 28800
     // setup usdc and weth
-    // TODO: make usdc 6 decimals
-    usdc = await MockERC20.new('USDC', 'USDC', 18)
+    usdc = await MockERC20.new('USDC', 'USDC', 6)
     dai = await MockERC20.new('DAI', 'DAI', 18)
-    weth = await MockERC20.new('WETH', 'WETH', 18)
+    weth = await MockERC20.new('WETH', 'WETH', 16)
 
     // initiate addressbook first.
     addressBook = await AddressBook.new()
@@ -370,7 +369,7 @@ contract('Short Call Spread Option flow', ([admin, accountOwner1, accountOperato
       )
       assert.equal(
         vaultAfter.collateralAmounts[0].toString(),
-        createScaledUint256(collateralAmount, 18),
+        createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()),
         'Incorrect amount of collateral stored in the vault',
       )
       assert.equal(
@@ -451,7 +450,7 @@ contract('Short Call Spread Option flow', ([admin, accountOwner1, accountOperato
       )
       assert.equal(
         vaultAfter.collateralAmounts[0].toString(),
-        createScaledUint256(2 * collateralAmount, 18),
+        createScaledUint256(2 * collateralAmount, (await weth.decimals()).toNumber()),
         'Incorrect amount of collateral stored in the vault',
       )
       assert.equal(
@@ -528,7 +527,7 @@ contract('Short Call Spread Option flow', ([admin, accountOwner1, accountOperato
       )
       assert.equal(
         vaultAfter.collateralAmounts[0].toString(),
-        createScaledUint256(collateralAmount, 18),
+        createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()),
         'Incorrect amount of collateral stored in the vault',
       )
       assert.equal(

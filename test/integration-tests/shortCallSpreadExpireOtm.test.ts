@@ -73,8 +73,7 @@ contract('Short Call Spread Option flow', ([admin, accountOwner1, accountOperato
     const multiplier = (now - 28800) / 86400
     expiry = (Number(multiplier.toFixed(0)) + 1) * 86400 + time.duration.days(30).toNumber() + 28800
     // setup usdc and weth
-    // TODO: make usdc 6 decimals
-    usdc = await MockERC20.new('USDC', 'USDC', 18)
+    usdc = await MockERC20.new('USDC', 'USDC', 6)
     dai = await MockERC20.new('DAI', 'DAI', 18)
     weth = await MockERC20.new('WETH', 'WETH', 18)
 
@@ -298,7 +297,7 @@ contract('Short Call Spread Option flow', ([admin, accountOwner1, accountOperato
       const vaultStateBeforeSettlement = await calculator.getExcessCollateral(vaultBefore)
       assert.equal(
         vaultStateBeforeSettlement[0].toString(),
-        createScaledUint256(collateralAmount, (await usdc.decimals()).toNumber()),
+        createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()),
       )
       assert.equal(vaultStateBeforeSettlement[1], true)
 

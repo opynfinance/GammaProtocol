@@ -72,7 +72,7 @@ contract('Naked Call Option flow', ([admin, accountOwner1, accountOperator1, buy
 
     // setup usdc and weth
     // TODO: make usdc 6 decimals
-    usdc = await MockERC20.new('USDC', 'USDC', 18)
+    usdc = await MockERC20.new('USDC', 'USDC', 6)
     dai = await MockERC20.new('DAI', 'DAI', 18)
     weth = await MockERC20.new('WETH', 'WETH', 18)
 
@@ -210,7 +210,7 @@ contract('Naked Call Option flow', ([admin, accountOwner1, accountOperator1, buy
       const vaultStateBeforeSettlement = await calculator.getExcessCollateral(vaultBefore)
       assert.equal(
         vaultStateBeforeSettlement[0].toString(),
-        createScaledUint256(collateralAmount, (await usdc.decimals()).toNumber()),
+        createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()),
       )
       assert.equal(vaultStateBeforeSettlement[1], true)
 
