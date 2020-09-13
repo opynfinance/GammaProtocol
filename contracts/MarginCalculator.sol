@@ -104,7 +104,7 @@ contract MarginCalculator {
         uint256 excessCollateralInternal = SignedConverter.intToUint(excessCollateral.value);
 
         // convert from internal amount to token's native amount
-        uint256 excessCollateralExternal = hasCollateral
+        uint256 excessCollateralExternal = _vault.collateralAssets.length > 0
             ? _internalAmountToTokenAmount(excessCollateralInternal, _vault.collateralAssets[0])
             : excessCollateralInternal;
 
