@@ -1,4 +1,4 @@
-import {ActionTesterInstance} from '../build/types/truffle-types'
+import {ActionTesterInstance} from '../../build/types/truffle-types'
 
 const {BN, expectRevert} = require('@openzeppelin/test-helpers')
 

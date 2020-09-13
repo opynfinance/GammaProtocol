@@ -1,6 +1,6 @@
 import {
   MockERC20Instance,
-  MarginCalculatorInstance,
+  CalculatorTesterInstance,
   MockAddressBookInstance,
   MockOracleInstance,
   MockOtokenInstance,
@@ -13,12 +13,12 @@ const MockAddressBook = artifacts.require('MockAddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const MockOtoken = artifacts.require('MockOtoken.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
-const MarginCalculator = artifacts.require('MarginCalculator.sol')
+const MarginCalculator = artifacts.require('CalculatorTester.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 contract('MarginCalculator', () => {
   let expiry: number
 
-  let calculator: MarginCalculatorInstance
+  let calculator: CalculatorTesterInstance
   let addressBook: MockAddressBookInstance
   let oracle: MockOracleInstance
   // eth puts
@@ -130,6 +130,9 @@ contract('MarginCalculator', () => {
       await put.init(addressBook.address, weth.address, usdc.address, usdc.address, scaleNum(250), closeExpiry, true)
       await call.init(addressBook.address, weth.address, usdc.address, usdc.address, scaleNum(250), closeExpiry, false)
       await oracle.setIsFinalized(weth.address, closeExpiry, true)
+      // set USDC expiry price to 1
+      await oracle.setExpiryPrice(usdc.address, closeExpiry, scaleNum(1))
+      await oracle.setIsFinalized(usdc.address, closeExpiry, true)
     })
 
     it('Should revert when entering address(0)', async () => {
@@ -164,13 +167,21 @@ contract('MarginCalculator', () => {
       const cashedValue = await calculator.getExpiredCashValue(call.address)
       assert.equal(cashedValue.toString(), scaleNum(50))
     })
-    it('Should revert if price is not finalized.', async () => {
+    it('Should revert if underlying price is not finalized.', async () => {
       const ethPirce = scaleNum(200)
       await oracle.setExpiryPrice(weth.address, closeExpiry, ethPirce)
       await oracle.setIsFinalized(weth.address, closeExpiry, false)
       await expectRevert(
         calculator.getExpiredCashValue(call.address),
-        'MarginCalculator: Oracle price not finalized yet.',
+        'MarginCalculator: underlying price not finalized yet.',
+      )
+    })
+    it('Should revert if strike asset price is not finalized.', async () => {
+      await oracle.setIsFinalized(weth.address, closeExpiry, true)
+      await oracle.setIsFinalized(usdc.address, closeExpiry, false)
+      await expectRevert(
+        calculator.getExpiredCashValue(call.address),
+        'MarginCalculator: strike price not finalized yet.',
       )
     })
   })
@@ -829,6 +840,8 @@ contract('MarginCalculator', () => {
         if ((await time.latest()) < expiry) {
           await time.increaseTo(expiry + 2)
         }
+        await oracle.setIsFinalized(usdc.address, expiry, true)
+        await oracle.setExpiryPrice(usdc.address, expiry, scaleNum(1))
         await oracle.setIsFinalized(weth.address, expiry, true)
         await oracle.setExpiryPrice(weth.address, expiry, scaleNum(150))
       })

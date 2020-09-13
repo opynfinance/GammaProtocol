@@ -22,6 +22,7 @@ contract MarginCalculator {
     using SafeMath for uint256;
     using FPI for FPI.FixedPointInt;
     using FPI for int256;
+
     address public addressBook;
 
     constructor(address _addressBook) public {
@@ -31,26 +32,33 @@ contract MarginCalculator {
     }
 
     /**
-     * @notice Return the cash value of an expired oToken.
-     * @dev For call return = Max (0, ETH Price - oToken.strike)
-     * @dev For put return Max(0, oToken.strike - ETH Price)
+     * @notice Return the net worth of an expired oToken in collateral.
      * @param _otoken otoken address
-     * @return the cash value of an expired otoken
+     * @return the exchange rate that shows how much collateral unit can be take out by 1 otoken unit, scaled by 1e18
      */
-    function getExpiredCashValue(address _otoken) public view returns (uint256) {
-        require(_otoken != address(0), "MarginCalculator: Invalid token address.");
+    function getExpiredPayoutRate(address _otoken) external view returns (uint256) {
+        uint256 cashValueInStrike = _getExpiredCashValue(_otoken);
+
         OtokenInterface otoken = OtokenInterface(_otoken);
-        require(now > otoken.expiryTimestamp(), "MarginCalculator: Otoken not expired yet.");
+        address strike = otoken.strikeAsset();
+        address collateral = otoken.collateralAsset();
 
-        uint256 strikePrice = otoken.strikePrice();
-        (uint256 underlyingPrice, bool isFinalized) = _getUnderlyingPrice(_otoken);
-        require(isFinalized, "MarginCalculator: Oracle price not finalized yet.");
+        uint256 exchangeRate;
 
-        if (otoken.isPut()) {
-            return strikePrice > underlyingPrice ? strikePrice.sub(underlyingPrice) : 0;
+        if (strike == collateral) {
+            exchangeRate = cashValueInStrike;
         } else {
-            return underlyingPrice > strikePrice ? underlyingPrice.sub(strikePrice) : 0;
+            uint256 expiry = otoken.expiryTimestamp();
+            // isFinalized of strike asset is already checked in _getExpiredCashValue
+            (uint256 strikePrice, ) = _getAssetPrice(strike, expiry);
+            (uint256 collateralPrice, bool isCollateralPriceFinalized) = _getAssetPrice(collateral, expiry);
+            require(isCollateralPriceFinalized, "MarginCalculator: collateral price is not finalized");
+            exchangeRate = cashValueInStrike.mul(strikePrice).div(collateralPrice);
         }
+
+        // the exchangeRate was scaled by 1e18, if 1e18 otoken can take out 1 USDC, the exchangeRate is currently 1e18
+        // we want to return: how much USDC unit can be take out by 1 (1e18 units) otoken
+        return _internalAmountToTokenAmount(exchangeRate, collateral);
     }
 
     /**
@@ -104,6 +112,51 @@ contract MarginCalculator {
     }
 
     /**
+     * @notice Return the cash value of an expired oToken.
+     * @dev For call return = Max (0, ETH Price - oToken.strike)
+     * @dev For put return Max(0, oToken.strike - ETH Price)
+     * @param _otoken otoken address
+     * @return the cash value of an expired otoken, denominated in strike asset. scaled by 1e18
+     */
+    function _getExpiredCashValue(address _otoken) internal view returns (uint256) {
+        require(_otoken != address(0), "MarginCalculator: Invalid token address.");
+        OtokenInterface otoken = OtokenInterface(_otoken);
+        require(now > otoken.expiryTimestamp(), "MarginCalculator: Otoken not expired yet.");
+
+        // strike price is denominated in strike asset.
+        uint256 strikePrice = otoken.strikePrice();
+
+        // divide price of underlying by price of strike,
+        // to get the real price of underlying denominated in strike at expiry
+        (uint256 underlyingPrice, bool isUnderlyingFinalized) = _getAssetPrice(
+            otoken.underlyingAsset(),
+            otoken.expiryTimestamp()
+        );
+        (uint256 strikeAssetPrice, bool isStrikeFinalized) = _getAssetPrice(
+            otoken.strikeAsset(),
+            otoken.expiryTimestamp()
+        );
+
+        require(isUnderlyingFinalized, "MarginCalculator: underlying price not finalized yet.");
+        require(isStrikeFinalized, "MarginCalculator: strike price not finalized yet.");
+
+        FPI.FixedPointInt memory underlyingPriceFixedPoint = _uint256ToFPI(underlyingPrice);
+        FPI.FixedPointInt memory strikeAssetPriceFixedPoint = _uint256ToFPI(strikeAssetPrice);
+
+        FPI.FixedPointInt memory underlyingToStrikeFixedPoint = underlyingPriceFixedPoint.div(
+            strikeAssetPriceFixedPoint
+        );
+
+        uint256 underlyingToStrike = SignedConverter.intToUint(underlyingToStrikeFixedPoint.value);
+
+        if (otoken.isPut()) {
+            return strikePrice > underlyingToStrike ? strikePrice.sub(underlyingToStrike) : 0;
+        } else {
+            return underlyingToStrike > strikePrice ? underlyingToStrike.sub(strikePrice) : 0;
+        }
+    }
+
+    /**
      * @notice Calculate the amount of collateral needed for a spread vault.
      * @dev The vault passed in already pass amount array length = asset array length check.
      * @param _vault the theoretical vault that needs to be checked
@@ -138,15 +191,15 @@ contract MarginCalculator {
                 marginRequired = _getCallSpreadMarginRequired(shortAmount, longAmount, shortStrike, longStrike);
             }
         } else {
-            FPI.FixedPointInt memory shortCashValue = _uint256ToFPI(getExpiredCashValue(address(short)));
+            FPI.FixedPointInt memory shortCashValue = _uint256ToFPI(_getExpiredCashValue(address(short)));
             FPI.FixedPointInt memory longCashValue = hasLongInVault
-                ? _uint256ToFPI(getExpiredCashValue(_vault.longOtokens[0]))
+                ? _uint256ToFPI(_getExpiredCashValue(_vault.longOtokens[0]))
                 : _uint256ToFPI(0);
 
             if (isPut) {
                 marginRequired = _getExpiredPutSpreadCashValue(shortAmount, longAmount, shortCashValue, longCashValue);
             } else {
-                (uint256 underlyingPrice, ) = _getUnderlyingPrice(address(short));
+                (uint256 underlyingPrice, ) = _getAssetPrice(short.underlyingAsset(), short.expiryTimestamp());
                 FPI.FixedPointInt memory underlyingPriceInt = _uint256ToFPI(underlyingPrice);
                 marginRequired = _getExpiredCallSpreadCashValue(
                     shortAmount,
@@ -308,15 +361,14 @@ contract MarginCalculator {
     }
 
     /**
-     * @dev internal function to get underlying price of an otoken.
-     * @param _otoken otoken address
+     * @dev internal function to get price of an asset
+     * @param _asset asset address
      * @return price the underlying asset price with 18 decimals
      * @return isFinalized the price is finalized by the oracle and can't be changed
      */
-    function _getUnderlyingPrice(address _otoken) internal view returns (uint256 price, bool isFinalized) {
+    function _getAssetPrice(address _asset, uint256 _expiry) internal view returns (uint256 price, bool isFinalized) {
         OracleInterface oracle = OracleInterface(AddressBookInterface(addressBook).getOracle());
-        OtokenInterface otoken = OtokenInterface(_otoken);
-        return oracle.getExpiryPrice(otoken.underlyingAsset(), otoken.expiryTimestamp());
+        return oracle.getExpiryPrice(_asset, _expiry);
     }
 
     /**
@@ -378,7 +430,6 @@ contract MarginCalculator {
      *      Input:  15                    =>   Output:  0       rUSDC
      * @return internal amount that is sacled by 1e18.
      */
-
     function _tokenAmountToInternalAmount(uint256 _amount, address _token) internal view returns (uint256) {
         ERC20Interface token = ERC20Interface(_token);
         uint256 decimals = uint256(token.decimals());
