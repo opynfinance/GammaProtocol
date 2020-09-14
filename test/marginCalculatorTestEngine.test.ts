@@ -42,7 +42,6 @@ contract('MarginCalculator Test Engine', () => {
     // setup usdc and weth
     // TODO: scaling
     usdc = await MockERC20.new('USDC', 'USDC', 18)
-    dai = await MockERC20.new('DAI', 'DAI', 18)
     weth = await MockERC20.new('WETH', 'WETH', 18)
   })
 
@@ -74,65 +73,6 @@ contract('MarginCalculator Test Engine', () => {
 
         const expectedNetValue = tests[i].netValue
         const expectedIsExcess = tests[i].isExcess
-
-        longOption = await MockOtoken.new()
-        await longOption.init(
-          addressBook.address,
-          weth.address,
-          usdc.address,
-          usdc.address,
-          createScaledNumber(longStrike),
-          expiry,
-          true,
-        )
-        shortOption = await MockOtoken.new()
-        await shortOption.init(
-          addressBook.address,
-          weth.address,
-          usdc.address,
-          usdc.address,
-          createScaledNumber(shortStrike),
-          expiry,
-          true,
-        )
-
-        const vaultWithCollateral = createVault(
-          shortOption.address,
-          longOption.address,
-          usdc.address,
-          createScaledNumber(shortAmount),
-          createScaledNumber(longAmount),
-          createScaledNumber(collateral),
-        )
-
-        const [netValue, isExcess] = await calculator.getExcessCollateral(vaultWithCollateral)
-        assert.equal(isExcess, expectedIsExcess, testToString(tests[i]))
-        assert.equal(netValue.toString(), createScaledNumber(expectedNetValue), testToString(tests[i]))
-      }
-    })
-    it('test the various excess margin scenarios for puts after expiry', async () => {
-      const tests: Test[] = testPutsAfterExpiry
-
-      if ((await time.latest()) < expiry) {
-        await time.increaseTo(expiry + 2)
-      }
-
-      for (let i = 0; i < tests.length; i++) {
-        const longStrike = tests[i].longStrike
-        const shortStrike = tests[i].shortStrike
-
-        const longAmount = tests[i].longAmount
-        const shortAmount = tests[i].shortAmount
-
-        const collateral = tests[i].collateral
-
-        const expectedNetValue = tests[i].netValue
-        const expectedIsExcess = tests[i].isExcess
-
-        const spotPrice = tests[i].oraclePrice
-
-        await oracle.setExpiryPrice(weth.address, expiry, createScaledNumber(spotPrice))
-        oracle.setIsFinalized(weth.address, expiry, true)
 
         longOption = await MockOtoken.new()
         await longOption.init(
@@ -220,6 +160,66 @@ contract('MarginCalculator Test Engine', () => {
       }
     })
 
+    it('test the various excess margin scenarios for puts after expiry', async () => {
+      const tests: Test[] = testPutsAfterExpiry
+
+      if ((await time.latest()) < expiry) {
+        await time.increaseTo(expiry + 2)
+      }
+
+      for (let i = 0; i < tests.length; i++) {
+        const longStrike = tests[i].longStrike
+        const shortStrike = tests[i].shortStrike
+
+        const longAmount = tests[i].longAmount
+        const shortAmount = tests[i].shortAmount
+
+        const collateral = tests[i].collateral
+
+        const expectedNetValue = tests[i].netValue
+        const expectedIsExcess = tests[i].isExcess
+
+        const spotPrice = tests[i].oraclePrice
+
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createScaledNumber(spotPrice), true)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createScaledNumber(1), true)
+
+        longOption = await MockOtoken.new()
+        await longOption.init(
+          addressBook.address,
+          weth.address,
+          usdc.address,
+          usdc.address,
+          createScaledNumber(longStrike),
+          expiry,
+          true,
+        )
+        shortOption = await MockOtoken.new()
+        await shortOption.init(
+          addressBook.address,
+          weth.address,
+          usdc.address,
+          usdc.address,
+          createScaledNumber(shortStrike),
+          expiry,
+          true,
+        )
+
+        const vaultWithCollateral = createVault(
+          shortOption.address,
+          longOption.address,
+          usdc.address,
+          createScaledNumber(shortAmount),
+          createScaledNumber(longAmount),
+          createScaledNumber(collateral),
+        )
+
+        const [netValue, isExcess] = await calculator.getExcessCollateral(vaultWithCollateral)
+        assert.equal(isExcess, expectedIsExcess, testToString(tests[i]))
+        assert.equal(netValue.toString(), createScaledNumber(expectedNetValue), testToString(tests[i]))
+      }
+    })
+
     it('test the various excess margin scenarios for calls after expiry', async () => {
       const tests: Test[] = testCallsAfterExpiry
 
@@ -241,8 +241,8 @@ contract('MarginCalculator Test Engine', () => {
 
         const spotPrice = tests[i].oraclePrice
 
-        await oracle.setExpiryPrice(weth.address, expiry, createScaledNumber(spotPrice))
-        oracle.setIsFinalized(weth.address, expiry, true)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createScaledNumber(spotPrice), true)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createScaledNumber(1), true)
 
         longOption = await MockOtoken.new()
         await longOption.init(
