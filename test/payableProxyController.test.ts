@@ -126,7 +126,6 @@ contract(
         await whitelist.whitelistCollateral(weth.address)
 
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
-        // const collateralToDeposit = new BigNumber(web3.utils.toWei('5', 'ether'))
         const collateralToDeposit = new BigNumber('5')
 
         const actionArgs = [
@@ -177,6 +176,75 @@ contract(
           new BigNumber(vaultAfter.collateralAmounts[0]).toString(),
           collateralToDeposit.toString(),
           'Collateral asset amount deposited into vault mismatch',
+        )
+      })
+
+      it('should wrap ETH, execute actions and unwrap remaining WETH', async () => {
+        const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
+        const collateralToDeposit = new BigNumber('5')
+        const ethToSend = new BigNumber('7')
+
+        const actionArgs = [
+          {
+            actionType: ActionType.OpenVault,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: ZERO_ADDR,
+            vaultId: vaultCounter.toNumber(),
+            amount: '0',
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.DepositCollateral,
+            owner: accountOwner1,
+            sender: payableProxyController.address,
+            asset: weth.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToDeposit.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        const marginPoolBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
+
+        await payableProxyController.operate(actionArgs, accountOwner1, {
+          from: accountOwner1,
+          value: ethToSend.toString(),
+        })
+
+        const marginPoolBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
+        const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
+
+        assert.equal(
+          marginPoolBalanceAfter.minus(marginPoolBalanceBefore).toString(),
+          collateralToDeposit.toString(),
+          'Margin pool balance collateral asset balance mismatch',
+        )
+        assert.equal(vaultAfter.collateralAssets.length, 1, 'Vault collateral assets array length mismatch')
+        assert.equal(
+          vaultAfter.collateralAssets[0],
+          weth.address,
+          'Collateral asset address deposited into vault mismatch',
+        )
+        assert.equal(
+          new BigNumber(vaultAfter.collateralAmounts[0]).toString(),
+          collateralToDeposit.toString(),
+          'Collateral asset amount deposited into vault mismatch',
+        )
+      })
+
+      it('should revert calling fallback function unless caller is WETH token address', async () => {
+        const ethToSend = new BigNumber('7')
+
+        await expectRevert(
+          web3.eth.sendTransaction({
+            from: accountOwner1,
+            to: payableProxyController.address,
+            value: ethToSend.toString(),
+          }),
+          'PayableProxyController: Cannot receive ETH',
         )
       })
     })
