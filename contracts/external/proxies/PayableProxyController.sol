@@ -12,7 +12,7 @@ import {Controller} from "../../Controller.sol";
 
 /**
  * @title PayableProxyController
- * @author Opyn
+ * @author Opyn Team
  * @dev Contractfor wrapping/unwrapping ETH before/after interacting with Gamma
  */
 contract PayableProxyController is ReentrancyGuard {
