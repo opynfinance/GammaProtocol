@@ -235,6 +235,42 @@ contract(
         )
       })
 
+      it('should revert sending remaining ETH to address zero', async () => {
+        const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
+        const collateralToDeposit = new BigNumber('5')
+        const ethToSend = new BigNumber('7')
+
+        const actionArgs = [
+          {
+            actionType: ActionType.OpenVault,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: ZERO_ADDR,
+            vaultId: vaultCounter.toNumber(),
+            amount: '0',
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.DepositCollateral,
+            owner: accountOwner1,
+            sender: payableProxyController.address,
+            asset: weth.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToDeposit.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+        await expectRevert(
+          payableProxyController.operate(actionArgs, ZERO_ADDR, {
+            from: accountOwner1,
+            value: ethToSend.toString(),
+          }),
+          'PayableProxyController: cannot send ETH to address zero',
+        )
+      })
+
       it('should revert calling fallback function unless caller is WETH token address', async () => {
         const ethToSend = new BigNumber('7')
 
