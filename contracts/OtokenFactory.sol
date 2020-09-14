@@ -19,11 +19,8 @@ contract OtokenFactory is OtokenSpawner {
     /// @notice The Opyn AddressBook contract that records addresses of whitelist module and otoken impl address. */
     address public addressBook;
 
-    /// @notice An mapping of all created otokens */
-    mapping(uint256 => address) public otokens;
-
-    /// @dev Internal counter of otokens;
-    uint256 private counter;
+    /// @notice An array of all created otokens */
+    address[] public otokens;
 
     /// @dev A mapping from parameters hash to its deployed address
     mapping(bytes32 => address) private idToAddress;
@@ -96,8 +93,7 @@ contract OtokenFactory is OtokenSpawner {
         address newOtoken = _spawn(otokenImpl, initializationCalldata);
 
         idToAddress[id] = newOtoken;
-        otokens[counter] = newOtoken;
-        counter += 1;
+        otokens.push(newOtoken);
         WhitelistInterface(whitelist).whitelistOtoken(newOtoken);
 
         emit OtokenCreated(
@@ -119,7 +115,7 @@ contract OtokenFactory is OtokenSpawner {
      * @return length of the otokens array.
      */
     function getOtokensLength() external view returns (uint256) {
-        return counter;
+        return otokens.length;
     }
 
     /**
@@ -139,7 +135,7 @@ contract OtokenFactory is OtokenSpawner {
         uint256 _strikePrice,
         uint256 _expiry,
         bool _isPut
-    ) external view returns (address otoken) {
+    ) external view returns (address) {
         bytes32 id = _getOptionId(_underlyingAsset, _strikeAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
         return idToAddress[id];
     }
@@ -194,7 +190,7 @@ contract OtokenFactory is OtokenSpawner {
         uint256 _strikePrice,
         uint256 _expiry,
         bool _isPut
-    ) internal pure returns (bytes32 id) {
+    ) internal pure returns (bytes32) {
         return
             keccak256(
                 abi.encodePacked(_underlyingAsset, _strikeAsset, _collateralAsset, _strikePrice, _expiry, _isPut)
