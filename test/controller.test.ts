@@ -11,6 +11,7 @@ import {
   OwnedUpgradeabilityProxyInstance,
 } from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
+import {createTokenAmount, createScaledNumber} from './utils'
 
 const {expectRevert, expectEvent, time} = require('@openzeppelin/test-helpers')
 
@@ -19,7 +20,7 @@ const MockERC20 = artifacts.require('MockERC20.sol')
 const MockOtoken = artifacts.require('MockOtoken.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy.sol')
-const MockMarginCalculator = artifacts.require('MockMarginCalculator.sol')
+const MarginCalculator = artifacts.require('MarginCalculator.sol')
 const MockWhitelistModule = artifacts.require('MockWhitelistModule.sol')
 const AddressBook = artifacts.require('AddressBook.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
@@ -48,6 +49,7 @@ contract(
     // ERC20 mock
     let usdc: MockERC20Instance
     let weth: MockERC20Instance
+    let weth2: MockERC20Instance
     // Oracle module
     let oracle: MockOracleInstance
     // calculator module
@@ -62,16 +64,20 @@ contract(
     let controllerImplementation: ControllerInstance
     let controllerProxy: ControllerInstance
 
+    const usdcDecimals = 6
+    const wethDecimals = 18
+
     before('Deployment', async () => {
       // addressbook deployment
       addressBook = await AddressBook.new()
       // ERC20 deployment
-      usdc = await MockERC20.new('USDC', 'USDC', 8)
-      weth = await MockERC20.new('WETH', 'WETH', 18)
+      usdc = await MockERC20.new('USDC', 'USDC', usdcDecimals)
+      weth = await MockERC20.new('WETH', 'WETH', wethDecimals)
+      weth2 = await MockERC20.new('WETH', 'WETH', wethDecimals)
       // deploy Oracle module
       oracle = await MockOracle.new(addressBook.address, {from: owner})
       // calculator deployment
-      calculator = await MockMarginCalculator.new(addressBook.address)
+      calculator = await MarginCalculator.new(addressBook.address)
       // margin pool deployment
       marginPool = await MarginPool.new(addressBook.address)
       // whitelist module
@@ -102,9 +108,9 @@ contract(
       assert.equal(await controllerProxy.systemPaused(), false, 'System is paused')
 
       // make everyone rich
-      await usdc.mint(accountOwner1, new BigNumber('1000'))
-      await usdc.mint(accountOperator1, new BigNumber('1000'))
-      await usdc.mint(random, new BigNumber('1000'))
+      await usdc.mint(accountOwner1, createTokenAmount(10000, usdcDecimals))
+      await usdc.mint(accountOperator1, createTokenAmount(10000, usdcDecimals))
+      await usdc.mint(random, createTokenAmount(10000, usdcDecimals))
     })
 
     describe('Controller initialization', () => {
@@ -327,14 +333,14 @@ contract(
           true,
         )
 
-        await longOtoken.mintOtoken(accountOwner1, new BigNumber('100'))
-        await longOtoken.mintOtoken(accountOperator1, new BigNumber('100'))
+        await longOtoken.mintOtoken(accountOwner1, createTokenAmount(100, 18))
+        await longOtoken.mintOtoken(accountOperator1, createTokenAmount(100, 18))
       })
 
       describe('deposit long otoken', () => {
         it('should revert depositing a non-whitelisted long otoken into vault', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          const collateralToDeposit = new BigNumber('20')
+          const longToDeposit = createTokenAmount(20)
           const actionArgs = [
             {
               actionType: ActionType.DepositLongOption,
@@ -342,13 +348,13 @@ contract(
               sender: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
-              amount: collateralToDeposit.toNumber(),
+              amount: longToDeposit,
               index: '0',
               data: ZERO_ADDR,
             },
           ]
 
-          await longOtoken.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
+          await longOtoken.approve(marginPool.address, longToDeposit, {from: accountOwner1})
           await expectRevert(
             controllerProxy.operate(actionArgs, {from: accountOwner1}),
             'Controller: otoken is not whitelisted to be used as collateral',
@@ -360,7 +366,7 @@ contract(
           await whitelist.whitelistOtoken(longOtoken.address)
 
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          const collateralToDeposit = new BigNumber('20')
+          const longToDeposit = createTokenAmount(20)
           const actionArgs = [
             {
               actionType: ActionType.DepositLongOption,
@@ -368,7 +374,7 @@ contract(
               sender: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
-              amount: collateralToDeposit.toNumber(),
+              amount: longToDeposit,
               index: '0',
               data: ZERO_ADDR,
             },
@@ -376,7 +382,7 @@ contract(
           const marginPoolBalanceBefore = new BigNumber(await longOtoken.balanceOf(marginPool.address))
           const senderBalanceBefore = new BigNumber(await longOtoken.balanceOf(accountOwner1))
 
-          await longOtoken.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
+          await longOtoken.approve(marginPool.address, longToDeposit, {from: accountOwner1})
           await controllerProxy.operate(actionArgs, {from: accountOwner1})
 
           const marginPoolBalanceAfter = new BigNumber(await longOtoken.balanceOf(marginPool.address))
@@ -385,12 +391,12 @@ contract(
 
           assert.equal(
             marginPoolBalanceAfter.minus(marginPoolBalanceBefore).toString(),
-            collateralToDeposit.toString(),
+            longToDeposit,
             'Margin pool balance long otoken balance mismatch',
           )
           assert.equal(
             senderBalanceBefore.minus(senderBalanceAfter).toString(),
-            collateralToDeposit.toString(),
+            longToDeposit,
             'Sender balance long otoken balance mismatch',
           )
           assert.equal(vaultAfter.longOtokens.length, 1, 'Vault long otoken array length mismatch')
@@ -401,7 +407,7 @@ contract(
           )
           assert.equal(
             new BigNumber(vaultAfter.longAmounts[0]).toString(),
-            collateralToDeposit.toString(),
+            longToDeposit,
             'Long otoken amount deposited into vault mismatch',
           )
         })
@@ -414,7 +420,7 @@ contract(
           )
 
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          const collateralToDeposit = new BigNumber('20')
+          const longToDeposit = createTokenAmount(20)
           const actionArgs = [
             {
               actionType: ActionType.DepositLongOption,
@@ -422,7 +428,7 @@ contract(
               sender: accountOperator1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
-              amount: collateralToDeposit.toNumber(),
+              amount: longToDeposit,
               index: '0',
               data: ZERO_ADDR,
             },
@@ -431,7 +437,7 @@ contract(
           const senderBalanceBefore = new BigNumber(await longOtoken.balanceOf(accountOperator1))
           const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
 
-          await longOtoken.approve(marginPool.address, collateralToDeposit, {from: accountOperator1})
+          await longOtoken.approve(marginPool.address, longToDeposit, {from: accountOperator1})
           await controllerProxy.operate(actionArgs, {from: accountOperator1})
 
           const marginPoolBalanceAfter = new BigNumber(await longOtoken.balanceOf(marginPool.address))
@@ -440,12 +446,12 @@ contract(
 
           assert.equal(
             marginPoolBalanceAfter.minus(marginPoolBalanceBefore).toString(),
-            collateralToDeposit.toString(),
+            longToDeposit.toString(),
             'Margin pool balance long otoken balance mismatch',
           )
           assert.equal(
             senderBalanceBefore.minus(senderBalanceAfter).toString(),
-            collateralToDeposit.toString(),
+            longToDeposit.toString(),
             'Sender balance long otoken balance mismatch',
           )
           assert.equal(vaultAfter.longOtokens.length, 1, 'Vault long otoken array length mismatch')
@@ -456,14 +462,14 @@ contract(
           )
           assert.equal(
             new BigNumber(vaultAfter.longAmounts[0]).minus(new BigNumber(vaultBefore.longAmounts[0])).toString(),
-            collateralToDeposit.toString(),
+            longToDeposit.toString(),
             'Long otoken amount deposited into vault mismatch',
           )
         })
 
         it('should execute depositing long otoken into vault in multiple actions', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          const collateralToDeposit = new BigNumber('20')
+          const longToDeposit = new BigNumber(createTokenAmount(20))
           const actionArgs = [
             {
               actionType: ActionType.DepositLongOption,
@@ -471,7 +477,7 @@ contract(
               sender: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
-              amount: collateralToDeposit.toNumber(),
+              amount: longToDeposit.toString(),
               index: '0',
               data: ZERO_ADDR,
             },
@@ -481,7 +487,7 @@ contract(
               sender: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
-              amount: collateralToDeposit.toNumber(),
+              amount: longToDeposit.toString(),
               index: '0',
               data: ZERO_ADDR,
             },
@@ -490,7 +496,7 @@ contract(
           const senderBalanceBefore = new BigNumber(await longOtoken.balanceOf(accountOwner1))
           const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
 
-          await longOtoken.approve(marginPool.address, collateralToDeposit.multipliedBy(2), {from: accountOwner1})
+          await longOtoken.approve(marginPool.address, longToDeposit.multipliedBy(2).toString(), {from: accountOwner1})
           await controllerProxy.operate(actionArgs, {from: accountOwner1})
 
           const marginPoolBalanceAfter = new BigNumber(await longOtoken.balanceOf(marginPool.address))
@@ -499,12 +505,12 @@ contract(
 
           assert.equal(
             marginPoolBalanceAfter.minus(marginPoolBalanceBefore).toString(),
-            collateralToDeposit.multipliedBy(2).toString(),
+            longToDeposit.multipliedBy(2).toString(),
             'Margin pool balance long otoken balance mismatch',
           )
           assert.equal(
             senderBalanceBefore.minus(senderBalanceAfter).toString(),
-            collateralToDeposit.multipliedBy(2).toString(),
+            longToDeposit.multipliedBy(2).toString(),
             'Sender balance long otoken balance mismatch',
           )
           assert.equal(vaultAfter.longOtokens.length, 1, 'Vault long otoken array length mismatch')
@@ -515,14 +521,14 @@ contract(
           )
           assert.equal(
             new BigNumber(vaultAfter.longAmounts[0]).minus(new BigNumber(vaultBefore.longAmounts[0])).toString(),
-            collateralToDeposit.multipliedBy(2).toString(),
+            longToDeposit.multipliedBy(2).toString(),
             'Long otoken amount deposited into vault mismatch',
           )
         })
 
         it('should revert depositing long otoken with amount equal to zero', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          const collateralToDeposit = new BigNumber('20')
+          const longToDeposit = createTokenAmount(20)
           const actionArgs = [
             {
               actionType: ActionType.DepositLongOption,
@@ -536,7 +542,7 @@ contract(
             },
           ]
 
-          await longOtoken.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
+          await longOtoken.approve(marginPool.address, longToDeposit, {from: accountOwner1})
           await expectRevert(
             controllerProxy.operate(actionArgs, {from: accountOwner1}),
             'MarginAccount: invalid long otoken amount',
@@ -562,7 +568,7 @@ contract(
           await whitelist.whitelistOtoken(expiredLongOtoken.address)
 
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          const collateralToDeposit = new BigNumber('20')
+          const longToDeposit = createTokenAmount(20)
           const actionArgs = [
             {
               actionType: ActionType.DepositLongOption,
@@ -570,13 +576,13 @@ contract(
               sender: accountOwner1,
               asset: expiredLongOtoken.address,
               vaultId: vaultCounter.toNumber(),
-              amount: collateralToDeposit.toNumber(),
+              amount: longToDeposit,
               index: '0',
               data: ZERO_ADDR,
             },
           ]
 
-          await expiredLongOtoken.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
+          await expiredLongOtoken.approve(marginPool.address, longToDeposit, {from: accountOwner1})
           await expectRevert(
             controllerProxy.operate(actionArgs, {from: accountOwner1}),
             'Controller: otoken used as collateral is already expired',
@@ -585,7 +591,7 @@ contract(
 
         it('should revert when vault have more than 1 long otoken', async () => {
           const expiryTime = new BigNumber(60 * 60) // after 1 hour
-          const collateralToDeposit = new BigNumber('20')
+          const longToDeposit = createTokenAmount(20)
           // deploy second Otoken
           const secondLongOtoken: MockOtokenInstance = await MockOtoken.new()
           // init otoken
@@ -598,7 +604,7 @@ contract(
             new BigNumber(await time.latest()).plus(expiryTime),
             true,
           )
-          await secondLongOtoken.mintOtoken(accountOwner1, collateralToDeposit)
+          await secondLongOtoken.mintOtoken(accountOwner1, longToDeposit)
           // whitelist otoken
           await whitelist.whitelistOtoken(secondLongOtoken.address)
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
@@ -609,13 +615,13 @@ contract(
               sender: accountOwner1,
               asset: secondLongOtoken.address,
               vaultId: vaultCounter.toNumber(),
-              amount: collateralToDeposit.toNumber(),
+              amount: longToDeposit,
               index: '1',
               data: ZERO_ADDR,
             },
           ]
 
-          await secondLongOtoken.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
+          await secondLongOtoken.approve(marginPool.address, longToDeposit, {from: accountOwner1})
           await expectRevert(
             controllerProxy.operate(actionArgs, {from: accountOwner1}),
             'MarginCalculator: Too many long otokens in the vault.',
@@ -628,7 +634,7 @@ contract(
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-          const collateralToWithdraw = new BigNumber('20')
+          const longToWithdraw = createTokenAmount(20)
           const actionArgs = [
             {
               actionType: ActionType.WithdrawLongOption,
@@ -636,7 +642,7 @@ contract(
               sender: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
-              amount: collateralToWithdraw.toNumber(),
+              amount: longToWithdraw.toString(),
               index: '1',
               data: ZERO_ADDR,
             },
@@ -652,7 +658,7 @@ contract(
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-          const collateralToWithdraw = new BigNumber('20')
+          const longToWithdraw = createTokenAmount(20)
           const actionArgs = [
             {
               actionType: ActionType.WithdrawLongOption,
@@ -660,7 +666,7 @@ contract(
               sender: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
-              amount: collateralToWithdraw.toNumber(),
+              amount: longToWithdraw,
               index: '0',
               data: ZERO_ADDR,
             },
@@ -677,7 +683,7 @@ contract(
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
           const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
-          const collateralToWithdraw = new BigNumber(vaultBefore.longAmounts[0]).plus(1)
+          const longToWithdraw = new BigNumber(vaultBefore.longAmounts[0]).plus(1)
           const actionArgs = [
             {
               actionType: ActionType.WithdrawLongOption,
@@ -685,7 +691,7 @@ contract(
               sender: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
-              amount: collateralToWithdraw.toNumber(),
+              amount: longToWithdraw.toString(),
               index: '0',
               data: ZERO_ADDR,
             },
@@ -701,7 +707,7 @@ contract(
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-          const collateralToWithdraw = new BigNumber('10')
+          const longToWithdraw = createTokenAmount(10)
           const actionArgs = [
             {
               actionType: ActionType.WithdrawLongOption,
@@ -709,7 +715,7 @@ contract(
               sender: random,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
-              amount: collateralToWithdraw.toNumber(),
+              amount: longToWithdraw,
               index: '0',
               data: ZERO_ADDR,
             },
@@ -726,18 +732,18 @@ contract(
 
           assert.equal(
             marginPoolBalanceBefore.minus(marginPoolBalanceAfter).toString(),
-            collateralToWithdraw.toString(),
+            longToWithdraw.toString(),
             'Margin pool balance long otoken balance mismatch',
           )
           assert.equal(
             receiverBalanceAfter.minus(receiverBalanceBefore).toString(),
-            collateralToWithdraw.toString(),
+            longToWithdraw.toString(),
             'Receiver long otoken balance mismatch',
           )
           assert.equal(vaultAfter.longOtokens.length, 1, 'Vault long otoken array length mismatch')
           assert.equal(
             new BigNumber(vaultBefore.longAmounts[0]).minus(new BigNumber(vaultAfter.longAmounts[0])).toString(),
-            collateralToWithdraw.toString(),
+            longToWithdraw.toString(),
             'Long otoken amount in vault after withdraw mismatch',
           )
         })
@@ -752,7 +758,7 @@ contract(
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-          const collateralToWithdraw = new BigNumber('10')
+          const longToWithdraw = createTokenAmount(10)
           const actionArgs = [
             {
               actionType: ActionType.WithdrawLongOption,
@@ -760,7 +766,7 @@ contract(
               sender: random,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
-              amount: collateralToWithdraw.toNumber(),
+              amount: longToWithdraw,
               index: '0',
               data: ZERO_ADDR,
             },
@@ -777,18 +783,18 @@ contract(
 
           assert.equal(
             marginPoolBalanceBefore.minus(marginPoolBalanceAfter).toString(),
-            collateralToWithdraw.toString(),
+            longToWithdraw.toString(),
             'Margin pool balance long otoken balance mismatch',
           )
           assert.equal(
             receiverBalanceAfter.minus(receiverBalanceBefore).toString(),
-            collateralToWithdraw.toString(),
+            longToWithdraw.toString(),
             'Receiver long otoken balance mismatch',
           )
           assert.equal(vaultAfter.longOtokens.length, 1, 'Vault long otoken array length mismatch')
           assert.equal(
             new BigNumber(vaultBefore.longAmounts[0]).minus(new BigNumber(vaultAfter.longAmounts[0])).toString(),
-            collateralToWithdraw.toString(),
+            longToWithdraw.toString(),
             'Long otoken amount in vault after withdraw mismatch',
           )
         })
@@ -797,7 +803,7 @@ contract(
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-          const collateralToWithdraw = new BigNumber('10')
+          const longToWithdraw = new BigNumber(createTokenAmount(10))
           const actionArgs = [
             {
               actionType: ActionType.WithdrawLongOption,
@@ -805,7 +811,7 @@ contract(
               sender: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
-              amount: collateralToWithdraw.toNumber(),
+              amount: longToWithdraw.toString(),
               index: '0',
               data: ZERO_ADDR,
             },
@@ -815,7 +821,7 @@ contract(
               sender: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
-              amount: collateralToWithdraw.toNumber(),
+              amount: longToWithdraw.toString(),
               index: '0',
               data: ZERO_ADDR,
             },
@@ -832,18 +838,18 @@ contract(
 
           assert.equal(
             marginPoolBalanceBefore.minus(marginPoolBalanceAfter).toString(),
-            collateralToWithdraw.multipliedBy(2).toString(),
+            longToWithdraw.multipliedBy(2).toString(),
             'Margin pool balance long otoken balance mismatch',
           )
           assert.equal(
             receiverBalanceAfter.minus(receiverBalanceBefore).toString(),
-            collateralToWithdraw.multipliedBy(2).toString(),
+            longToWithdraw.multipliedBy(2).toString(),
             'Receiver long otoken balance mismatch',
           )
           assert.equal(vaultAfter.longOtokens.length, 1, 'Vault long otoken array length mismatch')
           assert.equal(
             new BigNumber(vaultBefore.longAmounts[0]).minus(new BigNumber(vaultAfter.longAmounts[0])).toString(),
-            collateralToWithdraw.multipliedBy(2).toString(),
+            longToWithdraw.multipliedBy(2).toString(),
             'Long otoken amount in vault after withdraw mismatch',
           )
         })
@@ -854,7 +860,7 @@ contract(
 
           const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
 
-          const collateralToWithdraw = new BigNumber(vaultBefore.longAmounts[0])
+          const longToWithdraw = new BigNumber(vaultBefore.longAmounts[0])
           const actionArgs = [
             {
               actionType: ActionType.WithdrawLongOption,
@@ -862,7 +868,7 @@ contract(
               sender: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
-              amount: collateralToWithdraw.toNumber(),
+              amount: longToWithdraw.toString(),
               index: '0',
               data: ZERO_ADDR,
             },
@@ -878,19 +884,19 @@ contract(
 
           assert.equal(
             marginPoolBalanceBefore.minus(marginPoolBalanceAfter).toString(),
-            collateralToWithdraw.toString(),
+            longToWithdraw.toString(),
             'Margin pool balance long otoken balance mismatch',
           )
           assert.equal(
             receiverBalanceAfter.minus(receiverBalanceBefore).toString(),
-            collateralToWithdraw.toString(),
+            longToWithdraw.toString(),
             'Receiver long otoken balance mismatch',
           )
           assert.equal(vaultAfter.longOtokens.length, 1, 'Vault long otoken array length mismatch')
           assert.equal(vaultAfter.longOtokens[0], ZERO_ADDR, 'Vault long otoken address after clearing mismatch')
           assert.equal(
             new BigNumber(vaultBefore.longAmounts[0]).minus(new BigNumber(vaultAfter.longAmounts[0])).toString(),
-            collateralToWithdraw.toString(),
+            longToWithdraw.toString(),
             'Long otoken amount in vault after withdraw mismatch',
           )
         })
@@ -912,8 +918,8 @@ contract(
               true,
             )
             // some free money for the account owner
-            const collateralToDeposit = new BigNumber('100')
-            await expiredLongOtoken.mintOtoken(accountOwner1, collateralToDeposit)
+            const longToDeposit = createTokenAmount(100)
+            await expiredLongOtoken.mintOtoken(accountOwner1, longToDeposit)
             // whitelist otoken
             await whitelist.whitelistOtoken(expiredLongOtoken.address, {from: owner})
             // deposit long otoken into vault
@@ -925,12 +931,12 @@ contract(
                 sender: accountOwner1,
                 asset: expiredLongOtoken.address,
                 vaultId: vaultId.toNumber(),
-                amount: collateralToDeposit.toNumber(),
+                amount: longToDeposit,
                 index: '0',
                 data: ZERO_ADDR,
               },
             ]
-            await expiredLongOtoken.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
+            await expiredLongOtoken.approve(marginPool.address, longToDeposit, {from: accountOwner1})
             await controllerProxy.operate(actionArgs, {from: accountOwner1})
             const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultId)
             assert.equal(vaultAfter.longOtokens.length, 1, 'Vault long otoken array length mismatch')
@@ -941,7 +947,7 @@ contract(
             )
             assert.equal(
               new BigNumber(vaultAfter.longAmounts[0]).toString(),
-              collateralToDeposit.toString(),
+              longToDeposit.toString(),
               'Long otoken amount deposited into vault mismatch',
             )
           })
@@ -952,7 +958,7 @@ contract(
 
             const vaultId = new BigNumber('1')
             const vault = await controllerProxy.getVault(accountOwner1, vaultId)
-            const collateralToWithdraw = new BigNumber(vault.longAmounts[0])
+            const longToWithdraw = new BigNumber(vault.longAmounts[0])
             const actionArgs = [
               {
                 actionType: ActionType.WithdrawLongOption,
@@ -960,7 +966,7 @@ contract(
                 sender: accountOwner1,
                 asset: expiredLongOtoken.address,
                 vaultId: vaultId.toNumber(),
-                amount: collateralToWithdraw.toNumber(),
+                amount: longToWithdraw.toString(),
                 index: '0',
                 data: ZERO_ADDR,
               },
@@ -989,7 +995,7 @@ contract(
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-          const collateralToDeposit = new BigNumber('10')
+          const collateralToDeposit = createTokenAmount(10, usdcDecimals)
           const actionArgs = [
             {
               actionType: ActionType.DepositCollateral,
@@ -997,7 +1003,7 @@ contract(
               sender: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
-              amount: collateralToDeposit.toNumber(),
+              amount: collateralToDeposit,
               index: '0',
               data: ZERO_ADDR,
             },
@@ -1040,7 +1046,7 @@ contract(
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-          const collateralToDeposit = new BigNumber('10')
+          const collateralToDeposit = createTokenAmount(10, usdcDecimals)
           const actionArgs = [
             {
               actionType: ActionType.DepositCollateral,
@@ -1048,7 +1054,7 @@ contract(
               sender: accountOperator1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
-              amount: collateralToDeposit.toNumber(),
+              amount: collateralToDeposit,
               index: '0',
               data: ZERO_ADDR,
             },
@@ -1094,7 +1100,7 @@ contract(
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-          const collateralToDeposit = new BigNumber('0')
+          const collateralToDeposit = createTokenAmount(0, usdcDecimals)
           const actionArgs = [
             {
               actionType: ActionType.DepositCollateral,
@@ -1102,7 +1108,7 @@ contract(
               sender: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
-              amount: collateralToDeposit.toNumber(),
+              amount: collateralToDeposit,
               index: '0',
               data: ZERO_ADDR,
             },
@@ -1117,7 +1123,7 @@ contract(
 
         it('should execute depositing collateral into vault in multiple actions', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          const collateralToDeposit = new BigNumber('20')
+          const collateralToDeposit = new BigNumber(createTokenAmount(20, usdcDecimals))
           const actionArgs = [
             {
               actionType: ActionType.DepositCollateral,
@@ -1125,7 +1131,7 @@ contract(
               sender: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
-              amount: collateralToDeposit.toNumber(),
+              amount: collateralToDeposit.toString(),
               index: '0',
               data: ZERO_ADDR,
             },
@@ -1135,7 +1141,7 @@ contract(
               sender: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
-              amount: collateralToDeposit.toNumber(),
+              amount: collateralToDeposit.toString(),
               index: '0',
               data: ZERO_ADDR,
             },
@@ -1185,7 +1191,7 @@ contract(
             const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
             assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-            const collateralDeposit = new BigNumber('10')
+            const collateralDeposit = createTokenAmount(10, wethDecimals)
             const actionArgs = [
               {
                 actionType: ActionType.DepositCollateral,
@@ -1193,7 +1199,7 @@ contract(
                 sender: accountOwner1,
                 asset: trx.address,
                 vaultId: vaultCounter.toNumber(),
-                amount: collateralDeposit.toNumber(),
+                amount: collateralDeposit,
                 index: '0',
                 data: ZERO_ADDR,
               },
@@ -1208,7 +1214,7 @@ contract(
         })
 
         it('should revert when vault have more than 1 collateral type', async () => {
-          const collateralToDeposit = new BigNumber('20')
+          const collateralToDeposit = createTokenAmount(10, wethDecimals)
           //whitelist weth to use in this test
           await whitelist.whitelistCollateral(weth.address)
           await weth.mint(accountOwner1, collateralToDeposit)
@@ -1221,7 +1227,7 @@ contract(
               sender: accountOwner1,
               asset: weth.address,
               vaultId: vaultCounter.toNumber(),
-              amount: collateralToDeposit.toNumber(),
+              amount: collateralToDeposit,
               index: '1',
               data: ZERO_ADDR,
             },
@@ -1240,7 +1246,7 @@ contract(
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-          const collateralToWithdraw = new BigNumber('20')
+          const collateralToWithdraw = createTokenAmount(20, usdcDecimals)
           const actionArgs = [
             {
               actionType: ActionType.WithdrawCollateral,
@@ -1248,7 +1254,7 @@ contract(
               sender: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
-              amount: collateralToWithdraw.toNumber(),
+              amount: collateralToWithdraw,
               index: '1',
               data: ZERO_ADDR,
             },
@@ -1264,7 +1270,7 @@ contract(
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-          const collateralToWithdraw = new BigNumber('20')
+          const collateralToWithdraw = createTokenAmount(20, usdcDecimals)
           const actionArgs = [
             {
               actionType: ActionType.WithdrawCollateral,
@@ -1272,7 +1278,7 @@ contract(
               sender: accountOwner1,
               asset: usdc.address,
               vaultId: '1350',
-              amount: collateralToWithdraw.toNumber(),
+              amount: collateralToWithdraw,
               index: '1',
               data: ZERO_ADDR,
             },
@@ -1310,7 +1316,7 @@ contract(
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-          const collateralToWithdraw = new BigNumber('10')
+          const collateralToWithdraw = createTokenAmount(10, usdcDecimals)
           const actionArgs = [
             {
               actionType: ActionType.WithdrawCollateral,
@@ -1318,7 +1324,7 @@ contract(
               sender: random,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
-              amount: collateralToWithdraw.toNumber(),
+              amount: collateralToWithdraw,
               index: '0',
               data: ZERO_ADDR,
             },
@@ -1363,7 +1369,7 @@ contract(
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-          const collateralToWithdraw = new BigNumber('10')
+          const collateralToWithdraw = createTokenAmount(10, usdcDecimals)
           const actionArgs = [
             {
               actionType: ActionType.WithdrawCollateral,
@@ -1371,7 +1377,7 @@ contract(
               sender: random,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
-              amount: collateralToWithdraw.toNumber(),
+              amount: collateralToWithdraw,
               index: '0',
               data: ZERO_ADDR,
             },
@@ -1410,7 +1416,7 @@ contract(
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-          const collateralToWithdraw = new BigNumber('10')
+          const collateralToWithdraw = new BigNumber(createTokenAmount(10, usdcDecimals))
           const actionArgs = [
             {
               actionType: ActionType.WithdrawCollateral,
@@ -1418,7 +1424,7 @@ contract(
               sender: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
-              amount: collateralToWithdraw.toNumber(),
+              amount: collateralToWithdraw.toString(),
               index: '0',
               data: ZERO_ADDR,
             },
@@ -1428,7 +1434,7 @@ contract(
               sender: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
-              amount: collateralToWithdraw.toNumber(),
+              amount: collateralToWithdraw.toString(),
               index: '0',
               data: ZERO_ADDR,
             },
@@ -1563,7 +1569,7 @@ contract(
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-          const amountToMint = new BigNumber('1')
+          const amountToMint = createTokenAmount(1)
           const actionArgs = [
             {
               actionType: ActionType.MintShortOption,
@@ -1571,7 +1577,7 @@ contract(
               sender: random,
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
-              amount: amountToMint.toNumber(),
+              amount: amountToMint,
               index: '0',
               data: ZERO_ADDR,
             },
@@ -1588,7 +1594,7 @@ contract(
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
           const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e18)
-          const amountToMint = new BigNumber('1')
+          const amountToMint = createTokenAmount(1, wethDecimals)
           const actionArgs = [
             {
               actionType: ActionType.MintShortOption,
@@ -1596,7 +1602,7 @@ contract(
               sender: accountOwner1,
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
-              amount: amountToMint.toNumber(),
+              amount: amountToMint,
               index: '0',
               data: ZERO_ADDR,
             },
@@ -1606,7 +1612,7 @@ contract(
               sender: accountOwner1,
               asset: weth.address,
               vaultId: vaultCounter.toNumber(),
-              amount: collateralToDeposit.toNumber(),
+              amount: collateralToDeposit.toString(),
               index: '0',
               data: ZERO_ADDR,
             },
@@ -1626,8 +1632,8 @@ contract(
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-          const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e18)
-          const amountToMint = new BigNumber('1')
+          const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e12)
+          const amountToMint = createTokenAmount(1)
           const actionArgs = [
             {
               actionType: ActionType.MintShortOption,
@@ -1635,7 +1641,7 @@ contract(
               sender: accountOwner1,
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
-              amount: amountToMint.toNumber(),
+              amount: amountToMint,
               index: '0',
               data: ZERO_ADDR,
             },
@@ -1709,8 +1715,8 @@ contract(
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-          const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e18)
-          const amountToMint = new BigNumber('1')
+          const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e12)
+          const amountToMint = createTokenAmount(1)
           const actionArgs = [
             {
               actionType: ActionType.MintShortOption,
@@ -1718,7 +1724,7 @@ contract(
               sender: accountOperator1,
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
-              amount: amountToMint.toNumber(),
+              amount: amountToMint,
               index: '0',
               data: ZERO_ADDR,
             },
@@ -1825,7 +1831,7 @@ contract(
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
           // deposit more collateral
-          const excessCollateralToDeposit = new BigNumber('50')
+          const excessCollateralToDeposit = createTokenAmount(50, usdcDecimals)
           const firstActionArgs = [
             {
               actionType: ActionType.DepositCollateral,
@@ -1833,7 +1839,7 @@ contract(
               sender: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
-              amount: excessCollateralToDeposit.toNumber(),
+              amount: excessCollateralToDeposit,
               index: '0',
               data: ZERO_ADDR,
             },
@@ -1858,13 +1864,13 @@ contract(
               sender: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
-              amount: excessCollateralToDeposit.toNumber(),
+              amount: excessCollateralToDeposit,
               index: '0',
               data: ZERO_ADDR,
             },
           ]
 
-          controllerProxy.operate(secondActionArgs, {from: accountOwner1})
+          await controllerProxy.operate(secondActionArgs, {from: accountOwner1})
 
           const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
           const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
@@ -1891,41 +1897,19 @@ contract(
         })
 
         it('should revert when vault have more than 1 short otoken', async () => {
-          const expiryTime = new BigNumber(60 * 60 * 24) // after 1 day
-          const invalidShortOtoken: MockOtokenInstance = await MockOtoken.new()
-          await invalidShortOtoken.init(
-            addressBook.address,
-            weth.address,
-            usdc.address,
-            usdc.address,
-            new BigNumber(250).times(new BigNumber(10).exponentiatedBy(18)),
-            new BigNumber(await time.latest()).plus(expiryTime),
-            true,
-          )
-
-          await whitelist.whitelistOtoken(invalidShortOtoken.address, {from: owner})
-
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-          const collateralToDeposit = new BigNumber(await invalidShortOtoken.strikePrice()).dividedBy(1e18)
-          const amountToMint = new BigNumber('1')
+          await whitelist.whitelistOtoken(longOtoken.address, {from: owner})
+
+          const amountToMint = new BigNumber(1e12)
+
           const actionArgs = [
-            {
-              actionType: ActionType.DepositCollateral,
-              owner: accountOwner1,
-              sender: accountOwner1,
-              asset: usdc.address,
-              vaultId: vaultCounter.toNumber(),
-              amount: collateralToDeposit.toNumber(),
-              index: '0',
-              data: ZERO_ADDR,
-            },
             {
               actionType: ActionType.MintShortOption,
               owner: accountOwner1,
               sender: accountOwner1,
-              asset: invalidShortOtoken.address,
+              asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: amountToMint.toNumber(),
               index: '1',
@@ -1933,7 +1917,6 @@ contract(
             },
           ]
 
-          await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
           await expectRevert(
             controllerProxy.operate(actionArgs, {from: accountOwner1}),
             'MarginCalculator: Too many short otokens in the vault.',
@@ -1955,8 +1938,8 @@ contract(
               true,
             )
 
-            const collateralToDeposit = new BigNumber(await notWhitelistedShortOtoken.strikePrice()).dividedBy(1e18)
-            const amountToMint = new BigNumber('1')
+            const collateralToDeposit = new BigNumber(await notWhitelistedShortOtoken.strikePrice()).dividedBy(1e12)
+            const amountToMint = new BigNumber(1e12)
             const actionArgs = [
               {
                 actionType: ActionType.OpenVault,
@@ -2023,7 +2006,6 @@ contract(
               data: ZERO_ADDR,
             },
           ]
-          const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
 
           await controllerProxy.operate(actionArgs, {from: accountOwner1})
 
@@ -2044,7 +2026,7 @@ contract(
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-          const shortOtokenToBurn = new BigNumber(await shortOtoken.balanceOf(accountOwner1))
+          const shortOtokenToBurn = await shortOtoken.balanceOf(accountOwner1)
           const actionArgs = [
             {
               actionType: ActionType.BurnShortOption,
@@ -2052,7 +2034,7 @@ contract(
               sender: accountOwner1,
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
-              amount: shortOtokenToBurn.toNumber(),
+              amount: shortOtokenToBurn.toString(),
               index: '1',
               data: ZERO_ADDR,
             },
@@ -2080,7 +2062,7 @@ contract(
               sender: accountOperator1,
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
-              amount: shortOtokenToBurn.toNumber(),
+              amount: shortOtokenToBurn.toString(),
               index: '1',
               data: ZERO_ADDR,
             },
@@ -2107,7 +2089,7 @@ contract(
               sender: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
-              amount: shortOtokenToBurn.toNumber(),
+              amount: shortOtokenToBurn.toString(),
               index: '1',
               data: ZERO_ADDR,
             },
@@ -2133,7 +2115,7 @@ contract(
               sender: accountOperator1,
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
-              amount: shortOtokenToBurn.toNumber(),
+              amount: shortOtokenToBurn.toString(),
               index: '0',
               data: ZERO_ADDR,
             },
@@ -2181,7 +2163,7 @@ contract(
               sender: accountOwner1,
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
-              amount: shortOtokenToBurn.toNumber(),
+              amount: shortOtokenToBurn.toString(),
               index: '0',
               data: ZERO_ADDR,
             },
@@ -2228,7 +2210,7 @@ contract(
             // whitelist otoken to be minted
             await whitelist.whitelistOtoken(expiredShortOtoken.address, {from: owner})
 
-            const collateralToDeposit = new BigNumber(await expiredShortOtoken.strikePrice()).dividedBy(1e18)
+            const collateralToDeposit = new BigNumber(await expiredShortOtoken.strikePrice()).dividedBy(1e12)
             const amountToMint = new BigNumber('1')
             const actionArgs = [
               {
@@ -2289,7 +2271,6 @@ contract(
             await time.increase(3601) // increase time with one hour in seconds
 
             const vaultId = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-            const vault = await controllerProxy.getVault(accountOwner1, vaultId)
             const shortAmountToBurn = new BigNumber('1')
             const actionArgs = [
               {
@@ -2338,14 +2319,10 @@ contract(
         )
         // whitelist short otoken to be used in the protocol
         await whitelist.whitelistOtoken(shortOtoken.address, {from: owner})
-        // give free money
-        await usdc.mint(accountOwner1, new BigNumber('1000000'))
-        await usdc.mint(accountOperator1, new BigNumber('1000000'))
-        await usdc.mint(random, new BigNumber('1000000'))
         // open new vault, mintnaked short, sell it to holder 1
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
-        const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e18)
-        const amountToMint = new BigNumber('1')
+        const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e12)
+        const amountToMint = new BigNumber(1e12)
         const actionArgs = [
           {
             actionType: ActionType.OpenVault,
@@ -2381,10 +2358,10 @@ contract(
         await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
         await controllerProxy.operate(actionArgs, {from: accountOwner1})
         // transfer minted short otoken to hodler`
-        await shortOtoken.transfer(holder1, amountToMint, {from: accountOwner1})
+        await shortOtoken.transfer(holder1, amountToMint.toString(), {from: accountOwner1})
       })
 
-      it('should revert exercising un-expired otoken', async () => {
+      it('sshould revert exercising un-expired otoken', async () => {
         const shortAmountToBurn = new BigNumber('1')
         const actionArgs = [
           {
@@ -2399,7 +2376,7 @@ contract(
           },
         ]
 
-        assert.equal(await controllerProxy.isExpired(shortOtoken.address), false, 'Short otoken is already expired')
+        assert.equal(await controllerProxy.isExpired(shortOtoken.address), false, 'Short otoken has already expired')
 
         await expectRevert(
           controllerProxy.operate(actionArgs, {from: holder1}),
@@ -2407,20 +2384,28 @@ contract(
         )
       })
 
-      it('should revert exercising after expiry, when price is not finalized yet', async () => {
+      it('should revert exercising after expiry, when underlying price is not finalized yet', async () => {
         // past time after expiry
         await time.increase(60 * 61 * 24) // increase time with one hour in seconds
         // set price in Oracle Mock, 150$ at expiry, expire ITM
-        await oracle.setExpiryPrice(
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(
           await shortOtoken.underlyingAsset(),
           new BigNumber(await shortOtoken.expiryTimestamp()),
-          new BigNumber(150).times(new BigNumber(10).exponentiatedBy(18)),
+          new BigNumber(150).times(1e18),
+          true,
         )
         // set it as not finalized in mock
         await oracle.setIsDisputePeriodOver(
           await shortOtoken.underlyingAsset(),
           new BigNumber(await shortOtoken.expiryTimestamp()),
           false,
+        )
+
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(
+          await shortOtoken.strikeAsset(),
+          new BigNumber(await shortOtoken.expiryTimestamp()),
+          new BigNumber(1).times(1e18),
+          true,
         )
 
         const shortAmountToBurn = new BigNumber('1')
@@ -2447,18 +2432,13 @@ contract(
 
       it('should revert exercising if cash value receiver address in equal to address zero', async () => {
         // set it as finalized in mock
-        await oracle.setIsFinalized(
-          await shortOtoken.underlyingAsset(),
-          new BigNumber(await shortOtoken.expiryTimestamp()),
-          true,
-        )
         await oracle.setIsDisputePeriodOver(
           await shortOtoken.underlyingAsset(),
           new BigNumber(await shortOtoken.expiryTimestamp()),
           true,
         )
 
-        const shortAmountToBurn = new BigNumber('1')
+        const shortAmountToBurn = new BigNumber(1e12)
         const actionArgs = [
           {
             actionType: ActionType.Exercise,
@@ -2481,7 +2461,7 @@ contract(
       })
 
       it('should exercise after expiry + price is finalized', async () => {
-        const shortAmountToBurn = new BigNumber('1')
+        const shortAmountToBurn = new BigNumber(1e12)
         const actionArgs = [
           {
             actionType: ActionType.Exercise,
@@ -2501,7 +2481,7 @@ contract(
         const senderBalanceBefore = new BigNumber(await usdc.balanceOf(holder1))
         const senderShortBalanceBefore = new BigNumber(await shortOtoken.balanceOf(holder1))
 
-        controllerProxy.operate(actionArgs, {from: holder1})
+        await controllerProxy.operate(actionArgs, {from: holder1})
 
         const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
         const senderBalanceAfter = new BigNumber(await usdc.balanceOf(holder1))
@@ -2521,6 +2501,169 @@ contract(
           senderShortBalanceBefore.minus(senderShortBalanceAfter).toString(),
           shortAmountToBurn.toString(),
           ' Burned short otoken amount mismatch',
+        )
+      })
+
+      it('should exercise call option correctly', async () => {
+        const expiry = new BigNumber(await time.latest()).plus(new BigNumber(60 * 60)).toNumber()
+        const call: MockOtokenInstance = await MockOtoken.new()
+        await call.init(
+          addressBook.address,
+          weth.address,
+          usdc.address,
+          weth.address,
+          createTokenAmount(200, 18),
+          expiry,
+          false,
+        )
+
+        await whitelist.whitelistOtoken(call.address)
+        const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
+        const amountCollateral = createTokenAmount(1, wethDecimals)
+        await weth.mint(accountOwner1, amountCollateral)
+        await weth.approve(marginPool.address, amountCollateral, {from: accountOwner1})
+        const amountOtoken = createTokenAmount(1, 18)
+        const actionArgs = [
+          {
+            actionType: ActionType.OpenVault,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: ZERO_ADDR,
+            vaultId: vaultCounter.toNumber(),
+            amount: '0',
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.DepositCollateral,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: weth.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: amountCollateral,
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.MintShortOption,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: call.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: amountOtoken,
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        await controllerProxy.operate(actionArgs, {from: accountOwner1})
+        await call.transfer(holder1, amountOtoken, {from: accountOwner1})
+
+        await time.increaseTo(expiry + 10)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(400, 18), true)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1, 18), true)
+        const exerciseArgs = [
+          {
+            actionType: ActionType.Exercise,
+            owner: ZERO_ADDR,
+            sender: holder1,
+            asset: call.address,
+            vaultId: '0',
+            amount: amountOtoken,
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        const expectedPayout = createTokenAmount(0.5, 18)
+
+        const userBalanceBefore = new BigNumber(await weth.balanceOf(holder1))
+        await controllerProxy.operate(exerciseArgs, {from: holder1})
+        const userBalanceAfter = new BigNumber(await weth.balanceOf(holder1))
+        assert.equal(userBalanceAfter.minus(userBalanceBefore).toString(), expectedPayout)
+      })
+
+      it('should revert exercise option if collateral is different from underlying, and collateral price is not finalized', async () => {
+        const expiry = new BigNumber(await time.latest()).plus(new BigNumber(60 * 60)).toNumber()
+
+        await whitelist.whitelistCollateral(weth2.address)
+        const call: MockOtokenInstance = await MockOtoken.new()
+        await call.init(
+          addressBook.address,
+          weth.address,
+          usdc.address,
+          weth2.address,
+          createTokenAmount(200, 18),
+          expiry,
+          false,
+        )
+
+        await oracle.setRealTimePrice(weth.address, new BigNumber(400).times(1e18))
+        await oracle.setRealTimePrice(weth2.address, new BigNumber(400).times(1e18))
+
+        await whitelist.whitelistOtoken(call.address)
+        const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
+        const amountCollateral = createTokenAmount(1, wethDecimals)
+        await weth2.mint(accountOwner1, amountCollateral)
+        await weth2.approve(marginPool.address, amountCollateral, {from: accountOwner1})
+
+        const amountOtoken = createTokenAmount(1, 18)
+        const actionArgs = [
+          {
+            actionType: ActionType.OpenVault,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: ZERO_ADDR,
+            vaultId: vaultCounter.toNumber(),
+            amount: '0',
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.MintShortOption,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: call.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: amountOtoken,
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.DepositCollateral,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: weth2.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: amountCollateral,
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        await controllerProxy.operate(actionArgs, {from: accountOwner1})
+        await call.transfer(holder1, amountOtoken, {from: accountOwner1})
+
+        await time.increaseTo(expiry + 10)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(400, 18), true)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1, 18), true)
+
+        const exerciseArgs = [
+          {
+            actionType: ActionType.Exercise,
+            owner: ZERO_ADDR,
+            sender: holder1,
+            asset: call.address,
+            vaultId: '0',
+            amount: amountOtoken,
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        await expectRevert(
+          controllerProxy.operate(exerciseArgs, {from: holder1}),
+          'MarginCalculator: collateral price is not finalized',
         )
       })
 
@@ -2555,14 +2698,11 @@ contract(
           // whitelist otoken to be used in the protocol
           await whitelist.whitelistOtoken(firstOtoken.address, {from: owner})
           await whitelist.whitelistOtoken(secondOtoken.address, {from: owner})
-          // give free money
-          await usdc.mint(accountOwner1, new BigNumber('1000000'))
-          await usdc.mint(accountOperator1, new BigNumber('1000000'))
-          await usdc.mint(random, new BigNumber('1000000'))
+
           // open new vault, mint naked short, sell it to holder 1
-          const firstCollateralToDeposit = new BigNumber(await firstOtoken.strikePrice()).dividedBy(1e18)
-          const secondCollateralToDeposit = new BigNumber(await secondOtoken.strikePrice()).dividedBy(1e18)
-          const amountToMint = new BigNumber('1')
+          const firstCollateralToDeposit = new BigNumber(await firstOtoken.strikePrice()).dividedBy(1e12)
+          const secondCollateralToDeposit = new BigNumber(await secondOtoken.strikePrice()).dividedBy(1e12)
+          const amountToMint = new BigNumber(1e12)
           let vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
           let actionArgs = [
             {
@@ -2643,39 +2783,27 @@ contract(
           // past time after expiry
           await time.increase(60 * 61 * 24)
           // set price in Oracle Mock, 150$ at expiry, expire ITM
-          await oracle.setExpiryPrice(
+          await oracle.setExpiryPriceFinalizedAllPeiodOver(
             await firstOtoken.underlyingAsset(),
             new BigNumber(await firstOtoken.expiryTimestamp()),
-            new BigNumber(150).times(new BigNumber(10).exponentiatedBy(18)),
-          )
-          await oracle.setExpiryPrice(
-            await secondOtoken.underlyingAsset(),
-            new BigNumber(await secondOtoken.expiryTimestamp()),
-            new BigNumber(150).times(new BigNumber(10).exponentiatedBy(18)),
-          )
-          // set it as finalized in mock
-          await oracle.setIsFinalized(
-            await firstOtoken.underlyingAsset(),
-            new BigNumber(await firstOtoken.expiryTimestamp()),
+            new BigNumber(150).times(1e18),
             true,
           )
-          await oracle.setIsFinalized(
+          await oracle.setExpiryPriceFinalizedAllPeiodOver(
             await secondOtoken.underlyingAsset(),
             new BigNumber(await secondOtoken.expiryTimestamp()),
-            true,
-          )
-          await oracle.setIsDisputePeriodOver(
-            await firstOtoken.underlyingAsset(),
-            new BigNumber(await firstOtoken.expiryTimestamp()),
-            true,
-          )
-          await oracle.setIsDisputePeriodOver(
-            await secondOtoken.underlyingAsset(),
-            new BigNumber(await secondOtoken.expiryTimestamp()),
+            new BigNumber(150).times(1e18),
             true,
           )
 
-          const amountToBurn = new BigNumber('1')
+          await oracle.setExpiryPriceFinalizedAllPeiodOver(
+            usdc.address,
+            new BigNumber(await firstOtoken.expiryTimestamp()),
+            new BigNumber(1).times(1e18),
+            true,
+          )
+
+          const amountToExercise = new BigNumber(1e12)
           const actionArgs = [
             {
               actionType: ActionType.Exercise,
@@ -2683,7 +2811,7 @@ contract(
               sender: holder1,
               asset: firstOtoken.address,
               vaultId: '0',
-              amount: amountToBurn.toNumber(),
+              amount: amountToExercise.toNumber(),
               index: '0',
               data: ZERO_ADDR,
             },
@@ -2693,7 +2821,7 @@ contract(
               sender: holder1,
               asset: secondOtoken.address,
               vaultId: '0',
-              amount: amountToBurn.toNumber(),
+              amount: amountToExercise.toNumber(),
               index: '0',
               data: ZERO_ADDR,
             },
@@ -2745,13 +2873,8 @@ contract(
         )
         // whitelist otoken to be used in the protocol
         await whitelist.whitelistOtoken(shortOtoken.address, {from: owner})
-        // give free money
-        await usdc.mint(accountOwner1, new BigNumber('1000000'))
-        await usdc.mint(accountOperator1, new BigNumber('1000000'))
-        await usdc.mint(random, new BigNumber('1000000'))
         // open new vault, mint naked short, sell it to holder 1
-        const collateralToDespoit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e18)
-        const amountToMint = new BigNumber('1')
+        const collateralToDespoit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e12)
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
         const actionArgs = [
           {
@@ -2802,7 +2925,7 @@ contract(
 
       it('should revert settling vault before expiry', async () => {
         // mint token in vault before
-        const amountToMint = new BigNumber('1')
+        const amountToMint = new BigNumber(1e18)
         let vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
 
         let actionArgs = [
@@ -2862,11 +2985,8 @@ contract(
         // past time after expiry
         await time.increase(60 * 61 * 24) // increase time with one hour in seconds
         // set price in Oracle Mock, 150$ at expiry, expire ITM
-        await oracle.setExpiryPrice(
-          await shortOtoken.underlyingAsset(),
-          new BigNumber(await shortOtoken.expiryTimestamp()),
-          new BigNumber(150).times(new BigNumber(10).exponentiatedBy(18)),
-        )
+        const expiry = new BigNumber(await shortOtoken.expiryTimestamp())
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(150, 18), true)
         // set it as not finalized in mock
         await oracle.setIsFinalized(
           await shortOtoken.underlyingAsset(),
@@ -2902,16 +3022,9 @@ contract(
       })
 
       it('should settle ITM otoken after expiry + price is finalized', async () => {
-        await oracle.setIsFinalized(
-          await shortOtoken.underlyingAsset(),
-          new BigNumber(await shortOtoken.expiryTimestamp()),
-          true,
-        )
-        await oracle.setIsDisputePeriodOver(
-          await shortOtoken.underlyingAsset(),
-          new BigNumber(await shortOtoken.expiryTimestamp()),
-          true,
-        )
+        const expiry = new BigNumber(await shortOtoken.expiryTimestamp())
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(150, 18), true)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1, 18), true)
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         const actionArgs = [
           {
@@ -2926,11 +3039,11 @@ contract(
           },
         ]
 
-        const payout = new BigNumber('150')
+        const payout = createTokenAmount(150, usdcDecimals)
         const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
         const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
 
-        controllerProxy.operate(actionArgs, {from: accountOwner1})
+        await controllerProxy.operate(actionArgs, {from: accountOwner1})
 
         const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
         const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
@@ -2952,11 +3065,6 @@ contract(
         let secondShortOtoken: MockOtokenInstance
 
         before(async () => {
-          // give free money
-          await usdc.mint(accountOwner1, new BigNumber('1000000'))
-          await usdc.mint(accountOperator1, new BigNumber('1000000'))
-          await usdc.mint(random, new BigNumber('1000000'))
-
           let expiryTime = new BigNumber(60 * 60 * 24) // after 1 day
 
           firstShortOtoken = await MockOtoken.new()
@@ -2965,15 +3073,15 @@ contract(
             weth.address,
             usdc.address,
             usdc.address,
-            new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+            new BigNumber(200).times(1e18),
             new BigNumber(await time.latest()).plus(expiryTime),
             true,
           )
           // whitelist otoken to be used in the protocol
           await whitelist.whitelistOtoken(firstShortOtoken.address, {from: owner})
           // open new vault, mint naked short, sell it to holder 1
-          let collateralToDespoit = new BigNumber(await firstShortOtoken.strikePrice()).dividedBy(1e18)
-          let amountToMint = new BigNumber('1')
+          let collateralToDespoit = createTokenAmount(200, usdcDecimals)
+          let amountToMint = new BigNumber(1e18)
           let vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
           let actionArgs = [
             {
@@ -3002,7 +3110,7 @@ contract(
               sender: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
-              amount: collateralToDespoit.toNumber(),
+              amount: collateralToDespoit,
               index: '0',
               data: ZERO_ADDR,
             },
@@ -3024,8 +3132,8 @@ contract(
           // whitelist otoken to be used in the protocol
           await whitelist.whitelistOtoken(secondShortOtoken.address, {from: owner})
           // open new vault, mint naked short, sell it to holder 1
-          collateralToDespoit = new BigNumber(await secondShortOtoken.strikePrice()).dividedBy(1e18)
-          amountToMint = new BigNumber('1')
+          collateralToDespoit = createTokenAmount(200, usdcDecimals)
+          amountToMint = new BigNumber(1e18)
           vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
           actionArgs = [
             {
@@ -3054,49 +3162,23 @@ contract(
               sender: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
-              amount: collateralToDespoit.toNumber(),
+              amount: collateralToDespoit,
               index: '0',
               data: ZERO_ADDR,
             },
           ]
           await usdc.approve(marginPool.address, collateralToDespoit, {from: accountOwner1})
           await controllerProxy.operate(actionArgs, {from: accountOwner1})
-
-          await time.increaseTo(new BigNumber(await secondShortOtoken.expiryTimestamp()).plus(1000).toString())
-          // set price and finalize it for both otokens
-          await oracle.setExpiryPrice(
-            await firstShortOtoken.underlyingAsset(),
-            new BigNumber(await firstShortOtoken.expiryTimestamp()),
-            new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
-          )
-          await oracle.setIsFinalized(
-            await firstShortOtoken.underlyingAsset(),
-            new BigNumber(await firstShortOtoken.expiryTimestamp()),
-            true,
-          )
-          await oracle.setIsDisputePeriodOver(
-            await firstShortOtoken.underlyingAsset(),
-            new BigNumber(await firstShortOtoken.expiryTimestamp()),
-            true,
-          )
-          await oracle.setExpiryPrice(
-            await secondShortOtoken.underlyingAsset(),
-            new BigNumber(await secondShortOtoken.expiryTimestamp()),
-            new BigNumber(250).times(new BigNumber(10).exponentiatedBy(18)),
-          )
-          await oracle.setIsFinalized(
-            await secondShortOtoken.underlyingAsset(),
-            new BigNumber(await secondShortOtoken.expiryTimestamp()),
-            true,
-          )
-          await oracle.setIsDisputePeriodOver(
-            await secondShortOtoken.underlyingAsset(),
-            new BigNumber(await secondShortOtoken.expiryTimestamp()),
-            true,
-          )
         })
 
         it('should settle multiple vaults in one transaction (ATM,OTM)', async () => {
+          await time.increaseTo(new BigNumber(await secondShortOtoken.expiryTimestamp()).plus(1000).toString())
+          const expiry = new BigNumber(await firstShortOtoken.expiryTimestamp())
+          const expiry2 = new BigNumber(await secondShortOtoken.expiryTimestamp())
+          await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(200, 18), true)
+          await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1, 18), true)
+          await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry2, createTokenAmount(200, 18), true)
+          await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry2, createTokenAmount(1, 18), true)
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           const actionArgs = [
             {
@@ -3121,7 +3203,7 @@ contract(
             },
           ]
 
-          const payout = new BigNumber('400')
+          const payout = createTokenAmount(400, usdcDecimals)
           const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
           const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
 
@@ -3132,12 +3214,12 @@ contract(
 
           assert.equal(
             marginPoolBalanceBefore.minus(marginPoolBalanceAfter).toString(),
-            payout.toString(),
+            payout,
             'Margin pool collateral asset balance mismatch',
           )
           assert.equal(
             senderBalanceAfter.minus(senderBalanceBefore).toString(),
-            payout.toString(),
+            payout,
             'Sender collateral asset balance mismatch',
           )
         })
@@ -3199,9 +3281,7 @@ contract(
 
         // Mock oracle: dispute period over, set price to 200.
         const priceMock = new BigNumber('200')
-        await oracle.setIsLockingPeriodOver(weth.address, expiry, true)
-        await oracle.setIsDisputePeriodOver(weth.address, expiry, true)
-        await oracle.setExpiryPrice(weth.address, expiry, priceMock)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, priceMock, true)
 
         const expectedResutl = true
         assert.equal(
@@ -3354,8 +3434,8 @@ contract(
         // whitelist otoken to be minted
         await whitelist.whitelistOtoken(shortOtoken.address, {from: owner})
 
-        const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e18)
-        const amountToMint = new BigNumber('1')
+        const collateralToDeposit = createTokenAmount(200, usdcDecimals)
+        const amountToMint = createTokenAmount(1, 18) // mint 1 otoken
         const actionArgs = [
           {
             actionType: ActionType.OpenVault,
@@ -3373,7 +3453,7 @@ contract(
             sender: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounterBefore.toNumber() + 1,
-            amount: amountToMint.toNumber(),
+            amount: amountToMint,
             index: '0',
             data: ZERO_ADDR,
           },
@@ -3383,7 +3463,7 @@ contract(
             sender: accountOwner1,
             asset: usdc.address,
             vaultId: vaultCounterBefore.toNumber() + 1,
-            amount: collateralToDeposit.toNumber(),
+            amount: collateralToDeposit,
             index: '0',
             data: ZERO_ADDR,
           },
@@ -3496,7 +3576,7 @@ contract(
 
       it('should revert withdrawing collateral when system is paused', async () => {
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-        const collateralToWithdraw = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e18)
+        const collateralToWithdraw = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e12)
         const actionArgs = [
           {
             actionType: ActionType.WithdrawCollateral,
@@ -3534,22 +3614,9 @@ contract(
         // past time after expiry
         await time.increase(60 * 61) // increase time with one hour in seconds
         // set price in Oracle Mock, 150$ at expiry, expire ITM
-        await oracle.setExpiryPrice(
-          await shortOtoken.underlyingAsset(),
-          new BigNumber(await shortOtoken.expiryTimestamp()),
-          new BigNumber(150).times(new BigNumber(10).exponentiatedBy(18)),
-        )
-        // set it as finalized in mock
-        await oracle.setIsFinalized(
-          await shortOtoken.underlyingAsset(),
-          new BigNumber(await shortOtoken.expiryTimestamp()),
-          true,
-        )
-        await oracle.setIsDisputePeriodOver(
-          await shortOtoken.underlyingAsset(),
-          new BigNumber(await shortOtoken.expiryTimestamp()),
-          true,
-        )
+        const expiry = new BigNumber(await shortOtoken.expiryTimestamp())
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, new BigNumber(150).times(1e18), true)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, new BigNumber(1).times(1e18), true)
 
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         const actionArgs = [
@@ -3565,11 +3632,11 @@ contract(
           },
         ]
 
-        const payout = new BigNumber('150')
+        const payout = createTokenAmount(150, usdcDecimals)
         const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
         const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
 
-        controllerProxy.operate(actionArgs, {from: accountOwner1})
+        await controllerProxy.operate(actionArgs, {from: accountOwner1})
 
         const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
         const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
@@ -3587,9 +3654,9 @@ contract(
       })
 
       it('should exercise when system is paused', async () => {
-        const shortAmountToBurn = new BigNumber('1')
+        const amountToExercise = createTokenAmount(1, 18)
         // transfer to holder
-        await shortOtoken.transfer(holder1, shortAmountToBurn, {from: accountOwner1})
+        await shortOtoken.transfer(holder1, amountToExercise, {from: accountOwner1})
 
         const actionArgs = [
           {
@@ -3598,19 +3665,19 @@ contract(
             sender: holder1,
             asset: shortOtoken.address,
             vaultId: '0',
-            amount: shortAmountToBurn.toNumber(),
+            amount: amountToExercise,
             index: '0',
             data: ZERO_ADDR,
           },
         ]
         assert.equal(await controllerProxy.isExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
 
-        const payout = new BigNumber('50')
+        const payout = createTokenAmount(50, usdcDecimals)
         const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
         const senderBalanceBefore = new BigNumber(await usdc.balanceOf(holder1))
         const senderShortBalanceBefore = new BigNumber(await shortOtoken.balanceOf(holder1))
 
-        controllerProxy.operate(actionArgs, {from: holder1})
+        await controllerProxy.operate(actionArgs, {from: holder1})
 
         const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
         const senderBalanceAfter = new BigNumber(await usdc.balanceOf(holder1))
@@ -3628,7 +3695,7 @@ contract(
         )
         assert.equal(
           senderShortBalanceBefore.minus(senderShortBalanceAfter).toString(),
-          shortAmountToBurn.toString(),
+          amountToExercise.toString(),
           ' Burned short otoken amount mismatch',
         )
       })
@@ -3658,8 +3725,8 @@ contract(
         // whitelist otoken to be minted
         await whitelist.whitelistOtoken(shortOtoken.address, {from: owner})
 
-        const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e18)
-        const amountToMint = new BigNumber('1')
+        const collateralToDeposit = createTokenAmount(200, usdcDecimals)
+        const amountToMint = createTokenAmount(1, 18) // mint 1 otoken
         const actionArgs = [
           {
             actionType: ActionType.OpenVault,
@@ -3677,7 +3744,7 @@ contract(
             sender: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounterBefore.toNumber() + 1,
-            amount: amountToMint.toNumber(),
+            amount: amountToMint,
             index: '0',
             data: ZERO_ADDR,
           },
@@ -3687,7 +3754,7 @@ contract(
             sender: accountOwner1,
             asset: usdc.address,
             vaultId: vaultCounterBefore.toNumber() + 1,
-            amount: collateralToDeposit.toNumber(),
+            amount: collateralToDeposit,
             index: '0',
             data: ZERO_ADDR,
           },
@@ -3929,7 +3996,7 @@ contract(
       it('should refresh configuratiom', async () => {
         // update modules
         const oracle = await MockOracle.new(addressBook.address, {from: owner})
-        const calculator = await MockMarginCalculator.new(addressBook.address, {from: owner})
+        const calculator = await MarginCalculator.new(addressBook.address, {from: owner})
         const marginPool = await MarginPool.new(addressBook.address, {from: owner})
         const whitelist = await MockWhitelistModule.new({from: owner})
 
