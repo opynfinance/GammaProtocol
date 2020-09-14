@@ -93,7 +93,7 @@ contract Otoken is ERC20Initializable {
      * @return tokenName ETHUSDC 05-September-2020 200 Put USDC Collateral
      * @return tokenSymbol oETHUSDC-05SEP20-200P
      */
-    function _getNameAndSymbol() internal view returns (string memory tokenName, string memory tokenSymbol) {
+    function _getNameAndSymbol() internal view returns (string memory, string memory) {
         string memory underlying = _getTokenSymbol(underlyingAsset);
         string memory strike = _getTokenSymbol(strikeAsset);
         string memory collateral = _getTokenSymbol(collateralAsset);
@@ -107,7 +107,7 @@ contract Otoken is ERC20Initializable {
         (string memory monthSymbol, string memory monthFull) = _getMonth(month);
 
         // concat name string: ETHUSDC 05-September-2020 200 Put USDC Collateral
-        tokenName = string(
+        string memory tokenName = string(
             abi.encodePacked(
                 underlying,
                 strike,
@@ -127,7 +127,7 @@ contract Otoken is ERC20Initializable {
         );
 
         // concat symbol string: oETHUSDC-05SEP20-200P
-        tokenSymbol = string(
+        string memory tokenSymbol = string(
             abi.encodePacked(
                 "o",
                 underlying,
@@ -141,6 +141,8 @@ contract Otoken is ERC20Initializable {
                 typeSymbol
             )
         );
+
+        return (tokenName, tokenSymbol);
     }
 
     /**
