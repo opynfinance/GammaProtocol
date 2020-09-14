@@ -9,7 +9,7 @@ import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
 
 /**
  * @title Otoken
- * @author Opyn
+ * @author Opyn Team
  * @notice Otoken is the ERC20 token for an option.
  * @dev The Otoken inherits ERC20Initializable because we need to use the init instead of constructor.
  */

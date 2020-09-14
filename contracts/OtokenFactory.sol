@@ -9,7 +9,7 @@ import {WhitelistInterface} from "./interfaces/WhitelistInterface.sol";
 /**
  * SPDX-License-Identifier: UNLICENSED
  * @title A factory for opyn tokens
- * @author Opyn
+ * @author Opyn Team
  * @notice Create new otokens and keep track of all created tokens.
  * @dev Calculate contract address before each creation with CREATE2
  * and deploy eip-1167 minimal proxies for otoken logic contract.
