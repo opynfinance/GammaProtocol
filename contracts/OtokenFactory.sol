@@ -19,8 +19,11 @@ contract OtokenFactory is OtokenSpawner {
     /// @notice The Opyn AddressBook contract that records addresses of whitelist module and otoken impl address. */
     address public addressBook;
 
-    /// @notice An array of all created otokens */
-    address[] public otokens;
+    /// @notice An mapping of all created otokens */
+    mapping(uint256 => address) public otokens;
+
+    /// @dev Internal counter of otokens;
+    uint256 private counter;
 
     /// @dev A mapping from parameters hash to its deployed address
     mapping(bytes32 => address) private idToAddress;
@@ -59,7 +62,7 @@ contract OtokenFactory is OtokenSpawner {
         uint256 _strikePrice,
         uint256 _expiry,
         bool _isPut
-    ) external returns (address newOtoken) {
+    ) external returns (address) {
         require(_expiry > now, "OtokenFactory: Can't create expired option.");
         require(_expiry < 11865398400, "OtokenFactory: Can't create option with expiry > 2345/12/31.");
         require(_expiry.sub(28800).mod(86400) == 0, "OtokenFactory: Option has to expire 08:00 UTC.");
@@ -90,10 +93,11 @@ contract OtokenFactory is OtokenSpawner {
             _isPut
         );
 
-        newOtoken = _spawn(otokenImpl, initializationCalldata);
+        address newOtoken = _spawn(otokenImpl, initializationCalldata);
 
-        otokens.push(newOtoken);
         idToAddress[id] = newOtoken;
+        otokens[counter] = newOtoken;
+        counter += 1;
         WhitelistInterface(whitelist).whitelistOtoken(newOtoken);
 
         emit OtokenCreated(
@@ -106,6 +110,8 @@ contract OtokenFactory is OtokenSpawner {
             _expiry,
             _isPut
         );
+
+        return newOtoken;
     }
 
     /**
@@ -113,7 +119,7 @@ contract OtokenFactory is OtokenSpawner {
      * @return length of the otokens array.
      */
     function getOtokensLength() external view returns (uint256) {
-        return otokens.length;
+        return counter;
     }
 
     /**
@@ -156,7 +162,7 @@ contract OtokenFactory is OtokenSpawner {
         uint256 _strikePrice,
         uint256 _expiry,
         bool _isPut
-    ) external view returns (address targetAddress) {
+    ) external view returns (address) {
         address otokenImpl = AddressBookInterface(addressBook).getOtokenImpl();
         bytes memory initializationCalldata = abi.encodeWithSelector(
             OtokenInterface(otokenImpl).init.selector,
@@ -168,7 +174,7 @@ contract OtokenFactory is OtokenSpawner {
             _expiry,
             _isPut
         );
-        targetAddress = _computeAddress(AddressBookInterface(addressBook).getOtokenImpl(), initializationCalldata);
+        return _computeAddress(AddressBookInterface(addressBook).getOtokenImpl(), initializationCalldata);
     }
 
     /**
@@ -189,8 +195,9 @@ contract OtokenFactory is OtokenSpawner {
         uint256 _expiry,
         bool _isPut
     ) internal pure returns (bytes32 id) {
-        id = keccak256(
-            abi.encodePacked(_underlyingAsset, _strikeAsset, _collateralAsset, _strikePrice, _expiry, _isPut)
-        );
+        return
+            keccak256(
+                abi.encodePacked(_underlyingAsset, _strikeAsset, _collateralAsset, _strikePrice, _expiry, _isPut)
+            );
     }
 }
