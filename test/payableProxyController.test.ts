@@ -287,14 +287,14 @@ contract(
 
     describe('Operate without ETH', async () => {
       it('should normally execute operate', async () => {
-        const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
+        const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         const actionArgs = [
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
             sender: accountOwner1,
             asset: ZERO_ADDR,
-            vaultId: vaultCounterBefore.toNumber(),
+            vaultId: vaultCounterBefore.plus(1).toNumber(),
             amount: '0',
             index: '0',
             data: ZERO_ADDR,
