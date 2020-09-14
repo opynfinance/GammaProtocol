@@ -38,7 +38,6 @@ contract PayableProxyController is ReentrancyGuard {
 
     function operate(Actions.ActionArgs[] memory _actions, address payable sendEthTo) external payable nonReentrant {
         // create WETH from ETH
-        // coverage-disable-line
         if (msg.value != 0) {
             weth.deposit{value: msg.value}();
         }
@@ -48,7 +47,6 @@ contract PayableProxyController is ReentrancyGuard {
             Actions.ActionArgs memory action = _actions[i];
 
             // check the msg.sender is an owner or operator
-            // coverage-disable-line
             if (action.owner != address(0)) {
                 require(
                     (msg.sender == action.owner) || (controller.isOperator(action.owner, msg.sender)),
