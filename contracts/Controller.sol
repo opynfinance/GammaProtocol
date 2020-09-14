@@ -1,12 +1,773 @@
 /**
  * SPDX-License-Identifier: UNLICENSED
  */
-pragma solidity 0.6.10;
+pragma solidity =0.6.10;
+
+pragma experimental ABIEncoderV2;
+
+import {OwnableUpgradeSafe} from "./packages/oz/upgradeability/OwnableUpgradeSafe.sol";
+import {ReentrancyGuardUpgradeSafe} from "./packages/oz/upgradeability/ReentrancyGuardUpgradeSafe.sol";
+import {Initializable} from "./packages/oz/upgradeability/Initializable.sol";
+import {SafeMath} from "./packages/oz/SafeMath.sol";
+import {MarginAccount} from "./libs/MarginAccount.sol";
+import {Actions} from "./libs/Actions.sol";
+import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
+import {OtokenInterface} from "./interfaces/OtokenInterface.sol";
+import {MarginCalculatorInterface} from "./interfaces/MarginCalculatorInterface.sol";
+import {OracleInterface} from "./interfaces/OracleInterface.sol";
+import {WhitelistInterface} from "./interfaces/WhitelistInterface.sol";
+import {MarginPoolInterface} from "./interfaces/MarginPoolInterface.sol";
+import {CalleeInterface} from "./interfaces/CalleeInterface.sol";
 
 /**
- *
+ * @author Opyn Team
+ * @title Controller
+ * @notice contract that
  */
-// solhint-disable-next-line no-empty-blocks
-contract Controller {
+contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgradeSafe {
+    using MarginAccount for MarginAccount.Vault;
+    using SafeMath for uint256;
 
+    AddressBookInterface public addressbook;
+    WhitelistInterface public whitelist;
+    OracleInterface public oracle;
+    MarginCalculatorInterface public calculator;
+    MarginPoolInterface public pool;
+
+    /// @notice address that have permission to pause system
+    address public pauser;
+
+    /// @notice address that have permission to execute emergency shutdown
+    address public terminator;
+
+    /// @notice the protocol state, if true, then all protocol functionality are paused other than the exercise and settle vault
+    bool public systemPaused;
+
+    /// @notice the protocol state, if true, all protocol functionalities are down
+    bool public systemShutdown;
+
+    /// @notice a bool variable that if true, indicate that call action can only be executed to a whitelisted callee
+    bool public callRestricted;
+
+    /// @dev mapping between owner address and account structure
+    mapping(address => uint256) internal accountVaultCounter;
+    /// @dev mapping between owner address and specific vault using vaultId
+    mapping(address => mapping(uint256 => MarginAccount.Vault)) internal vaults;
+    /// @dev mapping between account owner and account operator
+    mapping(address => mapping(address => bool)) internal operators;
+
+    /// @notice emits an event when a account operator updated for a specific account owner
+    event AccountOperatorUpdated(address indexed accountOwner, address indexed operator, bool isSet);
+    /// @notice emits an event when new vault get opened
+    event VaultOpened(address indexed accountOwner, uint256 vaultId);
+    /// @notice emits an event when a long otoken is deposited into a vault
+    event LongOtokenDeposited(
+        address indexed otoken,
+        address indexed accountOwner,
+        address indexed from,
+        uint256 vaultId,
+        uint256 amount
+    );
+    /// @notice emits an event when a long otoken is withdrawed from a vault
+    event LongOtokenWithdrawed(
+        address indexed otoken,
+        address indexed AccountOwner,
+        address indexed to,
+        uint256 vaultId,
+        uint256 amount
+    );
+    /// @notice emits an event when a long otoken is deposited into a vault
+    event CollateralAssetDeposited(
+        address indexed asset,
+        address indexed accountOwner,
+        address indexed from,
+        uint256 vaultId,
+        uint256 amount
+    );
+    /// @notice emits an event when a collateral asset is withdrawed from a vault
+    event CollateralAssetWithdrawed(
+        address indexed asset,
+        address indexed AccountOwner,
+        address indexed to,
+        uint256 vaultId,
+        uint256 amount
+    );
+    /// @notice emits an event when a short otoken get minted into a vault
+    event ShortOtokenMinted(
+        address indexed otoken,
+        address indexed AccountOwner,
+        address indexed to,
+        uint256 vaultId,
+        uint256 amount
+    );
+    /// @notice emits an event when a short otoken get burned from a vault
+    event ShortOtokenBurned(
+        address indexed otoken,
+        address indexed AccountOwner,
+        address indexed from,
+        uint256 vaultId,
+        uint256 amount
+    );
+    /// @notice emits an event when a exercise action execute
+    event Exercise(
+        address indexed otoken,
+        address indexed exerciser,
+        address indexed receiver,
+        address collateralAsset,
+        uint256 otokenBurned,
+        uint256 payout
+    );
+    /// @notice emits an event when a vault is settlted
+    event VaultSettled(
+        address indexed otoken,
+        address indexed AccountOwner,
+        address indexed to,
+        uint256 vaultId,
+        uint256 payout
+    );
+    event CallExecuted(
+        address indexed from,
+        address indexed to,
+        address indexed vaultOwner,
+        uint256 vaultId,
+        bytes data
+    );
+    /// @notice emits an event when terminator address change
+    event TerminatorUpdated(address indexed oldTerminator, address indexed newTerminator);
+    /// @notice emits an event when pauser address change
+    event PauserUpdated(address indexed oldPauser, address indexed newPauser);
+    /// @notice emtis an event when system is paused
+    event SystemPaused(bool isActive);
+    /// @notice emits an event when system shutdown status change
+    event EmergencyShutdown(bool isActive);
+    /// @notice emits an event when call action restriction is activated or deactivated
+    event CallRestricted(bool isRestricted);
+
+    /**
+     * @notice modifier check if protocol is not paused
+     */
+    modifier notPaused {
+        _isNotPaused();
+
+        _;
+    }
+
+    /**
+     * @notice modifier check if protocol is not in emergency shutdown state
+     */
+    modifier notShutdown {
+        _isNotShutdown();
+
+        _;
+    }
+
+    /**
+     * @notice modifier to check if sender is terminator address
+     */
+    modifier onlyTerminator {
+        require(msg.sender == terminator, "Controller: sender is not terminator");
+
+        _;
+    }
+
+    /**
+     * @notice modifier to check if sender is shutdowner address
+     */
+    modifier onlyPauser {
+        require(msg.sender == pauser, "Controller: sender is not pauser");
+
+        _;
+    }
+
+    /**
+     * @notice modifier to check if sender is an account owner or an authorized account operator
+     * @param _sender sender address
+     * @param _accountOwner account owner address
+     */
+    modifier onlyAuthorized(address _sender, address _accountOwner) {
+        _isAuthorized(_sender, _accountOwner);
+
+        _;
+    }
+
+    /**
+     * @notice modifier to check if called address is a whitelisted callee
+     * @param _callee called address
+     */
+    modifier onlyWhitelistedCallee(address _callee) {
+        if (callRestricted) {
+            require(_isCalleeWhitelisted(_callee), "Controller: callee is not a whitelisted address");
+        }
+
+        _;
+    }
+
+    /**
+     * @dev check the system is not paused
+     */
+    function _isNotPaused() internal view {
+        require(!systemPaused, "Controller: system is paused");
+    }
+
+    /**
+     * @dev check the system is not in emergency shutdown state
+     */
+    function _isNotShutdown() internal view {
+        require(!systemShutdown, "Controller: system is in emergency shutdown state");
+    }
+
+    /**
+     * @dev check the sender is an authorized operator.
+     * @param _sender msg.sender
+     * @param _accountOwner owner of a vault
+     */
+    function _isAuthorized(address _sender, address _accountOwner) internal view {
+        require(
+            (_sender == _accountOwner) || (operators[_accountOwner][_sender]),
+            "Controller: msg.sender is not authorized to run action"
+        );
+    }
+
+    /**
+     * @notice initalize deployed contract
+     * @param _addressBook adressbook module
+     */
+    function initialize(address _addressBook, address _owner) external initializer {
+        require(_addressBook != address(0), "Controller: invalid addressbook address");
+
+        __Context_init_unchained();
+        __Ownable_init_unchained(_owner);
+        __ReentrancyGuard_init_unchained();
+
+        addressbook = AddressBookInterface(_addressBook);
+        _refreshConfigInternal();
+    }
+
+    /**
+     * @notice allows pauser to toggle pause function
+     * @dev can only be called from pauser
+     * @param _paused The new boolean value to set systemPaused to.
+     */
+    function setSystemPaused(bool _paused) external onlyPauser {
+        require(systemPaused != _paused, "Controller: cannot change pause status");
+
+        systemPaused = _paused;
+
+        emit SystemPaused(systemPaused);
+    }
+
+    /**
+     * @notice allows pauser to toggle pause function
+     * @dev cal only be called from terminator
+     * @param _shutdown The new boolean value to set systemShutdown to.
+     */
+    function setEmergencyShutdown(bool _shutdown) external onlyTerminator {
+        require(systemShutdown != _shutdown, "Controller: cannot change shutdown status");
+
+        systemShutdown = _shutdown;
+
+        emit EmergencyShutdown(systemShutdown);
+    }
+
+    /**
+     * @notice allows owner to set terminator address
+     * @dev can only be called from owner
+     * @param _terminator new terminator address
+     */
+    function setTerminator(address _terminator) external onlyOwner {
+        require(_terminator != address(0), "Controller: terminator cannot be set to address zero");
+
+        emit TerminatorUpdated(terminator, _terminator);
+
+        terminator = _terminator;
+    }
+
+    /**
+     * @notice allows owner to set pauser address
+     * @dev can only be called from owner
+     * @param _pauser new pauser address
+     */
+    function setPauser(address _pauser) external onlyOwner {
+        require(_pauser != address(0), "Controller: pauser cannot be set to address zero");
+
+        emit PauserUpdated(pauser, _pauser);
+
+        pauser = _pauser;
+    }
+
+    /**
+     * @notice allows owner to set activate/deactivate call action restriction
+     * @dev can only be called from owner
+     * @param _isRestricted active call restriction if true
+     */
+    function setCallRestriction(bool _isRestricted) external onlyOwner {
+        callRestricted = _isRestricted;
+
+        emit CallRestricted(callRestricted);
+    }
+
+    /**
+     * @notice allows a user to set and unset an operate which can act on their behalf on their vaults. Only the vault owner can update the operator privileges.
+     * @param _operator The operator that sender wants to give privileges to or revoke them from.
+     * @param _isOperator The new boolean value that expresses if sender is giving or revoking privileges from _operator.
+     */
+    function setOperator(address _operator, bool _isOperator) external {
+        operators[msg.sender][_operator] = _isOperator;
+
+        emit AccountOperatorUpdated(msg.sender, _operator, _isOperator);
+    }
+
+    /**
+     * @dev updates the lending pool core configuration
+     */
+    function refreshConfiguration() external onlyOwner {
+        _refreshConfigInternal();
+    }
+
+    /**
+     * @notice execute a different number of actions on a specific vaults
+     * @dev can only be called when system is not paused
+     * @param _actions array of actions arguments
+     */
+    function operate(Actions.ActionArgs[] memory _actions) external payable nonReentrant notShutdown {
+        (bool vaultUpdated, address vaultOwner, uint256 vaultId) = _runActions(_actions);
+        if (vaultUpdated) _verifyFinalState(vaultOwner, vaultId);
+    }
+
+    /**
+     * @notice check if a specific address is an operator for an owner account
+     * @param _owner account owner address
+     * @param _operator account operator address
+     * @return true if operator, else false
+     */
+    function isOperator(address _owner, address _operator) external view returns (bool) {
+        return operators[_owner][_operator];
+    }
+
+    /**
+     * @notice return the configuration detail
+     * @return whitelist the address of the whitelist module
+     * @return oracle the address of the oracle module
+     * @return calculator the address of the calculator module
+     * @return pool the address of the pool module
+     */
+    function getConfiguration()
+        external
+        view
+        returns (
+            address,
+            address,
+            address,
+            address
+        )
+    {
+        return (address(whitelist), address(oracle), address(calculator), address(pool));
+    }
+
+    /**
+     * @notice Return a vault's balances. If the vault doesn't have a short option or the short option has not expired, then the vault's collateral balances are returned. If the short option has expired, the collateral balance the vault has is dependent on if the option expired ITM or OTM.
+     * @dev if vault has no short option or the issued option is not expired yet, return the vault, else call get excess margin and return it as collateral amount inside Vault struct.
+     * @param _owner account owner.
+     * @param _vaultId vault.
+     * @return Vault struct
+     */
+    function getVaultBalances(address _owner, uint256 _vaultId) external view returns (MarginAccount.Vault memory) {
+        MarginAccount.Vault memory vault = getVault(_owner, _vaultId);
+
+        // if there is no minted short option or the short option has not expired yet
+        if ((vault.shortOtokens.length == 0) || (!isExpired(vault.shortOtokens[0]))) return vault;
+
+        (uint256 netValue, ) = calculator.getExcessCollateral(vault);
+        vault.collateralAmounts[0] = netValue;
+        return vault;
+    }
+
+    /**
+     * @dev return if an expired oToken contract’s price has been finalized. Returns true if the contract has expired AND the oraclePrice at the expiry timestamp has been finalized.
+     * @param _otoken The address of the relevant oToken.
+     * @return A boolean which is true if and only if the price is finalized.
+     */
+    function isPriceFinalized(address _otoken) public view returns (bool) {
+        OtokenInterface otoken = OtokenInterface(_otoken);
+
+        address underlying = otoken.underlyingAsset();
+        uint256 expiry = otoken.expiryTimestamp();
+
+        bool isFinalized = oracle.isDisputePeriodOver(underlying, expiry);
+        return isFinalized;
+    }
+
+    /**
+     * @notice get number of vaults in a specific account
+     * @param _accountOwner account owner address
+     * @return number of vaults
+     */
+    function getAccountVaultCounter(address _accountOwner) external view returns (uint256) {
+        return accountVaultCounter[_accountOwner];
+    }
+
+    /**
+     * @notice function to check if otoken is expired
+     * @param _otoken otoken address
+     * @return true if otoken is expired, else return false
+     */
+    function isExpired(address _otoken) public view returns (bool) {
+        uint256 otokenExpiryTimestamp = OtokenInterface(_otoken).expiryTimestamp();
+
+        return now > otokenExpiryTimestamp;
+    }
+
+    /**
+     * @notice Return a specific vault.
+     * @param _owner account owner.
+     * @param _vaultId vault.
+     * @return Vault struct
+     */
+    function getVault(address _owner, uint256 _vaultId) public view returns (MarginAccount.Vault memory) {
+        return vaults[_owner][_vaultId];
+    }
+
+    /**
+     * @notice Execute actions on a certain vault
+     * @dev For each action in the action Array, run the corresponding action
+     * @param _actions An array of type Actions.ActionArgs[] which expresses which actions the user want to execute.
+     * @return bool vaultUpdated, indicated if any vault is manipulated
+     * @return address owner the vault owner if a vault is updated
+     * @return uint256 vaultId the vault Id if a vault is updated
+     */
+    function _runActions(Actions.ActionArgs[] memory _actions)
+        internal
+        returns (
+            bool,
+            address,
+            uint256
+        )
+    {
+        address vaultOwner;
+        uint256 vaultId;
+        bool vaultUpdated;
+
+        for (uint256 i = 0; i < _actions.length; i++) {
+            Actions.ActionArgs memory action = _actions[i];
+            Actions.ActionType actionType = action.actionType;
+
+            if (
+                (actionType != Actions.ActionType.SettleVault) &&
+                (actionType != Actions.ActionType.Exercise) &&
+                (actionType != Actions.ActionType.Call)
+            ) {
+                // check if this action is manipulating the same vault as all other actions, other than SettleVault
+                if (vaultUpdated) {
+                    require(vaultOwner == action.owner, "Controller: can not run actions for different owners");
+                    require(vaultId == action.vaultId, "Controller: can not run actions on different vaults");
+                }
+                vaultUpdated = true;
+                vaultId = action.vaultId;
+                vaultOwner = action.owner;
+            }
+
+            if (actionType == Actions.ActionType.OpenVault) {
+                _openVault(Actions._parseOpenVaultArgs(action));
+            } else if (actionType == Actions.ActionType.DepositLongOption) {
+                _depositLong(Actions._parseDepositArgs(action));
+            } else if (actionType == Actions.ActionType.WithdrawLongOption) {
+                _withdrawLong(Actions._parseWithdrawArgs(action));
+            } else if (actionType == Actions.ActionType.DepositCollateral) {
+                _depositCollateral(Actions._parseDepositArgs(action));
+            } else if (actionType == Actions.ActionType.WithdrawCollateral) {
+                _withdrawCollateral(Actions._parseWithdrawArgs(action));
+            } else if (actionType == Actions.ActionType.MintShortOption) {
+                _mintOtoken(Actions._parseMintArgs(action));
+            } else if (actionType == Actions.ActionType.BurnShortOption) {
+                _burnOtoken(Actions._parseBurnArgs(action));
+            } else if (actionType == Actions.ActionType.Exercise) {
+                _exercise(Actions._parseExerciseArgs(action));
+            } else if (actionType == Actions.ActionType.SettleVault) {
+                _settleVault(Actions._parseSettleVaultArgs(action));
+            } else if (actionType == Actions.ActionType.Call) {
+                _call(Actions._parseCallArgs(action));
+            }
+        }
+
+        return (vaultUpdated, vaultOwner, vaultId);
+    }
+
+    /**
+     * @notice verify vault final state after executing all actions
+     * @param _owner final vault state
+     * @param _vaultId the vault id of the final vault
+     */
+    function _verifyFinalState(address _owner, uint256 _vaultId) internal view {
+        MarginAccount.Vault memory _vault = getVault(_owner, _vaultId);
+        (, bool isValidVault) = calculator.getExcessCollateral(_vault);
+
+        require(isValidVault, "Controller: invalid final vault state");
+    }
+
+    /**
+     * @notice open new vault inside an account
+     * @dev Only account owner or operator can open a vault
+     * @param _args OpenVaultArgs structure
+     */
+    function _openVault(Actions.OpenVaultArgs memory _args) internal notPaused onlyAuthorized(msg.sender, _args.owner) {
+        accountVaultCounter[_args.owner] = accountVaultCounter[_args.owner].add(1);
+
+        require(
+            _args.vaultId == accountVaultCounter[_args.owner],
+            "Controller: can not run actions on inexistent vault"
+        );
+
+        emit VaultOpened(_args.owner, accountVaultCounter[_args.owner]);
+    }
+
+    /**
+     * @notice deposit long option into vault
+     * @param _args DepositArgs structure
+     */
+    function _depositLong(Actions.DepositArgs memory _args) internal notPaused {
+        require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+        require(_args.from == msg.sender, "Controller: depositor address and msg.sender address mismatch");
+
+        require(
+            whitelist.isWhitelistedOtoken(_args.asset),
+            "Controller: otoken is not whitelisted to be used as collateral"
+        );
+
+        OtokenInterface otoken = OtokenInterface(_args.asset);
+
+        require(now <= otoken.expiryTimestamp(), "Controller: otoken used as collateral is already expired");
+
+        vaults[_args.owner][_args.vaultId].addLong(address(otoken), _args.amount, _args.index);
+
+        pool.transferToPool(address(otoken), _args.from, _args.amount);
+
+        emit LongOtokenDeposited(address(otoken), _args.owner, _args.from, _args.vaultId, _args.amount);
+    }
+
+    /**
+     * @notice withdraw long option from vault
+     * @dev Only account owner or operator can withdraw long option from vault
+     * @param _args WithdrawArgs structure
+     */
+    function _withdrawLong(Actions.WithdrawArgs memory _args)
+        internal
+        notPaused
+        onlyAuthorized(msg.sender, _args.owner)
+    {
+        require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+
+        OtokenInterface otoken = OtokenInterface(_args.asset);
+
+        require(now <= otoken.expiryTimestamp(), "Controller: can not withdraw an expired otoken");
+
+        vaults[_args.owner][_args.vaultId].removeLong(address(otoken), _args.amount, _args.index);
+
+        pool.transferToUser(address(otoken), _args.to, _args.amount);
+
+        emit LongOtokenWithdrawed(address(otoken), _args.owner, _args.to, _args.vaultId, _args.amount);
+    }
+
+    /**
+     * @notice deposit collateral asset into vault
+     * @param _args DepositArgs structure
+     */
+    function _depositCollateral(Actions.DepositArgs memory _args) internal notPaused {
+        require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+        require(_args.from == msg.sender, "Controller: depositor address and msg.sender address mismatch");
+
+        require(
+            whitelist.isWhitelistedCollateral(_args.asset),
+            "Controller: asset is not whitelisted to be used as collateral"
+        );
+
+        vaults[_args.owner][_args.vaultId].addCollateral(_args.asset, _args.amount, _args.index);
+
+        pool.transferToPool(_args.asset, _args.from, _args.amount);
+
+        emit CollateralAssetDeposited(_args.asset, _args.owner, _args.from, _args.vaultId, _args.amount);
+    }
+
+    /**
+     * @notice withdraw collateral asset from vault
+     * @dev only account owner or operator can withdraw collateral option from vault
+     * @param _args WithdrawArgs structure
+     */
+    function _withdrawCollateral(Actions.WithdrawArgs memory _args)
+        internal
+        notPaused
+        onlyAuthorized(msg.sender, _args.owner)
+    {
+        require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+
+        MarginAccount.Vault memory vault = getVault(_args.owner, _args.vaultId);
+        if (_isNotEmpty(vault.shortOtokens)) {
+            OtokenInterface otoken = OtokenInterface(vault.shortOtokens[0]);
+
+            require(
+                now <= otoken.expiryTimestamp(),
+                "Controller: can not withdraw collateral from a vault with an expired short otoken"
+            );
+        }
+
+        vaults[_args.owner][_args.vaultId].removeCollateral(_args.asset, _args.amount, _args.index);
+
+        pool.transferToUser(_args.asset, _args.to, _args.amount);
+
+        emit CollateralAssetWithdrawed(_args.asset, _args.owner, _args.to, _args.vaultId, _args.amount);
+    }
+
+    /**
+     * @notice mint option into vault
+     * @dev only account owner or operator can mint short otoken into vault
+     * @param _args MintArgs structure
+     */
+    function _mintOtoken(Actions.MintArgs memory _args) internal notPaused onlyAuthorized(msg.sender, _args.owner) {
+        require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+        require(_args.to == msg.sender, "Controller: minter address and msg.sender address mismatch");
+
+        require(whitelist.isWhitelistedOtoken(_args.otoken), "Controller: otoken is not whitelisted to be minted");
+
+        OtokenInterface otoken = OtokenInterface(_args.otoken);
+
+        require(now <= otoken.expiryTimestamp(), "Controller: can not mint expired otoken");
+
+        vaults[_args.owner][_args.vaultId].addShort(_args.otoken, _args.amount, _args.index);
+
+        otoken.mintOtoken(_args.to, _args.amount);
+
+        emit ShortOtokenMinted(_args.otoken, _args.owner, _args.to, _args.vaultId, _args.amount);
+    }
+
+    /**
+     * @notice burn option
+     * @dev only account owner or operator can withdraw long option from vault
+     * @param _args MintArgs structure
+     */
+    function _burnOtoken(Actions.BurnArgs memory _args) internal notPaused onlyAuthorized(msg.sender, _args.owner) {
+        require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+        require(_args.from == msg.sender, "Controller: burner address and msg.sender address mismatch");
+
+        OtokenInterface otoken = OtokenInterface(_args.otoken);
+
+        require(now <= otoken.expiryTimestamp(), "Controller: can not burn expired otoken");
+
+        vaults[_args.owner][_args.vaultId].removeShort(_args.otoken, _args.amount, _args.index);
+
+        otoken.burnOtoken(_args.from, _args.amount);
+
+        emit ShortOtokenBurned(_args.otoken, _args.owner, _args.from, _args.vaultId, _args.amount);
+    }
+
+    /**
+     * @notice exercise option
+     * @param _args ExerciseArgs structure
+     */
+    function _exercise(Actions.ExerciseArgs memory _args) internal {
+        OtokenInterface otoken = OtokenInterface(_args.otoken);
+
+        require(now > otoken.expiryTimestamp(), "Controller: can not exercise un-expired otoken");
+
+        require(isPriceFinalized(_args.otoken), "Controller: otoken underlying asset price is not finalized yet");
+
+        uint256 payout = _getPayout(_args.otoken, _args.amount);
+
+        otoken.burnOtoken(msg.sender, _args.amount);
+
+        pool.transferToUser(otoken.collateralAsset(), _args.receiver, payout);
+
+        emit Exercise(_args.otoken, msg.sender, _args.receiver, otoken.collateralAsset(), _args.amount, payout);
+    }
+
+    /**
+     * @notice settle vault after expiry
+     * @param _args SettleVaultArgs structure
+     */
+    function _settleVault(Actions.SettleVaultArgs memory _args) internal onlyAuthorized(msg.sender, _args.owner) {
+        require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
+
+        MarginAccount.Vault memory vault = getVault(_args.owner, _args.vaultId);
+
+        require(_isNotEmpty(vault.shortOtokens), "Controller: can not settle a vault with no otoken minted");
+
+        OtokenInterface shortOtoken = OtokenInterface(vault.shortOtokens[0]);
+
+        require(now > shortOtoken.expiryTimestamp(), "Controller: can not settle vault with un-expired otoken");
+        require(
+            isPriceFinalized(address(shortOtoken)),
+            "Controller: otoken underlying asset price is not finalized yet"
+        );
+
+        (uint256 payout, ) = calculator.getExcessCollateral(vault);
+
+        if (_isNotEmpty(vault.longOtokens)) {
+            OtokenInterface longOtoken = OtokenInterface(vault.longOtokens[0]);
+
+            longOtoken.burnOtoken(address(pool), vault.longAmounts[0]);
+        }
+
+        delete vaults[_args.owner][_args.vaultId];
+
+        pool.transferToUser(shortOtoken.collateralAsset(), _args.to, payout);
+
+        emit VaultSettled(address(shortOtoken), _args.owner, _args.to, _args.vaultId, payout);
+    }
+
+    /**
+     * @notice function to execute arbitrary calls
+     * @dev cannot be called when system is paued
+     * @param _args Call action
+     */
+    function _call(Actions.CallArgs memory _args) internal notPaused onlyWhitelistedCallee(_args.callee) {
+        CalleeInterface(_args.callee).callFunction{value: _args.msgValue}(
+            msg.sender,
+            _args.owner,
+            _args.vaultId,
+            _args.data
+        );
+
+        emit CallExecuted(msg.sender, _args.callee, _args.owner, _args.vaultId, _args.data);
+    }
+
+    /**
+     * @notice function to check if a vault id is valid
+     * @param _accountOwner account owner address
+     * @param _vaultId vault id
+     */
+    function _checkVaultId(address _accountOwner, uint256 _vaultId) internal view returns (bool) {
+        return ((_vaultId > 0) && (_vaultId <= accountVaultCounter[_accountOwner]));
+    }
+
+    function _isNotEmpty(address[] memory _array) internal pure returns (bool) {
+        return (_array.length > 0) && (_array[0] != address(0));
+    }
+
+    /**
+     * @notice get Otoken payout after expiry
+     * @param _otoken Otoken address
+     * @param _amount amount of Otoken. Always in 1e18
+     * @return amount of collateral to payout
+     */
+    function _getPayout(address _otoken, uint256 _amount) internal view returns (uint256) {
+        uint256 rate = calculator.getExpiredPayoutRate(_otoken);
+        return rate.mul(_amount).div(1e18);
+    }
+
+    /**
+     * @notice return if a callee address is whitelisted or not
+     * @param _callee callee address
+     * @return boolean, true if whitelisted, otherwise false
+     */
+    function _isCalleeWhitelisted(address _callee) internal view returns (bool) {
+        return whitelist.isWhitelistedCallee(_callee);
+    }
+
+    /**
+     * @dev updates the internal configuration of the controller
+     */
+    function _refreshConfigInternal() internal {
+        whitelist = WhitelistInterface(addressbook.getWhitelist());
+        oracle = OracleInterface(addressbook.getOracle());
+        calculator = MarginCalculatorInterface(addressbook.getMarginCalculator());
+        pool = MarginPoolInterface(addressbook.getMarginPool());
+    }
 }

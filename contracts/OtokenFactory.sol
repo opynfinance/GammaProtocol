@@ -68,7 +68,12 @@ contract OtokenFactory is OtokenSpawner {
 
         address whitelist = AddressBookInterface(addressBook).getWhitelist();
         require(
-            WhitelistInterface(whitelist).isWhitelistedProduct(_underlyingAsset, _strikeAsset, _collateralAsset),
+            WhitelistInterface(whitelist).isWhitelistedProduct(
+                _underlyingAsset,
+                _strikeAsset,
+                _collateralAsset,
+                _isPut
+            ),
             "OtokenFactory: Unsupported Product"
         );
 
@@ -76,6 +81,7 @@ contract OtokenFactory is OtokenSpawner {
 
         bytes memory initializationCalldata = abi.encodeWithSelector(
             OtokenInterface(otokenImpl).init.selector,
+            addressBook,
             _underlyingAsset,
             _strikeAsset,
             _collateralAsset,
@@ -154,6 +160,7 @@ contract OtokenFactory is OtokenSpawner {
         address otokenImpl = AddressBookInterface(addressBook).getOtokenImpl();
         bytes memory initializationCalldata = abi.encodeWithSelector(
             OtokenInterface(otokenImpl).init.selector,
+            addressBook,
             _underlyingAsset,
             _strikeAsset,
             _collateralAsset,

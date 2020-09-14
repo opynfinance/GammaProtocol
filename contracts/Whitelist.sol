@@ -18,6 +18,8 @@ contract Whitelist is Ownable {
     mapping(address => bool) internal whitelistedCollateral;
     /// @dev mapping to track whitelisted otokens
     mapping(address => bool) internal whitelistedOtoken;
+    /// @dev mapping to track whistelisted callee for call action
+    mapping(address => bool) internal whitelistedCallee;
 
     /**
      * @dev constructor
@@ -34,12 +36,29 @@ contract Whitelist is Ownable {
         bytes32 productHash,
         address indexed underlying,
         address indexed strike,
-        address indexed collateral
+        address indexed collateral,
+        bool isPut
+    );
+    /// @notice emitted when owner blacklist a product
+    event ProductBlacklisted(
+        bytes32 productHash,
+        address indexed underlying,
+        address indexed strike,
+        address indexed collateral,
+        bool isPut
     );
     /// @notice emits an event when a collateral address is whitelisted by the owner address
     event CollateralWhitelisted(address indexed collateral);
+    /// @notice emits an event when a collateral address is blacklist by the owner address
+    event CollateralBlacklisted(address indexed collateral);
     /// @notice emitted when Otoken Factory module whitelist an otoken
-    event OtokenWhitelisted(address otoken);
+    event OtokenWhitelisted(address indexed otoken);
+    /// @notice emitted when owner blacklist an otoken
+    event OtokenBlacklisted(address indexed otoken);
+    /// @notice emitted when owner whitelist a callee address
+    event CalleeWhitelisted(address indexed _callee);
+    /// @notice emitted when owner blacklist a callee address
+    event CalleeBlacklisted(address indexed _callee);
 
     /**
      * @notice check if the sender is the Otoken Factory module
@@ -64,9 +83,10 @@ contract Whitelist is Ownable {
     function isWhitelistedProduct(
         address _underlying,
         address _strike,
-        address _collateral
+        address _collateral,
+        bool _isPut
     ) external view returns (bool) {
-        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral));
+        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
 
         return whitelistedProduct[productHash];
     }
@@ -81,7 +101,6 @@ contract Whitelist is Ownable {
     }
 
     /**
-     * @notice whitelist a product
      * @notice check if an otoken is whitelisted
      * @param _otoken otoken address
      * @return boolean, true if otoken is whitelisted
@@ -91,23 +110,56 @@ contract Whitelist is Ownable {
     }
 
     /**
+     * @notice check if a callee address is whitelisted for call acton
+     * @param _callee destination address
+     * @return boolean, true if address is whitelisted
+     */
+    function isWhitelistedCallee(address _callee) external view returns (bool) {
+        return whitelistedCallee[_callee];
+    }
+
+    /**
      * @notice allow owner to whitelist product
      * @dev a product is the hash of the underlying, collateral and strike assets
      * can only be called from owner address
      * @param _underlying asset that the option references
      * @param _strike asset that the strike price is denominated in
      * @param _collateral asset that is held as collateral against short/written options
+     * @param _isPut is this a put option, if not it is a call
      */
     function whitelistProduct(
         address _underlying,
         address _strike,
-        address _collateral
+        address _collateral,
+        bool _isPut
     ) external onlyOwner {
-        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral));
+        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
 
-        _setWhitelistedProduct(productHash);
+        whitelistedProduct[productHash] = true;
 
-        emit ProductWhitelisted(productHash, _underlying, _strike, _collateral);
+        emit ProductWhitelisted(productHash, _underlying, _strike, _collateral, _isPut);
+    }
+
+    /**
+     * @notice allow owner to blacklist product
+     * @dev a product is the hash of the underlying, collateral and strike assets
+     * can only be called from owner address
+     * @param _underlying asset that the option references
+     * @param _strike asset that the strike price is denominated in
+     * @param _collateral asset that is held as collateral against short/written options
+     * @param _isPut is this a put option, if not it is a call
+     */
+    function blacklistProduct(
+        address _underlying,
+        address _strike,
+        address _collateral,
+        bool _isPut
+    ) external onlyOwner {
+        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
+
+        whitelistedProduct[productHash] = false;
+
+        emit ProductBlacklisted(productHash, _underlying, _strike, _collateral, _isPut);
     }
 
     /**
@@ -116,49 +168,63 @@ contract Whitelist is Ownable {
      * @param _collateral collateral asset address
      */
     function whitelistCollateral(address _collateral) external onlyOwner {
-        _setWhitelistedCollateral(_collateral);
+        whitelistedCollateral[_collateral] = true;
 
         emit CollateralWhitelisted(_collateral);
     }
 
     /**
+     * @notice whitelist a collateral address, can only be called by owner
+     * @dev function can only be called by owner
+     * @param _collateral collateral asset address
+     */
+    function blacklistCollateral(address _collateral) external onlyOwner {
+        whitelistedCollateral[_collateral] = false;
+
+        emit CollateralBlacklisted(_collateral);
+    }
+
+    /**
      * @notice allow Otoken Factory to whitelist a new option
-     * @dev can only be called from the owner's address
+     * @dev can only be called from the Otoken Factory address
      * @param _otokenAddress otoken
      */
     function whitelistOtoken(address _otokenAddress) external onlyFactory {
-        _setWhitelistedOtoken(_otokenAddress);
+        whitelistedOtoken[_otokenAddress] = true;
 
         emit OtokenWhitelisted(_otokenAddress);
     }
 
     /**
-     * @notice set a product hash as whitelisted
-     * @param _productHash product hash in bytes
+     * @notice allow owner to blacklist a new option
+     * @dev can only be called from the owner's address
+     * @param _otokenAddress otoken
      */
-    function _setWhitelistedProduct(bytes32 _productHash) internal {
-        require(whitelistedProduct[_productHash] == false, "Whitelist: Product already whitelisted");
+    function blacklistOtoken(address _otokenAddress) external onlyOwner {
+        whitelistedOtoken[_otokenAddress] = false;
 
-        whitelistedProduct[_productHash] = true;
+        emit OtokenBlacklisted(_otokenAddress);
     }
 
     /**
-     * @notice set a collateral address as whitelisted
-     * @param _collateral collateral address
+     * @notice allow Owner to whitelisted a callee address
+     * @dev can only be called from the owner address
+     * @param _callee callee address
      */
-    function _setWhitelistedCollateral(address _collateral) internal {
-        require(whitelistedCollateral[_collateral] == false, "Whitelist: Collateral already whitelisted");
+    function whitelisteCallee(address _callee) external onlyOwner {
+        whitelistedCallee[_callee] = true;
 
-        whitelistedCollateral[_collateral] = true;
+        emit CalleeWhitelisted(_callee);
     }
 
     /**
-     * @notice set an otoken address as whitelisted
-     * @param _otokenAddress address of the oToken that is being whitelisted
+     * @notice allow owner to blacklist a destination address for call action
+     * @dev can only be called from the owner's address
+     * @param _callee callee address
      */
-    function _setWhitelistedOtoken(address _otokenAddress) internal {
-        require(whitelistedOtoken[_otokenAddress] == false, "Whitelist: Otoken already whitelisted");
+    function blacklistCallee(address _callee) external onlyOwner {
+        whitelistedCallee[_callee] = false;
 
-        whitelistedOtoken[_otokenAddress] = true;
+        emit CalleeBlacklisted(_callee);
     }
 }

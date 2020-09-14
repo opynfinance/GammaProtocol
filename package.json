@@ -28,6 +28,7 @@
     "solidity-coverage": "0.7.5",
     "truffle": "^5.1.32",
     "truffle-assertions": "0.9.2",
+    "truffle-contract-size": "^2.0.0",
     "truffle-typings": "^1.0.8",
     "ts-node": "8.5.4",
     "typechain": "^1.0.5",
@@ -39,7 +40,7 @@
     "build"
   ],
   "scripts": {
-    "ganache": "ganache-cli --port 8545",
+    "ganache": "ganache-cli -d --port 8545 --defaultBalanceEther 500 --allowUnlimitedContractSize",
     "migrate": "truffle migrate",
     "build": "npm run compile:contracts && npm run compile:types",
     "compile:contracts": "truffle compile",
@@ -51,8 +52,9 @@
     "lint:sol:prettier:fix": "prettier --write \"contracts/**/*.sol\"",
     "lint:tests:prettier:fix": "prettier --write \"test/**/*.ts\"",
     "test": "CI=true truffle test",
-    "test:unit":"truffle test ./test/unit-tests/*.ts",
-    "coverage": "truffle run coverage"
+    "coverage": "truffle run coverage",
+    "contract-size": "truffle run contract-size --checkMaxSize",
+    "test:unit":"truffle test ./test/unit-tests/*.ts"
   },
   "husky": {
     "hooks": {
@@ -61,7 +63,7 @@
   },
   "lint-staged": {
     "**/*.sol": [
-      "npm run lint:sol",
+      "npm run lint:sol:prettier:fix",
       "git add"
     ],
     "test/**": [
@@ -83,7 +85,5 @@
   "bugs": {
     "url": "https://github.com/opynfinance/GammaProtocol/issues"
   },
-  "homepage": "https://github.com/opynfinance/GammaProtocol#readme",
-  "dependencies": {
-  }
+  "homepage": "https://github.com/opynfinance/GammaProtocol#readme"
 }
