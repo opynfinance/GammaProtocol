@@ -520,28 +520,28 @@ contract(
           )
         })
 
-        it('should revert depositing long otoken from a sender different than arg.from', async () => {
-          const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          const collateralToDeposit = new BigNumber('20')
-          const actionArgs = [
-            {
-              actionType: ActionType.DepositLongOption,
-              owner: accountOwner1,
-              sender: accountOwner1,
-              asset: longOtoken.address,
-              vaultId: vaultCounter.toNumber(),
-              amount: collateralToDeposit.toNumber(),
-              index: '0',
-              data: ZERO_ADDR,
-            },
-          ]
+        // it('should revert depositing long otoken from a sender different than arg.from', async () => {
+        //   const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
+        //   const collateralToDeposit = new BigNumber('20')
+        //   const actionArgs = [
+        //     {
+        //       actionType: ActionType.DepositLongOption,
+        //       owner: accountOwner1,
+        //       sender: accountOwner1,
+        //       asset: longOtoken.address,
+        //       vaultId: vaultCounter.toNumber(),
+        //       amount: collateralToDeposit.toNumber(),
+        //       index: '0',
+        //       data: ZERO_ADDR,
+        //     },
+        //   ]
 
-          await longOtoken.approve(marginPool.address, collateralToDeposit, {from: accountOperator1})
-          await expectRevert(
-            controllerProxy.operate(actionArgs, {from: accountOperator1}),
-            'Controller: depositor address and msg.sender address mismatch',
-          )
-        })
+        //   await longOtoken.approve(marginPool.address, collateralToDeposit, {from: accountOperator1})
+        //   await expectRevert(
+        //     controllerProxy.operate(actionArgs, {from: accountOperator1}),
+        //     'Controller: depositor address and msg.sender address mismatch',
+        //   )
+        // })
 
         it('should revert depositing long otoken with amount equal to zero', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
@@ -1113,30 +1113,30 @@ contract(
           )
         })
 
-        it('should revert depositing a collateral asset from a msg.sender different than arg.from', async () => {
-          const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+        // it('should revert depositing a collateral asset from a msg.sender different than arg.from', async () => {
+        //   const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
+        //   assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-          const collateralToDeposit = new BigNumber('10')
-          const actionArgs = [
-            {
-              actionType: ActionType.DepositCollateral,
-              owner: accountOwner1,
-              sender: random,
-              asset: usdc.address,
-              vaultId: vaultCounter.toNumber(),
-              amount: collateralToDeposit.toNumber(),
-              index: '0',
-              data: ZERO_ADDR,
-            },
-          ]
+        //   const collateralToDeposit = new BigNumber('10')
+        //   const actionArgs = [
+        //     {
+        //       actionType: ActionType.DepositCollateral,
+        //       owner: accountOwner1,
+        //       sender: random,
+        //       asset: usdc.address,
+        //       vaultId: vaultCounter.toNumber(),
+        //       amount: collateralToDeposit.toNumber(),
+        //       index: '0',
+        //       data: ZERO_ADDR,
+        //     },
+        //   ]
 
-          await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
-          await expectRevert(
-            controllerProxy.operate(actionArgs, {from: accountOwner1}),
-            'Controller: depositor address and msg.sender address mismatch',
-          )
-        })
+        //   await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
+        //   await expectRevert(
+        //     controllerProxy.operate(actionArgs, {from: accountOwner1}),
+        //     'Controller: depositor address and msg.sender address mismatch',
+        //   )
+        // })
 
         it('should revert depositing a collateral asset with amount equal to zero', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
