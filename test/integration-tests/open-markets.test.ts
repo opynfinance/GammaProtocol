@@ -4,15 +4,18 @@ import {
   MockOtokenInstance,
   AddressBookInstance,
   MockERC20Instance,
-  MockControllerInstance,
+  MarginPoolInstance,
+  ControllerInstance,
   WhitelistInstance,
+  MockOracleInstance,
 } from '../../build/types/truffle-types'
-import BigNumber from 'bignumber.js'
+
 import {assert} from 'chai'
-import {createScaledNumber as createScaled} from '../utils'
+
+import {createScaledNumber as createScaled, createTokenAmount} from '../utils'
 const {expectRevert} = require('@openzeppelin/test-helpers')
 
-const MockController = artifacts.require('MockController.sol')
+const Controller = artifacts.require('Controller.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
 
 // real contract instances for Testing
@@ -20,9 +23,28 @@ const Otoken = artifacts.require('Otoken.sol')
 const OTokenFactory = artifacts.require('OtokenFactory.sol')
 const AddressBook = artifacts.require('AddressBook.sol')
 const Whitelist = artifacts.require('Whitelist.sol')
+const Calculator = artifacts.require('MarginCalculator.sol')
+const MarginPool = artifacts.require('MarginPool.sol')
+const MarginAccount = artifacts.require('MarginAccount.sol')
+const MockOracle = artifacts.require('MockOracle.sol')
 
 // used for testing change of Otoken impl address in AddressBook
 const MockOtoken = artifacts.require('MockOtoken.sol')
+
+const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
+
+enum ActionType {
+  OpenVault,
+  MintShortOption,
+  BurnShortOption,
+  DepositLongOption,
+  WithdrawLongOption,
+  DepositCollateral,
+  WithdrawCollateral,
+  SettleVault,
+  Exercise,
+  Call,
+}
 
 contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, user1, user2, random]) => {
   let otokenImpl: OtokenInstance
@@ -31,12 +53,15 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
   let addressBook: AddressBookInstance
   let otokenFactory: OtokenFactoryInstance
   let whitelist: WhitelistInstance
+  let marginPool: MarginPoolInstance
+  let oracle: MockOracleInstance
+
   let usdc: MockERC20Instance
   let dai: MockERC20Instance
   let weth: MockERC20Instance
   let randomERC20: MockERC20Instance
 
-  let testController: MockControllerInstance
+  let controller: ControllerInstance
 
   const strikePrice = createScaled(200)
   const isPut = true
@@ -51,21 +76,30 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
     // Setup AddresBook
     addressBook = await AddressBook.new({from: owner})
 
+    oracle = await MockOracle.new(addressBook.address, {from: owner})
     otokenImpl = await Otoken.new({from: owner})
     whitelist = await Whitelist.new(addressBook.address, {from: owner})
     otokenFactory = await OTokenFactory.new(addressBook.address, {from: owner})
+    marginPool = await MarginPool.new(addressBook.address)
+    const calculator = await Calculator.new(addressBook.address, {from: owner})
 
     // setup addressBook
     await addressBook.setOtokenImpl(otokenImpl.address, {from: owner})
     await addressBook.setWhitelist(whitelist.address, {from: owner})
     await addressBook.setOtokenFactory(otokenFactory.address, {from: owner})
+    await addressBook.setMarginCalculator(calculator.address, {from: owner})
+    await addressBook.setMarginPool(marginPool.address, {from: owner})
+    await addressBook.setOracle(oracle.address, {from: owner})
 
     // deploy the controller instance
-    testController = await MockController.new()
+    const lib = await MarginAccount.new()
+    await Controller.link('MarginAccount', lib.address)
+    controller = await Controller.new()
+    await controller.initialize(addressBook.address, owner)
 
-    // set the testController as controller (so it has access to minting tokens)
-    await addressBook.setController(testController.address)
-    testController = await MockController.at(await addressBook.getController())
+    // set the controller as controller (so it has access to minting tokens)
+    await addressBook.setController(controller.address)
+    controller = await Controller.at(await addressBook.getController())
   })
 
   describe('Otoken Creation before whitelisting', () => {
@@ -127,9 +161,8 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
     })
 
     it('The owner of whitelist contract can blacklist specific otoken', async () => {
-      await whitelist.blacklistOtoken(otoken1.address)
       await whitelist.blacklistOtoken(otoken2.address)
-      assert.equal(await whitelist.isWhitelistedOtoken(otoken1.address), false)
+
       assert.equal(await whitelist.isWhitelistedOtoken(otoken2.address), false)
     })
 
@@ -183,7 +216,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
   })
 
   describe('Controller only functions on cloned otokens', () => {
-    const amountToMint = new BigNumber(10).times(new BigNumber(10).exponentiatedBy(18))
+    const amountToMint = createTokenAmount(10, 18)
 
     it('should revert when mintOtoken is called by random address', async () => {
       await expectRevert(
@@ -193,8 +226,46 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
     })
 
     it('should be able to mint token1 from controller', async () => {
-      // the testController will call otoken1.mintOtoken()
-      await testController.testMintOtoken(otoken1.address, user1, amountToMint.toString())
+      // the controller will call otoken1.mintOtoken()
+      await whitelist.whitelistCollateral(usdc.address, {from: owner})
+      const vaultCounter = 1
+      const amountCollateral = createTokenAmount(2000, 6)
+      await usdc.mint(user1, amountCollateral)
+      await usdc.approve(marginPool.address, amountCollateral, {from: user1})
+      const actionArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: user1,
+          sender: user1,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounter,
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.MintShortOption,
+          owner: user1,
+          sender: user1,
+          asset: otoken1.address,
+          vaultId: vaultCounter,
+          amount: amountToMint,
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.DepositCollateral,
+          owner: user1,
+          sender: user1,
+          asset: usdc.address,
+          vaultId: vaultCounter,
+          amount: amountCollateral,
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+      await controller.operate(actionArgs, {from: user1})
+      // await controller.testMintOtoken(otoken1.address, user1, amountToMint.toString())
       const balance = await otoken1.balanceOf(user1)
       assert.equal(balance.toString(), amountToMint.toString())
     })
@@ -207,7 +278,33 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
     })
 
     it('should be able to burn tokens from controller', async () => {
-      await testController.testBurnOtoken(otoken1.address, user1, amountToMint.toString())
+      const vaultCounter = 1
+      const amountCollateral = createTokenAmount(2000, 6)
+      await otoken1.approve(marginPool.address, amountToMint, {from: user1})
+
+      const actionArgs = [
+        {
+          actionType: ActionType.BurnShortOption,
+          owner: user1,
+          sender: user1,
+          asset: otoken1.address,
+          vaultId: vaultCounter,
+          amount: amountToMint,
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.WithdrawCollateral,
+          owner: user1,
+          sender: user1,
+          asset: usdc.address,
+          vaultId: vaultCounter,
+          amount: amountCollateral,
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+      await controller.operate(actionArgs, {from: user1})
       const balance = await otoken1.balanceOf(user1)
       assert.equal(balance.toString(), '0')
     })
@@ -221,8 +318,36 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
     })
 
     it('should not affect existing otoken instances', async () => {
-      await testController.testMintOtoken(otoken1.address, user1, amountToMint.toString())
       const newOtoken = await MockOtoken.new()
+      // mint some otoken1
+      const vaultCounter = 1
+      const amountCollateral = createTokenAmount(2000, 6)
+      await usdc.mint(user1, amountCollateral)
+      await usdc.approve(marginPool.address, amountCollateral, {from: user1})
+      const actionArgs = [
+        {
+          actionType: ActionType.MintShortOption,
+          owner: user1,
+          sender: user1,
+          asset: otoken1.address,
+          vaultId: vaultCounter,
+          amount: amountToMint,
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.DepositCollateral,
+          owner: user1,
+          sender: user1,
+          asset: usdc.address,
+          vaultId: vaultCounter,
+          amount: amountCollateral,
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+      await controller.operate(actionArgs, {from: user1})
+
       // update otokenimpl address in addressbook
       await addressBook.setOtokenImpl(newOtoken.address, {from: owner})
 
