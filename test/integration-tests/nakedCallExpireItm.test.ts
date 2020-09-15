@@ -9,7 +9,7 @@ import {
   MarginPoolInstance,
   OtokenFactoryInstance,
 } from '../../build/types/truffle-types'
-import {createScaledUint256} from '../utils'
+import {createTokenAmount} from '../utils'
 import {assert} from 'chai'
 import BigNumber from 'bignumber.js'
 
@@ -113,7 +113,7 @@ contract('Naked Call Option flow', ([accountOwner1, buyer]) => {
       weth.address,
       usdc.address,
       weth.address,
-      createScaledUint256(strikePrice, 18),
+      createTokenAmount(strikePrice, 18),
       expiry,
       false,
     )
@@ -122,14 +122,15 @@ contract('Naked Call Option flow', ([accountOwner1, buyer]) => {
       weth.address,
       usdc.address,
       weth.address,
-      createScaledUint256(strikePrice, 18),
+      createTokenAmount(strikePrice, 18),
       expiry,
       false,
     )
 
     ethCall = await Otoken.at(ethCallAddress)
     // mint weth to user
-    weth.mint(accountOwner1, createScaledUint256(2 * collateralAmount, (await weth.decimals()).toNumber()))
+    const account1OwnerWeth = createTokenAmount(2 * collateralAmount, (await weth.decimals()).toNumber())
+    weth.mint(accountOwner1, account1OwnerWeth)
 
     // have the user approve all the weth transfers
     weth.approve(marginPool.address, '10000000000000000000000', {from: accountOwner1})
@@ -140,6 +141,9 @@ contract('Naked Call Option flow', ([accountOwner1, buyer]) => {
 
   describe('Integration test: Sell a naked call and close it after expires ITM', () => {
     it('Seller should be able to open a short call option', async () => {
+      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+      const scaledCollateralAmount = createTokenAmount(collateralAmount, (await weth.decimals()).toNumber())
+
       const actionArgs = [
         {
           actionType: ActionType.OpenVault,
@@ -157,7 +161,7 @@ contract('Naked Call Option flow', ([accountOwner1, buyer]) => {
           sender: accountOwner1,
           asset: ethCall.address,
           vaultId: vaultCounter,
-          amount: createScaledUint256(optionsAmount, 18),
+          amount: scaledOptionsAmount,
           index: '0',
           data: ZERO_ADDR,
         },
@@ -167,7 +171,7 @@ contract('Naked Call Option flow', ([accountOwner1, buyer]) => {
           sender: accountOwner1,
           asset: weth.address,
           vaultId: vaultCounter,
-          amount: createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()),
+          amount: scaledCollateralAmount,
           index: '0',
           data: ZERO_ADDR,
         },
@@ -195,13 +199,10 @@ contract('Naked Call Option flow', ([accountOwner1, buyer]) => {
       }
       const strikePriceChange = 100
       const expirySpotPrice = strikePrice + strikePriceChange
-      await oracle.setExpiryPriceFinalizedAllPeiodOver(
-        weth.address,
-        expiry,
-        createScaledUint256(expirySpotPrice, 18),
-        true,
-      )
-      await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createScaledUint256(1, 18), true)
+      const scaledETHPrice = createTokenAmount(expirySpotPrice, 18)
+      const scaledUSDCPrice = createTokenAmount(1, 18)
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, scaledETHPrice, true)
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, scaledUSDCPrice, true)
 
       const collateralPayout = collateralAmount - (strikePriceChange * optionsAmount) / expirySpotPrice
 
@@ -209,7 +210,7 @@ contract('Naked Call Option flow', ([accountOwner1, buyer]) => {
       const vaultStateBeforeSettlement = await calculator.getExcessCollateral(vaultBefore)
       assert.equal(
         vaultStateBeforeSettlement[0].toString(),
-        createScaledUint256(collateralPayout, (await weth.decimals()).toNumber()),
+        createTokenAmount(collateralPayout, (await weth.decimals()).toNumber()),
         'vault before settlement collateral excess mismatch',
       )
       assert.equal(vaultStateBeforeSettlement[1], true)
@@ -238,14 +239,12 @@ contract('Naked Call Option flow', ([accountOwner1, buyer]) => {
 
       // check balances before and after changed as expected
       assert.equal(
-        ownerWethBalanceBefore
-          .plus(createScaledUint256(collateralPayout, (await weth.decimals()).toNumber()))
-          .toString(),
+        ownerWethBalanceBefore.plus(createTokenAmount(collateralPayout, (await weth.decimals()).toNumber())).toString(),
         ownerWethBalanceAfter.toString(),
       )
       assert.equal(
         marginPoolWethBalanceBefore
-          .minus(createScaledUint256(collateralPayout, (await weth.decimals()).toNumber()))
+          .minus(createTokenAmount(collateralPayout, (await weth.decimals()).toNumber()))
           .toString(),
         marginPoolWethBalanceAfter.toString(),
       )
@@ -273,8 +272,9 @@ contract('Naked Call Option flow', ([accountOwner1, buyer]) => {
     })
 
     it('Buyer: exercise ITM call option after expiry', async () => {
+      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
       // owner sells their call option
-      ethCall.transfer(buyer, createScaledUint256(optionsAmount, 18), {from: accountOwner1})
+      ethCall.transfer(buyer, scaledOptionsAmount, {from: accountOwner1})
       // oracle orice decreases
       const strikePriceChange = 100
       const expirySpotPrice = strikePrice + strikePriceChange
@@ -292,13 +292,13 @@ contract('Naked Call Option flow', ([accountOwner1, buyer]) => {
           sender: buyer,
           asset: ethCall.address,
           vaultId: '0',
-          amount: createScaledUint256(optionsAmount, 18),
+          amount: scaledOptionsAmount,
           index: '0',
           data: ZERO_ADDR,
         },
       ]
 
-      await ethCall.approve(marginPool.address, createScaledUint256(optionsAmount, 18), {from: buyer})
+      await ethCall.approve(marginPool.address, scaledOptionsAmount, {from: buyer})
       await controllerProxy.operate(actionArgs, {from: buyer})
 
       // keep track of balances after
@@ -308,22 +308,14 @@ contract('Naked Call Option flow', ([accountOwner1, buyer]) => {
       const marginPoolOtokenSupplyAfter = new BigNumber(await ethCall.totalSupply())
 
       const payout = (strikePriceChange * optionsAmount) / expirySpotPrice
+      const scaledPayout = createTokenAmount(payout, (await weth.decimals()).toNumber())
 
       // check balances before and after changed as expected
+      assert.equal(ownerWethBalanceBefore.plus(scaledPayout).toString(), ownerWethBalanceAfter.toString())
+      assert.equal(marginPoolWethBalanceBefore.minus(scaledPayout).toString(), marginPoolWethBalanceAfter.toString())
+      assert.equal(ownerOtokenBalanceBefore.minus(scaledOptionsAmount).toString(), ownerOtokenBalanceAfter.toString())
       assert.equal(
-        ownerWethBalanceBefore.plus(createScaledUint256(payout, (await weth.decimals()).toNumber())).toString(),
-        ownerWethBalanceAfter.toString(),
-      )
-      assert.equal(
-        marginPoolWethBalanceBefore.minus(createScaledUint256(payout, (await weth.decimals()).toNumber())).toString(),
-        marginPoolWethBalanceAfter.toString(),
-      )
-      assert.equal(
-        ownerOtokenBalanceBefore.minus(createScaledUint256(optionsAmount, 18)).toString(),
-        ownerOtokenBalanceAfter.toString(),
-      )
-      assert.equal(
-        marginPoolOtokenSupplyBefore.minus(createScaledUint256(optionsAmount, 18)).toString(),
+        marginPoolOtokenSupplyBefore.minus(scaledOptionsAmount).toString(),
         marginPoolOtokenSupplyAfter.toString(),
       )
     })
