@@ -63,6 +63,7 @@ contract MarginCalculator {
 
     /**
      * @notice returns the net value of a vault in the valid collateral asset for that vault i.e. USDC for puts/ ETH for calls
+     * @dev if no collateral asset is specified in the vault, will default to the collateral asset of the short asset.
      * @param _vault the theoretical vault that needs to be checked
      * @return excessCollateral the amount by which the margin is above or below the required amount.
      * @return isExcess true if there's excess margin in the vault. In this case, collateral can be taken out from the vault. False if there is insufficient margin and additional collateral needs to be added to the vault to create the position.
@@ -104,9 +105,11 @@ contract MarginCalculator {
         uint256 excessCollateralInternal = SignedConverter.intToUint(excessCollateral.value);
 
         // convert from internal amount to token's native amount
-        uint256 excessCollateralExternal = hasCollateral
-            ? _internalAmountToTokenAmount(excessCollateralInternal, _vault.collateralAssets[0])
-            : excessCollateralInternal;
+        address collateralAsset = hasCollateral
+            ? _vault.collateralAssets[0]
+            : OtokenInterface(_vault.shortOtokens[0]).collateralAsset();
+
+        uint256 excessCollateralExternal = _internalAmountToTokenAmount(excessCollateralInternal, collateralAsset);
 
         return (excessCollateralExternal, isExcess);
     }
