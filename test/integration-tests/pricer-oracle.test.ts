@@ -7,7 +7,7 @@ import {
   CompoundPricerInstance,
 } from '../../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
-import {underlyingPriceToCtokenPrice} from '../utils'
+import {underlyingPriceToCtokenPrice, changeAmountScaled, createTokenAmount} from '../utils'
 const {expectRevert, time} = require('@openzeppelin/test-helpers')
 
 const ChainlinkPricer = artifacts.require('ChainLinkPricer.sol')
@@ -16,12 +16,6 @@ const Oracle = artifacts.require('Oracle.sol')
 const MockChainlinkAggregator = artifacts.require('MockChainlinkAggregator.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
 const MockCToken = artifacts.require('MockCToken.sol')
-
-/**
- * scale number with 1e8
- * @param num
- */
-const toChainLinkPrice = (num: number) => new BigNumber(num).times(1e8).integerValue()
 
 contract('Pricer + Oracle', ([owner, disputer]) => {
   let wethAggregator: MockChainlinkAggregatorInstance
@@ -35,6 +29,8 @@ contract('Pricer + Oracle', ([owner, disputer]) => {
 
   const lockingPeriod = 60 * 10
   const disputePeriod = 60 * 20
+
+  const chainlinkDecimals = 8
 
   before('Deploy Pricer', async () => {
     // deploy mock contracts
@@ -50,7 +46,7 @@ contract('Pricer + Oracle', ([owner, disputer]) => {
 
   describe('get live price from chainlink pricer', () => {
     // aggregator have price in 1e8
-    const ethPrice = toChainLinkPrice(300)
+    const ethPrice = createTokenAmount(300, chainlinkDecimals)
     before('mock data in weth aggregator', async () => {
       await wethAggregator.setLatestAnswer(ethPrice)
     })
@@ -62,13 +58,13 @@ contract('Pricer + Oracle', ([owner, disputer]) => {
       await oracle.setAssetPricer(weth.address, wethPricer.address)
     })
     it('should return the price in 1e18 from oracle', async () => {
-      const expectedResult = new BigNumber(300).times(1e18)
+      const expectedResult = createTokenAmount(300, 18)
       const priceFromOracle = await oracle.getPrice(weth.address)
       assert.equal(priceFromOracle.toString(), expectedResult.toString())
     })
     it('should return the new price after submitting new answer in aggregator', async () => {
-      const newPrice = toChainLinkPrice(400)
-      const expectedResult = new BigNumber(400).times(1e18)
+      const newPrice = createTokenAmount(400, chainlinkDecimals)
+      const expectedResult = createTokenAmount(400, 18)
       await wethAggregator.setLatestAnswer(newPrice)
       const priceFromOracle = await oracle.getPrice(weth.address)
       assert.equal(priceFromOracle.toString(), expectedResult.toString())
@@ -76,8 +72,8 @@ contract('Pricer + Oracle', ([owner, disputer]) => {
   })
 
   describe('get live price from compound pricer', () => {
-    const initPrice = toChainLinkPrice(300)
-    const initPrice1e18 = new BigNumber(300).times(1e18)
+    const initPrice = createTokenAmount(300, chainlinkDecimals)
+    const initPrice1e18 = new BigNumber(createTokenAmount(300, 18))
     const initExchangeRate = new BigNumber('200192735438752381581313918')
     const newExchangeRate = new BigNumber('200199344698159376050159462')
     before('set cToken exchange rate', async () => {
@@ -107,10 +103,10 @@ contract('Pricer + Oracle', ([owner, disputer]) => {
       assert.equal(priceFromOracle.toString(), expectedResult.toString())
     })
     it('should return the new cETH price after submitting new answer in aggregator', async () => {
-      const newPrice = toChainLinkPrice(400)
+      const newPrice = createTokenAmount(400, chainlinkDecimals)
       await wethAggregator.setLatestAnswer(newPrice)
       //
-      const newPriceIn1e18 = new BigNumber(400).times(1e18)
+      const newPriceIn1e18 = new BigNumber(createTokenAmount(400, 18))
       const expectedResult = await underlyingPriceToCtokenPrice(newPriceIn1e18, newExchangeRate, weth)
       const priceFromOracle = await oracle.getPrice(ceth.address)
       assert.equal(priceFromOracle.toString(), expectedResult.toString())
@@ -121,14 +117,14 @@ contract('Pricer + Oracle', ([owner, disputer]) => {
     // time order: t0, t1, t2, t3, t4
     let t0: number, t1: number, t2: number
     // p0 = price at t0 ... etc
-    const p0 = toChainLinkPrice(100)
-    const p1 = toChainLinkPrice(150.333)
-    const p2 = toChainLinkPrice(180)
+    const p0 = new BigNumber(createTokenAmount(100, chainlinkDecimals))
+    const p1 = new BigNumber(createTokenAmount(150.333, chainlinkDecimals))
+    const p2 = new BigNumber(createTokenAmount(180, chainlinkDecimals))
 
     let submitTimestamp: number
     const newExchangeRate = new BigNumber('200199344698159376050159462')
 
-    const disputePrice1e18 = new BigNumber(450).times(1e18)
+    const disputePrice1e18 = createTokenAmount(450, 18)
 
     before('setup history in aggregator', async () => {
       // set t0, t1, t2, expiry, t3, t4
@@ -175,7 +171,7 @@ contract('Pricer + Oracle', ([owner, disputer]) => {
       const roundId = 1
       await wethPricer.setExpiryPriceToOralce(expiryTimestamp, roundId)
       const [priceFromOracle, isFinalized] = await oracle.getExpiryPrice(weth.address, expiryTimestamp)
-      assert.equal(p1.times(1e10).toString(), priceFromOracle.toString())
+      assert.equal(changeAmountScaled(p1.toString(), chainlinkDecimals, 18).toString(), priceFromOracle.toString())
       assert.equal(isFinalized, false)
       submitTimestamp = (await time.latest()).toNumber()
     })
@@ -198,7 +194,7 @@ contract('Pricer + Oracle', ([owner, disputer]) => {
       const roundId = 1
       await expectRevert(wethPricer.setExpiryPriceToOralce(expiryTimestamp, roundId), 'Oracle: dispute period started')
       const priceFromOracle = await oracle.getExpiryPrice(weth.address, expiryTimestamp)
-      assert.equal(p1.times(1e10).toString(), priceFromOracle[0].toString())
+      assert.equal(changeAmountScaled(p1.toString(), chainlinkDecimals, 18).toString(), priceFromOracle[0].toString())
     })
 
     it('should revert when dispute is called by non-disputer', async () => {
@@ -220,7 +216,7 @@ contract('Pricer + Oracle', ([owner, disputer]) => {
       if ((await time.latest()).toNumber() < submitTimestamp + disputePeriod) {
         await time.increaseTo(submitTimestamp + disputePeriod + 100)
       }
-      const randomPrice = new BigNumber(453).times(1e18)
+      const randomPrice = createTokenAmount(453, 18)
       await expectRevert(
         oracle.disputeExpiryPrice(weth.address, expiryTimestamp, randomPrice, {from: disputer}),
         'Oracle: dispute period over',
@@ -236,7 +232,7 @@ contract('Pricer + Oracle', ([owner, disputer]) => {
 
     it('should get isFinalized = true after ceth price dispute period', async () => {
       const expiryTimestamp = (t0 + t1) / 2 // between t0 and t1
-      const underlyingPriceForCtoken = p1.times(1e10)
+      const underlyingPriceForCtoken = changeAmountScaled(p1.toString(), chainlinkDecimals, 18)
       const expectedCTokenPrice = await underlyingPriceToCtokenPrice(underlyingPriceForCtoken, newExchangeRate, weth)
       const [price, isFinalized] = await oracle.getExpiryPrice(ceth.address, expiryTimestamp)
       assert.equal(price.toString(), expectedCTokenPrice.toString())
