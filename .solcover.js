@@ -7,7 +7,6 @@ module.exports = {
   skipFiles: [
     'Migrations.sol',
     'mocks/',
-    'packages/',
-    'Controller.sol'
+    'packages/'
   ]
 }
