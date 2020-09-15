@@ -205,7 +205,7 @@ contract('Long Call Spread Option flow', ([accountOwner1, buyer, accountOwner2])
       await controllerProxy.operate(actionArgs, {from: accountOwner2})
 
       // buyer sells their long put option to owner
-      longCall.transfer(accountOwner1, createScaledUint256(optionsAmount, 18), {from: accountOwner2})
+      await longCall.transfer(accountOwner1, createScaledUint256(optionsAmount, 18), {from: accountOwner2})
     })
     it('Seller should be able to open a long call spread', async () => {
       // Keep track of balances before
