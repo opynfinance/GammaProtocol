@@ -13,6 +13,7 @@ import {
   PayableProxyControllerInstance,
 } from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
+import {createTokenAmount} from './utils'
 
 const {expectRevert, expectEvent, time} = require('@openzeppelin/test-helpers')
 
@@ -285,7 +286,7 @@ contract(
       })
     })
 
-    describe('Operate without ETH', async () => {
+    describe('Operate without ETH', () => {
       it('should normally execute operate', async () => {
         const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         const actionArgs = [
@@ -307,6 +308,128 @@ contract(
 
         const vaultCounterAfter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         assert.equal(vaultCounterAfter.minus(vaultCounterBefore).toString(), '1', 'vault counter after mismatch')
+      })
+    })
+
+    describe('Operate without owner address', () => {
+      const usdcDecimals = 6
+
+      let shortOtoken: MockOtokenInstance
+
+      before(async () => {
+        const expiryTime = new BigNumber(60 * 60 * 24) // after 1 day
+
+        shortOtoken = await MockOtoken.new()
+        // init otoken
+        await shortOtoken.init(
+          addressBook.address,
+          weth.address,
+          usdc.address,
+          usdc.address,
+          new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+          new BigNumber(await time.latest()).plus(expiryTime),
+          true,
+        )
+        // whitelist short otoken to be used in the protocol
+        await whitelist.whitelistOtoken(shortOtoken.address, {from: owner})
+        // whitelist collateral asset
+        await whitelist.whitelistCollateral(usdc.address, {from: owner})
+        // free money
+        await usdc.mint(accountOwner1, createTokenAmount(10000, usdcDecimals))
+        // open new vault, mintnaked short, sell it to holder 1
+        const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
+        const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e12)
+        const amountToMint = new BigNumber(1).times(1e18)
+        const actionArgs = [
+          {
+            actionType: ActionType.OpenVault,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: ZERO_ADDR,
+            vaultId: vaultCounter.toNumber(),
+            amount: '0',
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.MintShortOption,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: shortOtoken.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: amountToMint.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.DepositCollateral,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: usdc.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToDeposit.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+        await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
+        await payableProxyController.operate(actionArgs, accountOwner1, {from: accountOwner1})
+        // transfer minted short otoken to hodler`
+        await shortOtoken.transfer(holder1, amountToMint.toString(), {from: accountOwner1})
+      })
+
+      it('should normally execute when owner address is equal to zero', async () => {
+        // past time after expiry
+        await time.increase(60 * 61 * 24) // increase time with one hour in seconds
+        // set price in Oracle Mock, 150$ at expiry, expire ITM
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(
+          await shortOtoken.underlyingAsset(),
+          new BigNumber(await shortOtoken.expiryTimestamp()),
+          new BigNumber(150).times(1e18),
+          true,
+        )
+        // exercise
+        const shortAmountToBurn = new BigNumber(1).times(1e18)
+        const actionArgs = [
+          {
+            actionType: ActionType.Exercise,
+            owner: ZERO_ADDR,
+            sender: holder1,
+            asset: shortOtoken.address,
+            vaultId: '0',
+            amount: shortAmountToBurn.toString(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+        assert.equal(await controllerProxy.isExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
+
+        const payout = new BigNumber('50').times(1e6)
+        const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const senderBalanceBefore = new BigNumber(await usdc.balanceOf(holder1))
+        const senderShortBalanceBefore = new BigNumber(await shortOtoken.balanceOf(holder1))
+
+        await controllerProxy.operate(actionArgs, {from: holder1})
+
+        const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const senderBalanceAfter = new BigNumber(await usdc.balanceOf(holder1))
+        const senderShortBalanceAfter = new BigNumber(await shortOtoken.balanceOf(holder1))
+
+        assert.equal(
+          marginPoolBalanceBefore.minus(marginPoolBalanceAfter).toString(),
+          payout.toString(),
+          'Margin pool collateral asset balance mismatch',
+        )
+        assert.equal(
+          senderBalanceAfter.minus(senderBalanceBefore).toString(),
+          payout.toString(),
+          'Sender collateral asset balance mismatch',
+        )
+        assert.equal(
+          senderShortBalanceBefore.minus(senderShortBalanceAfter).toString(),
+          shortAmountToBurn.toString(),
+          ' Burned short otoken amount mismatch',
+        )
       })
     })
   },
