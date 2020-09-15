@@ -351,7 +351,7 @@ contract('Short Call Spread Option flow', ([accountOwner1, buyer, accountOwner2]
 
     it('Buyer: exercise ITM put option after expiry', async () => {
       // owner sells their put option
-      shortCall.transfer(buyer, createScaledUint256(optionsAmount, 18), {from: accountOwner1})
+      await shortCall.transfer(buyer, createScaledUint256(optionsAmount, 18), {from: accountOwner1})
       // oracle orice decreases
       const strikePriceChange = 100
       const expirySpotPrice = shortStrike + strikePriceChange

@@ -70,8 +70,7 @@ contract('Naked Call Option flow', ([accountOwner1, buyer]) => {
     expiry = (Number(multiplier.toFixed(0)) + 1) * 86400 + time.duration.days(30).toNumber() + 28800
 
     // setup usdc and weth
-    // TODO: make usdc 6 decimals
-    usdc = await MockERC20.new('USDC', 'USDC', 18)
+    usdc = await MockERC20.new('USDC', 'USDC', 6)
     weth = await MockERC20.new('WETH', 'WETH', 18)
 
     // initiate addressbook first.
@@ -139,7 +138,7 @@ contract('Naked Call Option flow', ([accountOwner1, buyer]) => {
     vaultCounter = vaultCounterBefore.toNumber() + 1
   })
 
-  describe('Integration test: Sell a naked put and close it after expires ITM', () => {
+  describe('Integration test: Sell a naked call and close it after expires ITM', () => {
     it('Seller should be able to open a short call option', async () => {
       const actionArgs = [
         {
@@ -210,7 +209,8 @@ contract('Naked Call Option flow', ([accountOwner1, buyer]) => {
       const vaultStateBeforeSettlement = await calculator.getExcessCollateral(vaultBefore)
       assert.equal(
         vaultStateBeforeSettlement[0].toString(),
-        createScaledUint256(collateralPayout, (await usdc.decimals()).toNumber()),
+        createScaledUint256(collateralPayout, (await weth.decimals()).toNumber()),
+        'vault before settlement collateral excess mismatch',
       )
       assert.equal(vaultStateBeforeSettlement[1], true)
 

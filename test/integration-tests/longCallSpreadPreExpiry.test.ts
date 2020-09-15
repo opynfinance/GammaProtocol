@@ -522,7 +522,7 @@ contract('Long Call Spread Option flow', ([accountOwner1, buyer, accountOwner2])
       const buyerBalanceBeforeSell = new BigNumber(await shortCall.balanceOf(buyer))
 
       // owner sells their put option
-      shortCall.transfer(buyer, createScaledUint256(optionsAmount, 18), {from: accountOwner1})
+      await shortCall.transfer(buyer, createScaledUint256(optionsAmount, 18), {from: accountOwner1})
 
       const ownerShortOtokenBalanceAfterSell = new BigNumber(await shortCall.balanceOf(accountOwner1))
       const buyerBalanceAfterSell = new BigNumber(await shortCall.balanceOf(buyer))

@@ -277,7 +277,7 @@ contract('Short Call Spread Option flow', ([accountOwner1, buyer, accountOwner2]
       const vaultStateBeforeSettlement = await calculator.getExcessCollateral(vaultBefore)
       assert.equal(
         vaultStateBeforeSettlement[0].toString(),
-        createScaledUint256(collateralPayout, (await usdc.decimals()).toNumber()),
+        createScaledUint256(collateralPayout, (await weth.decimals()).toNumber()),
       )
       assert.equal(vaultStateBeforeSettlement[1], true)
 
@@ -309,12 +309,14 @@ contract('Short Call Spread Option flow', ([accountOwner1, buyer, accountOwner2]
           .plus(createScaledUint256(collateralPayout, (await weth.decimals()).toNumber()))
           .toString(),
         ownerWethBalanceAfter.toString(),
+        'weth balance mismatch',
       )
       assert.equal(
         marginPoolWethBalanceBefore
           .minus(createScaledUint256(collateralPayout, (await weth.decimals()).toNumber()))
           .toString(),
         marginPoolWethBalanceAfter.toString(),
+        'pool weth balance mismatch',
       )
       assert.equal(ownerOtokenBalanceBefore.toString(), ownerOtokenBalanceAfter.toString())
       assert.equal(marginPoolOtokenSupplyBefore.toString(), marginPoolOtokenSupplyAfter.toString())
@@ -341,7 +343,7 @@ contract('Short Call Spread Option flow', ([accountOwner1, buyer, accountOwner2]
 
     it('Buyer: exercise ITM put option after expiry', async () => {
       // owner sells their put option
-      shortCall.transfer(buyer, createScaledUint256(optionsAmount, 18), {from: accountOwner1})
+      await shortCall.transfer(buyer, createScaledUint256(optionsAmount, 18), {from: accountOwner1})
       // oracle orice decreases
       const strikePriceChange = 100
       const expirySpotPrice = longStrike + strikePriceChange
@@ -375,23 +377,28 @@ contract('Short Call Spread Option flow', ([accountOwner1, buyer, accountOwner2]
       const marginPoolOtokenSupplyAfter = new BigNumber(await shortCall.totalSupply())
 
       const payout = (strikePriceChange * optionsAmount) / expirySpotPrice
+      console.log(`payout`, payout)
 
       // check balances before and after changed as expected
       assert.equal(
         ownerWethBalanceBefore.plus(createScaledUint256(payout, (await weth.decimals()).toNumber())).toString(),
         ownerWethBalanceAfter.toString(),
+        'owner weth balance mismatch',
       )
       assert.equal(
         marginPoolWethBalanceBefore.minus(createScaledUint256(payout, (await weth.decimals()).toNumber())).toString(),
         marginPoolWethBalanceAfter.toString(),
+        'pool weth balance mismatch',
       )
       assert.equal(
         ownerOtokenBalanceBefore.minus(createScaledUint256(optionsAmount, 18)).toString(),
         ownerOtokenBalanceAfter.toString(),
+        'owner otoken balance mismatch',
       )
       assert.equal(
         marginPoolOtokenSupplyBefore.minus(createScaledUint256(optionsAmount, 18)).toString(),
         marginPoolOtokenSupplyAfter.toString(),
+        'pool otoken balance mismatch',
       )
     })
   })

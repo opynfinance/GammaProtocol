@@ -70,7 +70,6 @@ contract('Naked Call Option flow', ([accountOwner1, buyer]) => {
     expiry = (Number(multiplier.toFixed(0)) + 1) * 86400 + time.duration.days(30).toNumber() + 28800
 
     // setup usdc and weth
-    // TODO: make usdc 6 decimals
     usdc = await MockERC20.new('USDC', 'USDC', 6)
     weth = await MockERC20.new('WETH', 'WETH', 18)
 
