@@ -11,7 +11,7 @@ import {
   OwnedUpgradeabilityProxyInstance,
 } from '../../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
-import {createTokenAmount, createScaledNumber} from '../utils'
+import {createTokenAmount} from '../utils'
 
 const {expectRevert, expectEvent, time} = require('@openzeppelin/test-helpers')
 
@@ -2409,7 +2409,7 @@ contract(
         await shortOtoken.transfer(holder1, amountToMint.toString(), {from: accountOwner1})
       })
 
-      it('sshould revert exercising un-expired otoken', async () => {
+      it('should revert exercising un-expired otoken', async () => {
         const shortAmountToBurn = new BigNumber('1')
         const actionArgs = [
           {

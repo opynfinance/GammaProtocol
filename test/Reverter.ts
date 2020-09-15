@@ -20,7 +20,7 @@ export default class Reverter {
             id: new Date().getTime(),
             params: [this.snapshotId],
           },
-          (err, result) => {
+          err => {
             if (err) {
               return reject(err)
             }

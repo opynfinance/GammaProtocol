@@ -9,11 +9,11 @@ import {
   MarginPoolInstance,
   OtokenFactoryInstance,
 } from '../../build/types/truffle-types'
-import {createVault, createScaledUint256} from '../utils'
+import {createTokenAmount} from '../utils'
 import {assert} from 'chai'
 import BigNumber from 'bignumber.js'
 
-const {expectRevert, time} = require('@openzeppelin/test-helpers')
+const {time} = require('@openzeppelin/test-helpers')
 const AddressBook = artifacts.require('AddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const Otoken = artifacts.require('Otoken.sol')
@@ -39,7 +39,7 @@ enum ActionType {
   Call,
 }
 
-contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buyer, accountOwner2]) => {
+contract('Long Put Spread Option flow', ([accountOwner1, buyer, accountOwner2]) => {
   let expiry: number
 
   let addressBook: AddressBookInstance
@@ -55,7 +55,6 @@ contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1
   let oracle: MockOracleInstance
 
   let usdc: MockERC20Instance
-  let dai: MockERC20Instance
   let weth: MockERC20Instance
 
   let shortPut: OtokenInstance
@@ -75,7 +74,6 @@ contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1
 
     // setup usdc and weth
     usdc = await MockERC20.new('USDC', 'USDC', 6)
-    dai = await MockERC20.new('DAI', 'DAI', 18)
     weth = await MockERC20.new('WETH', 'WETH', 18)
 
     // initiate addressbook first.
@@ -118,7 +116,7 @@ contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1
       weth.address,
       usdc.address,
       usdc.address,
-      createScaledUint256(longStrike, 18),
+      createTokenAmount(longStrike, 18),
       expiry,
       true,
     )
@@ -127,7 +125,7 @@ contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1
       weth.address,
       usdc.address,
       usdc.address,
-      createScaledUint256(shortStrike, 18),
+      createTokenAmount(shortStrike, 18),
       expiry,
       true,
     )
@@ -136,7 +134,7 @@ contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1
       weth.address,
       usdc.address,
       usdc.address,
-      createScaledUint256(longStrike, 18),
+      createTokenAmount(longStrike, 18),
       expiry,
       true,
     )
@@ -147,7 +145,7 @@ contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1
       weth.address,
       usdc.address,
       usdc.address,
-      createScaledUint256(shortStrike, 18),
+      createTokenAmount(shortStrike, 18),
       expiry,
       true,
     )
@@ -155,9 +153,11 @@ contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1
     shortPut = await Otoken.at(shortPutAddress)
 
     // mint usdc to user
-    usdc.mint(accountOwner1, createScaledUint256(2 * collateralAmount, (await usdc.decimals()).toNumber()))
-    usdc.mint(accountOwner2, createScaledUint256(longStrike * optionsAmount, (await usdc.decimals()).toNumber()))
-    usdc.mint(buyer, createScaledUint256(longStrike * optionsAmount, (await usdc.decimals()).toNumber()))
+    const accountOwner1Usdc = createTokenAmount(2 * collateralAmount, (await usdc.decimals()).toNumber())
+    const accountOwner2Usdc = createTokenAmount(longStrike * optionsAmount, (await usdc.decimals()).toNumber())
+
+    usdc.mint(accountOwner1, accountOwner1Usdc)
+    usdc.mint(accountOwner2, accountOwner2Usdc)
 
     // have the user approve all the usdc transfers
     usdc.approve(marginPool.address, '10000000000000000000000', {from: accountOwner1})
@@ -171,6 +171,8 @@ contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1
   describe('Integration test: Sell a long put spread and close it after expires ITM', () => {
     it('Someone else mints the long option and sends it to the seller', async () => {
       const collateralToMintLong = longStrike * optionsAmount
+      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+      const scaledCollateralAmount = createTokenAmount(collateralToMintLong, (await usdc.decimals()).toNumber())
 
       const actionArgsBuyer = [
         {
@@ -189,7 +191,7 @@ contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1
           sender: accountOwner2,
           asset: longPut.address,
           vaultId: vaultCounter,
-          amount: createScaledUint256(optionsAmount, 18),
+          amount: scaledOptionsAmount,
           index: '0',
           data: ZERO_ADDR,
         },
@@ -199,7 +201,7 @@ contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1
           sender: accountOwner2,
           asset: usdc.address,
           vaultId: vaultCounter,
-          amount: createScaledUint256(collateralToMintLong, (await usdc.decimals()).toNumber()),
+          amount: scaledCollateralAmount,
           index: '0',
           data: ZERO_ADDR,
         },
@@ -208,7 +210,7 @@ contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1
       await controllerProxy.operate(actionArgsBuyer, {from: accountOwner2})
 
       // buyer sells their long put option to owner
-      longPut.transfer(accountOwner1, createScaledUint256(optionsAmount, 18), {from: accountOwner2})
+      longPut.transfer(accountOwner1, scaledOptionsAmount, {from: accountOwner2})
 
       const actionArgsSeller = [
         {
@@ -227,7 +229,7 @@ contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1
           sender: accountOwner1,
           asset: shortPut.address,
           vaultId: vaultCounter,
-          amount: createScaledUint256(optionsAmount, 18),
+          amount: scaledOptionsAmount,
           index: '0',
           data: ZERO_ADDR,
         },
@@ -237,7 +239,7 @@ contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1
           sender: accountOwner1,
           asset: longPut.address,
           vaultId: vaultCounter,
-          amount: createScaledUint256(optionsAmount, 18),
+          amount: scaledOptionsAmount,
           index: '0',
           data: ZERO_ADDR,
         },
@@ -265,26 +267,21 @@ contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1
         await time.increaseTo(expiry + 2)
       }
       const expirySpotPrice = 150
-      await oracle.setExpiryPriceFinalizedAllPeiodOver(
-        weth.address,
-        expiry,
-        createScaledUint256(expirySpotPrice, 18),
-        true,
-      )
-      await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createScaledUint256(1, 18), true)
+      const scaledETHPrice = createTokenAmount(expirySpotPrice, 18)
+      const scaledUSDCPrice = createTokenAmount(1, 18)
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, scaledETHPrice, true)
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, scaledUSDCPrice, true)
 
       const collateralPayout = Math.min(
         (longStrike - shortStrike) * optionsAmount,
         (longStrike - expirySpotPrice) * optionsAmount,
       )
+      const scaledPayoutAmount = createTokenAmount(collateralPayout, (await usdc.decimals()).toNumber())
 
       // Check that after expiry, the vault excess balance has updated as expected
       vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
       const vaultStateBeforeSettlement = await calculator.getExcessCollateral(vaultBefore)
-      assert.equal(
-        vaultStateBeforeSettlement[0].toString(),
-        createScaledUint256(collateralPayout, (await usdc.decimals()).toNumber()),
-      )
+      assert.equal(vaultStateBeforeSettlement[0].toString(), scaledPayoutAmount)
       assert.equal(vaultStateBeforeSettlement[1], true)
 
       const actionArgs = [
@@ -310,16 +307,9 @@ contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1
       const marginPoolOtokenSupplyAfter = new BigNumber(await shortPut.totalSupply())
 
       // check balances before and after changed as expected
+      assert.equal(ownerUsdcBalanceBefore.plus(scaledPayoutAmount).toString(), ownerUsdcBalanceAfter.toString())
       assert.equal(
-        ownerUsdcBalanceBefore
-          .plus(createScaledUint256(collateralPayout, (await usdc.decimals()).toNumber()))
-          .toString(),
-        ownerUsdcBalanceAfter.toString(),
-      )
-      assert.equal(
-        marginPoolUsdcBalanceBefore
-          .minus(createScaledUint256(collateralPayout, (await usdc.decimals()).toNumber()))
-          .toString(),
+        marginPoolUsdcBalanceBefore.minus(scaledPayoutAmount).toString(),
         marginPoolUsdcBalanceAfter.toString(),
       )
       assert.equal(ownerOtokenBalanceBefore.toString(), ownerOtokenBalanceAfter.toString())
@@ -346,8 +336,9 @@ contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1
     })
 
     it('Buyer: exercise ITM put option after expiry', async () => {
+      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
       // owner sells their put option
-      shortPut.transfer(buyer, createScaledUint256(optionsAmount, 18), {from: accountOwner1})
+      shortPut.transfer(buyer, scaledOptionsAmount, {from: accountOwner1})
       // oracle orice decreases
       const expirySpotPrice = 150
       const strikePriceChange = Math.max(shortStrike - expirySpotPrice, 0)
@@ -365,13 +356,13 @@ contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1
           sender: buyer,
           asset: shortPut.address,
           vaultId: '0',
-          amount: createScaledUint256(optionsAmount, 18),
+          amount: scaledOptionsAmount,
           index: '0',
           data: ZERO_ADDR,
         },
       ]
 
-      await shortPut.approve(marginPool.address, createScaledUint256(optionsAmount, 18), {from: buyer})
+      await shortPut.approve(marginPool.address, scaledOptionsAmount, {from: buyer})
       await controllerProxy.operate(actionArgs, {from: buyer})
 
       // keep track of balances after
@@ -381,22 +372,17 @@ contract('Long Put Spread Option flow', ([admin, accountOwner1, accountOperator1
       const marginPoolOtokenSupplyAfter = new BigNumber(await shortPut.totalSupply())
 
       const payout = strikePriceChange * optionsAmount
+      const scaledPayoutAmount = createTokenAmount(payout, (await usdc.decimals()).toNumber())
 
       // check balances before and after changed as expected
+      assert.equal(ownerUsdcBalanceBefore.plus(scaledPayoutAmount).toString(), ownerUsdcBalanceAfter.toString())
       assert.equal(
-        ownerUsdcBalanceBefore.plus(createScaledUint256(payout, (await usdc.decimals()).toNumber())).toString(),
-        ownerUsdcBalanceAfter.toString(),
-      )
-      assert.equal(
-        marginPoolUsdcBalanceBefore.minus(createScaledUint256(payout, (await usdc.decimals()).toNumber())).toString(),
+        marginPoolUsdcBalanceBefore.minus(scaledPayoutAmount).toString(),
         marginPoolUsdcBalanceAfter.toString(),
       )
+      assert.equal(ownerOtokenBalanceBefore.minus(scaledOptionsAmount).toString(), ownerOtokenBalanceAfter.toString())
       assert.equal(
-        ownerOtokenBalanceBefore.minus(createScaledUint256(optionsAmount, 18)).toString(),
-        ownerOtokenBalanceAfter.toString(),
-      )
-      assert.equal(
-        marginPoolOtokenSupplyBefore.minus(createScaledUint256(optionsAmount, 18)).toString(),
+        marginPoolOtokenSupplyBefore.minus(scaledOptionsAmount).toString(),
         marginPoolOtokenSupplyAfter.toString(),
       )
     })

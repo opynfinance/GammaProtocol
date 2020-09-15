@@ -11,8 +11,6 @@ import {
 } from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
-const {expectRevert, expectEvent, time} = require('@openzeppelin/test-helpers')
-
 const MockOracle = artifacts.require('MockOracle.sol')
 const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy.sol')
 const MockMarginCalculator = artifacts.require('MockMarginCalculator.sol')
@@ -40,7 +38,7 @@ enum ActionType {
   Call,
 }
 
-contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, holder1, terminator, random]) => {
+contract('Controller', ([owner, accountOwner1]) => {
   // Oracle module
   let oracle: MockOracleInstance
   // calculator module

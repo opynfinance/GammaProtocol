@@ -9,7 +9,7 @@ import {
   MarginPoolInstance,
   OtokenFactoryInstance,
 } from '../../build/types/truffle-types'
-import {createVault, createScaledUint256} from '../utils'
+import {createTokenAmount} from '../utils'
 import {assert} from 'chai'
 import BigNumber from 'bignumber.js'
 
@@ -39,7 +39,7 @@ enum ActionType {
   Call,
 }
 
-contract('Naked Call Option flow', ([admin, accountOwner1, accountOperator1, buyer]) => {
+contract('Naked Call Option flow', ([accountOwner1, buyer]) => {
   let expiry: number
 
   let addressBook: AddressBookInstance
@@ -55,7 +55,6 @@ contract('Naked Call Option flow', ([admin, accountOwner1, accountOperator1, buy
   let oracle: MockOracleInstance
 
   let usdc: MockERC20Instance
-  let dai: MockERC20Instance
   let weth: MockERC20Instance
 
   let ethCall: OtokenInstance
@@ -71,9 +70,7 @@ contract('Naked Call Option flow', ([admin, accountOwner1, accountOperator1, buy
     expiry = (Number(multiplier.toFixed(0)) + 1) * 86400 + time.duration.days(30).toNumber() + 28800
 
     // setup usdc and weth
-    // TODO: make usdc 6 decimals
     usdc = await MockERC20.new('USDC', 'USDC', 6)
-    dai = await MockERC20.new('DAI', 'DAI', 18)
     weth = await MockERC20.new('WETH', 'WETH', 18)
 
     // initiate addressbook first.
@@ -116,7 +113,7 @@ contract('Naked Call Option flow', ([admin, accountOwner1, accountOperator1, buy
       weth.address,
       usdc.address,
       weth.address,
-      createScaledUint256(strikePrice, 18),
+      createTokenAmount(strikePrice, 18),
       expiry,
       false,
     )
@@ -125,14 +122,15 @@ contract('Naked Call Option flow', ([admin, accountOwner1, accountOperator1, buy
       weth.address,
       usdc.address,
       weth.address,
-      createScaledUint256(strikePrice, 18),
+      createTokenAmount(strikePrice, 18),
       expiry,
       false,
     )
 
     ethCall = await Otoken.at(ethCallAddress)
     // mint weth to user
-    weth.mint(accountOwner1, createScaledUint256(2 * collateralAmount, (await weth.decimals()).toNumber()))
+    const account1OwnerWeth = createTokenAmount(2 * collateralAmount, (await weth.decimals()).toNumber())
+    weth.mint(accountOwner1, account1OwnerWeth)
 
     // have the user approve all the weth transfers
     weth.approve(marginPool.address, '10000000000000000000000', {from: accountOwner1})
@@ -143,6 +141,9 @@ contract('Naked Call Option flow', ([admin, accountOwner1, accountOperator1, buy
 
   describe('Integration test: Sell a naked call and close it before expiry', () => {
     it('Seller should be able to open a short call option', async () => {
+      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+      const scaledCollateralAmount = createTokenAmount(collateralAmount, (await weth.decimals()).toNumber())
+
       // Keep track of balances before
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
@@ -185,7 +186,7 @@ contract('Naked Call Option flow', ([admin, accountOwner1, accountOperator1, buy
           sender: accountOwner1,
           asset: ethCall.address,
           vaultId: vaultCounter,
-          amount: createScaledUint256(optionsAmount, 18),
+          amount: scaledOptionsAmount,
           index: '0',
           data: ZERO_ADDR,
         },
@@ -195,7 +196,7 @@ contract('Naked Call Option flow', ([admin, accountOwner1, accountOperator1, buy
           sender: accountOwner1,
           asset: weth.address,
           vaultId: vaultCounter,
-          amount: createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()),
+          amount: scaledCollateralAmount,
           index: '0',
           data: ZERO_ADDR,
         },
@@ -211,24 +212,14 @@ contract('Naked Call Option flow', ([admin, accountOwner1, accountOperator1, buy
       const marginPoolOtokenSupplyAfter = new BigNumber(await ethCall.totalSupply())
 
       // check balances before and after changed as expected
+      assert.equal(ownerWethBalanceBefore.minus(scaledCollateralAmount).toString(), ownerWethBalanceAfter.toString())
       assert.equal(
-        ownerWethBalanceBefore
-          .minus(createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()))
-          .toString(),
-        ownerWethBalanceAfter.toString(),
-      )
-      assert.equal(
-        marginPoolWethBalanceBefore
-          .plus(createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()))
-          .toString(),
+        marginPoolWethBalanceBefore.plus(scaledCollateralAmount).toString(),
         marginPoolWethBalanceAfter.toString(),
       )
+      assert.equal(ownerOtokenBalanceBefore.plus(scaledOptionsAmount).toString(), ownerOtokenBalanceAfter.toString())
       assert.equal(
-        ownerOtokenBalanceBefore.plus(createScaledUint256(optionsAmount, 18)).toString(),
-        ownerOtokenBalanceAfter.toString(),
-      )
-      assert.equal(
-        marginPoolOtokenSupplyBefore.plus(createScaledUint256(optionsAmount, 18)).toString(),
+        marginPoolOtokenSupplyBefore.plus(scaledOptionsAmount).toString(),
         marginPoolOtokenSupplyAfter.toString(),
       )
 
@@ -256,17 +247,19 @@ contract('Naked Call Option flow', ([admin, accountOwner1, accountOperator1, buy
 
       assert.equal(
         vaultAfter.shortAmounts[0].toString(),
-        createScaledUint256(optionsAmount, 18),
+        scaledOptionsAmount,
         'Incorrect amount of short stored in the vault',
       )
       assert.equal(
         vaultAfter.collateralAmounts[0].toString(),
-        createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()),
+        scaledCollateralAmount,
         'Incorrect amount of collateral stored in the vault',
       )
     })
 
     it('deposit more collateral into the safe vault', async () => {
+      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+      const scaledCollateralAmount = createTokenAmount(collateralAmount, (await weth.decimals()).toNumber())
       // Keep track of balances before
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
@@ -278,7 +271,7 @@ contract('Naked Call Option flow', ([admin, accountOwner1, accountOperator1, buy
           sender: accountOwner1,
           asset: weth.address,
           vaultId: vaultCounter,
-          amount: createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()),
+          amount: scaledCollateralAmount,
           index: '0',
           data: ZERO_ADDR,
         },
@@ -291,26 +284,16 @@ contract('Naked Call Option flow', ([admin, accountOwner1, accountOperator1, buy
       const marginPoolWethBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
 
       // check balances before and after changed as expected
+      assert.equal(ownerWethBalanceBefore.minus(scaledCollateralAmount).toString(), ownerWethBalanceAfter.toString())
       assert.equal(
-        ownerWethBalanceBefore
-          .minus(createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()))
-          .toString(),
-        ownerWethBalanceAfter.toString(),
-      )
-      assert.equal(
-        marginPoolWethBalanceBefore
-          .plus(createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()))
-          .toString(),
+        marginPoolWethBalanceBefore.plus(scaledCollateralAmount).toString(),
         marginPoolWethBalanceAfter.toString(),
       )
 
       // Check that there is excess margin
       const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
       const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
-      assert.equal(
-        vaultStateAfter[0].toString(),
-        createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()),
-      )
+      assert.equal(vaultStateAfter[0].toString(), scaledCollateralAmount)
       assert.equal(vaultStateAfter[1], true)
 
       // Check the vault balances stored in the contract
@@ -331,16 +314,18 @@ contract('Naked Call Option flow', ([admin, accountOwner1, accountOperator1, buy
 
       assert.equal(
         vaultAfter.shortAmounts[0].toString(),
-        createScaledUint256(optionsAmount, 18),
+        scaledOptionsAmount,
         'Incorrect amount of short options stored in the vault',
       )
       assert.equal(
         vaultAfter.collateralAmounts[0].toString(),
-        createScaledUint256(2 * collateralAmount, (await weth.decimals()).toNumber()),
+        createTokenAmount(2 * collateralAmount, (await weth.decimals()).toNumber()),
         'Incorrect amount of collateral stored in the vault',
       )
     })
     it('withdraw excess collateral from the safe vault', async () => {
+      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+      const scaledCollateralAmount = createTokenAmount(collateralAmount, (await weth.decimals()).toNumber())
       // Keep track of balances before
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
@@ -352,7 +337,7 @@ contract('Naked Call Option flow', ([admin, accountOwner1, accountOperator1, buy
           sender: accountOwner1,
           asset: weth.address,
           vaultId: vaultCounter,
-          amount: createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()),
+          amount: scaledCollateralAmount,
           index: '0',
           data: ZERO_ADDR,
         },
@@ -365,16 +350,9 @@ contract('Naked Call Option flow', ([admin, accountOwner1, accountOperator1, buy
       const marginPoolWethBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
 
       // check balances before and after changed as expected
+      assert.equal(ownerWethBalanceBefore.plus(scaledCollateralAmount).toString(), ownerWethBalanceAfter.toString())
       assert.equal(
-        ownerWethBalanceBefore
-          .plus(createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()))
-          .toString(),
-        ownerWethBalanceAfter.toString(),
-      )
-      assert.equal(
-        marginPoolWethBalanceBefore
-          .minus(createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()))
-          .toString(),
+        marginPoolWethBalanceBefore.minus(scaledCollateralAmount).toString(),
         marginPoolWethBalanceAfter.toString(),
       )
 
@@ -402,17 +380,18 @@ contract('Naked Call Option flow', ([admin, accountOwner1, accountOperator1, buy
 
       assert.equal(
         vaultAfter.shortAmounts[0].toString(),
-        createScaledUint256(optionsAmount, 18),
+        scaledOptionsAmount,
         'Incorrect amount of short stored in the vault',
       )
       assert.equal(
         vaultAfter.collateralAmounts[0].toString(),
-        createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()),
+        scaledCollateralAmount,
         'Incorrect amount of collateral stored in the vault',
       )
     })
 
     it('withdrawing collateral from the safe vault without excess colalteral should fail', async () => {
+      const scaledCollateralAmount = createTokenAmount(collateralAmount, (await weth.decimals()).toNumber())
       const actionArgs = [
         {
           actionType: ActionType.WithdrawCollateral,
@@ -420,7 +399,7 @@ contract('Naked Call Option flow', ([admin, accountOwner1, accountOperator1, buy
           sender: accountOwner1,
           asset: weth.address,
           vaultId: vaultCounter,
-          amount: createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()),
+          amount: scaledCollateralAmount,
           index: '0',
           data: ZERO_ADDR,
         },
@@ -430,30 +409,30 @@ contract('Naked Call Option flow', ([admin, accountOwner1, accountOperator1, buy
     })
 
     it('should be able to transfer long otokens to another address', async () => {
+      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
       // keep track of balances
       const ownerOtokenBalanceBeforeSell = new BigNumber(await ethCall.balanceOf(accountOwner1))
       const buyerBalanceBeforeSell = new BigNumber(await ethCall.balanceOf(buyer))
 
       // owner sells their call option
-      ethCall.transfer(buyer, createScaledUint256(optionsAmount, 18), {from: accountOwner1})
+      ethCall.transfer(buyer, scaledOptionsAmount, {from: accountOwner1})
 
       const ownerOtokenBalanceAfterSell = new BigNumber(await ethCall.balanceOf(accountOwner1))
       const buyerBalanceAfterSell = new BigNumber(await ethCall.balanceOf(buyer))
 
       assert.equal(
-        ownerOtokenBalanceBeforeSell.minus(createScaledUint256(optionsAmount, 18)).toString(),
+        ownerOtokenBalanceBeforeSell.minus(scaledOptionsAmount).toString(),
         ownerOtokenBalanceAfterSell.toString(),
       )
-      assert.equal(
-        buyerBalanceBeforeSell.plus(createScaledUint256(optionsAmount, 18)).toString(),
-        buyerBalanceAfterSell.toString(),
-      )
+      assert.equal(buyerBalanceBeforeSell.plus(scaledOptionsAmount).toString(), buyerBalanceAfterSell.toString())
 
       // owner buys back their call option
-      ethCall.transfer(accountOwner1, createScaledUint256(optionsAmount, 18), {from: buyer})
+      ethCall.transfer(accountOwner1, scaledOptionsAmount, {from: buyer})
     })
 
     it('should be able to close out the short position', async () => {
+      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+      const scaledCollateralAmount = createTokenAmount(collateralAmount, (await weth.decimals()).toNumber())
       // Keep track of balances before
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
@@ -473,7 +452,7 @@ contract('Naked Call Option flow', ([admin, accountOwner1, accountOperator1, buy
           sender: accountOwner1,
           asset: weth.address,
           vaultId: vaultCounter,
-          amount: createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()),
+          amount: scaledCollateralAmount,
           index: '0',
           data: ZERO_ADDR,
         },
@@ -483,7 +462,7 @@ contract('Naked Call Option flow', ([admin, accountOwner1, accountOperator1, buy
           sender: accountOwner1,
           asset: ethCall.address,
           vaultId: vaultCounter,
-          amount: createScaledUint256(optionsAmount, 18),
+          amount: scaledOptionsAmount,
           index: '0',
           data: ZERO_ADDR,
         },
@@ -499,24 +478,14 @@ contract('Naked Call Option flow', ([admin, accountOwner1, accountOperator1, buy
       const marginPoolOtokenSupplyAfter = new BigNumber(await ethCall.totalSupply())
 
       // check balances before and after changed as expected
+      assert.equal(ownerWethBalanceBefore.plus(scaledCollateralAmount).toString(), ownerWethBalanceAfter.toString())
       assert.equal(
-        ownerWethBalanceBefore
-          .plus(createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()))
-          .toString(),
-        ownerWethBalanceAfter.toString(),
-      )
-      assert.equal(
-        marginPoolWethBalanceBefore
-          .minus(createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()))
-          .toString(),
+        marginPoolWethBalanceBefore.minus(scaledCollateralAmount).toString(),
         marginPoolWethBalanceAfter.toString(),
       )
+      assert.equal(ownerOtokenBalanceBefore.minus(scaledOptionsAmount).toString(), ownerOtokenBalanceAfter.toString())
       assert.equal(
-        ownerOtokenBalanceBefore.minus(createScaledUint256(optionsAmount, 18)).toString(),
-        ownerOtokenBalanceAfter.toString(),
-      )
-      assert.equal(
-        marginPoolOtokenSupplyBefore.minus(createScaledUint256(optionsAmount, 18)).toString(),
+        marginPoolOtokenSupplyBefore.minus(scaledOptionsAmount).toString(),
         marginPoolOtokenSupplyAfter.toString(),
       )
 

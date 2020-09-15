@@ -9,7 +9,7 @@ import {
   MarginPoolInstance,
   OtokenFactoryInstance,
 } from '../../build/types/truffle-types'
-import {createVault, createScaledUint256} from '../utils'
+import {createTokenAmount} from '../utils'
 import {assert} from 'chai'
 import BigNumber from 'bignumber.js'
 
@@ -39,7 +39,7 @@ enum ActionType {
   Call,
 }
 
-contract('Long Call Spread Option flow', ([admin, accountOwner1, accountOperator1, buyer, accountOwner2]) => {
+contract('Long Call Spread Option flow', ([accountOwner1, buyer, accountOwner2]) => {
   let expiry: number
 
   let addressBook: AddressBookInstance
@@ -55,7 +55,6 @@ contract('Long Call Spread Option flow', ([admin, accountOwner1, accountOperator
   let oracle: MockOracleInstance
 
   let usdc: MockERC20Instance
-  let dai: MockERC20Instance
   let weth: MockERC20Instance
 
   let shortCall: OtokenInstance
@@ -74,7 +73,6 @@ contract('Long Call Spread Option flow', ([admin, accountOwner1, accountOperator
     expiry = (Number(multiplier.toFixed(0)) + 1) * 86400 + time.duration.days(30).toNumber() + 28800
     // setup usdc and weth
     usdc = await MockERC20.new('USDC', 'USDC', 6)
-    dai = await MockERC20.new('DAI', 'DAI', 18)
     weth = await MockERC20.new('WETH', 'WETH', 16)
 
     // initiate addressbook first.
@@ -117,7 +115,7 @@ contract('Long Call Spread Option flow', ([admin, accountOwner1, accountOperator
       weth.address,
       usdc.address,
       weth.address,
-      createScaledUint256(longStrike, 18),
+      createTokenAmount(longStrike, 18),
       expiry,
       false,
     )
@@ -126,7 +124,7 @@ contract('Long Call Spread Option flow', ([admin, accountOwner1, accountOperator
       weth.address,
       usdc.address,
       weth.address,
-      createScaledUint256(shortStrike, 18),
+      createTokenAmount(shortStrike, 18),
       expiry,
       false,
     )
@@ -135,7 +133,7 @@ contract('Long Call Spread Option flow', ([admin, accountOwner1, accountOperator
       weth.address,
       usdc.address,
       weth.address,
-      createScaledUint256(longStrike, 18),
+      createTokenAmount(longStrike, 18),
       expiry,
       false,
     )
@@ -146,7 +144,7 @@ contract('Long Call Spread Option flow', ([admin, accountOwner1, accountOperator
       weth.address,
       usdc.address,
       weth.address,
-      createScaledUint256(shortStrike, 18),
+      createTokenAmount(shortStrike, 18),
       expiry,
       false,
     )
@@ -154,9 +152,12 @@ contract('Long Call Spread Option flow', ([admin, accountOwner1, accountOperator
     shortCall = await Otoken.at(shortCallAddress)
 
     // mint weth to user
-    weth.mint(accountOwner1, createScaledUint256(2 * collateralAmount, (await weth.decimals()).toNumber()))
-    weth.mint(accountOwner2, createScaledUint256(longStrike * optionsAmount, (await weth.decimals()).toNumber()))
-    weth.mint(buyer, createScaledUint256(longStrike * optionsAmount, (await weth.decimals()).toNumber()))
+    const accountOwner1Weth = createTokenAmount(2 * collateralAmount, (await weth.decimals()).toNumber())
+    const accountOwner2Weth = createTokenAmount(longStrike * optionsAmount, (await weth.decimals()).toNumber())
+    const buyerWeth = createTokenAmount(longStrike * optionsAmount, (await weth.decimals()).toNumber())
+    weth.mint(accountOwner1, accountOwner1Weth)
+    weth.mint(accountOwner2, accountOwner2Weth)
+    weth.mint(buyer, buyerWeth)
 
     // have the user approve all the weth transfers
     weth.approve(marginPool.address, '10000000000000000000000', {from: accountOwner1})
@@ -170,15 +171,8 @@ contract('Long Call Spread Option flow', ([admin, accountOwner1, accountOperator
   describe('Integration test: Sell a long call spread and close it before expiry', () => {
     it('Someone else mints the long option and sends it to the seller', async () => {
       const collateralToMintLong = optionsAmount
-
-      const vault = {
-        shortOtokens: [longCall.address],
-        longOtokens: [],
-        collateralAssets: [weth.address],
-        shortAmounts: [createScaledUint256(optionsAmount, 18)],
-        longAmounts: [],
-        collateralAmounts: [createScaledUint256(optionsAmount, 18)],
-      }
+      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+      const scaledCollateralAmount = createTokenAmount(collateralToMintLong, (await weth.decimals()).toNumber())
 
       const actionArgs = [
         {
@@ -197,7 +191,7 @@ contract('Long Call Spread Option flow', ([admin, accountOwner1, accountOperator
           sender: accountOwner2,
           asset: longCall.address,
           vaultId: vaultCounter,
-          amount: createScaledUint256(optionsAmount, 18),
+          amount: scaledOptionsAmount,
           index: '0',
           data: ZERO_ADDR,
         },
@@ -207,7 +201,7 @@ contract('Long Call Spread Option flow', ([admin, accountOwner1, accountOperator
           sender: accountOwner2,
           asset: weth.address,
           vaultId: vaultCounter,
-          amount: createScaledUint256(collateralToMintLong, (await weth.decimals()).toNumber()),
+          amount: scaledCollateralAmount,
           index: '0',
           data: ZERO_ADDR,
         },
@@ -216,9 +210,11 @@ contract('Long Call Spread Option flow', ([admin, accountOwner1, accountOperator
       await controllerProxy.operate(actionArgs, {from: accountOwner2})
 
       // buyer sells their long put option to owner
-      longCall.transfer(accountOwner1, createScaledUint256(optionsAmount, 18), {from: accountOwner2})
+      await longCall.transfer(accountOwner1, scaledOptionsAmount, {from: accountOwner2})
     })
     it('Seller should be able to open a long call spread', async () => {
+      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+
       // Keep track of balances before
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
@@ -266,7 +262,7 @@ contract('Long Call Spread Option flow', ([admin, accountOwner1, accountOperator
           sender: accountOwner1,
           asset: shortCall.address,
           vaultId: vaultCounter,
-          amount: createScaledUint256(optionsAmount, 18),
+          amount: scaledOptionsAmount,
           index: '0',
           data: ZERO_ADDR,
         },
@@ -276,7 +272,7 @@ contract('Long Call Spread Option flow', ([admin, accountOwner1, accountOperator
           sender: accountOwner1,
           asset: longCall.address,
           vaultId: vaultCounter,
-          amount: createScaledUint256(optionsAmount, 18),
+          amount: scaledOptionsAmount,
           index: '0',
           data: ZERO_ADDR,
         },
@@ -300,21 +296,21 @@ contract('Long Call Spread Option flow', ([admin, accountOwner1, accountOperator
       assert.equal(ownerWethBalanceBefore.toString(), ownerWethBalanceAfter.toString())
       assert.equal(marginPoolWethBalanceBefore.toString(), marginPoolWethBalanceAfter.toString())
       assert.equal(
-        ownerShortOtokenBalanceBefore.plus(createScaledUint256(optionsAmount, 18)).toString(),
+        ownerShortOtokenBalanceBefore.plus(scaledOptionsAmount).toString(),
         ownerShortOtokenBalanceAfter.toString(),
       )
       assert.equal(
-        marginPoolShortOtokenSupplyBefore.plus(createScaledUint256(optionsAmount, 18)).toString(),
+        marginPoolShortOtokenSupplyBefore.plus(scaledOptionsAmount).toString(),
         marginPoolShortOtokenSupplyAfter.toString(),
       )
 
       assert.equal(
-        ownerlongOtokenBalanceBefore.minus(createScaledUint256(optionsAmount, 18)).toString(),
+        ownerlongOtokenBalanceBefore.minus(scaledOptionsAmount).toString(),
         ownerlongOtokenBalanceAfter.toString(),
       )
       assert.equal(marginPoolLongOtokenSupplyBefore.toString(), marginPoolLongOtokenSupplyAfter.toString())
       assert.equal(
-        marginPoolLongOtokenBalanceBefore.plus(createScaledUint256(optionsAmount, 18)).toString(),
+        marginPoolLongOtokenBalanceBefore.plus(scaledOptionsAmount).toString(),
         marginPoolLongOtokenBalanceAfter.toString(),
       )
 
@@ -342,17 +338,20 @@ contract('Long Call Spread Option flow', ([admin, accountOwner1, accountOperator
 
       assert.equal(
         vaultAfter.shortAmounts[0].toString(),
-        createScaledUint256(optionsAmount, 18),
+        scaledOptionsAmount,
         'Incorrect amount of short options stored in the vault',
       )
       assert.equal(
         vaultAfter.longAmounts[0].toString(),
-        createScaledUint256(optionsAmount, 18),
+        scaledOptionsAmount,
         'Incorrect amount of long options stored in the vault',
       )
     })
 
     it('deposit more collateral into the safe vault', async () => {
+      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+      const scaledCollateralAmount = createTokenAmount(collateralAmount, (await weth.decimals()).toNumber())
+
       // Keep track of balances before
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
@@ -364,7 +363,7 @@ contract('Long Call Spread Option flow', ([admin, accountOwner1, accountOperator
           sender: accountOwner1,
           asset: weth.address,
           vaultId: vaultCounter,
-          amount: createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()),
+          amount: scaledCollateralAmount,
           index: '0',
           data: ZERO_ADDR,
         },
@@ -377,26 +376,16 @@ contract('Long Call Spread Option flow', ([admin, accountOwner1, accountOperator
       const marginPoolWethBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
 
       // check balances before and after changed as expected
+      assert.equal(ownerWethBalanceBefore.minus(scaledCollateralAmount).toString(), ownerWethBalanceAfter.toString())
       assert.equal(
-        ownerWethBalanceBefore
-          .minus(createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()))
-          .toString(),
-        ownerWethBalanceAfter.toString(),
-      )
-      assert.equal(
-        marginPoolWethBalanceBefore
-          .plus(createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()))
-          .toString(),
+        marginPoolWethBalanceBefore.plus(scaledCollateralAmount).toString(),
         marginPoolWethBalanceAfter.toString(),
       )
 
       // Check that there is excess margin
       const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
       const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
-      assert.equal(
-        vaultStateAfter[0].toString(),
-        createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()),
-      )
+      assert.equal(vaultStateAfter[0].toString(), scaledCollateralAmount)
       assert.equal(vaultStateAfter[1], true)
 
       // Check the vault balances stored in the contract
@@ -418,21 +407,24 @@ contract('Long Call Spread Option flow', ([admin, accountOwner1, accountOperator
 
       assert.equal(
         vaultAfter.shortAmounts[0].toString(),
-        createScaledUint256(optionsAmount, 18),
+        scaledOptionsAmount,
         'Incorrect amount of short options stored in the vault',
       )
       assert.equal(
         vaultAfter.collateralAmounts[0].toString(),
-        createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()),
+        scaledCollateralAmount,
         'Incorrect amount of collateral stored in the vault',
       )
       assert.equal(
         vaultAfter.longAmounts[0].toString(),
-        createScaledUint256(optionsAmount, 18),
+        scaledOptionsAmount,
         'Incorrect amount of long options stored in the vault',
       )
     })
     it('withdraw excess collateral from the safe vault', async () => {
+      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+      const scaledCollateralAmount = createTokenAmount(collateralAmount, (await weth.decimals()).toNumber())
+
       // Keep track of balances before
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
@@ -444,7 +436,7 @@ contract('Long Call Spread Option flow', ([admin, accountOwner1, accountOperator
           sender: accountOwner1,
           asset: weth.address,
           vaultId: vaultCounter,
-          amount: createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()),
+          amount: scaledCollateralAmount,
           index: '0',
           data: ZERO_ADDR,
         },
@@ -457,16 +449,9 @@ contract('Long Call Spread Option flow', ([admin, accountOwner1, accountOperator
       const marginPoolWethBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
 
       // check balances before and after changed as expected
+      assert.equal(ownerWethBalanceBefore.plus(scaledCollateralAmount).toString(), ownerWethBalanceAfter.toString())
       assert.equal(
-        ownerWethBalanceBefore
-          .plus(createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()))
-          .toString(),
-        ownerWethBalanceAfter.toString(),
-      )
-      assert.equal(
-        marginPoolWethBalanceBefore
-          .minus(createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()))
-          .toString(),
+        marginPoolWethBalanceBefore.minus(scaledCollateralAmount).toString(),
         marginPoolWethBalanceAfter.toString(),
       )
 
@@ -495,7 +480,7 @@ contract('Long Call Spread Option flow', ([admin, accountOwner1, accountOperator
 
       assert.equal(
         vaultAfter.shortAmounts[0].toString(),
-        createScaledUint256(optionsAmount, 18),
+        scaledOptionsAmount,
         'Incorrect amount of short options stored in the vault',
       )
       assert.equal(
@@ -505,12 +490,14 @@ contract('Long Call Spread Option flow', ([admin, accountOwner1, accountOperator
       )
       assert.equal(
         vaultAfter.longAmounts[0].toString(),
-        createScaledUint256(optionsAmount, 18),
+        scaledOptionsAmount,
         'Incorrect amount of long options stored in the vault',
       )
     })
 
     it('withdrawing collateral from the safe vault without excess colalteral should fail', async () => {
+      const scaledCollateralAmount = createTokenAmount(collateralAmount, (await weth.decimals()).toNumber())
+
       const actionArgs = [
         {
           actionType: ActionType.WithdrawCollateral,
@@ -518,7 +505,7 @@ contract('Long Call Spread Option flow', ([admin, accountOwner1, accountOperator
           sender: accountOwner1,
           asset: weth.address,
           vaultId: vaultCounter,
-          amount: createScaledUint256(collateralAmount, (await weth.decimals()).toNumber()),
+          amount: scaledCollateralAmount,
           index: '0',
           data: ZERO_ADDR,
         },
@@ -528,30 +515,29 @@ contract('Long Call Spread Option flow', ([admin, accountOwner1, accountOperator
     })
 
     it('should be able to transfer short otokens to another address', async () => {
+      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
       // keep track of balances
       const ownerShortOtokenBalanceBeforeSell = new BigNumber(await shortCall.balanceOf(accountOwner1))
       const buyerBalanceBeforeSell = new BigNumber(await shortCall.balanceOf(buyer))
 
       // owner sells their put option
-      shortCall.transfer(buyer, createScaledUint256(optionsAmount, 18), {from: accountOwner1})
+      await shortCall.transfer(buyer, scaledOptionsAmount, {from: accountOwner1})
 
       const ownerShortOtokenBalanceAfterSell = new BigNumber(await shortCall.balanceOf(accountOwner1))
       const buyerBalanceAfterSell = new BigNumber(await shortCall.balanceOf(buyer))
 
       assert.equal(
-        ownerShortOtokenBalanceBeforeSell.minus(createScaledUint256(optionsAmount, 18)).toString(),
+        ownerShortOtokenBalanceBeforeSell.minus(scaledOptionsAmount).toString(),
         ownerShortOtokenBalanceAfterSell.toString(),
       )
-      assert.equal(
-        buyerBalanceBeforeSell.plus(createScaledUint256(optionsAmount, 18)).toString(),
-        buyerBalanceAfterSell.toString(),
-      )
+      assert.equal(buyerBalanceBeforeSell.plus(scaledOptionsAmount).toString(), buyerBalanceAfterSell.toString())
 
       // owner buys back their put option
-      shortCall.transfer(accountOwner1, createScaledUint256(optionsAmount, 18), {from: buyer})
+      shortCall.transfer(accountOwner1, scaledOptionsAmount, {from: buyer})
     })
 
     it('should be able to close out the long call spread position', async () => {
+      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
       // Keep track of balances before
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
@@ -575,7 +561,7 @@ contract('Long Call Spread Option flow', ([admin, accountOwner1, accountOperator
           sender: accountOwner1,
           asset: shortCall.address,
           vaultId: vaultCounter,
-          amount: createScaledUint256(optionsAmount, 18),
+          amount: scaledOptionsAmount,
           index: '0',
           data: ZERO_ADDR,
         },
@@ -585,7 +571,7 @@ contract('Long Call Spread Option flow', ([admin, accountOwner1, accountOperator
           sender: accountOwner1,
           asset: longCall.address,
           vaultId: vaultCounter,
-          amount: createScaledUint256(optionsAmount, 18),
+          amount: scaledOptionsAmount,
           index: '0',
           data: ZERO_ADDR,
         },
@@ -608,21 +594,21 @@ contract('Long Call Spread Option flow', ([admin, accountOwner1, accountOperator
       assert.equal(ownerWethBalanceBefore.toString(), ownerWethBalanceAfter.toString())
       assert.equal(marginPoolWethBalanceBefore.toString(), marginPoolWethBalanceAfter.toString())
       assert.equal(
-        ownerShortOtokenBalanceBefore.minus(createScaledUint256(optionsAmount, 18)).toString(),
+        ownerShortOtokenBalanceBefore.minus(scaledOptionsAmount).toString(),
         ownerShortOtokenBalanceAfter.toString(),
       )
       assert.equal(
-        marginPoolShortOtokenSupplyBefore.minus(createScaledUint256(optionsAmount, 18)).toString(),
+        marginPoolShortOtokenSupplyBefore.minus(scaledOptionsAmount).toString(),
         marginPoolShortOtokenSupplyAfter.toString(),
       )
 
       assert.equal(
-        ownerlongOtokenBalanceBefore.plus(createScaledUint256(optionsAmount, 18)).toString(),
+        ownerlongOtokenBalanceBefore.plus(scaledOptionsAmount).toString(),
         ownerlongOtokenBalanceAfter.toString(),
       )
       assert.equal(marginPoolLongOtokenSupplyBefore.toString(), marginPoolLongOtokenSupplyAfter.toString())
       assert.equal(
-        marginPoolLongOtokenBalanceBefore.minus(createScaledUint256(optionsAmount, 18)).toString(),
+        marginPoolLongOtokenBalanceBefore.minus(scaledOptionsAmount).toString(),
         marginPoolLongOtokenBalanceAfter.toString(),
       )
 
