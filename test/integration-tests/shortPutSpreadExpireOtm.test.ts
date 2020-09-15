@@ -9,11 +9,11 @@ import {
   MarginPoolInstance,
   OtokenFactoryInstance,
 } from '../../build/types/truffle-types'
-import {createVault, createScaledUint256} from '../utils'
+import {createScaledUint256} from '../utils'
 import {assert} from 'chai'
 import BigNumber from 'bignumber.js'
 
-const {expectRevert, time} = require('@openzeppelin/test-helpers')
+const {time} = require('@openzeppelin/test-helpers')
 const AddressBook = artifacts.require('AddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const Otoken = artifacts.require('Otoken.sol')
@@ -39,7 +39,7 @@ enum ActionType {
   Call,
 }
 
-contract('Short Put Spread Option flow', ([admin, accountOwner1, accountOperator1, buyer, accountOwner2]) => {
+contract('Short Put Spread Option flow', ([accountOwner1, buyer, accountOwner2]) => {
   let expiry: number
 
   let addressBook: AddressBookInstance
@@ -55,7 +55,6 @@ contract('Short Put Spread Option flow', ([admin, accountOwner1, accountOperator
   let oracle: MockOracleInstance
 
   let usdc: MockERC20Instance
-  let dai: MockERC20Instance
   let weth: MockERC20Instance
 
   let shortPut: OtokenInstance
@@ -74,7 +73,6 @@ contract('Short Put Spread Option flow', ([admin, accountOwner1, accountOperator
     expiry = (Number(multiplier.toFixed(0)) + 1) * 86400 + time.duration.days(30).toNumber() + 28800
     // setup usdc and weth
     usdc = await MockERC20.new('USDC', 'USDC', 6)
-    dai = await MockERC20.new('DAI', 'DAI', 18)
     weth = await MockERC20.new('WETH', 'WETH', 18)
 
     // initiate addressbook first.

@@ -9,7 +9,7 @@ import {
   MarginPoolInstance,
   OtokenFactoryInstance,
 } from '../../build/types/truffle-types'
-import {createVault, createScaledUint256} from '../utils'
+import {createScaledUint256} from '../utils'
 import {assert} from 'chai'
 import BigNumber from 'bignumber.js'
 
@@ -39,7 +39,7 @@ enum ActionType {
   Call,
 }
 
-contract('Short Call Spread Option flow', ([admin, accountOwner1, accountOperator1, buyer, accountOwner2]) => {
+contract('Short Call Spread Option flow', ([accountOwner1, buyer, accountOwner2]) => {
   let expiry: number
 
   let addressBook: AddressBookInstance
@@ -55,7 +55,6 @@ contract('Short Call Spread Option flow', ([admin, accountOwner1, accountOperato
   let oracle: MockOracleInstance
 
   let usdc: MockERC20Instance
-  let dai: MockERC20Instance
   let weth: MockERC20Instance
 
   let shortCall: OtokenInstance
@@ -74,7 +73,6 @@ contract('Short Call Spread Option flow', ([admin, accountOwner1, accountOperato
     expiry = (Number(multiplier.toFixed(0)) + 1) * 86400 + time.duration.days(30).toNumber() + 28800
     // setup usdc and weth
     usdc = await MockERC20.new('USDC', 'USDC', 6)
-    dai = await MockERC20.new('DAI', 'DAI', 18)
     weth = await MockERC20.new('WETH', 'WETH', 16)
 
     // initiate addressbook first.
@@ -170,15 +168,6 @@ contract('Short Call Spread Option flow', ([admin, accountOwner1, accountOperato
   describe('Integration test: Sell a short call spread and close it before expiry', () => {
     it('Someone else mints the long option and sends it to the seller', async () => {
       const collateralToMintLong = optionsAmount
-
-      const vault = {
-        shortOtokens: [longCall.address],
-        longOtokens: [],
-        collateralAssets: [weth.address],
-        shortAmounts: [createScaledUint256(optionsAmount, 18)],
-        longAmounts: [],
-        collateralAmounts: [createScaledUint256(optionsAmount, 18)],
-      }
 
       const actionArgs = [
         {

@@ -9,11 +9,9 @@ import {
   MarginPoolInstance,
   OtokenFactoryInstance,
 } from '../../build/types/truffle-types'
-import {createVault, createScaledUint256, createScaledNumber} from '../utils'
+import {createScaledUint256} from '../utils'
 import {assert} from 'chai'
 import BigNumber from 'bignumber.js'
-
-import Reverter from '../Reverter'
 
 const {expectRevert, time} = require('@openzeppelin/test-helpers')
 const AddressBook = artifacts.require('AddressBook.sol')
@@ -41,9 +39,7 @@ enum ActionType {
   Call,
 }
 
-contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, buyer]) => {
-  const reverter = new Reverter(web3)
-
+contract('Naked Put Option flow', ([accountOwner1, buyer]) => {
   let expiry: number
 
   let addressBook: AddressBookInstance
@@ -59,7 +55,6 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, buye
   let oracle: MockOracleInstance
 
   let usdc: MockERC20Instance
-  let dai: MockERC20Instance
   let weth: MockERC20Instance
 
   let ethPut: OtokenInstance
@@ -75,9 +70,7 @@ contract('Naked Put Option flow', ([admin, accountOwner1, accountOperator1, buye
     expiry = (Number(multiplier.toFixed(0)) + 1) * 86400 + time.duration.days(30).toNumber() + 28800
 
     // setup usdc and weth
-    // TODO: change USDC to 6
     usdc = await MockERC20.new('USDC', 'USDC', 6)
-    dai = await MockERC20.new('DAI', 'DAI', 18)
     weth = await MockERC20.new('WETH', 'WETH', 18)
 
     // initiate addressbook first.
