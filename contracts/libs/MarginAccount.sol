@@ -1,10 +1,14 @@
+/**
+ * SPDX-License-Identifier: UNLICENSED
+ */
 pragma solidity =0.6.10;
+
+pragma experimental ABIEncoderV2;
 
 import {SafeMath} from "../packages/oz/SafeMath.sol";
 
 /**
- * SPDX-License-Identifier: UNLICENSED
- * @dev The MarginAccount is a library that provides Controller with an Account of Vault structs, and
+ * @notice The MarginAccount is a library that provides Controller with an Account of Vault structs, and
  * the functions that manipulate vaults. Vaults describe positions that users have.
  */
 library MarginAccount {
@@ -35,12 +39,12 @@ library MarginAccount {
      * @param _amount The additional number of _shortOtoken the protocol is shorting from the user's vault
      * @param _index The index of _shortOtoken in the user's vault.shortOtokens array
      */
-    function _addShort(
+    function addShort(
         Vault storage _vault,
         address _shortOtoken,
         uint256 _amount,
         uint256 _index
-    ) internal {
+    ) external {
         require(_amount > 0, "MarginAccount: invalid short otoken amount");
 
         // Valid indexes in any array are between 0 and array.length - 1.
@@ -66,12 +70,12 @@ library MarginAccount {
      * @param _amount The number of _shortOtoken the protocol is reducing the user's position by from the user's vault
      * @param _index The index of _shortOtoken in the user's vault.shortOtokens array
      */
-    function _removeShort(
+    function removeShort(
         Vault storage _vault,
         address _shortOtoken,
         uint256 _amount,
         uint256 _index
-    ) internal {
+    ) external {
         // Check that the removed short otoken exists in the vault
         require(
             (_index < _vault.shortOtokens.length) && (_vault.shortOtokens[_index] == _shortOtoken),
@@ -92,12 +96,12 @@ library MarginAccount {
      * @param _amount The number of _longOtoken the protocol is adding to the user's vault
      * @param _index The index of _longOtoken in the user's vault.longOtokens array
      */
-    function _addLong(
+    function addLong(
         Vault storage _vault,
         address _longOtoken,
         uint256 _amount,
         uint256 _index
-    ) internal {
+    ) external {
         require(_amount > 0, "MarginAccount: invalid long otoken amount");
 
         // Valid indexes in any array are between 0 and array.length - 1.
@@ -123,12 +127,12 @@ library MarginAccount {
      * @param _amount The number of _longOtoken the protocol is reducing the user's long position by from the user's vault
      * @param _index The index of _longOtoken in the user's vault.longOtokens array
      */
-    function _removeLong(
+    function removeLong(
         Vault storage _vault,
         address _longOtoken,
         uint256 _amount,
         uint256 _index
-    ) internal {
+    ) external {
         // Check that the removed long token exists in the vault
         require(
             (_index < _vault.longOtokens.length) && (_vault.longOtokens[_index] == _longOtoken),
@@ -149,12 +153,12 @@ library MarginAccount {
      * @param _amount The number of _collateralAsset the protocol is adding to the user's collateral position in the user's vault
      * @param _index The index of _collateralAsset in the user's vault.collateralAssets array
      */
-    function _addCollateral(
+    function addCollateral(
         Vault storage _vault,
         address _collateralAsset,
         uint256 _amount,
         uint256 _index
-    ) internal {
+    ) external {
         require(_amount > 0, "MarginAccount: invalid collateral amount");
 
         // Valid indexes in any array are between 0 and array.length - 1.
@@ -181,12 +185,12 @@ library MarginAccount {
      * @param _amount The number of _collateralAsset the protocol is removing from the user's collateral position in the user's vault
      * @param _index The index of _collateralAsset in the user's vault.collateralAssets array
      */
-    function _removeCollateral(
+    function removeCollateral(
         Vault storage _vault,
         address _collateralAsset,
         uint256 _amount,
         uint256 _index
-    ) internal {
+    ) external {
         // Check the token is the same as vault.collateral[idx]
         require(
             (_index < _vault.collateralAssets.length) && (_vault.collateralAssets[_index] == _collateralAsset),
@@ -198,18 +202,5 @@ library MarginAccount {
         if (_vault.collateralAmounts[_index] == 0) {
             delete _vault.collateralAssets[_index];
         }
-    }
-
-    /**
-     * @dev remove everything in a vault. Reset short, long and collateral assets and amounts arrays to an empty array.
-     * @param _vault The vault that the user is clearing.
-     */
-    function _clearVault(Vault storage _vault) internal {
-        delete _vault.shortAmounts;
-        delete _vault.longAmounts;
-        delete _vault.collateralAmounts;
-        delete _vault.shortOtokens;
-        delete _vault.longOtokens;
-        delete _vault.collateralAssets;
     }
 }

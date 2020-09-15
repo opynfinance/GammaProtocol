@@ -13,14 +13,16 @@ import "../interfaces/OtokenInterface.sol";
 contract MockController {
     /// @notice addressbook address
     address public addressBook;
+    address public owner;
 
     /**
      * @dev this function is invoked by the proxy contract when this contract is added to the
      * AddressBook.
      * @param _addressBook the address of the AddressBook
      **/
-    function initialize(address _addressBook) external {
+    function initialize(address _addressBook, address _owner) external {
         addressBook = _addressBook;
+        owner = _owner;
     }
 
     /**

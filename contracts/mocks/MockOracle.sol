@@ -14,6 +14,7 @@ contract MockOracle {
 
     using SafeMath for uint256;
 
+    mapping(address => uint256) public realTimePrice;
     mapping(address => mapping(uint256 => uint256)) public storedPrice;
     mapping(address => mapping(uint256 => bool)) public isFinalized;
 
@@ -24,6 +25,27 @@ contract MockOracle {
     // asset => expiry => bool
     mapping(address => mapping(uint256 => bool)) private _isDisputePeriodOver;
     mapping(address => mapping(uint256 => bool)) private _isLockingPeriodOver;
+
+    function setRealTimePrice(address _asset, uint256 _price) external {
+        realTimePrice[_asset] = _price;
+    }
+
+    function getPrice(address _asset) external view returns (uint256) {
+        return realTimePrice[_asset];
+    }
+
+    // set bunch of things at expiry in 1 function
+    function setExpiryPriceFinalizedAllPeiodOver(
+        address _asset,
+        uint256 _expiryTimestamp,
+        uint256 _price,
+        bool _isFinalized
+    ) external {
+        storedPrice[_asset][_expiryTimestamp] = _price;
+        isFinalized[_asset][_expiryTimestamp] = _isFinalized;
+        _isDisputePeriodOver[_asset][_expiryTimestamp] = _isFinalized;
+        _isLockingPeriodOver[_asset][_expiryTimestamp] = _isFinalized;
+    }
 
     // let the pricer set expiry price to oracle.
     function setExpiryPrice(

@@ -40,20 +40,21 @@
     "build"
   ],
   "scripts": {
-    "ganache": "ganache-cli --port 8545",
+    "ganache": "ganache-cli -d --port 8545 --defaultBalanceEther 500 --allowUnlimitedContractSize",
     "migrate": "truffle migrate",
     "build": "npm run compile:contracts && npm run compile:types",
     "compile:contracts": "truffle compile",
     "compile:types": "typechain --target=truffle --outDir build/types/truffle-types \"build/contracts/*.json\"",
     "deploy:development": "npm run build && npm run migrate -- --network development",
-    "lint:tests": "eslint 'test/*.ts'",
+    "lint:tests": "eslint 'test/**/*.ts'",
     "lint:tests:fix": "npm run lint:tests -- --fix",
     "lint:sol": "solhint -f table contracts/**/*.sol",
     "lint:sol:prettier:fix": "prettier --write \"contracts/**/*.sol\"",
     "lint:tests:prettier:fix": "prettier --write \"test/**/*.ts\"",
     "test": "CI=true truffle test",
     "coverage": "truffle run coverage",
-    "contract-size": "truffle run contract-size --checkMaxSize"
+    "contract-size": "truffle run contract-size --checkMaxSize",
+    "test:unit":"truffle test ./test/unit-tests/*.ts"
   },
   "husky": {
     "hooks": {

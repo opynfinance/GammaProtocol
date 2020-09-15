@@ -3,6 +3,8 @@
  */
 pragma solidity 0.6.10;
 
+import {MarginAccount} from "./MarginAccount.sol";
+
 /**
  *
  */
@@ -97,8 +99,8 @@ library Actions {
     }
 
     struct ExerciseArgs {
-        // The address from which we transfer the otokens, to which we pay out the cash difference if the option is ITM.
-        address exerciser;
+        // The address to which we pay out the cash difference if the option is ITM.
+        address receiver;
         // The otoken that is to be exercised
         address otoken;
         // The amount of otokens that is to be exercised
@@ -136,6 +138,10 @@ library Actions {
         address owner;
         // The address of the callee contract
         address callee;
+        // vault id
+        uint256 vaultId;
+        // tx msg.value
+        uint256 msgValue;
         // The data field for external calls
         bytes data;
     }
@@ -246,8 +252,9 @@ library Actions {
      */
     function _parseExerciseArgs(ActionArgs memory _args) internal pure returns (ExerciseArgs memory) {
         require(_args.actionType == ActionType.Exercise, "Actions: can only parse arguments for exercise actions");
+        require(_args.sender != address(0), "Actions: cannot exercise to an invalid account");
 
-        return ExerciseArgs({exerciser: _args.sender, otoken: _args.asset, amount: _args.amount});
+        return ExerciseArgs({receiver: _args.sender, otoken: _args.asset, amount: _args.amount});
     }
 
     /**
@@ -274,6 +281,13 @@ library Actions {
         require(_args.actionType == ActionType.Call, "Actions: can only parse arguments for call actions");
         require(_args.sender != address(0), "Actions: target address cannot be address(0)");
 
-        return CallArgs({owner: _args.owner, callee: _args.sender, data: _args.data});
+        return
+            CallArgs({
+                owner: _args.owner,
+                callee: _args.sender,
+                vaultId: _args.vaultId,
+                msgValue: _args.amount,
+                data: _args.data
+            });
     }
 }

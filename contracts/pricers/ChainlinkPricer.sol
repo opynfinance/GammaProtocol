@@ -12,7 +12,7 @@ import {SafeMath} from "../packages/oz/SafeMath.sol";
 contract ChainLinkPricer is OpynPricerInterface {
     using SafeMath for uint256;
 
-    uint256 public constant BASE = 1e10;
+    uint256 internal constant BASE = 1e10;
 
     /// @notice the opyn oracle address
     OracleInterface public oracle;
