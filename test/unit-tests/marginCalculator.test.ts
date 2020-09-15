@@ -613,8 +613,8 @@ contract('MarginCalculator', () => {
         assert.equal(netValue.toString(), collateralNeeded.toString())
       })
 
-      it('(2) Short: 1 300 put, no collateral specified => need 300 USD collateral', async () => {
-        const collateralNeeded = scaleNum(300)
+      it('(2) Short: 1 300 put, no collateral specified => need 300 USD collateral (default use short.collateral)', async () => {
+        const collateralNeeded = createTokenAmount(300, rtokenDecimals)
         const vault = createVault(put.address, undefined, undefined, amountOne, undefined, undefined)
         const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
         assert.equal(isExcess, false)

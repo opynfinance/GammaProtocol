@@ -2409,7 +2409,7 @@ contract(
         await shortOtoken.transfer(holder1, amountToMint.toString(), {from: accountOwner1})
       })
 
-      it('sshould revert exercising un-expired otoken', async () => {
+      it('should revert exercising un-expired otoken', async () => {
         const shortAmountToBurn = new BigNumber('1')
         const actionArgs = [
           {
