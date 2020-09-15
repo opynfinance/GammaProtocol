@@ -336,10 +336,10 @@ contract(
         await whitelist.whitelistCollateral(usdc.address, {from: owner})
         // free money
         await usdc.mint(accountOwner1, createTokenAmount(10000, usdcDecimals))
-        // open new vault, mintnaked short, sell it to holder 1
+        // open new vault, mint naked short, sell it to holder 1
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
         const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e12)
-        const amountToMint = new BigNumber(1).times(1e18)
+        const amountToMint = new BigNumber(createTokenAmount(1))
         const actionArgs = [
           {
             actionType: ActionType.OpenVault,
@@ -357,7 +357,7 @@ contract(
             sender: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounter.toNumber(),
-            amount: amountToMint.toNumber(),
+            amount: amountToMint.toString(),
             index: '0',
             data: ZERO_ADDR,
           },
@@ -367,7 +367,7 @@ contract(
             sender: accountOwner1,
             asset: usdc.address,
             vaultId: vaultCounter.toNumber(),
-            amount: collateralToDeposit.toNumber(),
+            amount: collateralToDeposit.toString(),
             index: '0',
             data: ZERO_ADDR,
           },
@@ -389,7 +389,7 @@ contract(
           true,
         )
         // exercise
-        const shortAmountToBurn = new BigNumber(1).times(1e18)
+        const shortAmountToBurn = new BigNumber(createTokenAmount(1))
         const actionArgs = [
           {
             actionType: ActionType.Exercise,
@@ -404,12 +404,12 @@ contract(
         ]
         assert.equal(await controllerProxy.isExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
 
-        const payout = new BigNumber('50').times(1e6)
+        const payout = new BigNumber(createTokenAmount(50, usdcDecimals))
         const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
         const senderBalanceBefore = new BigNumber(await usdc.balanceOf(holder1))
         const senderShortBalanceBefore = new BigNumber(await shortOtoken.balanceOf(holder1))
 
-        await controllerProxy.operate(actionArgs, {from: holder1})
+        await payableProxyController.operate(actionArgs, accountOwner1, {from: holder1})
 
         const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
         const senderBalanceAfter = new BigNumber(await usdc.balanceOf(holder1))
