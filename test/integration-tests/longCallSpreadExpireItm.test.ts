@@ -349,11 +349,16 @@ contract('Short Call Spread Option flow', ([accountOwner1, buyer, accountOwner2]
       // owner sells their put option
       await shortCall.transfer(buyer, createScaledUint256(optionsAmount, 18), {from: accountOwner1})
       // oracle orice decreases
-      const strikePriceChange = 100
-      const expirySpotPrice = longStrike + strikePriceChange
+      const strikePriceChange = 200
+      const expirySpotPrice = shortStrike + strikePriceChange
 
-      const p = await calculator.getExpiredPayoutRate(shortCall.address)
-      console.log(`rate`, p.toString())
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(
+        weth.address,
+        expiry,
+        createScaledUint256(expirySpotPrice, 18),
+        true,
+      )
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createScaledUint256(1, 18), true)
 
       // Keep track of balances before
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(buyer))
