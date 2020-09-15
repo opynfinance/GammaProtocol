@@ -81,8 +81,8 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
 
   describe('Otoken Creation after whitelisting products', () => {
     before('Whitelist product from admin', async () => {
-      await whitelist.whitelistProduct(weth.address, usdc.address, usdc.address, {from: owner})
-      await whitelist.whitelistProduct(weth.address, dai.address, dai.address, {from: owner})
+      await whitelist.whitelistProduct(weth.address, usdc.address, usdc.address, isPut, {from: owner})
+      await whitelist.whitelistProduct(weth.address, dai.address, dai.address, isPut, {from: owner})
     })
 
     it('Should init otoken1 with correct name and symbol', async () => {
@@ -134,7 +134,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
     })
 
     it('should revert creating otoken after the owner blacklist the product', async () => {
-      await whitelist.blacklistProduct(weth.address, usdc.address, usdc.address)
+      await whitelist.blacklistProduct(weth.address, usdc.address, usdc.address, isPut)
       const newStrikePrice = createScaled(188)
       await expectRevert(
         otokenFactory.createOtoken(weth.address, usdc.address, usdc.address, newStrikePrice, expiry, isPut, {
@@ -217,7 +217,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
     const amountToMint = createScaled(10)
 
     before('whitelist product again', async () => {
-      await whitelist.whitelistProduct(weth.address, usdc.address, usdc.address, {from: owner})
+      await whitelist.whitelistProduct(weth.address, usdc.address, usdc.address, isPut, {from: owner})
     })
 
     it('should not affect existing otoken instances', async () => {

@@ -7,7 +7,7 @@ import {Create2} from "./packages/oz/Create2.sol";
 
 /**
  * @title OtokenSpawner
- * @author Opyn
+ * @author Opyn Team
  * @notice This contract spawns and initializes eip-1167 minimal proxies that
  * point to existing logic contracts.
  * @notice This contract was modified from Spawner.sol

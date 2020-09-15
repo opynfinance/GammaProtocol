@@ -6,6 +6,8 @@ pragma solidity =0.6.10;
 pragma experimental ABIEncoderV2;
 
 import {OtokenInterface} from "../interfaces/OtokenInterface.sol";
+import {OracleInterface} from "../interfaces/OracleInterface.sol";
+import {AddressBookInterface} from "../interfaces/AddressBookInterface.sol";
 import {MarginAccount} from "../libs/MarginAccount.sol";
 import {FixedPointInt256} from "../libs/FixedPointInt256.sol";
 import {SignedConverter} from "../libs/SignedConverter.sol";
@@ -15,8 +17,11 @@ contract MockMarginCalculator {
     using SafeMath for uint256;
     using FixedPointInt256 for FixedPointInt256.FixedPointInt;
 
-    mapping(address => uint256) public price;
-    mapping(address => bool) public isPriceFinalized;
+    address addressBook;
+
+    constructor(address _addressBook) public {
+        addressBook = _addressBook;
+    }
 
     function getExpiredCashValue(address _otoken) public view returns (uint256) {
         require(_otoken != address(0), "MarginCalculator: Invalid token address.");
@@ -206,7 +211,10 @@ contract MockMarginCalculator {
     }
 
     function _getUnderlyingPrice(address _otoken) internal view returns (uint256, bool) {
-        return (price[_otoken], isPriceFinalized[_otoken]);
+        OracleInterface oracle = OracleInterface(AddressBookInterface(addressBook).getOracle());
+        OtokenInterface otoken = OtokenInterface(_otoken);
+
+        return oracle.getExpiryPrice(otoken.underlyingAsset(), otoken.expiryTimestamp());
     }
 
     function _uint256ToFixedPointInt(uint256 _num) internal pure returns (FixedPointInt256.FixedPointInt memory) {

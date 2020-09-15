@@ -1,4 +1,4 @@
-import {WETH9Instance} from '../build/types/truffle-types'
+import {WETH9Instance} from '../../build/types/truffle-types'
 const BigNumber = require('bignumber.js')
 const {expectEvent} = require('@openzeppelin/test-helpers')
 const WETH9 = artifacts.require('WETH9.sol')

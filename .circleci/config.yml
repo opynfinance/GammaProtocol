@@ -17,13 +17,17 @@ workflows:
           requires:
             - build
       - test:
-          context: COVERALLS_REPO_TOKEN
           requires:
             - build
+      - gas-report:
+          context: COVERALLS_REPO_TOKEN
+          requires:
+            - test
       - coverage:
           context: COVERALLS_REPO_TOKEN
           requires:
             - build
+
 jobs:
 
   checkout_and_install:
@@ -46,6 +50,7 @@ jobs:
           key: gamma-{{ .Environment.CIRCLE_SHA1 }}
           paths:
             - ~/gammaprotocol
+
   lint:
     working_directory: ~/gammaprotocol
     docker:
@@ -96,17 +101,32 @@ jobs:
     docker:
       - image: circleci/node:10.18.0
       - image: trufflesuite/ganache-cli:v6.10.1
-        command: ganache-cli -d -l 4294967295 --allowUnlimitedContractSize
+        command: ganache-cli -d --port 8545 --defaultBalanceEther 500 --allowUnlimitedContractSize
     steps:
       - restore_cache:
           key: gamma-contracts-build-{{ .Environment.CIRCLE_SHA1 }}
       - run:
           name: Test Contracts 
           command: npm run test
+      - save_cache:
+          key: gas-{{ .Environment.CIRCLE_SHA1 }}
+          paths:
+            - ~/gammaprotocol/gasReporterOutput.json
+
+  gas-report:
+    working_directory: ~/gammaprotocol
+    docker:
+      - image: circleci/node:10.18.0
+      - image: trufflesuite/ganache-cli:v6.10.1
+    steps:
+      - restore_cache:
+          key: gamma-contracts-build-{{ .Environment.CIRCLE_SHA1 }}
+      - restore_cache:
+          key: gas-{{ .Environment.CIRCLE_SHA1 }}
       - run: 
           name: Gas Reporter
           command: npx codechecks
-  
+
   coverage:
     working_directory: ~/gammaprotocol
     docker:

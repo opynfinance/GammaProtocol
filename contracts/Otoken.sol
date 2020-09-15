@@ -9,7 +9,7 @@ import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
 
 /**
  * @title Otoken
- * @author Opyn
+ * @author Opyn Team
  * @notice Otoken is the ERC20 token for an option.
  * @dev The Otoken inherits ERC20Initializable because we need to use the init instead of constructor.
  */
@@ -90,6 +90,7 @@ contract Otoken is ERC20Initializable {
 
     /**
      * @notice generate name and symbol for an option
+     * @dev this function use named return variable to avoid stack-too-deep error
      * @return tokenName ETHUSDC 05-September-2020 200 Put USDC Collateral
      * @return tokenSymbol oETHUSDC-05SEP20-200P
      */

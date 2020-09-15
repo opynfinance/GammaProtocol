@@ -3,6 +3,7 @@ module.exports = {
   providerOptions: {
     mnemonic: "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
   },
+  silent: true,
   skipFiles: [
     'Migrations.sol',
     'mocks/',
