@@ -2724,6 +2724,8 @@ contract(
 
           firstOtoken = await MockOtoken.new()
           secondOtoken = await MockOtoken.new()
+
+          const expiry = new BigNumber(await time.latest()).plus(expiryTime)
           // init otoken
           await firstOtoken.init(
             addressBook.address,
@@ -2731,7 +2733,7 @@ contract(
             usdc.address,
             usdc.address,
             new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
-            new BigNumber(await time.latest()).plus(expiryTime),
+            expiry,
             true,
           )
           await secondOtoken.init(
@@ -2740,7 +2742,7 @@ contract(
             usdc.address,
             usdc.address,
             new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
-            new BigNumber(await time.latest()).plus(expiryTime),
+            expiry,
             true,
           )
           // whitelist otoken to be used in the protocol

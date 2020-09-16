@@ -41,7 +41,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
       assert.equal(await otoken.collateralAsset(), usdc.address)
       assert.equal((await otoken.strikePrice()).toString(), strikePrice.toString())
       assert.equal(await otoken.isPut(), isPut)
-      assert.equal((await otoken.expiry()).toNumber(), expiry)
+      assert.equal((await otoken.expiryTimestamp()).toNumber(), expiry)
     })
 
     it('should initilized the put option with valid name / symbol', async () => {
