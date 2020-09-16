@@ -10,8 +10,7 @@ import {
   FlashWrapInstance,
 } from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
-
-const {expectRevert, expectEvent, time} = require('@openzeppelin/test-helpers')
+import {getV1ControllerInitData} from './utils'
 
 const MockOracle = artifacts.require('MockOracle.sol')
 const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy.sol')
@@ -84,7 +83,8 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
     controllerImplementation = await Controller.new()
 
     // set controller address in AddressBook
-    await addressBook.setController(controllerImplementation.address, {from: owner})
+    const bytes = getV1ControllerInitData(addressBook.address, owner)
+    await addressBook.setController(controllerImplementation.address, bytes, {from: owner})
 
     // check controller deployment
     const controllerProxyAddress = await addressBook.getController()

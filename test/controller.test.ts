@@ -11,7 +11,7 @@ import {
   OwnedUpgradeabilityProxyInstance,
 } from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
-import {createTokenAmount, createScaledNumber} from './utils'
+import {createTokenAmount, createScaledNumber, getV1ControllerInitData} from './utils'
 
 const {expectRevert, expectEvent, time} = require('@openzeppelin/test-helpers')
 
@@ -96,7 +96,8 @@ contract(
       controllerImplementation = await Controller.new()
 
       // set controller address in AddressBook
-      await addressBook.setController(controllerImplementation.address, {from: owner})
+      const bytes = getV1ControllerInitData(addressBook.address, owner)
+      await addressBook.setController(controllerImplementation.address, bytes, {from: owner})
 
       // check controller deployment
       const controllerProxyAddress = await addressBook.getController()

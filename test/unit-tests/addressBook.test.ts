@@ -10,7 +10,7 @@ import {
   MarginCalculatorInstance,
   OracleInstance,
 } from '../../build/types/truffle-types'
-
+import {getV1ControllerInitData} from '../utils'
 const {expectRevert} = require('@openzeppelin/test-helpers')
 
 const MockERC20 = artifacts.require('MockERC20.sol')
@@ -52,8 +52,9 @@ contract('AddressBook', ([owner, otokenImplAdd, marginPoolAdd, liquidationManage
 
   describe('Set controller', () => {
     let controller: ControllerInstance
-
+    let bytes: string
     before(async () => {
+      bytes = getV1ControllerInitData(addressBook.address, owner)
       const lib = await MarginAccount.new()
       await Controller.link('MarginAccount', lib.address)
       controller = await Controller.new()
@@ -61,13 +62,13 @@ contract('AddressBook', ([owner, otokenImplAdd, marginPoolAdd, liquidationManage
 
     it('should revert adding controller from non-owner address', async () => {
       await expectRevert(
-        addressBook.setController(controller.address, {from: random}),
+        addressBook.setController(controller.address, bytes, {from: random}),
         'Ownable: caller is not the owner',
       )
     })
 
     it('should set controller address', async () => {
-      await addressBook.setController(controller.address, {from: owner})
+      await addressBook.setController(controller.address, bytes, {from: owner})
 
       const proxy: OwnedUpgradeabilityProxyInstance = await OwnedUpgradeabilityProxy.at(
         await addressBook.getController(),
@@ -206,14 +207,16 @@ contract('AddressBook', ([owner, otokenImplAdd, marginPoolAdd, liquidationManage
     })
 
     it('should revert adding arbitrary key:address from non-owner address', async () => {
+      const bytes = getV1ControllerInitData(addressBook.address, owner)
       await expectRevert(
-        addressBook.updateImpl(modulekey, module.address, {from: random}),
+        addressBook.updateImpl(modulekey, module.address, bytes, {from: random}),
         'Ownable: caller is not the owner',
       )
     })
 
     it('should set new module key and address', async () => {
-      await addressBook.updateImpl(modulekey, module.address, {from: owner})
+      const bytes = getV1ControllerInitData(addressBook.address, owner)
+      await addressBook.updateImpl(modulekey, module.address, bytes, {from: owner})
 
       const proxy: OwnedUpgradeabilityProxyInstance = await OwnedUpgradeabilityProxy.at(
         await addressBook.getAddress(modulekey),
@@ -229,19 +232,21 @@ contract('AddressBook', ([owner, otokenImplAdd, marginPoolAdd, liquidationManage
 
     let v1Contract: UpgradeableContractV1Instance
     let v2Contract: UpgradeableContractV2Instance
-
+    let bytes: string
     before(async () => {
+      bytes = getV1ControllerInitData(addressBook.address, owner)
       v1Contract = await UpgradeableContractV1.new()
-
-      await addressBook.updateImpl(key, v1Contract.address, {from: owner})
-
+      await addressBook.updateImpl(key, v1Contract.address, bytes, {from: owner})
       const proxy: OwnedUpgradeabilityProxyInstance = await OwnedUpgradeabilityProxy.at(
         await addressBook.getAddress(key),
       )
       const implementationAddress = await proxy.implementation()
 
       assert.equal(v1Contract.address, implementationAddress, 'AMM module implementation address mismatch')
-      assert.equal((await v1Contract.getV1Version()).toString(), '1', 'AMM implementation version mismatch')
+      // check the proxy instance has the correct setup
+      const proxyContractType: UpgradeableContractV1Instance = await UpgradeableContractV1.at(proxy.address)
+      assert.equal((await proxyContractType.getV1Version()).toString(), '1', 'AMM implementation version mismatch')
+      assert.equal(await proxyContractType.addressBook(), addressBook.address, 'proxy initialization failed')
     })
 
     it('should upgrade contract from V1 to V2', async () => {
@@ -252,10 +257,11 @@ contract('AddressBook', ([owner, otokenImplAdd, marginPoolAdd, liquidationManage
         await addressBook.getAddress(key),
       )
       const v1ImplementationAddress = await v1Proxy.implementation()
-
       assert.notEqual(v2Contract.address, v1ImplementationAddress, 'AMM v1 and v2 have same implementation address')
 
-      await addressBook.updateImpl(key, v2Contract.address, {from: owner})
+      await v2Contract.initialize(addressBook.address, owner)
+
+      await addressBook.updateImpl(key, v2Contract.address, bytes, {from: owner})
 
       const v2Proxy: OwnedUpgradeabilityProxyInstance = await OwnedUpgradeabilityProxy.at(
         await addressBook.getAddress(key),

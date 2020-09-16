@@ -9,8 +9,10 @@ import {
   WhitelistInstance,
   MockOracleInstance,
 } from '../../build/types/truffle-types'
-
+import BigNumber from 'bignumber.js'
 import {assert} from 'chai'
+import {getV1ControllerInitData} from '../utils'
+
 import {createScaledNumber as createScaled, createTokenAmount, createValidExpiry} from '../utils'
 const {expectRevert, time} = require('@openzeppelin/test-helpers')
 
@@ -98,7 +100,9 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
     await controller.initialize(addressBook.address, owner)
 
     // set the controller as controller (so it has access to minting tokens)
-    await addressBook.setController(controller.address)
+    const bytes = getV1ControllerInitData(addressBook.address, owner)
+    await addressBook.setController(controller.address, bytes)
+
     controller = await Controller.at(await addressBook.getController())
   })
 
