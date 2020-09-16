@@ -1,4 +1,5 @@
 import BigNumber from 'bignumber.js'
+const {time} = require('@openzeppelin/test-helpers')
 
 export type vault = {
   shortAmounts: (BigNumber | string | number)[]
@@ -56,4 +57,10 @@ export const createScaledNumber = (num: number): string => {
  */
 export const createScaledUint256 = (num: number, exp: number): string => {
   return new BigNumber(num).times(10 ** exp).toString()
+}
+
+export const getExpiry = async (): Promise<number> => {
+  const now = (await time.latest()).toNumber()
+  const multiplier = (now - 28800) / 86400
+  return (Number(multiplier.toFixed(0)) + 1) * 86400 + time.duration.days(30).toNumber() + 28800
 }
