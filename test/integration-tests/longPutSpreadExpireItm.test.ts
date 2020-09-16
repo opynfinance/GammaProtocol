@@ -160,16 +160,15 @@ contract('Long Put Spread Option expires Itm flow', ([accountOwner1, buyer, acco
     usdc.mint(accountOwner2, accountOwner2Usdc)
 
     // have the user approve all the usdc transfers
-    usdc.approve(marginPool.address, '10000000000000000000000', {from: accountOwner1})
-    usdc.approve(marginPool.address, '10000000000000000000000000000000000000000', {from: accountOwner2})
-    usdc.approve(marginPool.address, '10000000000000000000000000000', {from: buyer})
+    usdc.approve(marginPool.address, accountOwner1Usdc, {from: accountOwner1})
+    usdc.approve(marginPool.address, accountOwner2Usdc, {from: accountOwner2})
 
     const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
     vaultCounter = vaultCounterBefore.toNumber() + 1
   })
 
   describe('Integration test: Sell a long put spread and close it after expires ITM', () => {
-    it('Someone else mints the long option and sends it to the seller', async () => {
+    before('Someone else mints the long option and sends it to the seller', async () => {
       const collateralToMintLong = longStrike * optionsAmount
       const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
       const scaledCollateralAmount = createTokenAmount(collateralToMintLong, (await usdc.decimals()).toNumber())
@@ -245,7 +244,7 @@ contract('Long Put Spread Option expires Itm flow', ([accountOwner1, buyer, acco
         },
       ]
 
-      await longPut.approve(marginPool.address, '1000000000000000000000', {from: accountOwner1})
+      await longPut.approve(marginPool.address, scaledOptionsAmount, {from: accountOwner1})
       await controllerProxy.operate(actionArgsSeller, {from: accountOwner1})
     })
 

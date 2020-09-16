@@ -160,16 +160,16 @@ contract('Long Call Spread Option closed before expiry flow', ([accountOwner1, b
     weth.mint(buyer, buyerWeth)
 
     // have the user approve all the weth transfers
-    weth.approve(marginPool.address, '10000000000000000000000', {from: accountOwner1})
-    weth.approve(marginPool.address, '10000000000000000000000000000000000000000', {from: accountOwner2})
-    weth.approve(marginPool.address, '10000000000000000000000000000', {from: buyer})
+    weth.approve(marginPool.address, accountOwner1Weth, {from: accountOwner1})
+    weth.approve(marginPool.address, accountOwner2Weth, {from: accountOwner2})
+    weth.approve(marginPool.address, buyerWeth, {from: buyer})
 
     const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
     vaultCounter = vaultCounterBefore.toNumber() + 1
   })
 
   describe('Integration test: Sell a long call spread and close it before expiry', () => {
-    it('Someone else mints the long option and sends it to the seller', async () => {
+    before('Someone else mints the long option and sends it to the seller', async () => {
       const collateralToMintLong = optionsAmount
       const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
       const scaledCollateralAmount = createTokenAmount(collateralToMintLong, (await weth.decimals()).toNumber())
@@ -278,7 +278,7 @@ contract('Long Call Spread Option closed before expiry flow', ([accountOwner1, b
         },
       ]
 
-      await longCall.approve(marginPool.address, '1000000000000000000000', {from: accountOwner1})
+      await longCall.approve(marginPool.address, scaledOptionsAmount, {from: accountOwner1})
       await controllerProxy.operate(actionArgs, {from: accountOwner1})
 
       // keep track of balances after
@@ -510,8 +510,10 @@ contract('Long Call Spread Option closed before expiry flow', ([accountOwner1, b
           data: ZERO_ADDR,
         },
       ]
-      // TODO: Revert message to be updated
-      await expectRevert.unspecified(controllerProxy.operate(actionArgs, {from: accountOwner1}))
+      await expectRevert(
+        controllerProxy.operate(actionArgs, {from: accountOwner1}),
+        'MarginAccount: collateral token address mismatch',
+      )
     })
 
     it('should be able to transfer short otokens to another address', async () => {

@@ -133,7 +133,7 @@ contract('Naked Call Option expires Itm flow', ([accountOwner1, buyer]) => {
     weth.mint(accountOwner1, account1OwnerWeth)
 
     // have the user approve all the weth transfers
-    weth.approve(marginPool.address, '10000000000000000000000', {from: accountOwner1})
+    weth.approve(marginPool.address, account1OwnerWeth, {from: accountOwner1})
 
     const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
     vaultCounter = vaultCounterBefore.toNumber() + 1

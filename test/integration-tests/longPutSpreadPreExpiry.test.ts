@@ -155,23 +155,20 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
     // mint usdc to user
     const accountOwner1Usdc = createTokenAmount(2 * collateralAmount, (await usdc.decimals()).toNumber())
     const accountOwner2Usdc = createTokenAmount(longStrike * optionsAmount, (await usdc.decimals()).toNumber())
-    const buyerUsdc = createTokenAmount(longStrike * optionsAmount, (await usdc.decimals()).toNumber())
 
     usdc.mint(accountOwner1, accountOwner1Usdc)
     usdc.mint(accountOwner2, accountOwner2Usdc)
-    usdc.mint(buyer, buyerUsdc)
 
     // have the user approve all the usdc transfers
-    usdc.approve(marginPool.address, '10000000000000000000000', {from: accountOwner1})
-    usdc.approve(marginPool.address, '10000000000000000000000000000000000000000', {from: accountOwner2})
-    usdc.approve(marginPool.address, '10000000000000000000000000000', {from: buyer})
+    usdc.approve(marginPool.address, accountOwner1Usdc, {from: accountOwner1})
+    usdc.approve(marginPool.address, accountOwner2Usdc, {from: accountOwner2})
 
     const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
     vaultCounter = vaultCounterBefore.toNumber() + 1
   })
 
   describe('Integration test: Sell a short put spread and close it before expiry', () => {
-    it('Someone else mints the long option and sends it to the seller', async () => {
+    before('Someone else mints the long option and sends it to the seller', async () => {
       const collateralToMintLong = longStrike * optionsAmount
       const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
       const scaledCollateralAmount = createTokenAmount(collateralToMintLong, (await usdc.decimals()).toNumber())
@@ -279,7 +276,7 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
         },
       ]
 
-      await longPut.approve(marginPool.address, '1000000000000000000000', {from: accountOwner1})
+      await longPut.approve(marginPool.address, scaledOptionsAmount, {from: accountOwner1})
       await controllerProxy.operate(actionArgs, {from: accountOwner1})
 
       // keep track of balances after
@@ -509,8 +506,10 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
           data: ZERO_ADDR,
         },
       ]
-      // TODO: Revert message to be updated
-      await expectRevert.unspecified(controllerProxy.operate(actionArgs, {from: accountOwner1}))
+      await expectRevert(
+        controllerProxy.operate(actionArgs, {from: accountOwner1}),
+        'MarginAccount: collateral token address mismatch',
+      )
     })
 
     it('should be able to transfer long otokens to another address', async () => {
