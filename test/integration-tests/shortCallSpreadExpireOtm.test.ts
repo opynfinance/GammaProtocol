@@ -39,7 +39,7 @@ enum ActionType {
   Call,
 }
 
-contract('Short Call Spread Option flow', ([accountOwner1, buyer, accountOwner2]) => {
+contract('Short Call Spread Option expires Otm flow', ([accountOwner1, buyer, accountOwner2]) => {
   let expiry: number
 
   let addressBook: AddressBookInstance

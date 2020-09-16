@@ -9,7 +9,7 @@ import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
 
 /**
  * @title Otoken
- * @author Opyn
+ * @author Opyn Team
  * @notice Otoken is the ERC20 token for an option.
  * @dev The Otoken inherits ERC20Initializable because we need to use the init instead of constructor.
  */
@@ -45,7 +45,7 @@ contract Otoken is ERC20Initializable {
      * @param _strikeAsset asset that the strike price is denominated in
      * @param _collateralAsset asset that is held as collateral against short/written options
      * @param _strikePrice strike price with decimals = 18
-     * @param _expiry time of the option represented by unix timestamp
+     * @param _expiryTimestamp time of the option represented by unix timestamp
      * @param _isPut is this a put option, if not it is a call
      */
     function init(
@@ -54,7 +54,7 @@ contract Otoken is ERC20Initializable {
         address _strikeAsset,
         address _collateralAsset,
         uint256 _strikePrice,
-        uint256 _expiry,
+        uint256 _expiryTimestamp,
         bool _isPut
     ) external initializer {
         addressBook = _addressBook;
@@ -62,7 +62,7 @@ contract Otoken is ERC20Initializable {
         strikeAsset = _strikeAsset;
         collateralAsset = _collateralAsset;
         strikePrice = _strikePrice;
-        expiryTimestamp = _expiry;
+        expiryTimestamp = _expiryTimestamp;
         isPut = _isPut;
         (string memory tokenName, string memory tokenSymbol) = _getNameAndSymbol();
         __ERC20_init_unchained(tokenName, tokenSymbol);
@@ -90,6 +90,7 @@ contract Otoken is ERC20Initializable {
 
     /**
      * @notice generate name and symbol for an option
+     * @dev this function use named return variable to avoid stack-too-deep error
      * @return tokenName ETHUSDC 05-September-2020 200 Put USDC Collateral
      * @return tokenSymbol oETHUSDC-05SEP20-200P
      */

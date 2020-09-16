@@ -39,7 +39,7 @@ enum ActionType {
   Call,
 }
 
-contract('Long Put Spread Option flow', ([accountOwner1, buyer, accountOwner2]) => {
+contract('Long Put Spread Option expires Otm flow', ([accountOwner1, buyer, accountOwner2]) => {
   let expiry: number
 
   let addressBook: AddressBookInstance

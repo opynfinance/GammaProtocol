@@ -39,7 +39,7 @@ enum ActionType {
   Call,
 }
 
-contract('Naked Call Option flow', ([accountOwner1, buyer]) => {
+contract('Naked Call Option expires Itm flow', ([accountOwner1, buyer]) => {
   let expiry: number
 
   let addressBook: AddressBookInstance

@@ -86,9 +86,5 @@
   "bugs": {
     "url": "https://github.com/opynfinance/GammaProtocol/issues"
   },
-  "homepage": "https://github.com/opynfinance/GammaProtocol#readme",
-  "dependencies": {
-    "web3": "^1.2.11",
-    "web3-core": "^1.2.11"
-  }
+  "homepage": "https://github.com/opynfinance/GammaProtocol#readme"
 }

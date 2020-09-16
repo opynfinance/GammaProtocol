@@ -1,5 +1,4 @@
 import {
-  MockERC20Instance,
   WhitelistInstance,
   OtokenFactoryInstance,
   UpgradeableContractV1Instance,
@@ -13,7 +12,6 @@ import {
 
 const {expectRevert} = require('@openzeppelin/test-helpers')
 
-const MockERC20 = artifacts.require('MockERC20.sol')
 const OtokenFactory = artifacts.require('OtokenFactory.sol')
 const UpgradeableContractV1 = artifacts.require('UpgradeableContractV1.sol')
 const UpgradeableContractV2 = artifacts.require('UpgradeableContractV2.sol')
@@ -26,14 +24,10 @@ const Whitelist = artifacts.require('Whitelist.sol')
 const MarginAccount = artifacts.require('MarginAccount.sol')
 
 contract('AddressBook', ([owner, otokenImplAdd, marginPoolAdd, liquidationManagerImpl, random]) => {
-  // ERC20 mocks
-  let weth: MockERC20Instance
   // addressbook instance
   let addressBook: AddressBookInstance
 
   before('Deployment', async () => {
-    // deploy WETH token
-    weth = await MockERC20.new('WETH', 'WETH', 18)
     // deploy AddressBook token
     addressBook = await AddressBook.new()
   })
@@ -194,18 +188,6 @@ contract('AddressBook', ([owner, otokenImplAdd, marginPoolAdd, liquidationManage
       await addressBook.setOracle(oracle.address, {from: owner})
 
       assert.equal(oracle.address, await addressBook.getOracle(), 'Oracle module implementation address mismatch')
-    })
-  })
-
-  describe('Set weth', () => {
-    it('should revert adding weth address from non-owner address', async () => {
-      await expectRevert(addressBook.setWeth(weth.address, {from: random}), 'Ownable: caller is not the owner')
-    })
-
-    it('should set weth address', async () => {
-      await addressBook.setWeth(weth.address, {from: owner})
-
-      assert.equal(await addressBook.getWeth(), weth.address, 'WETH address mismatch')
     })
   })
 

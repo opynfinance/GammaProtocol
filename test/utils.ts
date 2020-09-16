@@ -10,6 +10,16 @@ export type vault = {
 }
 
 /**
+ * Return a valid expiry timestamp that's today + # days, 0800 UTC.
+ * @param now
+ * @param days
+ */
+export const createValidExpiry = (now: number, days: number) => {
+  const multiplier = (now - 28800) / 86400
+  return (Number(multiplier.toFixed(0)) + 1) * 86400 + days * 86400 + 28800
+}
+
+/**
  * Create a vault for testing
  * @param shortOtoken
  * @param longOtoken

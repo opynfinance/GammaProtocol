@@ -39,7 +39,7 @@ enum ActionType {
   Call,
 }
 
-contract('Naked Put Option flow', ([accountOwner1, buyer]) => {
+contract('Naked Put Option closed before expiry flow', ([accountOwner1, buyer]) => {
   let expiry: number
 
   let addressBook: AddressBookInstance
