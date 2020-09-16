@@ -236,6 +236,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     function initialize(address _addressBook, address _owner) external initializer {
         require(_addressBook != address(0), "Controller: invalid addressbook address");
+        require(_owner != address(0), "Controller: invalid owner address");
 
         __Context_init_unchained();
         __Ownable_init_unchained(_owner);

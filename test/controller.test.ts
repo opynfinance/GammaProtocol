@@ -120,6 +120,24 @@ contract(
           'Contract instance has already been initialized',
         )
       })
+
+      it('should revert when calling initialize with addressbook equal to zero', async () => {
+        const controllerImplementation = await Controller.new()
+
+        await expectRevert(
+          controllerImplementation.initialize(ZERO_ADDR, owner),
+          'Controller: invalid addressbook address',
+        )
+      })
+
+      it('should revert when calling initialize with owner equal to zero', async () => {
+        const controllerImplementation = await Controller.new()
+
+        await expectRevert(
+          controllerImplementation.initialize(addressBook.address, ZERO_ADDR),
+          'Controller: invalid owner address',
+        )
+      })
     })
 
     describe('Account operator', () => {
@@ -151,13 +169,11 @@ contract(
     })
 
     describe('Vault', () => {
-      // will be improved in later PR
       it('should get vault', async () => {
         const vaultId = new BigNumber(0)
         await controllerProxy.getVault(accountOwner1, vaultId)
       })
 
-      // will be improved in later PR
       it('should get vault balance', async () => {
         const vaultId = new BigNumber(0)
         await controllerProxy.getVaultBalances(accountOwner1, vaultId)
@@ -1896,6 +1912,7 @@ contract(
           await controllerProxy.operate(firstActionArgs, {from: accountOwner1})
 
           const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
+          const vaultBalances = await controllerProxy.getVaultBalances(accountOwner1, vaultCounter)
           const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
           const withdrawerBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
 
@@ -1904,6 +1921,7 @@ contract(
 
           assert.equal(netValue.toString(), excessCollateralToDeposit.toString(), 'Position net value mistmatch')
           assert.equal(isExcess, true, 'Position collateral excess mismatch')
+          assert.equal(vaultBefore.collateralAmounts[0].toString(), vaultBalances.collateralAmounts[0].toString())
 
           const secondActionArgs = [
             {
@@ -3524,6 +3542,13 @@ contract(
         await expectRevert(controllerProxy.setPauser(terminator, {from: random}), 'Ownable: caller is not the owner')
       })
 
+      it('should revert set pauser address to address zero', async () => {
+        await expectRevert(
+          controllerProxy.setPauser(ZERO_ADDR, {from: owner}),
+          'Controller: pauser cannot be set to address zero',
+        )
+      })
+
       it('should set pauser address', async () => {
         await controllerProxy.setPauser(pauser, {from: owner})
         assert.equal(await controllerProxy.pauser(), pauser, 'Pauser address mismatch')
@@ -3815,6 +3840,13 @@ contract(
         await expectRevert(
           controllerProxy.setTerminator(terminator, {from: random}),
           'Ownable: caller is not the owner',
+        )
+      })
+
+      it('should revert set terminator address to address zero', async () => {
+        await expectRevert(
+          controllerProxy.setTerminator(ZERO_ADDR, {from: owner}),
+          'Controller: terminator cannot be set to address zero',
         )
       })
 
