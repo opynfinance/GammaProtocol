@@ -11,9 +11,8 @@ import {
 } from '../../build/types/truffle-types'
 
 import {assert} from 'chai'
-
-import {createScaledNumber as createScaled, createTokenAmount} from '../utils'
-const {expectRevert} = require('@openzeppelin/test-helpers')
+import {createScaledNumber as createScaled, createTokenAmount, createValidExpiry} from '../utils'
+const {expectRevert, time} = require('@openzeppelin/test-helpers')
 
 const Controller = artifacts.require('Controller.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
@@ -65,9 +64,10 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
 
   const strikePrice = createScaled(200)
   const isPut = true
-  const expiry = 1753776000 // 07/29/2025 @ 8:00am (UTC)
+  let expiry: number
 
   before('Deploy addressBook, otoken logic, whitelist, Factory contract', async () => {
+    expiry = createValidExpiry(Number(await time.latest()), 100)
     usdc = await MockERC20.new('USDC', 'USDC', 6)
     dai = await MockERC20.new('DAI', 'DAI', 18)
     weth = await MockERC20.new('wETH', 'WETH', 18)
@@ -133,8 +133,8 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
         from: user1,
       })
       otoken1 = await Otoken.at(targetAddress1)
-      assert.equal(await otoken1.name(), 'WETHUSDC 29-July-2025 200Put USDC Collateral')
-      assert.equal(await otoken1.symbol(), 'oWETHUSDC-29JUL25-200P')
+      assert.isTrue((await otoken1.name()).includes('200Put USDC Collateral'))
+      assert.isTrue((await otoken1.symbol()).includes('oWETHUSDC-'))
     })
 
     it('Should init otoken2 with correct name and symbol', async () => {
@@ -151,8 +151,8 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
         from: user2,
       })
       otoken2 = await Otoken.at(targetAddress2)
-      assert.equal(await otoken2.name(), 'WETHDAI 29-July-2025 200Put DAI Collateral')
-      assert.equal(await otoken2.symbol(), 'oWETHDAI-29JUL25-200P')
+      assert.isTrue((await otoken2.name()).includes('200Put DAI Collateral'))
+      assert.isTrue((await otoken2.symbol()).includes('oWETHDAI'))
     })
 
     it('The newly created tokens should be whitelisted in the whitelist module', async () => {
