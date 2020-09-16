@@ -1,5 +1,11 @@
 import BigNumber from 'bignumber.js'
 
+import {AbiCoder} from 'web3-eth-abi'
+const abiCoder: AbiCoder = require('web3-eth-abi')
+const web3Util = require('web3-utils')
+
+// const abiCoder = new AbiCoder()
+
 export type vault = {
   shortAmounts: (BigNumber | string | number)[]
   longAmounts: (BigNumber | string | number)[]
@@ -58,4 +64,17 @@ export const createTokenAmount = (num: number, decimals = 18) => {
  */
 export const createScaledNumber = (num: number): string => {
   return new BigNumber(num).times(1e18).toString()
+}
+
+/**
+ * Generate the initialze call data for v1 controller.
+ * @param addressBookAddr
+ * @param ownerAddr
+ */
+export const getV1ControllerInitData = (addressBookAddr: string, ownerAddr: string) => {
+  const functionSignature = web3Util.hexToBytes(abiCoder.encodeFunctionSignature('initialize(address,address)'))
+  const addressBookBytes = web3Util.hexToBytes(abiCoder.encodeParameter('address', addressBookAddr))
+  const ownerBytes = web3Util.hexToBytes(abiCoder.encodeParameter('address', ownerAddr))
+  const bytesArray = functionSignature.concat(addressBookBytes).concat(ownerBytes)
+  return web3Util.bytesToHex(bytesArray)
 }
