@@ -131,9 +131,10 @@ contract AddressBook is Ownable {
      * @notice set controller address
      * @dev can only be called by addressbook owner
      * @param _controller controller address
+     * @param _initData data needed to initailize controller
      */
-    function setController(address _controller) external onlyOwner {
-        updateImpl(CONTROLLER, _controller);
+    function setController(address _controller, bytes calldata _initData) external onlyOwner {
+        updateImpl(CONTROLLER, _controller, _initData);
     }
 
     /**
@@ -197,17 +198,20 @@ contract AddressBook is Ownable {
      * @dev internal function to update the implementation of a specific component of the protocol
      * @param _id the id of the contract to be updated
      * @param _newAddress the address of the new implementation
+     * @param _initData the init data to call the upgraded function with.
      **/
-    function updateImpl(bytes32 _id, address _newAddress) public onlyOwner {
+    function updateImpl(
+        bytes32 _id,
+        address _newAddress,
+        bytes calldata _initData
+    ) public onlyOwner {
         address payable proxyAddress = address(uint160(getAddress(_id)));
-
-        bytes memory params = abi.encodeWithSignature("initialize(address,address)", address(this), owner());
 
         if (proxyAddress == address(0)) {
             OwnedUpgradeabilityProxy proxy = new OwnedUpgradeabilityProxy();
             setAddress(_id, address(proxy));
             emit ProxyCreated(_id, address(proxy));
-            proxy.upgradeToAndCall(_newAddress, params);
+            proxy.upgradeToAndCall(_newAddress, _initData);
         } else {
             OwnedUpgradeabilityProxy proxy = OwnedUpgradeabilityProxy(proxyAddress);
             proxy.upgradeTo(_newAddress);
