@@ -795,4 +795,149 @@ contract('Naked Put Option flow', ([accountOwner1]) => {
       assert.equal(ownerUsdcBalanceBefore.plus(scaledCollateralAmount).toString(), ownerUsdcBalanceAfter.toString())
     })
   })
+
+  describe('Integration test: Oracle Module migratability', async () => {
+    let scaledOptionsAmount: string
+    let scaledCollateralAmount: string
+    let vaultCounter: number
+
+    before('setup the contracts', async () => {
+      const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
+      vaultCounter = vaultCounterBefore.toNumber() + 1
+      scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+      scaledCollateralAmount = createTokenAmount(collateralAmount, (await usdc.decimals()).toNumber())
+    })
+
+    it('should migrate to new oracle module', async () => {
+      const oldOracleStoredAddress = await addressBook.getOracle()
+      const oldOracle = oracle
+      assert.equal(oldOracleStoredAddress, oldOracle.address, 'wrong oracle module address stored in the address book')
+
+      oracle = await Oracle.new(addressBook.address)
+      addressBook.setOracle(oracle.address)
+
+      const newOracleStoredAddress = await addressBook.getOracle()
+      assert.equal(
+        newOracleStoredAddress,
+        oracle.address,
+        'wrong oracle module address update made to the address book',
+      )
+      await controllerProxy.refreshConfiguration()
+
+      wethPricer = await MockPricer.new(weth.address, oracle.address)
+      await oracle.setLockingPeriod(wethPricer.address, lockingPeriod)
+      await oracle.setDisputePeriod(wethPricer.address, disputePeriod)
+      usdcPricer = await MockPricer.new(usdc.address, oracle.address)
+      await oracle.setLockingPeriod(usdcPricer.address, lockingPeriod)
+      await oracle.setDisputePeriod(usdcPricer.address, disputePeriod)
+    })
+
+    it('should be able to create new options markets', async () => {
+      // Create new option
+      expiry = await getExpiry()
+      await otokenFactory.createOtoken(
+        weth.address,
+        usdc.address,
+        usdc.address,
+        createTokenAmount(strikePrice, 18),
+        expiry,
+        true,
+      )
+      const ethPutAddress = await otokenFactory.getOtoken(
+        weth.address,
+        usdc.address,
+        usdc.address,
+        createTokenAmount(strikePrice, 18),
+        expiry,
+        true,
+      )
+
+      ethPut = await Otoken.at(ethPutAddress)
+    })
+
+    it('should still be able to open a new position using the new oracle module', async () => {
+      const ownerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
+
+      const actionArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: accountOwner1,
+          sender: accountOwner1,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounter,
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.MintShortOption,
+          owner: accountOwner1,
+          sender: accountOwner1,
+          asset: ethPut.address,
+          vaultId: vaultCounter,
+          amount: scaledOptionsAmount,
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.DepositCollateral,
+          owner: accountOwner1,
+          sender: accountOwner1,
+          asset: usdc.address,
+          vaultId: vaultCounter,
+          amount: scaledCollateralAmount,
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+      await usdc.approve(marginPool.address, scaledCollateralAmount, {from: accountOwner1})
+      await controllerProxy.operate(actionArgs, {from: accountOwner1})
+
+      const ownerUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
+      assert.equal(ownerUsdcBalanceBefore.minus(scaledCollateralAmount).toString(), ownerUsdcBalanceAfter.toString())
+    })
+
+    it('should not be able to close positions using the new oracle module until it has a pricer set up', async () => {
+      if ((await time.latest()) < expiry) {
+        await time.increaseTo(expiry + lockingPeriod + 10)
+      }
+      const expirySpotPrice = 400
+      const scaledETHPrice = createTokenAmount(expirySpotPrice, 18)
+      await expectRevert(wethPricer.setExpiryPriceToOralce(expiry, scaledETHPrice), 'Oracle: caller is not the pricer')
+    })
+
+    it('should not be able to close positions using the new oracle module until it has a pricer set up', async () => {
+      // initialize asset pricer
+      await oracle.setAssetPricer(usdc.address, usdcPricer.address)
+      await oracle.setAssetPricer(weth.address, wethPricer.address)
+
+      const ownerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
+
+      const expirySpotPrice = 400
+      const scaledETHPrice = createTokenAmount(expirySpotPrice, 18)
+      const scaledUSDCPrice = createTokenAmount(1, 18)
+      await wethPricer.setExpiryPriceToOralce(expiry, scaledETHPrice)
+      await usdcPricer.setExpiryPriceToOralce(expiry, scaledUSDCPrice)
+
+      await time.increase(disputePeriod + 10)
+
+      const actionArgs = [
+        {
+          actionType: ActionType.SettleVault,
+          owner: accountOwner1,
+          sender: accountOwner1,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounter,
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+
+      await controllerProxy.operate(actionArgs, {from: accountOwner1})
+
+      const ownerUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
+      assert.equal(ownerUsdcBalanceBefore.plus(scaledCollateralAmount).toString(), ownerUsdcBalanceAfter.toString())
+    })
+  })
 })
