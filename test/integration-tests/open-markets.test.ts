@@ -9,7 +9,7 @@ import {
   WhitelistInstance,
   MockOracleInstance,
 } from '../../build/types/truffle-types'
-import BigNumber from 'bignumber.js'
+
 import {assert} from 'chai'
 import {getV1ControllerInitData} from '../utils'
 
