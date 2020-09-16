@@ -3108,6 +3108,9 @@ contract(
         const payout = createTokenAmount(150, usdcDecimals)
         const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
         const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
+        const vaultBalances = await controllerProxy.getVaultBalances(accountOwner1, vaultCounter)
+
+        assert.equal(payout, vaultBalances.collateralAmounts[0].toString())
 
         await controllerProxy.operate(actionArgs, {from: accountOwner1})
 
