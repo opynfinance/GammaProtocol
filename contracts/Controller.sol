@@ -528,7 +528,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev cannot be called when system is paused or shutdown
      * @param _args DepositArgs structure
      */
-    function _depositLong(Actions.DepositArgs memory _args) internal notPaused {
+    function _depositLong(Actions.DepositArgs memory _args) internal notPaused onlyAuthorized(msg.sender, _args.owner) {
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         require(
             (_args.from == msg.sender) || (_args.from == _args.owner),
@@ -579,7 +579,11 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev cannot be called when the system is paused or shutdown
      * @param _args DepositArgs structure
      */
-    function _depositCollateral(Actions.DepositArgs memory _args) internal notPaused {
+    function _depositCollateral(Actions.DepositArgs memory _args)
+        internal
+        notPaused
+        onlyAuthorized(msg.sender, _args.owner)
+    {
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         require(
             (_args.from == msg.sender) || (_args.from == _args.owner),
