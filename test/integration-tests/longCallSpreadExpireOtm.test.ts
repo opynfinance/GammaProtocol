@@ -9,7 +9,7 @@ import {
   MarginPoolInstance,
   OtokenFactoryInstance,
 } from '../../build/types/truffle-types'
-import {createTokenAmount} from '../utils'
+import {createTokenAmount, getExpiry} from '../utils'
 import {assert} from 'chai'
 import BigNumber from 'bignumber.js'
 
@@ -39,7 +39,7 @@ enum ActionType {
   Call,
 }
 
-contract('Long Call Spread Option expires Otm flow', ([accountOwner1, buyer, accountOwner2]) => {
+contract('Long Call Spread Option expires Otm flow', ([accountOwner1, nakedBuyer, accountOwner2]) => {
   let expiry: number
 
   let addressBook: AddressBookInstance
@@ -57,20 +57,18 @@ contract('Long Call Spread Option expires Otm flow', ([accountOwner1, buyer, acc
   let usdc: MockERC20Instance
   let weth: MockERC20Instance
 
-  let shortCall: OtokenInstance
-  let longCall: OtokenInstance
-  const shortStrike = 200
-  const longStrike = 100
+  let higherStrikeCall: OtokenInstance
+  let lowerStrikeCall: OtokenInstance
+  const higherStrike = 200
+  const lowerStrike = 100
 
   const optionsAmount = 10
-  const collateralAmount = (Math.abs(longStrike - shortStrike) * optionsAmount) / longStrike
+  const collateralAmount = (Math.abs(lowerStrike - higherStrike) * optionsAmount) / lowerStrike
 
   let vaultCounter: number
 
   before('set up contracts', async () => {
-    const now = (await time.latest()).toNumber()
-    const multiplier = (now - 28800) / 86400
-    expiry = (Number(multiplier.toFixed(0)) + 1) * 86400 + time.duration.days(30).toNumber() + 28800
+    expiry = await getExpiry()
     // setup usdc and weth
     usdc = await MockERC20.new('USDC', 'USDC', 6)
     weth = await MockERC20.new('WETH', 'WETH', 18)
@@ -115,7 +113,7 @@ contract('Long Call Spread Option expires Otm flow', ([accountOwner1, buyer, acc
       weth.address,
       usdc.address,
       weth.address,
-      createTokenAmount(longStrike, 18),
+      createTokenAmount(lowerStrike, 18),
       expiry,
       false,
     )
@@ -124,140 +122,143 @@ contract('Long Call Spread Option expires Otm flow', ([accountOwner1, buyer, acc
       weth.address,
       usdc.address,
       weth.address,
-      createTokenAmount(shortStrike, 18),
+      createTokenAmount(higherStrike, 18),
       expiry,
       false,
     )
 
-    const longCallAddress = await otokenFactory.getOtoken(
+    const lowerStrikeCallAddress = await otokenFactory.getOtoken(
       weth.address,
       usdc.address,
       weth.address,
-      createTokenAmount(longStrike, 18),
+      createTokenAmount(lowerStrike, 18),
       expiry,
       false,
     )
 
-    longCall = await Otoken.at(longCallAddress)
+    lowerStrikeCall = await Otoken.at(lowerStrikeCallAddress)
 
-    const shortCallAddress = await otokenFactory.getOtoken(
+    const higherStrikeCallAddress = await otokenFactory.getOtoken(
       weth.address,
       usdc.address,
       weth.address,
-      createTokenAmount(shortStrike, 18),
+      createTokenAmount(higherStrike, 18),
       expiry,
       false,
     )
 
-    shortCall = await Otoken.at(shortCallAddress)
+    higherStrikeCall = await Otoken.at(higherStrikeCallAddress)
 
     // mint weth to user
     const accountOwner1Weth = createTokenAmount(2 * collateralAmount, (await weth.decimals()).toNumber())
-    const accountOwner2Weth = createTokenAmount(longStrike * optionsAmount, (await weth.decimals()).toNumber())
-    const buyerWeth = createTokenAmount(longStrike * optionsAmount, (await weth.decimals()).toNumber())
+    const accountOwner2Weth = createTokenAmount(lowerStrike * optionsAmount, (await weth.decimals()).toNumber())
+    const nakedBuyerWeth = createTokenAmount(lowerStrike * optionsAmount, (await weth.decimals()).toNumber())
     weth.mint(accountOwner1, accountOwner1Weth)
     weth.mint(accountOwner2, accountOwner2Weth)
-    weth.mint(buyer, buyerWeth)
+    weth.mint(nakedBuyer, nakedBuyerWeth)
 
     // have the user approve all the weth transfers
     weth.approve(marginPool.address, accountOwner1Weth, {from: accountOwner1})
     weth.approve(marginPool.address, accountOwner2Weth, {from: accountOwner2})
-    weth.approve(marginPool.address, buyerWeth, {from: buyer})
+    weth.approve(marginPool.address, nakedBuyerWeth, {from: nakedBuyer})
 
     const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
     vaultCounter = vaultCounterBefore.toNumber() + 1
   })
 
-  describe('Integration test: Sell a long call spread and close it after expires OTM', () => {
-    before('Someone else mints the long option and sends it to the seller', async () => {
-      const collateralToMintLong = optionsAmount
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
-      const scaledCollateralAmount = createTokenAmount(collateralToMintLong, (await weth.decimals()).toNumber())
+  describe('Integration test: Open a long call spread and close it after expires OTM', () => {
+    before(
+      'accountOwner2 mints the lower strike call option, sends it to accountOwner1. accountOwner1 opens a long call spread',
+      async () => {
+        const collateralToMintLong = optionsAmount
+        const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+        const scaledCollateralAmount = createTokenAmount(collateralToMintLong, (await weth.decimals()).toNumber())
 
-      const actionArgsBuyer = [
-        {
-          actionType: ActionType.OpenVault,
-          owner: accountOwner2,
-          sender: accountOwner2,
-          asset: ZERO_ADDR,
-          vaultId: vaultCounter,
-          amount: '0',
-          index: '0',
-          data: ZERO_ADDR,
-        },
-        {
-          actionType: ActionType.MintShortOption,
-          owner: accountOwner2,
-          sender: accountOwner2,
-          asset: longCall.address,
-          vaultId: vaultCounter,
-          amount: scaledOptionsAmount,
-          index: '0',
-          data: ZERO_ADDR,
-        },
-        {
-          actionType: ActionType.DepositCollateral,
-          owner: accountOwner2,
-          sender: accountOwner2,
-          asset: weth.address,
-          vaultId: vaultCounter,
-          amount: scaledCollateralAmount,
-          index: '0',
-          data: ZERO_ADDR,
-        },
-      ]
+        const actionArgsAccountOwner2 = [
+          {
+            actionType: ActionType.OpenVault,
+            owner: accountOwner2,
+            sender: accountOwner2,
+            asset: ZERO_ADDR,
+            vaultId: vaultCounter,
+            amount: '0',
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.MintShortOption,
+            owner: accountOwner2,
+            sender: accountOwner2,
+            asset: lowerStrikeCall.address,
+            vaultId: vaultCounter,
+            amount: scaledOptionsAmount,
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.DepositCollateral,
+            owner: accountOwner2,
+            sender: accountOwner2,
+            asset: weth.address,
+            vaultId: vaultCounter,
+            amount: scaledCollateralAmount,
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
 
-      await controllerProxy.operate(actionArgsBuyer, {from: accountOwner2})
+        await controllerProxy.operate(actionArgsAccountOwner2, {from: accountOwner2})
 
-      // buyer sells their long put option to owner
-      await longCall.transfer(accountOwner1, scaledOptionsAmount, {from: accountOwner2})
+        // accountOwner2 transfers their lower strike call option to accountOwner1
+        await lowerStrikeCall.transfer(accountOwner1, scaledOptionsAmount, {from: accountOwner2})
 
-      const actionArgsSeller = [
-        {
-          actionType: ActionType.OpenVault,
-          owner: accountOwner1,
-          sender: accountOwner1,
-          asset: ZERO_ADDR,
-          vaultId: vaultCounter,
-          amount: '0',
-          index: '0',
-          data: ZERO_ADDR,
-        },
-        {
-          actionType: ActionType.MintShortOption,
-          owner: accountOwner1,
-          sender: accountOwner1,
-          asset: shortCall.address,
-          vaultId: vaultCounter,
-          amount: scaledOptionsAmount,
-          index: '0',
-          data: ZERO_ADDR,
-        },
-        {
-          actionType: ActionType.DepositLongOption,
-          owner: accountOwner1,
-          sender: accountOwner1,
-          asset: longCall.address,
-          vaultId: vaultCounter,
-          amount: scaledOptionsAmount,
-          index: '0',
-          data: ZERO_ADDR,
-        },
-      ]
+        const actionArgsAccountOwner1 = [
+          {
+            actionType: ActionType.OpenVault,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: ZERO_ADDR,
+            vaultId: vaultCounter,
+            amount: '0',
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.MintShortOption,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: higherStrikeCall.address,
+            vaultId: vaultCounter,
+            amount: scaledOptionsAmount,
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.DepositLongOption,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: lowerStrikeCall.address,
+            vaultId: vaultCounter,
+            amount: scaledOptionsAmount,
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
 
-      await longCall.approve(marginPool.address, scaledOptionsAmount, {from: accountOwner1})
-      await controllerProxy.operate(actionArgsSeller, {from: accountOwner1})
-    })
+        await lowerStrikeCall.approve(marginPool.address, scaledOptionsAmount, {from: accountOwner1})
+        await controllerProxy.operate(actionArgsAccountOwner1, {from: accountOwner1})
+      },
+    )
 
-    it('Seller: close an OTM position after expiry', async () => {
+    it('accountOwner1: close an OTM long call spread position after expiry', async () => {
       const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
 
       // Keep track of balances before
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
-      const ownerOtokenBalanceBefore = new BigNumber(await shortCall.balanceOf(accountOwner1))
-      const marginPoolShortOtokenSupplyBefore = new BigNumber(await shortCall.totalSupply())
-      const marginPoolLongOtokenSupplyBefore = new BigNumber(await longCall.totalSupply())
+      const ownerOtokenBalanceBefore = new BigNumber(await higherStrikeCall.balanceOf(accountOwner1))
+      const higherStrikeCallSupplyBefore = new BigNumber(await higherStrikeCall.totalSupply())
+      const lowerStrikeCallSupplyBefore = new BigNumber(await lowerStrikeCall.totalSupply())
 
       // Check that we start at a valid state
       const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
@@ -270,7 +271,7 @@ contract('Long Call Spread Option expires Otm flow', ([accountOwner1, buyer, acc
         await time.increaseTo(expiry + 2)
       }
       const strikePriceChange = 50
-      const expirySpotPrice = longStrike - strikePriceChange
+      const expirySpotPrice = lowerStrike - strikePriceChange
       const scaledETHPrice = createTokenAmount(expirySpotPrice, 18)
       const scaledUSDCPrice = createTokenAmount(1, 18)
       await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, scaledETHPrice, true)
@@ -300,18 +301,18 @@ contract('Long Call Spread Option expires Otm flow', ([accountOwner1, buyer, acc
       const ownerWethBalanceAfter = new BigNumber(await weth.balanceOf(accountOwner1))
       const marginPoolWethBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
 
-      const ownerOtokenBalanceAfter = new BigNumber(await shortCall.balanceOf(accountOwner1))
-      const marginPoolShortOtokenSupplyAfter = new BigNumber(await shortCall.totalSupply())
-      const marginPoolLongOtokenSupplyAfter = new BigNumber(await longCall.totalSupply())
+      const ownerOtokenBalanceAfter = new BigNumber(await higherStrikeCall.balanceOf(accountOwner1))
+      const higherStrikeCallSupplyAfter = new BigNumber(await higherStrikeCall.totalSupply())
+      const lowerStrikeCallSupplyAfter = new BigNumber(await lowerStrikeCall.totalSupply())
 
       // check balances before and after changed as expected
       assert.equal(ownerWethBalanceBefore.toString(), ownerWethBalanceAfter.toString())
       assert.equal(marginPoolWethBalanceBefore.toString(), marginPoolWethBalanceAfter.toString())
       assert.equal(ownerOtokenBalanceBefore.toString(), ownerOtokenBalanceAfter.toString())
-      assert.equal(marginPoolShortOtokenSupplyBefore.toString(), marginPoolShortOtokenSupplyAfter.toString())
+      assert.equal(higherStrikeCallSupplyBefore.toString(), higherStrikeCallSupplyAfter.toString())
       assert.equal(
-        marginPoolLongOtokenSupplyBefore.minus(scaledOptionsAmount).toString(),
-        marginPoolLongOtokenSupplyAfter.toString(),
+        lowerStrikeCallSupplyBefore.minus(scaledOptionsAmount).toString(),
+        lowerStrikeCallSupplyAfter.toString(),
       )
 
       // Check that we end at a valid state
@@ -334,23 +335,23 @@ contract('Long Call Spread Option expires Otm flow', ([accountOwner1, buyer, acc
       assert.equal(vaultAfter.longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
     })
 
-    it('Buyer: exercise OTM call option after expiry', async () => {
+    it('nakedBuyer: exercise the higher strike OTM call option after expiry', async () => {
       const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
-      // owner sells their call option
-      await shortCall.transfer(buyer, scaledOptionsAmount, {from: accountOwner1})
+      // accountOwner1 transfers their higher strike call option to the naked buyer
+      await higherStrikeCall.transfer(nakedBuyer, scaledOptionsAmount, {from: accountOwner1})
 
       // Keep track of balances before
-      const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(buyer))
+      const nakedBuyerWethBalanceBefore = new BigNumber(await weth.balanceOf(nakedBuyer))
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
-      const ownerOtokenBalanceBefore = new BigNumber(await shortCall.balanceOf(buyer))
-      const marginPoolShortOtokenSupplyBefore = new BigNumber(await shortCall.totalSupply())
+      const nakedBuyerOtokenBalanceBefore = new BigNumber(await higherStrikeCall.balanceOf(nakedBuyer))
+      const higherStrikeCallSupplyBefore = new BigNumber(await higherStrikeCall.totalSupply())
 
       const actionArgs = [
         {
           actionType: ActionType.Exercise,
-          owner: buyer,
-          sender: buyer,
-          asset: shortCall.address,
+          owner: nakedBuyer,
+          sender: nakedBuyer,
+          asset: higherStrikeCall.address,
           vaultId: '0',
           amount: scaledOptionsAmount,
           index: '0',
@@ -358,22 +359,25 @@ contract('Long Call Spread Option expires Otm flow', ([accountOwner1, buyer, acc
         },
       ]
 
-      await shortCall.approve(marginPool.address, scaledOptionsAmount, {from: buyer})
-      await controllerProxy.operate(actionArgs, {from: buyer})
+      await higherStrikeCall.approve(marginPool.address, scaledOptionsAmount, {from: nakedBuyer})
+      await controllerProxy.operate(actionArgs, {from: nakedBuyer})
 
       // keep track of balances after
-      const ownerWethBalanceAfter = new BigNumber(await weth.balanceOf(buyer))
+      const nakedBuyerWethBalanceAfter = new BigNumber(await weth.balanceOf(nakedBuyer))
       const marginPoolWethBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
-      const ownerOtokenBalanceAfter = new BigNumber(await shortCall.balanceOf(buyer))
-      const marginPoolShortOtokenSupplyAfter = new BigNumber(await shortCall.totalSupply())
+      const nakedBuyerOtokenBalanceAfter = new BigNumber(await higherStrikeCall.balanceOf(nakedBuyer))
+      const higherStrikeCallSupplyAfter = new BigNumber(await higherStrikeCall.totalSupply())
 
       // check balances before and after changed as expected
-      assert.equal(ownerWethBalanceBefore.toString(), ownerWethBalanceAfter.toString())
+      assert.equal(nakedBuyerWethBalanceBefore.toString(), nakedBuyerWethBalanceAfter.toString())
       assert.equal(marginPoolWethBalanceBefore.toString(), marginPoolWethBalanceAfter.toString())
-      assert.equal(ownerOtokenBalanceBefore.minus(scaledOptionsAmount).toString(), ownerOtokenBalanceAfter.toString())
       assert.equal(
-        marginPoolShortOtokenSupplyBefore.minus(scaledOptionsAmount).toString(),
-        marginPoolShortOtokenSupplyAfter.toString(),
+        nakedBuyerOtokenBalanceBefore.minus(scaledOptionsAmount).toString(),
+        nakedBuyerOtokenBalanceAfter.toString(),
+      )
+      assert.equal(
+        higherStrikeCallSupplyBefore.minus(scaledOptionsAmount).toString(),
+        higherStrikeCallSupplyAfter.toString(),
       )
     })
   })

@@ -9,7 +9,7 @@ import {
   MarginPoolInstance,
   OtokenFactoryInstance,
 } from '../../build/types/truffle-types'
-import {createTokenAmount} from '../utils'
+import {createTokenAmount, getExpiry} from '../utils'
 import {assert} from 'chai'
 import BigNumber from 'bignumber.js'
 
@@ -65,9 +65,7 @@ contract('Naked Put Option expires Itm flow', ([accountOwner1, buyer]) => {
   let vaultCounter: number
 
   before('set up contracts', async () => {
-    const now = (await time.latest()).toNumber()
-    const multiplier = (now - 28800) / 86400
-    expiry = (Number(multiplier.toFixed(0)) + 1) * 86400 + time.duration.days(30).toNumber() + 28800
+    expiry = await getExpiry()
 
     // setup usdc and weth
     usdc = await MockERC20.new('USDC', 'USDC', 6)

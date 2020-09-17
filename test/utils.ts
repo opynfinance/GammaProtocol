@@ -1,4 +1,5 @@
 import BigNumber from 'bignumber.js'
+const {time} = require('@openzeppelin/test-helpers')
 
 export type vault = {
   shortAmounts: (BigNumber | string | number)[]
@@ -48,6 +49,11 @@ export const createVault = (
 
 BigNumber.config({EXPONENTIAL_AT: 30})
 
+/**
+ * Create a number string that scales numbers to number of decimals passed in
+ * @param num
+ */
+
 export const createTokenAmount = (num: number, decimals = 18) => {
   return new BigNumber(num).times(new BigNumber(10).pow(decimals)).toString()
 }
@@ -60,10 +66,8 @@ export const createScaledNumber = (num: number): string => {
   return new BigNumber(num).times(1e18).toString()
 }
 
-/**
- * Create a number string that scales numbers to number of decimals passed in
- * @param num
- */
-export const createScaledUint256 = (num: number, exp: number): string => {
-  return new BigNumber(num).times(10 ** exp).toString()
+export const getExpiry = async (): Promise<number> => {
+  const now = (await time.latest()).toNumber()
+  const multiplier = (now - 28800) / 86400
+  return (Number(multiplier.toFixed(0)) + 1) * 86400 + time.duration.days(30).toNumber() + 28800
 }
