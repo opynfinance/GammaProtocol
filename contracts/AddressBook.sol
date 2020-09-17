@@ -33,8 +33,12 @@ contract AddressBook is Ownable {
 
     /// @notice event emitted when a new proxy get created
     event ProxyCreated(bytes32 id, address proxy);
-    /// @notice event emitted when a new address get added
-    event AddressAdded(bytes32 id, address add);
+
+    /// @notice event emiited when a proxy upgrade to a new implementation address.
+    event ImplementationUpgrade(bytes32 id, address newAddress);
+
+    /// @notice event emitted when an address is updated
+    event AddressUpdated(bytes32 id, address add);
 
     /**
      * @notice return otoken implementation address
@@ -191,14 +195,14 @@ contract AddressBook is Ownable {
     function setAddress(bytes32 _key, address _address) public onlyOwner {
         addresses[_key] = _address;
 
-        emit AddressAdded(_key, _address);
+        emit AddressUpdated(_key, _address);
     }
 
     /**
      * @dev internal function to update the implementation of a specific component of the protocol
      * @param _id the id of the contract to be updated
      * @param _newAddress the address of the new implementation
-     * @param _initData the init data to call the upgraded function with.
+     * @param _initData the init data to call the contract with when first create it.
      **/
     function updateImpl(
         bytes32 _id,
@@ -214,6 +218,7 @@ contract AddressBook is Ownable {
             proxy.upgradeToAndCall(_newAddress, _initData);
         } else {
             OwnedUpgradeabilityProxy proxy = OwnedUpgradeabilityProxy(proxyAddress);
+            emit ImplementationUpgrade(_id, _newAddress);
             proxy.upgradeTo(_newAddress);
         }
     }
