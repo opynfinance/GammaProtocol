@@ -683,6 +683,39 @@ contract(
             'MarginPool: Sender is not Controller',
           )
         })
+
+        it('should revert deposting long from controller implementation contract instead of the controller proxy', async () => {
+          await controllerImplementation.initialize(addressBook.address, owner)
+          const longToDeposit = createTokenAmount(20)
+          const actionArgs = [
+            {
+              actionType: ActionType.OpenVault,
+              owner: accountOwner1,
+              sender: random,
+              asset: ZERO_ADDR,
+              vaultId: '1',
+              amount: '0',
+              index: '0',
+              data: ZERO_ADDR,
+            },
+            {
+              actionType: ActionType.DepositLongOption,
+              owner: accountOwner1,
+              sender: accountOwner1,
+              asset: longOtoken.address,
+              vaultId: 1,
+              amount: longToDeposit,
+              index: '0',
+              data: ZERO_ADDR,
+            },
+          ]
+
+          await longOtoken.approve(marginPool.address, longToDeposit, {from: accountOwner1})
+          await expectRevert(
+            controllerImplementation.operate(actionArgs, {from: accountOwner1}),
+            'MarginPool: Sender is not Controller',
+          )
+        })
       })
 
       describe('withdraw long otoken', () => {
