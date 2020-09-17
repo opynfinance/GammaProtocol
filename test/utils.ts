@@ -1,3 +1,5 @@
+import {MockERC20Instance} from '../build/types/truffle-types'
+
 import BigNumber from 'bignumber.js'
 
 export type vault = {
@@ -58,4 +60,35 @@ export const createTokenAmount = (num: number, decimals = 18) => {
  */
 export const createScaledNumber = (num: number): string => {
   return new BigNumber(num).times(1e18).toString()
+}
+
+export const underlyingPriceToCtokenPrice = async (
+  underlyingPrice: BigNumber,
+  exchangeRate: BigNumber,
+  underlying: MockERC20Instance,
+) => {
+  const underlyingDecimals = new BigNumber(await underlying.decimals())
+  const cTokenDecimals = new BigNumber(8)
+  return exchangeRate
+    .times(underlyingPrice)
+    .times(new BigNumber(10).exponentiatedBy(cTokenDecimals))
+    .div(new BigNumber(10).exponentiatedBy(underlyingDecimals.plus(new BigNumber(18))))
+    .integerValue(BigNumber.ROUND_DOWN)
+}
+
+/**
+ * @param {number} num number to scale
+ * @param {number} fromDecimal the decimals the original number has
+ * @param {number} toDecimal the decimals the target number has
+ * @return {BigNumber}
+ */
+export const changeAmountScaled = (num: number | string, fromDecimal: number, toDecimal: number) => {
+  const numBN = new BigNumber(num)
+  if (toDecimal === fromDecimal) {
+    return numBN
+  } else if (toDecimal >= fromDecimal) {
+    return numBN.times(new BigNumber(10).pow(toDecimal - fromDecimal))
+  } else {
+    return numBN.div(new BigNumber(10).pow(fromDecimal - toDecimal)).integerValue()
+  }
 }
