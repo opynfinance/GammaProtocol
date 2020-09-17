@@ -184,7 +184,7 @@ contract('Naked Call Option expires Otm flow', ([accountOwner1, buyer]) => {
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
       const ownerOtokenBalanceBefore = new BigNumber(await ethCall.balanceOf(accountOwner1))
-      const marginPoolOtokenSupplyBefore = new BigNumber(await ethCall.totalSupply())
+      const oTokenSupplyBefore = new BigNumber(await ethCall.totalSupply())
 
       // Check that we start at a valid state
       const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
@@ -228,7 +228,7 @@ contract('Naked Call Option expires Otm flow', ([accountOwner1, buyer]) => {
       const marginPoolWethBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
 
       const ownerOtokenBalanceAfter = new BigNumber(await ethCall.balanceOf(accountOwner1))
-      const marginPoolOtokenSupplyAfter = new BigNumber(await ethCall.totalSupply())
+      const oTokenSupplyAfter = new BigNumber(await ethCall.totalSupply())
 
       // check balances before and after changed as expected
       assert.equal(ownerWethBalanceBefore.plus(scaledCollateralAmount).toString(), ownerWethBalanceAfter.toString())
@@ -237,7 +237,7 @@ contract('Naked Call Option expires Otm flow', ([accountOwner1, buyer]) => {
         marginPoolWethBalanceAfter.toString(),
       )
       assert.equal(ownerOtokenBalanceBefore.toString(), ownerOtokenBalanceAfter.toString())
-      assert.equal(marginPoolOtokenSupplyBefore.toString(), marginPoolOtokenSupplyAfter.toString())
+      assert.equal(oTokenSupplyBefore.toString(), oTokenSupplyAfter.toString())
 
       // Check that we end at a valid state
       const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
@@ -268,7 +268,7 @@ contract('Naked Call Option expires Otm flow', ([accountOwner1, buyer]) => {
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(buyer))
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
       const ownerOtokenBalanceBefore = new BigNumber(await ethCall.balanceOf(buyer))
-      const marginPoolOtokenSupplyBefore = new BigNumber(await ethCall.totalSupply())
+      const oTokenSupplyBefore = new BigNumber(await ethCall.totalSupply())
 
       const actionArgs = [
         {
@@ -290,16 +290,13 @@ contract('Naked Call Option expires Otm flow', ([accountOwner1, buyer]) => {
       const ownerWethBalanceAfter = new BigNumber(await weth.balanceOf(buyer))
       const marginPoolWethBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
       const ownerOtokenBalanceAfter = new BigNumber(await ethCall.balanceOf(buyer))
-      const marginPoolOtokenSupplyAfter = new BigNumber(await ethCall.totalSupply())
+      const oTokenSupplyAfter = new BigNumber(await ethCall.totalSupply())
 
       // check balances before and after changed as expected
       assert.equal(ownerWethBalanceBefore.toString(), ownerWethBalanceAfter.toString())
       assert.equal(marginPoolWethBalanceBefore.toString(), marginPoolWethBalanceAfter.toString())
       assert.equal(ownerOtokenBalanceBefore.minus(scaledOptionsAmount).toString(), ownerOtokenBalanceAfter.toString())
-      assert.equal(
-        marginPoolOtokenSupplyBefore.minus(scaledOptionsAmount).toString(),
-        marginPoolOtokenSupplyAfter.toString(),
-      )
+      assert.equal(oTokenSupplyBefore.minus(scaledOptionsAmount).toString(), oTokenSupplyAfter.toString())
     })
   })
 })

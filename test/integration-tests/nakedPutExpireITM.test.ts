@@ -183,7 +183,7 @@ contract('Naked Put Option expires Itm flow', ([accountOwner1, buyer]) => {
       const ownerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
       const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
       const ownerOtokenBalanceBefore = new BigNumber(await ethPut.balanceOf(accountOwner1))
-      const marginPoolOtokenSupplyBefore = new BigNumber(await ethPut.totalSupply())
+      const oTokenSupplyBefore = new BigNumber(await ethPut.totalSupply())
 
       // Check that we start at a valid state
       const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
@@ -230,13 +230,13 @@ contract('Naked Put Option expires Itm flow', ([accountOwner1, buyer]) => {
       const marginPoolUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
 
       const ownerOtokenBalanceAfter = new BigNumber(await ethPut.balanceOf(accountOwner1))
-      const marginPoolOtokenSupplyAfter = new BigNumber(await ethPut.totalSupply())
+      const oTokenSupplyAfter = new BigNumber(await ethPut.totalSupply())
 
       // check balances before and after changed as expected
       assert.equal(ownerUsdcBalanceBefore.plus(scaledPayout).toString(), ownerUsdcBalanceAfter.toString())
       assert.equal(marginPoolUsdcBalanceBefore.minus(scaledPayout).toString(), marginPoolUsdcBalanceAfter.toString())
       assert.equal(ownerOtokenBalanceBefore.toString(), ownerOtokenBalanceAfter.toString())
-      assert.equal(marginPoolOtokenSupplyBefore.toString(), marginPoolOtokenSupplyAfter.toString())
+      assert.equal(oTokenSupplyBefore.toString(), oTokenSupplyAfter.toString())
 
       // Check that we end at a valid state
       const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
@@ -269,7 +269,7 @@ contract('Naked Put Option expires Itm flow', ([accountOwner1, buyer]) => {
       const ownerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(buyer))
       const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
       const ownerOtokenBalanceBefore = new BigNumber(await ethPut.balanceOf(buyer))
-      const marginPoolOtokenSupplyBefore = new BigNumber(await ethPut.totalSupply())
+      const oTokenSupplyBefore = new BigNumber(await ethPut.totalSupply())
 
       const actionArgs = [
         {
@@ -291,7 +291,7 @@ contract('Naked Put Option expires Itm flow', ([accountOwner1, buyer]) => {
       const ownerUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(buyer))
       const marginPoolUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
       const ownerOtokenBalanceAfter = new BigNumber(await ethPut.balanceOf(buyer))
-      const marginPoolOtokenSupplyAfter = new BigNumber(await ethPut.totalSupply())
+      const oTokenSupplyAfter = new BigNumber(await ethPut.totalSupply())
 
       const payout = strikePriceChange * optionsAmount
       const scaledPayout = createTokenAmount(payout, (await usdc.decimals()).toNumber())
@@ -300,10 +300,7 @@ contract('Naked Put Option expires Itm flow', ([accountOwner1, buyer]) => {
       assert.equal(ownerUsdcBalanceBefore.plus(scaledPayout).toString(), ownerUsdcBalanceAfter.toString())
       assert.equal(marginPoolUsdcBalanceBefore.minus(scaledPayout).toString(), marginPoolUsdcBalanceAfter.toString())
       assert.equal(ownerOtokenBalanceBefore.minus(scaledOptionsAmount).toString(), ownerOtokenBalanceAfter.toString())
-      assert.equal(
-        marginPoolOtokenSupplyBefore.minus(scaledOptionsAmount).toString(),
-        marginPoolOtokenSupplyAfter.toString(),
-      )
+      assert.equal(oTokenSupplyBefore.minus(scaledOptionsAmount).toString(), oTokenSupplyAfter.toString())
     })
   })
 })

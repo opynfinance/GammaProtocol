@@ -256,7 +256,8 @@ contract('Long Call Spread Option expires Otm flow', ([accountOwner1, nakedBuyer
       // Keep track of balances before
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
-      const ownerOtokenBalanceBefore = new BigNumber(await higherStrikeCall.balanceOf(accountOwner1))
+      const ownerHigherStrikeCallBalanceBefore = new BigNumber(await higherStrikeCall.balanceOf(accountOwner1))
+      const ownerLowerStrikeCallBalanceBefore = new BigNumber(await higherStrikeCall.balanceOf(accountOwner1))
       const higherStrikeCallSupplyBefore = new BigNumber(await higherStrikeCall.totalSupply())
       const lowerStrikeCallSupplyBefore = new BigNumber(await lowerStrikeCall.totalSupply())
 
@@ -301,14 +302,16 @@ contract('Long Call Spread Option expires Otm flow', ([accountOwner1, nakedBuyer
       const ownerWethBalanceAfter = new BigNumber(await weth.balanceOf(accountOwner1))
       const marginPoolWethBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
 
-      const ownerOtokenBalanceAfter = new BigNumber(await higherStrikeCall.balanceOf(accountOwner1))
+      const ownerHigherStrikeCallBalanceAfter = new BigNumber(await higherStrikeCall.balanceOf(accountOwner1))
+      const ownerLowerStrikeCallBalanceAfter = new BigNumber(await higherStrikeCall.balanceOf(accountOwner1))
       const higherStrikeCallSupplyAfter = new BigNumber(await higherStrikeCall.totalSupply())
       const lowerStrikeCallSupplyAfter = new BigNumber(await lowerStrikeCall.totalSupply())
 
       // check balances before and after changed as expected
       assert.equal(ownerWethBalanceBefore.toString(), ownerWethBalanceAfter.toString())
       assert.equal(marginPoolWethBalanceBefore.toString(), marginPoolWethBalanceAfter.toString())
-      assert.equal(ownerOtokenBalanceBefore.toString(), ownerOtokenBalanceAfter.toString())
+      assert.equal(ownerHigherStrikeCallBalanceBefore.toString(), ownerHigherStrikeCallBalanceAfter.toString())
+      assert.equal(ownerLowerStrikeCallBalanceBefore.toString(), ownerLowerStrikeCallBalanceAfter.toString())
       assert.equal(higherStrikeCallSupplyBefore.toString(), higherStrikeCallSupplyAfter.toString())
       assert.equal(
         lowerStrikeCallSupplyBefore.minus(scaledOptionsAmount).toString(),
@@ -379,6 +382,78 @@ contract('Long Call Spread Option expires Otm flow', ([accountOwner1, nakedBuyer
         higherStrikeCallSupplyBefore.minus(scaledOptionsAmount).toString(),
         higherStrikeCallSupplyAfter.toString(),
       )
+    })
+
+    it('accountOwner2: close an OTM long call spread position after expiry', async () => {
+      const scaledCollateralAmount = createTokenAmount(optionsAmount, (await weth.decimals()).toNumber())
+
+      // Keep track of balances before
+      const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner2))
+      const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
+      const ownerHigherStrikeCallBalanceBefore = new BigNumber(await higherStrikeCall.balanceOf(accountOwner2))
+      const ownerLowerStrikeCallBalanceBefore = new BigNumber(await higherStrikeCall.balanceOf(accountOwner2))
+      const higherStrikeCallSupplyBefore = new BigNumber(await higherStrikeCall.totalSupply())
+      const lowerStrikeCallSupplyBefore = new BigNumber(await lowerStrikeCall.totalSupply())
+
+      // Check that we start at a valid state
+      const vaultBefore = await controllerProxy.getVault(accountOwner2, vaultCounter)
+      const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore)
+      assert.equal(vaultStateBefore[0].toString(), scaledCollateralAmount)
+      assert.equal(vaultStateBefore[1], true)
+
+      const actionArgs = [
+        {
+          actionType: ActionType.SettleVault,
+          owner: accountOwner2,
+          sender: accountOwner2,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounter,
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+
+      await controllerProxy.operate(actionArgs, {from: accountOwner2})
+
+      // keep track of balances after
+      const ownerWethBalanceAfter = new BigNumber(await weth.balanceOf(accountOwner2))
+      const marginPoolWethBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
+
+      const ownerHigherStrikeCallBalanceAfter = new BigNumber(await higherStrikeCall.balanceOf(accountOwner2))
+      const ownerLowerStrikeCallBalanceAfter = new BigNumber(await higherStrikeCall.balanceOf(accountOwner2))
+      const higherStrikeCallSupplyAfter = new BigNumber(await higherStrikeCall.totalSupply())
+      const lowerStrikeCallSupplyAfter = new BigNumber(await lowerStrikeCall.totalSupply())
+
+      // check balances before and after changed as expected
+      assert.equal(ownerWethBalanceBefore.plus(scaledCollateralAmount).toString(), ownerWethBalanceAfter.toString())
+      assert.equal(
+        marginPoolWethBalanceBefore.minus(scaledCollateralAmount).toString(),
+        marginPoolWethBalanceAfter.toString(),
+      )
+      assert.equal(ownerHigherStrikeCallBalanceBefore.toString(), ownerHigherStrikeCallBalanceAfter.toString())
+      assert.equal(ownerLowerStrikeCallBalanceBefore.toString(), ownerLowerStrikeCallBalanceAfter.toString())
+      assert.equal(higherStrikeCallSupplyBefore.toString(), higherStrikeCallSupplyAfter.toString())
+      assert.equal(lowerStrikeCallSupplyBefore.toString(), lowerStrikeCallSupplyAfter.toString())
+
+      // Check that we end at a valid state
+      const vaultAfter = await controllerProxy.getVault(accountOwner2, vaultCounter)
+      const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
+      assert.equal(vaultStateAfter[0].toString(), '0')
+      assert.equal(vaultStateAfter[1], true)
+
+      // Check the vault balances stored in the contract
+      assert.equal(vaultAfter.shortOtokens.length, 0, 'Length of the short otoken array in the vault is incorrect')
+      assert.equal(vaultAfter.collateralAssets.length, 0, 'Length of the collateral array in the vault is incorrect')
+      assert.equal(vaultAfter.longOtokens.length, 0, 'Length of the long otoken array in the vault is incorrect')
+
+      assert.equal(vaultAfter.shortAmounts.length, 0, 'Length of the short amounts array in the vault is incorrect')
+      assert.equal(
+        vaultAfter.collateralAmounts.length,
+        0,
+        'Length of the collateral amounts array in the vault is incorrect',
+      )
+      assert.equal(vaultAfter.longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
     })
   })
 })
