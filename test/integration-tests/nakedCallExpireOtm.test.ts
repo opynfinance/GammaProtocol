@@ -64,12 +64,15 @@ contract('Naked Call Option expires Otm flow', ([accountOwner1, buyer]) => {
   const collateralAmount = optionsAmount
   let vaultCounter: number
 
+  const usdcDecimals = 6
+  const wethDecimals = 18
+
   before('set up contracts', async () => {
     expiry = await getExpiry()
 
     // setup usdc and weth
-    usdc = await MockERC20.new('USDC', 'USDC', 6)
-    weth = await MockERC20.new('WETH', 'WETH', 18)
+    usdc = await MockERC20.new('USDC', 'USDC', usdcDecimals)
+    weth = await MockERC20.new('WETH', 'WETH', wethDecimals)
 
     // initiate addressbook first.
     addressBook = await AddressBook.new()
@@ -127,7 +130,7 @@ contract('Naked Call Option expires Otm flow', ([accountOwner1, buyer]) => {
 
     ethCall = await Otoken.at(ethCallAddress)
     // mint weth to user
-    const account1OwnerWeth = createTokenAmount(2 * collateralAmount, (await weth.decimals()).toNumber())
+    const account1OwnerWeth = createTokenAmount(2 * collateralAmount, wethDecimals)
     weth.mint(accountOwner1, account1OwnerWeth)
 
     // have the user approve all the weth transfers
@@ -140,7 +143,7 @@ contract('Naked Call Option expires Otm flow', ([accountOwner1, buyer]) => {
   describe('Integration test: Sell a naked put and close it after expires OTM', () => {
     it('Seller should be able to open a short call option', async () => {
       const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
-      const scaledCollateralAmount = createTokenAmount(collateralAmount, (await weth.decimals()).toNumber())
+      const scaledCollateralAmount = createTokenAmount(collateralAmount, wethDecimals)
 
       const actionArgs = [
         {
@@ -179,7 +182,7 @@ contract('Naked Call Option expires Otm flow', ([accountOwner1, buyer]) => {
     })
 
     it('Seller: close an OTM position after expiry', async () => {
-      const scaledCollateralAmount = createTokenAmount(collateralAmount, (await weth.decimals()).toNumber())
+      const scaledCollateralAmount = createTokenAmount(collateralAmount, wethDecimals)
       // Keep track of balances before
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))

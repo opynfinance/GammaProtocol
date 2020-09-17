@@ -68,11 +68,15 @@ contract('Short Put Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
   let vaultCounter1: number
   let vaultCounter2: number
 
+  const usdcDecimals = 6
+  const wethDecimals = 18
+
   before('set up contracts', async () => {
     expiry = await getExpiry()
+
     // setup usdc and weth
-    usdc = await MockERC20.new('USDC', 'USDC', 6)
-    weth = await MockERC20.new('WETH', 'WETH', 18)
+    usdc = await MockERC20.new('USDC', 'USDC', usdcDecimals)
+    weth = await MockERC20.new('WETH', 'WETH', wethDecimals)
 
     // initiate addressbook first.
     addressBook = await AddressBook.new()
@@ -151,9 +155,9 @@ contract('Short Put Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
     higherStrikePut = await Otoken.at(higherStrikePutAddress)
 
     // mint usdc to user
-    const accountOwner1Usdc = createTokenAmount(2 * collateralAmount, (await usdc.decimals()).toNumber())
-    const accountOwner2Usdc = createTokenAmount(lowerStrike * optionsAmount, (await usdc.decimals()).toNumber())
-    const nakedBuyerUsdc = createTokenAmount(lowerStrike * optionsAmount, (await usdc.decimals()).toNumber())
+    const accountOwner1Usdc = createTokenAmount(2 * collateralAmount, usdcDecimals)
+    const accountOwner2Usdc = createTokenAmount(lowerStrike * optionsAmount, usdcDecimals)
+    const nakedBuyerUsdc = createTokenAmount(lowerStrike * optionsAmount, usdcDecimals)
 
     usdc.mint(accountOwner1, accountOwner1Usdc)
     usdc.mint(accountOwner2, accountOwner2Usdc)
@@ -175,8 +179,8 @@ contract('Short Put Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
       async () => {
         const collateralToMintLong = lowerStrike * optionsAmount
         const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
-        const scaledCollateralToMintLong = createTokenAmount(collateralToMintLong, (await usdc.decimals()).toNumber())
-        const scaledCollateralToMintShort = createTokenAmount(collateralAmount, (await usdc.decimals()).toNumber())
+        const scaledCollateralToMintLong = createTokenAmount(collateralToMintLong, usdcDecimals)
+        const scaledCollateralToMintShort = createTokenAmount(collateralAmount, usdcDecimals)
 
         const actionArgsAccountOwner2 = [
           {
@@ -289,7 +293,7 @@ contract('Short Put Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
       await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, scaledUSDCPrice, true)
 
       const collateralPayout = Math.max(collateralAmount - strikePriceChange * optionsAmount, 0)
-      const scaledCollateralPayout = createTokenAmount(collateralPayout, (await usdc.decimals()).toNumber())
+      const scaledCollateralPayout = createTokenAmount(collateralPayout, usdcDecimals)
 
       // Check that after expiry, the vault excess balance has updated as expected
       const vaultStateBeforeSettlement = await calculator.getExcessCollateral(vaultBefore)
@@ -383,7 +387,7 @@ contract('Short Put Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
       const oTokenSupplyAfter = new BigNumber(await higherStrikePut.totalSupply())
 
       const payout = strikePriceChange * optionsAmount
-      const scaledPayout = createTokenAmount(payout, (await usdc.decimals()).toNumber())
+      const scaledPayout = createTokenAmount(payout, usdcDecimals)
 
       // check balances before and after changed as expected
       assert.equal(nakedBuyerUsdcBalanceBefore.plus(scaledPayout).toString(), nakedBuyerUsdcBalanceAfter.toString())

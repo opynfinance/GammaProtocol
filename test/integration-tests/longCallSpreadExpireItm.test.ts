@@ -68,11 +68,15 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
   let vaultCounter1: number
   let vaultCounter2: number
 
+  const usdcDecimals = 6
+  const wethDecimals = 18
+
   before('set up contracts', async () => {
     expiry = await getExpiry()
+
     // setup usdc and weth
-    usdc = await MockERC20.new('USDC', 'USDC', 6)
-    weth = await MockERC20.new('WETH', 'WETH', 18)
+    usdc = await MockERC20.new('USDC', 'USDC', usdcDecimals)
+    weth = await MockERC20.new('WETH', 'WETH', wethDecimals)
 
     // initiate addressbook first.
     addressBook = await AddressBook.new()
@@ -151,9 +155,9 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
     higherStrikeCall = await Otoken.at(higherStrikeCallAddress)
 
     // mint weth to user
-    const accountOwner1Weth = createTokenAmount(2 * collateralAmount, (await weth.decimals()).toNumber())
-    const accountOwner2Weth = createTokenAmount(lowerStrike * optionsAmount, (await weth.decimals()).toNumber())
-    const nakedBuyerWeth = createTokenAmount(lowerStrike * optionsAmount, (await weth.decimals()).toNumber())
+    const accountOwner1Weth = createTokenAmount(2 * collateralAmount, wethDecimals)
+    const accountOwner2Weth = createTokenAmount(lowerStrike * optionsAmount, wethDecimals)
+    const nakedBuyerWeth = createTokenAmount(lowerStrike * optionsAmount, wethDecimals)
 
     weth.mint(accountOwner1, accountOwner1Weth)
     weth.mint(accountOwner2, accountOwner2Weth)
@@ -174,7 +178,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
     before(
       'accountOwner2 mints the lower strike call option, sends it to accountOwner1. accountOwner1 opens a long call spread',
       async () => {
-        const scaledCollateralAmount = createTokenAmount(optionsAmount, (await weth.decimals()).toNumber())
+        const scaledCollateralAmount = createTokenAmount(optionsAmount, wethDecimals)
         const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
 
         const actionArgsAccountOwner2 = [
@@ -284,7 +288,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
       // Todo: Fix following rounding problem
       assert.equal(
         new BigNumber(vaultStateBeforeSettlement[0]).toString(), // -4999999999999999999
-        createTokenAmount(collateralPayout, (await weth.decimals()).toNumber()), //+5000000000000000000
+        createTokenAmount(collateralPayout, wethDecimals), //+5000000000000000000
       )
       assert.equal(vaultStateBeforeSettlement[1], true)
 
@@ -313,14 +317,12 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
       // check balances before and after changed as expected
       // Todo: Fix following rounding problem
       assert.equal(
-        ownerWethBalanceBefore.plus(createTokenAmount(collateralPayout, (await weth.decimals()).toNumber())).toString(),
+        ownerWethBalanceBefore.plus(createTokenAmount(collateralPayout, wethDecimals)).toString(),
         ownerWethBalanceAfter.toString(),
         'weth balance mismatch',
       )
       assert.equal(
-        marginPoolWethBalanceBefore
-          .minus(createTokenAmount(collateralPayout, (await weth.decimals()).toNumber()))
-          .toString(),
+        marginPoolWethBalanceBefore.minus(createTokenAmount(collateralPayout, wethDecimals)).toString(),
         marginPoolWethBalanceAfter.toString(),
         'pool weth balance mismatch',
       )
@@ -385,7 +387,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
       const OtokenSupplyAfter = new BigNumber(await higherStrikeCall.totalSupply())
 
       const payout = (strikePriceChange * optionsAmount) / expirySpotPrice
-      const scaledPayoutAmount = createTokenAmount(payout, (await weth.decimals()).toNumber())
+      const scaledPayoutAmount = createTokenAmount(payout, wethDecimals)
 
       // check balances before and after changed as expected
       assert.equal(
@@ -416,7 +418,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
       const strikePriceChange = 100
       const expirySpotPrice = lowerStrike + strikePriceChange
       const payoutAmount = Math.max(collateral - strikePriceChange / expirySpotPrice, 0)
-      const scaledCollateralAmount = createTokenAmount(payoutAmount, (await weth.decimals()).toNumber())
+      const scaledCollateralAmount = createTokenAmount(payoutAmount, wethDecimals)
 
       // Keep track of balances before
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner2))

@@ -64,13 +64,15 @@ contract('Naked Call Option expires Itm flow', ([accountOwner1, buyer]) => {
   const collateralAmount = optionsAmount
   let vaultCounter: number
 
+  const usdcDecimals = 6
+  const wethDecimals = 18
+
   before('set up contracts', async () => {
     expiry = await getExpiry()
 
     // setup usdc and weth
-    usdc = await MockERC20.new('USDC', 'USDC', 6)
-    weth = await MockERC20.new('WETH', 'WETH', 18)
-
+    usdc = await MockERC20.new('USDC', 'USDC', usdcDecimals)
+    weth = await MockERC20.new('WETH', 'WETH', wethDecimals)
     // initiate addressbook first.
     addressBook = await AddressBook.new()
     // setup calculator
@@ -127,7 +129,7 @@ contract('Naked Call Option expires Itm flow', ([accountOwner1, buyer]) => {
 
     ethCall = await Otoken.at(ethCallAddress)
     // mint weth to user
-    const account1OwnerWeth = createTokenAmount(2 * collateralAmount, (await weth.decimals()).toNumber())
+    const account1OwnerWeth = createTokenAmount(2 * collateralAmount, wethDecimals)
     weth.mint(accountOwner1, account1OwnerWeth)
 
     // have the user approve all the weth transfers
@@ -140,7 +142,7 @@ contract('Naked Call Option expires Itm flow', ([accountOwner1, buyer]) => {
   describe('Integration test: Sell a naked call and close it after expires ITM', () => {
     it('Seller should be able to open a short call option', async () => {
       const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
-      const scaledCollateralAmount = createTokenAmount(collateralAmount, (await weth.decimals()).toNumber())
+      const scaledCollateralAmount = createTokenAmount(collateralAmount, wethDecimals)
 
       const actionArgs = [
         {
@@ -208,7 +210,7 @@ contract('Naked Call Option expires Itm flow', ([accountOwner1, buyer]) => {
       const vaultStateBeforeSettlement = await calculator.getExcessCollateral(vaultBefore)
       assert.equal(
         vaultStateBeforeSettlement[0].toString(),
-        createTokenAmount(collateralPayout, (await weth.decimals()).toNumber()),
+        createTokenAmount(collateralPayout, wethDecimals),
         'vault before settlement collateral excess mismatch',
       )
       assert.equal(vaultStateBeforeSettlement[1], true)
@@ -237,13 +239,11 @@ contract('Naked Call Option expires Itm flow', ([accountOwner1, buyer]) => {
 
       // check balances before and after changed as expected
       assert.equal(
-        ownerWethBalanceBefore.plus(createTokenAmount(collateralPayout, (await weth.decimals()).toNumber())).toString(),
+        ownerWethBalanceBefore.plus(createTokenAmount(collateralPayout, wethDecimals)).toString(),
         ownerWethBalanceAfter.toString(),
       )
       assert.equal(
-        marginPoolWethBalanceBefore
-          .minus(createTokenAmount(collateralPayout, (await weth.decimals()).toNumber()))
-          .toString(),
+        marginPoolWethBalanceBefore.minus(createTokenAmount(collateralPayout, wethDecimals)).toString(),
         marginPoolWethBalanceAfter.toString(),
       )
       assert.equal(ownerOtokenBalanceBefore.toString(), ownerOtokenBalanceAfter.toString())
@@ -306,7 +306,7 @@ contract('Naked Call Option expires Itm flow', ([accountOwner1, buyer]) => {
       const oTokenSupplyAfter = new BigNumber(await ethCall.totalSupply())
 
       const payout = (strikePriceChange * optionsAmount) / expirySpotPrice
-      const scaledPayout = createTokenAmount(payout, (await weth.decimals()).toNumber())
+      const scaledPayout = createTokenAmount(payout, wethDecimals)
 
       // check balances before and after changed as expected
       assert.equal(ownerWethBalanceBefore.plus(scaledPayout).toString(), ownerWethBalanceAfter.toString())

@@ -68,12 +68,15 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
   let vaultCounter1: number
   let vaultCounter2: number
 
+  const usdcDecimals = 6
+  const wethDecimals = 18
+
   before('set up contracts', async () => {
     expiry = await getExpiry()
 
     // setup usdc and weth
-    usdc = await MockERC20.new('USDC', 'USDC', 6)
-    weth = await MockERC20.new('WETH', 'WETH', 18)
+    usdc = await MockERC20.new('USDC', 'USDC', usdcDecimals)
+    weth = await MockERC20.new('WETH', 'WETH', wethDecimals)
 
     // initiate addressbook first.
     addressBook = await AddressBook.new()
@@ -152,8 +155,8 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
     lowerStrikePut = await Otoken.at(lowerStrikePutAddress)
 
     // mint usdc to user
-    const accountOwner1Usdc = createTokenAmount(2 * collateralAmount, (await usdc.decimals()).toNumber())
-    const accountOwner2Usdc = createTokenAmount(higherStrike * optionsAmount, (await usdc.decimals()).toNumber())
+    const accountOwner1Usdc = createTokenAmount(2 * collateralAmount, usdcDecimals)
+    const accountOwner2Usdc = createTokenAmount(higherStrike * optionsAmount, usdcDecimals)
 
     usdc.mint(accountOwner1, accountOwner1Usdc)
     usdc.mint(accountOwner2, accountOwner2Usdc)
@@ -172,7 +175,7 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
     before('accountOwner2 mints the higher strike put option, sends it to accountOwner1', async () => {
       const collateralToMintLong = higherStrike * optionsAmount
       const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
-      const scaledCollateralAmount = createTokenAmount(collateralToMintLong, (await usdc.decimals()).toNumber())
+      const scaledCollateralAmount = createTokenAmount(collateralToMintLong, usdcDecimals)
 
       const actionArgs = [
         {
@@ -349,7 +352,7 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
 
     it('accountOwner1 deposits more collateral into the safe vault', async () => {
       const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
-      const scaledCollateralAmount = createTokenAmount(collateralAmount, (await usdc.decimals()).toNumber())
+      const scaledCollateralAmount = createTokenAmount(collateralAmount, usdcDecimals)
       // Keep track of balances before
       const ownerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
       const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
@@ -421,7 +424,7 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
     })
     it('accountOwner1 withdraws excess collateral from the safe vault', async () => {
       const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
-      const scaledCollateralAmount = createTokenAmount(collateralAmount, (await usdc.decimals()).toNumber())
+      const scaledCollateralAmount = createTokenAmount(collateralAmount, usdcDecimals)
       // Keep track of balances before
       const ownerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
       const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
@@ -493,7 +496,7 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
     })
 
     it('accountOwner1 withdrawing collateral from the safe vault without excess colalteral should fail', async () => {
-      const scaledCollateralAmount = createTokenAmount(collateralAmount, (await usdc.decimals()).toNumber())
+      const scaledCollateralAmount = createTokenAmount(collateralAmount, usdcDecimals)
 
       const actionArgs = [
         {

@@ -64,12 +64,15 @@ contract('Naked Put Option expires Itm flow', ([accountOwner1, buyer]) => {
   const collateralAmount = optionsAmount * strikePrice
   let vaultCounter: number
 
+  const usdcDecimals = 6
+  const wethDecimals = 18
+
   before('set up contracts', async () => {
     expiry = await getExpiry()
 
     // setup usdc and weth
-    usdc = await MockERC20.new('USDC', 'USDC', 6)
-    weth = await MockERC20.new('WETH', 'WETH', 18)
+    usdc = await MockERC20.new('USDC', 'USDC', usdcDecimals)
+    weth = await MockERC20.new('WETH', 'WETH', wethDecimals)
 
     // initiate addressbook first.
     addressBook = await AddressBook.new()
@@ -127,7 +130,7 @@ contract('Naked Put Option expires Itm flow', ([accountOwner1, buyer]) => {
     ethPut = await Otoken.at(ethPutAddress)
 
     // mint usdc to user
-    const accountOwner1Usdc = createTokenAmount(2 * collateralAmount, (await usdc.decimals()).toNumber())
+    const accountOwner1Usdc = createTokenAmount(2 * collateralAmount, usdcDecimals)
     usdc.mint(accountOwner1, accountOwner1Usdc)
 
     // have the user approve all the usdc transfers
@@ -140,7 +143,7 @@ contract('Naked Put Option expires Itm flow', ([accountOwner1, buyer]) => {
   describe('Integration test: Sell a naked put and close it after expires ITM', () => {
     it('Seller should be able to open a short put option', async () => {
       const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
-      const scaledCollateralAmount = createTokenAmount(collateralAmount, (await usdc.decimals()).toNumber())
+      const scaledCollateralAmount = createTokenAmount(collateralAmount, usdcDecimals)
 
       const actionArgs = [
         {
@@ -203,7 +206,7 @@ contract('Naked Put Option expires Itm flow', ([accountOwner1, buyer]) => {
       await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, scaledUSDCPrice, true)
 
       const collateralPayout = collateralAmount - strikePriceChange * optionsAmount
-      const scaledPayout = createTokenAmount(collateralPayout, (await usdc.decimals()).toNumber())
+      const scaledPayout = createTokenAmount(collateralPayout, usdcDecimals)
 
       // Check that after expiry, the vault excess balance has updated as expected
       const vaultStateBeforeSettlement = await calculator.getExcessCollateral(vaultBefore)
@@ -294,7 +297,7 @@ contract('Naked Put Option expires Itm flow', ([accountOwner1, buyer]) => {
       const oTokenSupplyAfter = new BigNumber(await ethPut.totalSupply())
 
       const payout = strikePriceChange * optionsAmount
-      const scaledPayout = createTokenAmount(payout, (await usdc.decimals()).toNumber())
+      const scaledPayout = createTokenAmount(payout, usdcDecimals)
 
       // check balances before and after changed as expected
       assert.equal(ownerUsdcBalanceBefore.plus(scaledPayout).toString(), ownerUsdcBalanceAfter.toString())

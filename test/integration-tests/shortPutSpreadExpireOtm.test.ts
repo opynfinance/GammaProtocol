@@ -68,11 +68,15 @@ contract('Short Put Spread Option expires Otm flow', ([accountOwner1, nakedBuyer
   let vaultCounter1: number
   let vaultCounter2: number
 
+  const usdcDecimals = 6
+  const wethDecimals = 18
+
   before('set up contracts', async () => {
     expiry = await getExpiry()
+
     // setup usdc and weth
-    usdc = await MockERC20.new('USDC', 'USDC', 6)
-    weth = await MockERC20.new('WETH', 'WETH', 18)
+    usdc = await MockERC20.new('USDC', 'USDC', usdcDecimals)
+    weth = await MockERC20.new('WETH', 'WETH', wethDecimals)
 
     // initiate addressbook first.
     addressBook = await AddressBook.new()
@@ -151,9 +155,9 @@ contract('Short Put Spread Option expires Otm flow', ([accountOwner1, nakedBuyer
     higherStrikePut = await Otoken.at(higherStrikePutAddress)
 
     // mint usdc to user
-    const accountOwner1Usdc = createTokenAmount(2 * collateralAmount, (await usdc.decimals()).toNumber())
-    const accountOwner2Usdc = createTokenAmount(lowerStrike * optionsAmount, (await usdc.decimals()).toNumber())
-    const nakedBuyerUsdc = createTokenAmount(lowerStrike * optionsAmount, (await usdc.decimals()).toNumber())
+    const accountOwner1Usdc = createTokenAmount(2 * collateralAmount, usdcDecimals)
+    const accountOwner2Usdc = createTokenAmount(lowerStrike * optionsAmount, usdcDecimals)
+    const nakedBuyerUsdc = createTokenAmount(lowerStrike * optionsAmount, usdcDecimals)
 
     usdc.mint(accountOwner1, accountOwner1Usdc)
     usdc.mint(accountOwner2, accountOwner2Usdc)
@@ -175,8 +179,8 @@ contract('Short Put Spread Option expires Otm flow', ([accountOwner1, nakedBuyer
       async () => {
         const collateralToMintLong = lowerStrike * optionsAmount
         const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
-        const scaledCollateralToMintLong = createTokenAmount(collateralToMintLong, (await usdc.decimals()).toNumber())
-        const scaledCollateralToMintShort = createTokenAmount(collateralAmount, (await usdc.decimals()).toNumber())
+        const scaledCollateralToMintLong = createTokenAmount(collateralToMintLong, usdcDecimals)
+        const scaledCollateralToMintShort = createTokenAmount(collateralAmount, usdcDecimals)
 
         const actionArgsAccountOwner2 = [
           {
@@ -265,7 +269,7 @@ contract('Short Put Spread Option expires Otm flow', ([accountOwner1, nakedBuyer
     )
 
     it('accountOwner1: close an OTM short put spread position after expiry', async () => {
-      const scaledCollateralAmount = createTokenAmount(collateralAmount, (await usdc.decimals()).toNumber())
+      const scaledCollateralAmount = createTokenAmount(collateralAmount, usdcDecimals)
       // Keep track of balances before
       const ownerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
       const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))

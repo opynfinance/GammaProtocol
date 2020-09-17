@@ -68,11 +68,15 @@ contract('Long Put Spread Option expires Otm flow', ([accountOwner1, nakedBuyer,
   let vaultCounter1: number
   let vaultCounter2: number
 
+  const usdcDecimals = 6
+  const wethDecimals = 18
+
   before('set up contracts', async () => {
     expiry = await getExpiry()
+
     // setup usdc and weth
-    usdc = await MockERC20.new('USDC', 'USDC', 6)
-    weth = await MockERC20.new('WETH', 'WETH', 18)
+    usdc = await MockERC20.new('USDC', 'USDC', usdcDecimals)
+    weth = await MockERC20.new('WETH', 'WETH', wethDecimals)
 
     // initiate addressbook first.
     addressBook = await AddressBook.new()
@@ -151,9 +155,9 @@ contract('Long Put Spread Option expires Otm flow', ([accountOwner1, nakedBuyer,
     lowerStrikePut = await Otoken.at(lowerStrikePutAddress)
 
     // mint usdc to user
-    const accountOwner1Usdc = createTokenAmount(2 * collateralAmount, (await usdc.decimals()).toNumber())
-    const accountOwner2Usdc = createTokenAmount(higherStrike * optionsAmount, (await usdc.decimals()).toNumber())
-    const nakedBuyerUsdc = createTokenAmount(higherStrike * optionsAmount, (await usdc.decimals()).toNumber())
+    const accountOwner1Usdc = createTokenAmount(2 * collateralAmount, usdcDecimals)
+    const accountOwner2Usdc = createTokenAmount(higherStrike * optionsAmount, usdcDecimals)
+    const nakedBuyerUsdc = createTokenAmount(higherStrike * optionsAmount, usdcDecimals)
 
     usdc.mint(accountOwner1, accountOwner1Usdc)
     usdc.mint(accountOwner2, accountOwner2Usdc)
@@ -175,7 +179,7 @@ contract('Long Put Spread Option expires Otm flow', ([accountOwner1, nakedBuyer,
       async () => {
         const collateralToMintLong = higherStrike * optionsAmount
         const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
-        const scaledCollateralAmount = createTokenAmount(collateralToMintLong, (await usdc.decimals()).toNumber())
+        const scaledCollateralAmount = createTokenAmount(collateralToMintLong, usdcDecimals)
 
         const actionArgsAccountOwner2 = [
           {

@@ -68,12 +68,15 @@ contract('Long Call Spread Option expires Otm flow', ([accountOwner1, nakedBuyer
   let vaultCounter1: number
   let vaultCounter2: number
 
+  const usdcDecimals = 6
+  const wethDecimals = 18
+
   before('set up contracts', async () => {
     expiry = await getExpiry()
-    // setup usdc and weth
-    usdc = await MockERC20.new('USDC', 'USDC', 6)
-    weth = await MockERC20.new('WETH', 'WETH', 18)
 
+    // setup usdc and weth
+    usdc = await MockERC20.new('USDC', 'USDC', usdcDecimals)
+    weth = await MockERC20.new('WETH', 'WETH', wethDecimals)
     // initiate addressbook first.
     addressBook = await AddressBook.new()
     // setup calculator
@@ -151,9 +154,9 @@ contract('Long Call Spread Option expires Otm flow', ([accountOwner1, nakedBuyer
     higherStrikeCall = await Otoken.at(higherStrikeCallAddress)
 
     // mint weth to user
-    const accountOwner1Weth = createTokenAmount(2 * collateralAmount, (await weth.decimals()).toNumber())
-    const accountOwner2Weth = createTokenAmount(lowerStrike * optionsAmount, (await weth.decimals()).toNumber())
-    const nakedBuyerWeth = createTokenAmount(lowerStrike * optionsAmount, (await weth.decimals()).toNumber())
+    const accountOwner1Weth = createTokenAmount(2 * collateralAmount, wethDecimals)
+    const accountOwner2Weth = createTokenAmount(lowerStrike * optionsAmount, wethDecimals)
+    const nakedBuyerWeth = createTokenAmount(lowerStrike * optionsAmount, wethDecimals)
     weth.mint(accountOwner1, accountOwner1Weth)
     weth.mint(accountOwner2, accountOwner2Weth)
     weth.mint(nakedBuyer, nakedBuyerWeth)
@@ -175,7 +178,7 @@ contract('Long Call Spread Option expires Otm flow', ([accountOwner1, nakedBuyer
       async () => {
         const collateralToMintLong = optionsAmount
         const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
-        const scaledCollateralAmount = createTokenAmount(collateralToMintLong, (await weth.decimals()).toNumber())
+        const scaledCollateralAmount = createTokenAmount(collateralToMintLong, wethDecimals)
 
         const actionArgsAccountOwner2 = [
           {
@@ -388,7 +391,7 @@ contract('Long Call Spread Option expires Otm flow', ([accountOwner1, nakedBuyer
     })
 
     it('accountOwner2: close an OTM long call spread position after expiry', async () => {
-      const scaledCollateralAmount = createTokenAmount(optionsAmount, (await weth.decimals()).toNumber())
+      const scaledCollateralAmount = createTokenAmount(optionsAmount, wethDecimals)
 
       // Keep track of balances before
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner2))
