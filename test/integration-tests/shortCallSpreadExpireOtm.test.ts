@@ -10,7 +10,6 @@ import {
   OtokenFactoryInstance,
 } from '../../build/types/truffle-types'
 import {createTokenAmount, getExpiry} from '../utils'
-import {assert} from 'chai'
 import BigNumber from 'bignumber.js'
 
 const {time} = require('@openzeppelin/test-helpers')
@@ -102,16 +101,15 @@ contract('Short Call Spread Option expires Otm flow', ([accountOwner1, nakedBuye
 
     // setup address book
     await addressBook.setOracle(oracle.address)
-    await addressBook.setController(controllerImplementation.address)
     await addressBook.setMarginCalculator(calculator.address)
     await addressBook.setWhitelist(whitelist.address)
     await addressBook.setMarginPool(marginPool.address)
     await addressBook.setOtokenFactory(otokenFactory.address)
     await addressBook.setOtokenImpl(otokenImplementation.address)
+    await addressBook.setController(controllerImplementation.address)
 
     const controllerProxyAddress = await addressBook.getController()
     controllerProxy = await Controller.at(controllerProxyAddress)
-    await controllerProxy.refreshConfiguration()
 
     await otokenFactory.createOtoken(
       weth.address,
