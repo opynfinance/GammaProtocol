@@ -33,9 +33,14 @@ contract PayableProxyController is ReentrancyGuard {
      * @notice Fallback function. Disallows ether to be sent to this contract without data except when unwrapping WETH.
      */
     fallback() external payable {
-        require(msg.sender == address(weth), "PayableProxyController: Cannot receive ETH"); 
+        require(msg.sender == address(weth), "PayableProxyController: Cannot receive ETH");
     }
 
+    /**
+     * @notice execute a number of actions
+     * @dev a wrapper for Controller operate function, to wrap WETH and the beginning and unwrap WETH at the end of the execution
+     * @param _actions array of actions arguments
+     */
     function operate(Actions.ActionArgs[] memory _actions, address payable sendEthTo) external payable nonReentrant {
         // create WETH from ETH
         if (msg.value != 0) {
