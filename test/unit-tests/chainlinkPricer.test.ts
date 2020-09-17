@@ -4,8 +4,8 @@ import {
   MockChainlinkAggregatorInstance,
   MockERC20Instance,
 } from '../../build/types/truffle-types'
-import BigNumber from 'bignumber.js'
 
+import {changeAmountScaled, createTokenAmount} from '../utils'
 const {expectRevert, time} = require('@openzeppelin/test-helpers')
 
 const ChainlinkPricer = artifacts.require('ChainLinkPricer.sol')
@@ -15,12 +15,6 @@ const MockERC20 = artifacts.require('MockERC20.sol')
 
 // address(0)
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
-
-/**
- * scale number with 1e8
- * @param num
- */
-const toChainLinkPrice = (num: number) => new BigNumber(num).times(1e8).integerValue()
 
 contract('ChainlinkPricer', ([owner, random]) => {
   let wethAggregator: MockChainlinkAggregatorInstance
@@ -59,20 +53,20 @@ contract('ChainlinkPricer', ([owner, random]) => {
 
   describe('getPrice', () => {
     // aggregator have price in 1e8
-    const ethPrice = toChainLinkPrice(300)
+    const ethPrice = createTokenAmount(300, 8)
     before('mock data in weth aggregator', async () => {
       await wethAggregator.setLatestAnswer(ethPrice)
     })
     it('should return the price in 1e18', async () => {
       const price = await pricer.getPrice()
-      const expectedResult = new BigNumber(300).times(1e18)
+      const expectedResult = createTokenAmount(300, 18)
       assert.equal(price.toString(), expectedResult.toString())
     })
     it('should return the new price after resetting answer in aggregator', async () => {
-      const newPrice = toChainLinkPrice(400)
+      const newPrice = createTokenAmount(400, 8)
       await wethAggregator.setLatestAnswer(newPrice)
       const price = await pricer.getPrice()
-      const expectedResult = new BigNumber(400).times(1e18)
+      const expectedResult = createTokenAmount(400, 18)
       assert.equal(price.toString(), expectedResult.toString())
     })
     it('should revert if price is lower than 0', async () => {
@@ -85,11 +79,11 @@ contract('ChainlinkPricer', ([owner, random]) => {
     // time order: t0, t1, t2, t3, t4
     let t0: number, t1: number, t2: number, t3: number, t4: number
     // p0 = price at t0 ... etc
-    const p0 = toChainLinkPrice(100)
-    const p1 = toChainLinkPrice(150.333)
-    const p2 = toChainLinkPrice(180)
-    const p3 = toChainLinkPrice(200)
-    const p4 = toChainLinkPrice(140)
+    const p0 = createTokenAmount(100, 8)
+    const p1 = createTokenAmount(150.333, 8)
+    const p2 = createTokenAmount(180, 8)
+    const p3 = createTokenAmount(200, 8)
+    const p4 = createTokenAmount(140, 8)
 
     before('setup history in aggregator', async () => {
       // set t0, t1, t2, expiry, t3, t4
@@ -119,7 +113,7 @@ contract('ChainlinkPricer', ([owner, random]) => {
 
       await pricer.setExpiryPriceToOralce(expiryTimestamp, roundId)
       const priceFromOracle = await oracle.getExpiryPrice(weth.address, expiryTimestamp)
-      assert.equal(p1.times(1e10).toString(), priceFromOracle[0].toString())
+      assert.equal(changeAmountScaled(p1, 8, 18).toString(), priceFromOracle[0].toString())
     })
 
     it('everyone can set an price oracle', async () => {
@@ -127,7 +121,7 @@ contract('ChainlinkPricer', ([owner, random]) => {
       const roundId = 2
       await pricer.setExpiryPriceToOralce(expiryTimestamp, roundId, {from: random})
       const priceFromOracle = await oracle.getExpiryPrice(weth.address, expiryTimestamp)
-      assert.equal(p2.times(1e10).toString(), priceFromOracle[0].toString())
+      assert.equal(changeAmountScaled(p2, 8, 18).toString(), priceFromOracle[0].toString())
     })
 
     it('should revert if round ID is incorrect: price[roundId].timestamp < expiry', async () => {

@@ -1,3 +1,5 @@
+import {MockERC20Instance} from '../build/types/truffle-types'
+
 import BigNumber from 'bignumber.js'
 const {time} = require('@openzeppelin/test-helpers')
 
@@ -70,4 +72,35 @@ export const getExpiry = async (): Promise<number> => {
   const now = (await time.latest()).toNumber()
   const multiplier = (now - 28800) / 86400
   return (Number(multiplier.toFixed(0)) + 1) * 86400 + time.duration.days(30).toNumber() + 28800
+}
+
+export const underlyingPriceToCtokenPrice = async (
+  underlyingPrice: BigNumber,
+  exchangeRate: BigNumber,
+  underlying: MockERC20Instance,
+) => {
+  const underlyingDecimals = new BigNumber(await underlying.decimals())
+  const cTokenDecimals = new BigNumber(8)
+  return exchangeRate
+    .times(underlyingPrice)
+    .times(new BigNumber(10).exponentiatedBy(cTokenDecimals))
+    .div(new BigNumber(10).exponentiatedBy(underlyingDecimals.plus(new BigNumber(18))))
+    .integerValue(BigNumber.ROUND_DOWN)
+}
+
+/**
+ * @param {number} num number to scale
+ * @param {number} fromDecimal the decimals the original number has
+ * @param {number} toDecimal the decimals the target number has
+ * @return {BigNumber}
+ */
+export const changeAmountScaled = (num: number | string, fromDecimal: number, toDecimal: number) => {
+  const numBN = new BigNumber(num)
+  if (toDecimal === fromDecimal) {
+    return numBN
+  } else if (toDecimal >= fromDecimal) {
+    return numBN.times(new BigNumber(10).pow(toDecimal - fromDecimal))
+  } else {
+    return numBN.div(new BigNumber(10).pow(fromDecimal - toDecimal)).integerValue()
+  }
 }
