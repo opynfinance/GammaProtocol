@@ -65,7 +65,8 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
   const optionsAmount = 10
   const collateralAmount = Math.abs(lowerStrike - higherStrike) * optionsAmount
 
-  let vaultCounter: number
+  let vaultCounter1: number
+  let vaultCounter2: number
 
   before('set up contracts', async () => {
     expiry = await getExpiry()
@@ -161,8 +162,10 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
     usdc.approve(marginPool.address, accountOwner1Usdc, {from: accountOwner1})
     usdc.approve(marginPool.address, accountOwner2Usdc, {from: accountOwner2})
 
-    const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-    vaultCounter = vaultCounterBefore.toNumber() + 1
+    const vaultCounter1Before = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
+    vaultCounter1 = vaultCounter1Before.toNumber() + 1
+    const vaultCounter2Before = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner2))
+    vaultCounter2 = vaultCounter2Before.toNumber() + 1
   })
 
   describe('Integration test: Open a long put spread and close it before expiry', () => {
@@ -177,7 +180,7 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
           owner: accountOwner2,
           sender: accountOwner2,
           asset: ZERO_ADDR,
-          vaultId: vaultCounter,
+          vaultId: vaultCounter2,
           amount: '0',
           index: '0',
           data: ZERO_ADDR,
@@ -187,7 +190,7 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
           owner: accountOwner2,
           sender: accountOwner2,
           asset: higherStrikePut.address,
-          vaultId: vaultCounter,
+          vaultId: vaultCounter2,
           amount: scaledOptionsAmount,
           index: '0',
           data: ZERO_ADDR,
@@ -197,7 +200,7 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
           owner: accountOwner2,
           sender: accountOwner2,
           asset: usdc.address,
-          vaultId: vaultCounter,
+          vaultId: vaultCounter2,
           amount: scaledCollateralAmount,
           index: '0',
           data: ZERO_ADDR,
@@ -223,7 +226,7 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
       const marginPoolLongOtokenBalanceBefore = new BigNumber(await higherStrikePut.balanceOf(marginPool.address))
 
       // Check that we start at a valid state
-      const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter1)
       const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore)
       assert.equal(vaultStateBefore[0].toString(), '0')
       assert.equal(vaultStateBefore[1], true)
@@ -247,7 +250,7 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
           owner: accountOwner1,
           sender: accountOwner1,
           asset: ZERO_ADDR,
-          vaultId: vaultCounter,
+          vaultId: vaultCounter1,
           amount: '0',
           index: '0',
           data: ZERO_ADDR,
@@ -257,7 +260,7 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
           owner: accountOwner1,
           sender: accountOwner1,
           asset: lowerStrikePut.address,
-          vaultId: vaultCounter,
+          vaultId: vaultCounter1,
           amount: scaledOptionsAmount,
           index: '0',
           data: ZERO_ADDR,
@@ -267,7 +270,7 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
           owner: accountOwner1,
           sender: accountOwner1,
           asset: higherStrikePut.address,
-          vaultId: vaultCounter,
+          vaultId: vaultCounter1,
           amount: scaledOptionsAmount,
           index: '0',
           data: ZERO_ADDR,
@@ -311,7 +314,7 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
       )
 
       // Check that we end at a valid state
-      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter1)
       const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
       assert.equal(vaultStateAfter[0].toString(), '0')
       assert.equal(vaultStateAfter[1], true)
@@ -357,7 +360,7 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
           owner: accountOwner1,
           sender: accountOwner1,
           asset: usdc.address,
-          vaultId: vaultCounter,
+          vaultId: vaultCounter1,
           amount: scaledCollateralAmount,
           index: '0',
           data: ZERO_ADDR,
@@ -378,7 +381,7 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
       )
 
       // Check that there is excess margin
-      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter1)
       const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
       assert.equal(vaultStateAfter[0].toString(), scaledCollateralAmount)
       assert.equal(vaultStateAfter[1], true)
@@ -429,7 +432,7 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
           owner: accountOwner1,
           sender: accountOwner1,
           asset: usdc.address,
-          vaultId: vaultCounter,
+          vaultId: vaultCounter1,
           amount: scaledCollateralAmount,
           index: '0',
           data: ZERO_ADDR,
@@ -450,7 +453,7 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
       )
 
       // Check that we end at a valid state with no extra collateral
-      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter1)
       const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
       assert.equal(vaultStateAfter[0].toString(), '0')
       assert.equal(vaultStateAfter[1], true)
@@ -498,7 +501,7 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
           owner: accountOwner1,
           sender: accountOwner1,
           asset: usdc.address,
-          vaultId: vaultCounter,
+          vaultId: vaultCounter1,
           amount: scaledCollateralAmount,
           index: '0',
           data: ZERO_ADDR,
@@ -545,7 +548,7 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
       const marginPoolLongOtokenBalanceBefore = new BigNumber(await higherStrikePut.balanceOf(marginPool.address))
 
       // Check that we start at a valid state
-      const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter1)
       const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore)
       assert.equal(vaultStateBefore[0].toString(), '0')
       assert.equal(vaultStateBefore[1], true)
@@ -556,7 +559,7 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
           owner: accountOwner1,
           sender: accountOwner1,
           asset: lowerStrikePut.address,
-          vaultId: vaultCounter,
+          vaultId: vaultCounter1,
           amount: scaledOptionsAmount,
           index: '0',
           data: ZERO_ADDR,
@@ -566,7 +569,7 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
           owner: accountOwner1,
           sender: accountOwner1,
           asset: higherStrikePut.address,
-          vaultId: vaultCounter,
+          vaultId: vaultCounter1,
           amount: scaledOptionsAmount,
           index: '0',
           data: ZERO_ADDR,
@@ -609,7 +612,7 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
       )
 
       // Check that we end at a valid state
-      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter1)
       const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
       assert.equal(vaultStateAfter[0].toString(), '0')
       assert.equal(vaultStateAfter[1], true)

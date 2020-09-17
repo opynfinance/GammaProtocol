@@ -65,7 +65,8 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
   const optionsAmount = 10
   const collateralAmount = (Math.abs(higherStrike - lowerStrike) * optionsAmount) / higherStrike
 
-  let vaultCounter: number
+  let vaultCounter1: number
+  let vaultCounter2: number
 
   before('set up contracts', async () => {
     expiry = await getExpiry()
@@ -163,8 +164,10 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
     weth.approve(marginPool.address, accountOwner2Weth, {from: accountOwner2})
     weth.approve(marginPool.address, nakedBuyerWeth, {from: nakedBuyer})
 
-    const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-    vaultCounter = vaultCounterBefore.toNumber() + 1
+    const vaultCounter1Before = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
+    vaultCounter1 = vaultCounter1Before.toNumber() + 1
+    const vaultCounter2Before = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner2))
+    vaultCounter2 = vaultCounter2Before.toNumber() + 1
   })
 
   describe('Integration test: Open a short call spread and close it before expiry', () => {
@@ -179,7 +182,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
           owner: accountOwner2,
           sender: accountOwner2,
           asset: ZERO_ADDR,
-          vaultId: vaultCounter,
+          vaultId: vaultCounter2,
           amount: '0',
           index: '0',
           data: ZERO_ADDR,
@@ -189,7 +192,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
           owner: accountOwner2,
           sender: accountOwner2,
           asset: higherStrikeCall.address,
-          vaultId: vaultCounter,
+          vaultId: vaultCounter2,
           amount: scaledOptionsAmount,
           index: '0',
           data: ZERO_ADDR,
@@ -199,7 +202,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
           owner: accountOwner2,
           sender: accountOwner2,
           asset: weth.address,
-          vaultId: vaultCounter,
+          vaultId: vaultCounter2,
           amount: scaledCollateralToMintLong,
           index: '0',
           data: ZERO_ADDR,
@@ -226,7 +229,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
       const marginPoolLongOtokenBalanceBefore = new BigNumber(await higherStrikeCall.balanceOf(marginPool.address))
 
       // Check that we start at a valid state
-      const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter1)
       const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore)
       assert.equal(vaultStateBefore[0].toString(), '0')
       assert.equal(vaultStateBefore[1], true)
@@ -250,7 +253,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
           owner: accountOwner1,
           sender: accountOwner1,
           asset: ZERO_ADDR,
-          vaultId: vaultCounter,
+          vaultId: vaultCounter1,
           amount: '0',
           index: '0',
           data: ZERO_ADDR,
@@ -260,7 +263,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
           owner: accountOwner1,
           sender: accountOwner1,
           asset: lowerStrikeCall.address,
-          vaultId: vaultCounter,
+          vaultId: vaultCounter1,
           amount: scaledOptionsAmount,
           index: '0',
           data: ZERO_ADDR,
@@ -270,7 +273,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
           owner: accountOwner1,
           sender: accountOwner1,
           asset: weth.address,
-          vaultId: vaultCounter,
+          vaultId: vaultCounter1,
           amount: scaledCollateralAmount,
           index: '0',
           data: ZERO_ADDR,
@@ -280,7 +283,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
           owner: accountOwner1,
           sender: accountOwner1,
           asset: higherStrikeCall.address,
-          vaultId: vaultCounter,
+          vaultId: vaultCounter1,
           amount: scaledOptionsAmount,
           index: '0',
           data: ZERO_ADDR,
@@ -327,7 +330,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
       )
 
       // Check that we end at a valid state
-      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter1)
       const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
       assert.equal(vaultStateAfter[0].toString(), '0')
       assert.equal(vaultStateAfter[1], true)
@@ -379,7 +382,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
           owner: accountOwner1,
           sender: accountOwner1,
           asset: weth.address,
-          vaultId: vaultCounter,
+          vaultId: vaultCounter1,
           amount: scaledCollateralAmount,
           index: '0',
           data: ZERO_ADDR,
@@ -400,7 +403,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
       )
 
       // Check that there is excess margin
-      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter1)
       const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
       assert.equal(vaultStateAfter[0].toString(), scaledCollateralAmount)
       assert.equal(vaultStateAfter[1], true)
@@ -451,7 +454,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
           owner: accountOwner1,
           sender: accountOwner1,
           asset: weth.address,
-          vaultId: vaultCounter,
+          vaultId: vaultCounter1,
           amount: scaledCollateralAmount,
           index: '0',
           data: ZERO_ADDR,
@@ -472,7 +475,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
       )
 
       // Check that we end at a valid state with no extra collateral
-      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter1)
       const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
       assert.equal(vaultStateAfter[0].toString(), '0')
       assert.equal(vaultStateAfter[1], true)
@@ -520,7 +523,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
           owner: accountOwner1,
           sender: accountOwner1,
           asset: weth.address,
-          vaultId: vaultCounter,
+          vaultId: vaultCounter1,
           amount: scaledCollateralAmount,
           index: '0',
           data: ZERO_ADDR,
@@ -571,7 +574,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
       const marginPoolLongOtokenBalanceBefore = new BigNumber(await higherStrikeCall.balanceOf(marginPool.address))
 
       // Check that we start at a valid state
-      const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter1)
       const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore)
       assert.equal(vaultStateBefore[0].toString(), '0')
       assert.equal(vaultStateBefore[1], true)
@@ -582,7 +585,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
           owner: accountOwner1,
           sender: accountOwner1,
           asset: weth.address,
-          vaultId: vaultCounter,
+          vaultId: vaultCounter1,
           amount: scaledCollateralAmount,
           index: '0',
           data: ZERO_ADDR,
@@ -592,7 +595,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
           owner: accountOwner1,
           sender: accountOwner1,
           asset: lowerStrikeCall.address,
-          vaultId: vaultCounter,
+          vaultId: vaultCounter1,
           amount: scaledOptionsAmount,
           index: '0',
           data: ZERO_ADDR,
@@ -602,7 +605,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
           owner: accountOwner1,
           sender: accountOwner1,
           asset: higherStrikeCall.address,
-          vaultId: vaultCounter,
+          vaultId: vaultCounter1,
           amount: scaledOptionsAmount,
           index: '0',
           data: ZERO_ADDR,
@@ -648,7 +651,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
       )
 
       // Check that we end at a valid state
-      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter1)
       const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
       assert.equal(vaultStateAfter[0].toString(), '0')
       assert.equal(vaultStateAfter[1], true)
