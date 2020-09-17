@@ -284,6 +284,29 @@ contract(
           'PayableProxyController: Cannot receive ETH',
         )
       })
+
+      it('should revert calling operate on a vault from a random address other than owner or operator', async () => {
+        const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
+        const actionArgs = [
+          {
+            actionType: ActionType.OpenVault,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: ZERO_ADDR,
+            vaultId: vaultCounterBefore.plus(1).toNumber(),
+            amount: '0',
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        await expectRevert(
+          payableProxyController.operate(actionArgs, ZERO_ADDR, {
+            from: random,
+          }),
+          'PayableProxyController: cannot execute action',
+        )
+      })
     })
 
     describe('Operate without ETH', () => {
