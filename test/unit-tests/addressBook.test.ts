@@ -25,15 +25,13 @@ const AddressBook = artifacts.require('AddressBook.sol')
 const Whitelist = artifacts.require('Whitelist.sol')
 const MarginAccount = artifacts.require('MarginAccount.sol')
 
+const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
+
 contract('AddressBook', ([owner, otokenImplAdd, marginPoolAdd, liquidationManagerImpl, random]) => {
-  // ERC20 mocks
-  let weth: MockERC20Instance
   // addressbook instance
   let addressBook: AddressBookInstance
 
   before('Deployment', async () => {
-    // deploy WETH token
-    weth = await MockERC20.new('WETH', 'WETH', 18)
     // deploy AddressBook token
     addressBook = await AddressBook.new()
   })
@@ -259,9 +257,8 @@ contract('AddressBook', ([owner, otokenImplAdd, marginPoolAdd, liquidationManage
       const v1ImplementationAddress = await v1Proxy.implementation()
       assert.notEqual(v2Contract.address, v1ImplementationAddress, 'AMM v1 and v2 have same implementation address')
 
-      await v2Contract.initialize(addressBook.address, owner)
-
-      await addressBook.updateImpl(key, v2Contract.address, bytes, {from: owner})
+      // update address don't have to specify init data.
+      await addressBook.updateImpl(key, v2Contract.address, ZERO_ADDR, {from: owner})
 
       const v2Proxy: OwnedUpgradeabilityProxyInstance = await OwnedUpgradeabilityProxy.at(
         await addressBook.getAddress(key),

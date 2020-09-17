@@ -71,7 +71,7 @@ export const createScaledNumber = (num: number): string => {
  * @param addressBookAddr
  * @param ownerAddr
  */
-export const getV1ControllerInitData = (addressBookAddr: string, ownerAddr: string) => {
+export const getV1ControllerInitData = (addressBookAddr: string, ownerAddr: string): string => {
   const functionSignature = web3Util.hexToBytes(abiCoder.encodeFunctionSignature('initialize(address,address)'))
   const addressBookBytes = web3Util.hexToBytes(abiCoder.encodeParameter('address', addressBookAddr))
   const ownerBytes = web3Util.hexToBytes(abiCoder.encodeParameter('address', ownerAddr))
