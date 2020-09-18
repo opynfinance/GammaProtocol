@@ -146,7 +146,7 @@ contract('CompoundPricer', ([owner, random]) => {
     })
 
     it("should revert if oracle don't have price of underlying yet", async () => {
-      await expectRevert(cethPricer.setExpiryPriceToOralce(expiry), 'CompoundPricer: underlying price not set yet.')
+      await expectRevert(cethPricer.setExpiryPriceToOralce(expiry), 'CompoundPricer: underlying price not set yet')
     })
 
     it('should set price successfully by arbitrary address', async () => {

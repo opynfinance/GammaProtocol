@@ -647,7 +647,7 @@ contract(
           await secondLongOtoken.approve(marginPool.address, longToDeposit, {from: accountOwner1})
           await expectRevert(
             controllerProxy.operate(actionArgs, {from: accountOwner1}),
-            'MarginCalculator: Too many long otokens in the vault.',
+            'MarginCalculator: Too many long otokens in the vault',
           )
         })
       })
@@ -1284,7 +1284,7 @@ contract(
           await weth.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
           await expectRevert(
             controllerProxy.operate(actionArgs, {from: accountOwner1}),
-            'MarginCalculator: Too many collateral assets in the vault.',
+            'MarginCalculator: Too many collateral assets in the vault',
           )
         })
       })
@@ -1967,7 +1967,7 @@ contract(
 
           await expectRevert(
             controllerProxy.operate(actionArgs, {from: accountOwner1}),
-            'MarginCalculator: Too many short otokens in the vault.',
+            'MarginCalculator: Too many short otokens in the vault',
           )
         })
 
@@ -2979,7 +2979,7 @@ contract(
 
         await expectRevert(
           controllerProxy.operate(actionArgs, {from: accountOwner1}),
-          "Can't settle vault with no otoken.",
+          "Can't settle vault with no otoken",
         )
       })
 
@@ -3120,7 +3120,7 @@ contract(
         )
       })
 
-      it('should settle vault with only long otokens in it.', async () => {
+      it('should settle vault with only long otokens in it', async () => {
         const expiry = new BigNumber(await time.latest()).plus(86400)
         const longOtoken: MockOtokenInstance = await MockOtoken.new()
         // create a new otoken

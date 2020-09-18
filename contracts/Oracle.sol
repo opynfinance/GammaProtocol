@@ -64,7 +64,7 @@ contract Oracle is Ownable {
      * e.g. 173689000000000000000 => 175.689 USD
      */
     function getPrice(address _asset) external view returns (uint256) {
-        require(assetPricer[_asset] != address(0), "Oracle: Pricer for this asset not set.");
+        require(assetPricer[_asset] != address(0), "Oracle: Pricer for this asset not set");
         return OpynPricerInterface(assetPricer[_asset]).getPrice();
     }
 

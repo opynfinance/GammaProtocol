@@ -688,10 +688,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         MarginAccount.Vault memory vault = getVault(_args.owner, _args.vaultId);
 
-        require(
-            _isNotEmpty(vault.shortOtokens) || _isNotEmpty(vault.longOtokens),
-            "Can't settle vault with no otoken."
-        );
+        require(_isNotEmpty(vault.shortOtokens) || _isNotEmpty(vault.longOtokens), "Can't settle vault with no otoken");
 
         OtokenInterface otoken = _isNotEmpty(vault.shortOtokens)
             ? OtokenInterface(vault.shortOtokens[0])
