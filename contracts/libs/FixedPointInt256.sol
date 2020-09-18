@@ -4,6 +4,7 @@
 pragma solidity 0.6.10;
 
 import "../packages/oz/SignedSafeMath.sol";
+import "../libs/SignedConverter.sol";
 
 /**
  *
@@ -54,7 +55,6 @@ library FixedPointInt256 {
      * @return mul of two fixed point
      */
     function mul(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (FixedPointInt memory) {
-        // if(b.value == 1) return a;
         return FixedPointInt((a.value.mul(b.value)).add(SCALING_FACTOR / 2) / SCALING_FACTOR);
     }
 
@@ -66,7 +66,6 @@ library FixedPointInt256 {
      * @return div of two signed integer
      */
     function div(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (FixedPointInt memory) {
-        // if(b.value == 1) return a;
         return FixedPointInt((a.value.mul(SCALING_FACTOR)).add(b.value / 2) / b.value);
     }
 
@@ -138,5 +137,14 @@ library FixedPointInt256 {
      */
     function isLessThanOrEqual(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (bool) {
         return a.value <= b.value;
+    }
+
+    /**
+     * @notice convert a FixedPoint number to uint.
+     * @param a FixedPoint number to convert into a uint
+     * @return the converted uint256.
+     */
+    function toUint(FixedPointInt memory a) internal pure returns (uint256) {
+        return SignedConverter.intToUint(a.value);
     }
 }
