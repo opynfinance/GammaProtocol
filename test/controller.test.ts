@@ -2238,8 +2238,8 @@ contract(
           await controllerProxy.operate(actionArgs, {from: accountOwner1})
           const senderShortBalanceAfter = new BigNumber(await shortOtoken.balanceOf(accountOwner1))
           const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
-
           assert.equal(vaultAfter.shortOtokens.length, 1, 'Vault short otoken array length mismatch')
+          assert.equal(vaultAfter.shortOtokens[0], ZERO_ADDR)
           assert.equal(
             senderShortBalanceBefore.toString(),
             senderShortBalanceAfter.toString(),
@@ -3121,6 +3121,7 @@ contract(
       })
 
       it('should settle vault with only long otokens in it', async () => {
+        const stirkePrice = 250
         const expiry = new BigNumber(await time.latest()).plus(86400)
         const longOtoken: MockOtokenInstance = await MockOtoken.new()
         // create a new otoken
@@ -3129,7 +3130,7 @@ contract(
           weth.address,
           usdc.address,
           usdc.address,
-          createScaledNumber(250),
+          createScaledNumber(stirkePrice),
           expiry,
           true,
         )
@@ -3139,7 +3140,7 @@ contract(
         // mint some long otokens, (so we can put it as long)
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
         const longAmount = createTokenAmount(1, 18)
-        const collateralAmount = createTokenAmount(250, 6)
+        const collateralAmount = createTokenAmount(stirkePrice, usdcDecimals)
         const mintArgs = [
           {
             actionType: ActionType.OpenVault,
@@ -3203,8 +3204,14 @@ contract(
         await controllerProxy.operate(newVaultArgs, {from: accountOwner1})
         // go to expiry
         await time.increaseTo(expiry.toNumber() + 10)
+        const ethPriceAtExpiry = 200
         await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createScaledNumber(1), true)
-        await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createScaledNumber(200), true)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(
+          weth.address,
+          expiry,
+          createScaledNumber(ethPriceAtExpiry),
+          true,
+        )
         // settle the secont vault (with only long otoken in it)
         const settleArgs = [
           {
@@ -3218,7 +3225,7 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-        const amountPayout = new BigNumber(createTokenAmount(250 - 200, 6))
+        const amountPayout = new BigNumber(createTokenAmount(stirkePrice - ethPriceAtExpiry, usdcDecimals))
         const ownerUSDCBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
         const poolOtokenBefore = new BigNumber(await longOtoken.balanceOf(marginPool.address))
 

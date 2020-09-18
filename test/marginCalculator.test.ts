@@ -918,7 +918,12 @@ contract('MarginCalculator', () => {
         const vault = createVault(undefined, eth200Put.address, undefined, undefined, amountOne, undefined)
         const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
         const expectExcess = createTokenAmount(50, 6)
+
+        // calculate the payout of exercising 1 ethPut
+        const amountFromExercise = await calculator.getExpiredPayoutRate(eth200Put.address)
+
         assert.equal(isExcess, true)
+        assert.equal(amountFromExercise.toString(), expectExcess)
         assert.equal(netValue.toString(), expectExcess)
       })
     })
