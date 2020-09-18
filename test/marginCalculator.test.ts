@@ -1200,15 +1200,6 @@ contract('MarginCalculator', () => {
         assert.equal(isExcess, true)
         assert.equal(netValue.toString(), '833333333333333332')
       })
-
-      it('(7) long: 1 200 call', async () => {
-        const vault = createVault(undefined, eth200Call.address, undefined, undefined, amountOne, undefined)
-        const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
-        // won't payout to the long tokens
-        const expectExcess = '0' // createTokenAmount(100, 6)
-        assert.equal(isExcess, true)
-        assert.equal(netValue.toString(), expectExcess)
-      })
     })
 
     describe('Call vault check after expiry, ETH price = 210 USD', () => {
