@@ -118,7 +118,13 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         uint256 payout
     );
     /// @notice emits an event when a vault is settled
-    event VaultSettled(address indexed AccountOwner, address indexed to, uint256 vaultId, uint256 payout);
+    event VaultSettled(
+        address indexed otoken,
+        address indexed AccountOwner,
+        address indexed to,
+        uint256 vaultId,
+        uint256 payout
+    );
     /// @notice emits an event when a call action is executed
     event CallExecuted(
         address indexed from,
@@ -709,7 +715,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         pool.transferToUser(otoken.collateralAsset(), _args.to, payout);
 
-        emit VaultSettled(_args.owner, _args.to, _args.vaultId, payout);
+        emit VaultSettled(address(otoken), _args.owner, _args.to, _args.vaultId, payout);
     }
 
     /**
