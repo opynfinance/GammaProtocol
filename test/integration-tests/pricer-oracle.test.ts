@@ -82,7 +82,7 @@ contract('Pricer + Oracle', ([owner, disputer]) => {
       await wethAggregator.setLatestAnswer(initPrice)
     })
     it('should revert if pricer is not set', async () => {
-      await expectRevert(oracle.getPrice(ceth.address), 'Oracle: Pricer for this asset not set.')
+      await expectRevert(oracle.getPrice(ceth.address), 'Oracle: Pricer for this asset not set')
     })
     it('should set the wethPricer and locking period, dispute period in oracle without revert.', async () => {
       await oracle.setAssetPricer(cethPricer.address, wethPricer.address)
@@ -159,7 +159,7 @@ contract('Pricer + Oracle', ([owner, disputer]) => {
       const expiryTimestamp = (t0 + t1) / 2 // between t0 and t1
       await expectRevert(
         cethPricer.setExpiryPriceToOralce(expiryTimestamp),
-        'CompoundPricer: underlying price not set yet.',
+        'CompoundPricer: underlying price not set yet',
       )
     })
 
