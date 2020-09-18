@@ -2028,45 +2028,6 @@ contract(
             )
           })
         })
-
-        it('should mint without depositing collater and burn at the same transaction', async () => {
-          const vaultCounter = new BigNumber('1')
-          const amountToMint = new BigNumber('1')
-          const actionArgs = [
-            {
-              actionType: ActionType.MintShortOption,
-              owner: accountOwner1,
-              sender: accountOwner1,
-              asset: shortOtoken.address,
-              vaultId: vaultCounter.toNumber(),
-              amount: amountToMint.toNumber(),
-              index: '0',
-              data: ZERO_ADDR,
-            },
-            {
-              actionType: ActionType.BurnShortOption,
-              owner: accountOwner1,
-              sender: accountOwner1,
-              asset: shortOtoken.address,
-              vaultId: vaultCounter.toNumber(),
-              amount: amountToMint.toNumber(),
-              index: '0',
-              data: ZERO_ADDR,
-            },
-          ]
-
-          await controllerProxy.operate(actionArgs, {from: accountOwner1})
-
-          const senderShortBalanceAfter = new BigNumber(await shortOtoken.balanceOf(accountOwner1))
-          const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
-
-          assert.equal(vaultAfter.shortOtokens.length, 1, 'Vault short otoken array length mismatch')
-          assert.equal(
-            senderShortBalanceAfter.toString(),
-            senderShortBalanceAfter.toString(),
-            'Sender short otoken amount mismatch',
-          )
-        })
       })
 
       describe('Burn short otoken', () => {
@@ -2234,6 +2195,55 @@ contract(
             new BigNumber(vaultBefore.shortAmounts[0]).minus(new BigNumber(vaultAfter.shortAmounts[0])).toString(),
             shortOtokenToBurn.toString(),
             'Short otoken amount in vault after burn mismatch',
+          )
+        })
+
+        it('should mint and burn at the same transaction', async () => {
+          const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
+          // const vaultCounter = 1
+          const amountToMint = createScaledNumber(1)
+          const actionArgs = [
+            {
+              actionType: ActionType.OpenVault,
+              owner: accountOwner1,
+              sender: accountOwner1,
+              asset: ZERO_ADDR,
+              vaultId: vaultCounter.toNumber(),
+              amount: '0',
+              index: '0',
+              data: ZERO_ADDR,
+            },
+            {
+              actionType: ActionType.MintShortOption,
+              owner: accountOwner1,
+              sender: accountOwner1,
+              asset: shortOtoken.address,
+              vaultId: vaultCounter.toNumber(),
+              amount: amountToMint,
+              index: '0',
+              data: ZERO_ADDR,
+            },
+            {
+              actionType: ActionType.BurnShortOption,
+              owner: accountOwner1,
+              sender: accountOwner1,
+              asset: shortOtoken.address,
+              vaultId: vaultCounter.toNumber(),
+              amount: amountToMint,
+              index: '0',
+              data: ZERO_ADDR,
+            },
+          ]
+          const senderShortBalanceBefore = new BigNumber(await shortOtoken.balanceOf(accountOwner1))
+          await controllerProxy.operate(actionArgs, {from: accountOwner1})
+          const senderShortBalanceAfter = new BigNumber(await shortOtoken.balanceOf(accountOwner1))
+          const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
+
+          assert.equal(vaultAfter.shortOtokens.length, 1, 'Vault short otoken array length mismatch')
+          assert.equal(
+            senderShortBalanceBefore.toString(),
+            senderShortBalanceAfter.toString(),
+            'Sender short otoken amount mismatch',
           )
         })
 
