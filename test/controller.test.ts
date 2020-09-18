@@ -2754,7 +2754,7 @@ contract(
 
         await expectRevert(
           controllerProxy.operate(exerciseArgs, {from: holder1}),
-          'MarginCalculator: collateral price is not finalized',
+          'MarginCalculator: price at expiry not finalized yet.',
         )
       })
 
