@@ -3208,8 +3208,7 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-        // won't pay out to the long tokens in the vault
-        const amountPayout = new BigNumber(0) // new BigNumber(createTokenAmount(250 - 200, 6))
+        const amountPayout = new BigNumber(createTokenAmount(250 - 200, 6))
         const ownerUSDCBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
         const poolOtokenBefore = new BigNumber(await longOtoken.balanceOf(marginPool.address))
 
