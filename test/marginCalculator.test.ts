@@ -914,10 +914,9 @@ contract('MarginCalculator', () => {
         assert.equal(netValue.toString(), expectOutput)
       })
 
-      it('(7) long: 1 200 put', async () => {
+      it('(7) long: 1 200 put => excess 50 USDC, just like exercise', async () => {
         const vault = createVault(undefined, eth200Put.address, undefined, undefined, amountOne, undefined)
         const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
-        // won't payout to the long tokens
         const expectExcess = createTokenAmount(50, 6)
         assert.equal(isExcess, true)
         assert.equal(netValue.toString(), expectExcess)
@@ -1002,7 +1001,7 @@ contract('MarginCalculator', () => {
         assert.equal(netValue.toString(), '0')
       })
 
-      it('(7) long: 1 200 put', async () => {
+      it('(7) long: 1 200 put, excess 0 USDC', async () => {
         const vault = createVault(undefined, eth200Put.address, undefined, undefined, amountOne, undefined)
         const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
         assert.equal(isExcess, true)
