@@ -121,9 +121,9 @@ contract MarginCalculator {
      * @return the cash value of an expired otoken, denominated in strike asset. scaled by 1e18
      */
     function _getExpiredCashValue(address _otoken) internal view returns (uint256) {
-        require(_otoken != address(0), "MarginCalculator: Invalid token address.");
+        require(_otoken != address(0), "MarginCalculator: Invalid token address");
         OtokenInterface otoken = OtokenInterface(_otoken);
-        require(now > otoken.expiryTimestamp(), "MarginCalculator: Otoken not expired yet.");
+        require(now > otoken.expiryTimestamp(), "MarginCalculator: Otoken not expired yet");
 
         // strike price is denominated in strike asset.
         uint256 strikePrice = otoken.strikePrice();
@@ -139,8 +139,8 @@ contract MarginCalculator {
             otoken.expiryTimestamp()
         );
 
-        require(isUnderlyingFinalized, "MarginCalculator: underlying price not finalized yet.");
-        require(isStrikeFinalized, "MarginCalculator: strike price not finalized yet.");
+        require(isUnderlyingFinalized, "MarginCalculator: underlying price not finalized yet");
+        require(isStrikeFinalized, "MarginCalculator: strike price not finalized yet");
 
         FPI.FixedPointInt memory underlyingPriceFixedPoint = _uint256ToFPI(underlyingPrice);
         FPI.FixedPointInt memory strikeAssetPriceFixedPoint = _uint256ToFPI(strikeAssetPrice);
@@ -321,21 +321,21 @@ contract MarginCalculator {
      * @param _vault the vault to check.
      */
     function _checkIsValidSpread(MarginAccount.Vault memory _vault) internal pure {
-        require(_vault.shortOtokens.length <= 1, "MarginCalculator: Too many short otokens in the vault.");
-        require(_vault.longOtokens.length <= 1, "MarginCalculator: Too many long otokens in the vault.");
-        require(_vault.collateralAssets.length <= 1, "MarginCalculator: Too many collateral assets in the vault.");
+        require(_vault.shortOtokens.length <= 1, "MarginCalculator: Too many short otokens in the vault");
+        require(_vault.longOtokens.length <= 1, "MarginCalculator: Too many long otokens in the vault");
+        require(_vault.collateralAssets.length <= 1, "MarginCalculator: Too many collateral assets in the vault");
 
         require(
             _vault.shortOtokens.length == _vault.shortAmounts.length,
-            "MarginCalculator: Short asset and amount mismatch."
+            "MarginCalculator: Short asset and amount mismatch"
         );
         require(
             _vault.longOtokens.length == _vault.longAmounts.length,
-            "MarginCalculator: Long asset and amount mismatch."
+            "MarginCalculator: Long asset and amount mismatch"
         );
         require(
             _vault.collateralAssets.length == _vault.collateralAmounts.length,
-            "MarginCalculator: Collateral asset and amount mismatch."
+            "MarginCalculator: Collateral asset and amount mismatch"
         );
     }
 

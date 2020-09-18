@@ -136,7 +136,7 @@ contract('MarginCalculator', () => {
     })
 
     it('Should revert when entering address(0)', async () => {
-      await expectRevert(calculator.getExpiredCashValue(ZERO_ADDR), 'MarginCalculator: Invalid token address.')
+      await expectRevert(calculator.getExpiredCashValue(ZERO_ADDR), 'MarginCalculator: Invalid token address')
     })
     it('Should revert if option is not expired yet.', async () => {
       await expectRevert(calculator.getExpiredCashValue(put.address), 'MarginCalculator: Otoken not expired yet')
@@ -173,7 +173,7 @@ contract('MarginCalculator', () => {
       await oracle.setIsFinalized(weth.address, closeExpiry, false)
       await expectRevert(
         calculator.getExpiredCashValue(call.address),
-        'MarginCalculator: underlying price not finalized yet.',
+        'MarginCalculator: underlying price not finalized yet',
       )
     })
     it('Should revert if strike asset price is not finalized.', async () => {
@@ -181,7 +181,7 @@ contract('MarginCalculator', () => {
       await oracle.setIsFinalized(usdc.address, closeExpiry, false)
       await expectRevert(
         calculator.getExpiredCashValue(call.address),
-        'MarginCalculator: strike price not finalized yet.',
+        'MarginCalculator: strike price not finalized yet',
       )
     })
   })
@@ -199,7 +199,7 @@ contract('MarginCalculator', () => {
         }
         await expectRevert(
           calculator.getExcessCollateral(vault),
-          'MarginCalculator: Too many short otokens in the vault.',
+          'MarginCalculator: Too many short otokens in the vault',
         )
       })
       it('Should revert when vault contain more than 1 long asset', async () => {
@@ -213,7 +213,7 @@ contract('MarginCalculator', () => {
         }
         await expectRevert(
           calculator.getExcessCollateral(vault),
-          'MarginCalculator: Too many long otokens in the vault.',
+          'MarginCalculator: Too many long otokens in the vault',
         )
       })
       it('Should revert when vault contain more than 1 collateral asset', async () => {
@@ -227,7 +227,7 @@ contract('MarginCalculator', () => {
         }
         await expectRevert(
           calculator.getExcessCollateral(vault),
-          'MarginCalculator: Too many collateral assets in the vault.',
+          'MarginCalculator: Too many collateral assets in the vault',
         )
       })
       // Check amount and asset arrays length mismatch
