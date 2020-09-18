@@ -174,9 +174,7 @@ contract MarginCalculator {
             ? _uint256ToFPI(_vault.shortAmounts[0])
             : _uint256ToFPI(0);
 
-        FPI.FixedPointInt memory longAmount = hasLongInVault
-            ? _uint256ToFPI(_tokenAmountToInternalAmount(_vault.longAmounts[0], _vault.longOtokens[0]))
-            : _uint256ToFPI(0);
+        FPI.FixedPointInt memory longAmount = hasLongInVault ? _uint256ToFPI(_vault.longAmounts[0]) : _uint256ToFPI(0);
 
         OtokenInterface otoken = hasShortInVault
             ? OtokenInterface(_vault.shortOtokens[0])
