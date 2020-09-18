@@ -173,7 +173,7 @@ contract('MarginCalculator', () => {
       await oracle.setIsFinalized(weth.address, closeExpiry, false)
       await expectRevert(
         calculator.getExpiredCashValue(call.address),
-        'MarginCalculator: underlying price not finalized yet',
+        'MarginCalculator: price at expiry not finalized yet',
       )
     })
     it('Should revert if strike asset price is not finalized.', async () => {
@@ -181,7 +181,7 @@ contract('MarginCalculator', () => {
       await oracle.setIsFinalized(usdc.address, closeExpiry, false)
       await expectRevert(
         calculator.getExpiredCashValue(call.address),
-        'MarginCalculator: strike price not finalized yet',
+        'MarginCalculator: price at expiry not finalized yet',
       )
     })
   })

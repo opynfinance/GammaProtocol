@@ -54,6 +54,7 @@ library FixedPointInt256 {
      * @return mul of two fixed point
      */
     function mul(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (FixedPointInt memory) {
+        // if(b.value == 1) return a;
         return FixedPointInt((a.value.mul(b.value)).add(SCALING_FACTOR / 2) / SCALING_FACTOR);
     }
 
@@ -65,6 +66,7 @@ library FixedPointInt256 {
      * @return div of two signed integer
      */
     function div(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (FixedPointInt memory) {
+        // if(b.value == 1) return a;
         return FixedPointInt((a.value.mul(SCALING_FACTOR)).add(b.value / 2) / b.value);
     }
 
