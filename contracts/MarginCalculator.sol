@@ -155,7 +155,9 @@ contract MarginCalculator {
             ? _uintToFixedPoint(_vault.shortAmounts[0])
             : _uintToFixedPoint(0);
 
-        FPI.FixedPointInt memory longAmount = hasLongInVault ? _uintToFixedPoint(_vault.longAmounts[0]) : _uintToFixedPoint(0);
+        FPI.FixedPointInt memory longAmount = hasLongInVault
+            ? _uintToFixedPoint(_vault.longAmounts[0])
+            : _uintToFixedPoint(0);
 
         OtokenInterface otoken = hasShortInVault
             ? OtokenInterface(_vault.shortOtokens[0])
@@ -324,12 +326,12 @@ contract MarginCalculator {
 
         OtokenInterface long = OtokenInterface(_vault.longOtokens[0]);
         OtokenInterface short = OtokenInterface(_vault.shortOtokens[0]);
-        bool isMarginable = long.underlyingAsset() == short.underlyingAsset() &&
+
+        return
+            long.underlyingAsset() == short.underlyingAsset() &&
             long.strikeAsset() == short.strikeAsset() &&
             long.collateralAsset() == short.collateralAsset() &&
             long.expiryTimestamp() == short.expiryTimestamp();
-
-        return isMarginable;
     }
 
     /**
@@ -341,9 +343,7 @@ contract MarginCalculator {
 
         OtokenInterface short = OtokenInterface(_vault.shortOtokens[0]);
 
-        bool isMarginable = short.collateralAsset() == _vault.collateralAssets[0];
-
-        return isMarginable;
+        return short.collateralAsset() == _vault.collateralAssets[0];
     }
 
     /**
