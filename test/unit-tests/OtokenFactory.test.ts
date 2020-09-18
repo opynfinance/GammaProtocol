@@ -132,7 +132,7 @@ contract('OTokenFactory', ([user1, user2]) => {
           isPut,
           {from: user1},
         ),
-        "OtokenFactory: Can't create expired option.",
+        "OtokenFactory: Can't create expired option",
       )
     })
 
@@ -142,7 +142,7 @@ contract('OTokenFactory', ([user1, user2]) => {
         otokenFactory.createOtoken(ethAddress, usdc.address, usdc.address, strikePrice, randomTime.toString(), isPut, {
           from: user1,
         }),
-        'OtokenFactory: Option has to expire 08:00 UTC.',
+        'OtokenFactory: Option has to expire 08:00 UTC',
       )
     })
 
@@ -152,7 +152,7 @@ contract('OTokenFactory', ([user1, user2]) => {
         otokenFactory.createOtoken(ethAddress, usdc.address, usdc.address, strikePrice, tooFar, isPut, {
           from: user1,
         }),
-        "OtokenFactory: Can't create option with expiry > 2345/12/31.",
+        "OtokenFactory: Can't create option with expiry > 2345/12/31",
       )
     })
 

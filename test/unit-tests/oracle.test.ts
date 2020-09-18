@@ -72,7 +72,7 @@ contract('Oracle', ([owner, disputer, random, collateral, strike]) => {
 
   describe('Get live price.', () => {
     it("should when querying assets that doesn't have pricer yet.", async () => {
-      await expectRevert(oracle.getPrice(random), 'Oracle: Pricer for this asset not set.')
+      await expectRevert(oracle.getPrice(random), 'Oracle: Pricer for this asset not set')
     })
 
     it('should get the same price as Pricer', async () => {
