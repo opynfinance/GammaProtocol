@@ -3110,6 +3110,124 @@ contract(
         )
       })
 
+      it('should settle vault with only long otokens in it.', async () => {
+        const expiry = new BigNumber(await time.latest()).plus(86400)
+        const longOtoken: MockOtokenInstance = await MockOtoken.new()
+        // create a new otoken
+        await longOtoken.init(
+          addressBook.address,
+          weth.address,
+          usdc.address,
+          usdc.address,
+          createScaledNumber(250),
+          expiry,
+          true,
+        )
+
+        await whitelist.whitelistOtoken(longOtoken.address)
+
+        // mint some long otokens, (so we can put it as long)
+        const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
+        const longAmount = createTokenAmount(1, 18)
+        const collateralAmount = createTokenAmount(250, 6)
+        const mintArgs = [
+          {
+            actionType: ActionType.OpenVault,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: ZERO_ADDR,
+            vaultId: vaultCounter.toNumber(),
+            amount: '0',
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.MintShortOption,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: longOtoken.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: longAmount,
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.DepositCollateral,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: usdc.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralAmount,
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+        await usdc.approve(marginPool.address, collateralAmount, {from: accountOwner1})
+        await controllerProxy.operate(mintArgs, {from: accountOwner1})
+
+        // Use the newly minted otoken as long and put it in a new vault
+        const newVaultArgs = [
+          {
+            actionType: ActionType.OpenVault,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: ZERO_ADDR,
+            vaultId: vaultCounter.toNumber() + 1,
+            amount: '0',
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.DepositLongOption,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: longOtoken.address,
+            vaultId: vaultCounter.toNumber() + 1,
+            amount: longAmount,
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+        await longOtoken.approve(marginPool.address, longAmount, {from: accountOwner1})
+        await whitelist.whitelistOtoken(longOtoken.address)
+        await controllerProxy.operate(newVaultArgs, {from: accountOwner1})
+        // go to expiry
+        await time.increaseTo(expiry.toNumber() + 10)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createScaledNumber(1), true)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createScaledNumber(200), true)
+        // settle the secont vault (with only long otoken in it)
+        const settleArgs = [
+          {
+            actionType: ActionType.SettleVault,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: ZERO_ADDR,
+            vaultId: vaultCounter.toNumber() + 1,
+            amount: '0',
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+        // won't pay out to the long tokens in the vault
+        const amountPayout = new BigNumber(0) // new BigNumber(createTokenAmount(250 - 200, 6))
+        const ownerUSDCBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
+        const poolOtokenBefore = new BigNumber(await longOtoken.balanceOf(marginPool.address))
+
+        await controllerProxy.operate(settleArgs, {from: accountOwner1})
+        const ownerUSDCBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
+        const poolOtokenAfter = new BigNumber(await longOtoken.balanceOf(marginPool.address))
+        assert.equal(
+          ownerUSDCBalanceAfter.toString(),
+          ownerUSDCBalanceBefore.plus(amountPayout).toString(),
+          'settle long vault payout mismatch',
+        )
+        assert.equal(
+          poolOtokenAfter.toString(),
+          poolOtokenBefore.minus(new BigNumber(longAmount)).toString(),
+          'settle long vault otoken mismatch',
+        )
+      })
+
       describe('Settle multiple vaults ATM and OTM', () => {
         let firstShortOtoken: MockOtokenInstance
         let secondShortOtoken: MockOtokenInstance
