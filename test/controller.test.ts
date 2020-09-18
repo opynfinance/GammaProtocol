@@ -2952,7 +2952,7 @@ contract(
         await controllerProxy.operate(actionArgs, {from: accountOwner1})
       })
 
-      it('should revert settling a vault that have no minted otoken', async () => {
+      it('should revert settling a vault that have no long or short otoken', async () => {
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         const actionArgs = [
           {
@@ -2969,7 +2969,7 @@ contract(
 
         await expectRevert(
           controllerProxy.operate(actionArgs, {from: accountOwner1}),
-          'Controller: can not settle a vault with no otoken minted',
+          "Can't settle vault with no otoken.",
         )
       })
 
