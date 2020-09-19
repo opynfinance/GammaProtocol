@@ -284,7 +284,6 @@ contract('Naked Call Option expires Otm flow', ([accountOwner1, buyer]) => {
         },
       ]
 
-      await ethCall.approve(marginPool.address, scaledOptionsAmount, {from: buyer})
       await controllerProxy.operate(actionArgs, {from: buyer})
 
       // keep track of balances after

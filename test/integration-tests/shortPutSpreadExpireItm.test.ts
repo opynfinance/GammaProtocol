@@ -375,7 +375,6 @@ contract('Short Put Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
         },
       ]
 
-      await higherStrikePut.approve(marginPool.address, scaledOptionsAmount, {from: nakedBuyer})
       await controllerProxy.operate(actionArgs, {from: nakedBuyer})
 
       // keep track of balances after

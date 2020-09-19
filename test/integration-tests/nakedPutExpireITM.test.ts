@@ -285,7 +285,6 @@ contract('Naked Put Option expires Itm flow', ([accountOwner1, buyer]) => {
         },
       ]
 
-      await ethPut.approve(marginPool.address, scaledOptionsAmount, {from: buyer})
       await controllerProxy.operate(actionArgs, {from: buyer})
 
       // keep track of balances after

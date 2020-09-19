@@ -284,7 +284,6 @@ contract('Naked Put Option expires Otm flow', ([accountOwner1, buyer]) => {
         },
       ]
 
-      await ethPut.approve(marginPool.address, scaledOptionsAmount, {from: buyer})
       // should not be able to exercise and OTM option since the user wont get anything back
       await controllerProxy.operate(actionArgs, {from: buyer})
 

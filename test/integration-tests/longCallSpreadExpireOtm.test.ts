@@ -366,7 +366,6 @@ contract('Long Call Spread Option expires Otm flow', ([accountOwner1, nakedBuyer
         },
       ]
 
-      await higherStrikeCall.approve(marginPool.address, scaledOptionsAmount, {from: nakedBuyer})
       await controllerProxy.operate(actionArgs, {from: nakedBuyer})
 
       // keep track of balances after

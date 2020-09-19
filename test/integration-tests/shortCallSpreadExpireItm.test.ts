@@ -373,7 +373,6 @@ contract('Short Call Spread Option expires Itm flow', ([accountOwner1, nakedBuye
         },
       ]
 
-      await lowerStrikeCall.approve(marginPool.address, scaledOptionsAmount, {from: nakedBuyer})
       await controllerProxy.operate(actionArgs, {from: nakedBuyer})
 
       // keep track of balances after
