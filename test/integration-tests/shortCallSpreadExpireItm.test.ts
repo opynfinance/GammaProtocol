@@ -173,6 +173,7 @@ contract('Short Call Spread Option expires Itm flow', ([accountOwner1, nakedBuye
   })
 
   describe('Integration test: Open a short call spread and close it after expires ITM', () => {
+    const expirySpotPrice = 200
     before(
       'accountOwner2 mints the higher strike call option, sends it to accountOwner1. accountOwner1 opens a short call spread',
       async () => {
@@ -268,11 +269,14 @@ contract('Short Call Spread Option expires Itm flow', ([accountOwner1, nakedBuye
     )
 
     it('accountOwner1: close an ITM short call spread position after expiry', async () => {
+      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
       // Keep track of balances before
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
-      const ownerOtokenBalanceBefore = new BigNumber(await lowerStrikeCall.balanceOf(accountOwner1))
-      const otokenSupplyBefore = new BigNumber(await lowerStrikeCall.totalSupply())
+      const ownerShortOtokenBalanceBefore = new BigNumber(await lowerStrikeCall.balanceOf(accountOwner1))
+      const ownerLongOtokenBalanceBefore = new BigNumber(await higherStrikeCall.balanceOf(accountOwner1))
+      const shortOtokenSupplyBefore = new BigNumber(await lowerStrikeCall.totalSupply())
+      const longOtokenSupplyBefore = new BigNumber(await higherStrikeCall.totalSupply())
 
       // Check that we start at a valid state
       const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter1)
@@ -284,8 +288,7 @@ contract('Short Call Spread Option expires Itm flow', ([accountOwner1, nakedBuye
       if ((await time.latest()) < expiry) {
         await time.increaseTo(expiry + 2)
       }
-      const strikePriceChange = 100
-      const expirySpotPrice = lowerStrike + strikePriceChange
+      const strikePriceChange = expirySpotPrice - lowerStrike
       const scaledETHPrice = createTokenAmount(expirySpotPrice, 18)
       const scaledUSDCPrice = createTokenAmount(1, 18)
       await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, scaledETHPrice, true)
@@ -317,14 +320,24 @@ contract('Short Call Spread Option expires Itm flow', ([accountOwner1, nakedBuye
       const ownerWethBalanceAfter = new BigNumber(await weth.balanceOf(accountOwner1))
       const marginPoolWethBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
 
-      const ownerOtokenBalanceAfter = new BigNumber(await lowerStrikeCall.balanceOf(accountOwner1))
-      const otokenSupplyAfter = new BigNumber(await lowerStrikeCall.totalSupply())
+      const ownerShortOtokenBalanceAfter = new BigNumber(await lowerStrikeCall.balanceOf(accountOwner1))
+      const ownerLongOtokenBalanceAfter = new BigNumber(await higherStrikeCall.balanceOf(accountOwner1))
+      const shortOtokenSupplyAfter = new BigNumber(await lowerStrikeCall.totalSupply())
+      const longOtokenSupplyAfter = new BigNumber(await higherStrikeCall.totalSupply())
 
       // check balances before and after changed as expected
       assert.equal(ownerWethBalanceBefore.plus(scaledPayout).toString(), ownerWethBalanceAfter.toString())
       assert.equal(marginPoolWethBalanceBefore.minus(scaledPayout).toString(), marginPoolWethBalanceAfter.toString())
-      assert.equal(ownerOtokenBalanceBefore.toString(), ownerOtokenBalanceAfter.toString())
-      assert.equal(otokenSupplyBefore.toString(), otokenSupplyAfter.toString())
+      // short otoken balance should not change
+      assert.equal(ownerShortOtokenBalanceBefore.toString(), ownerShortOtokenBalanceAfter.toString())
+      assert.equal(shortOtokenSupplyBefore.toString(), shortOtokenSupplyAfter.toString())
+      // excess long otoken in the vault should get burned, but no change to balance
+      assert.equal(ownerLongOtokenBalanceBefore.toString(), ownerLongOtokenBalanceAfter.toString())
+      assert.equal(
+        longOtokenSupplyBefore.minus(scaledOptionsAmount).toString(),
+        longOtokenSupplyAfter.toString(),
+        'long otokens should be burned during settle vault',
+      )
 
       // Check that we end at a valid state
       const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter1)
@@ -351,8 +364,7 @@ contract('Short Call Spread Option expires Itm flow', ([accountOwner1, nakedBuye
       /// accountOwner1 transfers their lower strike call option to the nakedBuyer
       await lowerStrikeCall.transfer(nakedBuyer, scaledOptionsAmount, {from: accountOwner1})
       // oracle orice decreases
-      const strikePriceChange = 100
-      const expirySpotPrice = lowerStrike + strikePriceChange
+      const strikePriceChange = expirySpotPrice - lowerStrike
 
       // Keep track of balances before
       const nakedBuyerWethBalanceBefore = new BigNumber(await weth.balanceOf(nakedBuyer))
@@ -392,6 +404,75 @@ contract('Short Call Spread Option expires Itm flow', ([accountOwner1, nakedBuye
         nakedBuyerOtokenBalanceAfter.toString(),
       )
       assert.equal(otokenSupplyBefore.minus(scaledOptionsAmount).toString(), otokenSupplyAfter.toString())
+    })
+
+    it('accountOwner2: close an ITM short call spread position after expiry', async () => {
+      // Keep track of balances before
+      const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner2))
+      const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
+      const ownerShortOtokenBalanceBefore = new BigNumber(await higherStrikeCall.balanceOf(accountOwner2))
+      const shortOtokenSupplyBefore = new BigNumber(await higherStrikeCall.totalSupply())
+
+      // Check that we start at a valid state
+      const vaultBefore = await controllerProxy.getVault(accountOwner2, vaultCounter1)
+
+      const strikePriceChange = expirySpotPrice - higherStrike
+      const collateralAmount = optionsAmount
+      const collateralPayout = Math.max(collateralAmount - (strikePriceChange * optionsAmount) / expirySpotPrice, 0)
+      const scaledPayout = createTokenAmount(collateralPayout, wethDecimals)
+
+      // Check that after expiry, the vault excess balance has updated as expected
+      const vaultStateBeforeSettlement = await calculator.getExcessCollateral(vaultBefore)
+      assert.equal(vaultStateBeforeSettlement[0].toString(), scaledPayout)
+      assert.equal(vaultStateBeforeSettlement[1], true)
+
+      const actionArgs = [
+        {
+          actionType: ActionType.SettleVault,
+          owner: accountOwner2,
+          sender: accountOwner2,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounter1,
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+
+      await controllerProxy.operate(actionArgs, {from: accountOwner2})
+
+      // keep track of balances after
+      const ownerWethBalanceAfter = new BigNumber(await weth.balanceOf(accountOwner2))
+      const marginPoolWethBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
+
+      const ownerShortOtokenBalanceAfter = new BigNumber(await higherStrikeCall.balanceOf(accountOwner2))
+      const shortOtokenSupplyAfter = new BigNumber(await higherStrikeCall.totalSupply())
+
+      // check balances before and after changed as expected
+      assert.equal(ownerWethBalanceBefore.plus(scaledPayout).toString(), ownerWethBalanceAfter.toString())
+      assert.equal(marginPoolWethBalanceBefore.minus(scaledPayout).toString(), marginPoolWethBalanceAfter.toString())
+      // short otoken balance should not change
+      assert.equal(ownerShortOtokenBalanceBefore.toString(), ownerShortOtokenBalanceAfter.toString())
+      assert.equal(shortOtokenSupplyBefore.toString(), shortOtokenSupplyAfter.toString())
+
+      // Check that we end at a valid state
+      const vaultAfter = await controllerProxy.getVault(accountOwner2, vaultCounter1)
+      const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
+      assert.equal(vaultStateAfter[0].toString(), '0')
+      assert.equal(vaultStateAfter[1], true)
+
+      // Check the vault balances stored in the contract
+      assert.equal(vaultAfter.shortOtokens.length, 0, 'Length of the short otoken array in the vault is incorrect')
+      assert.equal(vaultAfter.collateralAssets.length, 0, 'Length of the collateral array in the vault is incorrect')
+      assert.equal(vaultAfter.longOtokens.length, 0, 'Length of the long otoken array in the vault is incorrect')
+
+      assert.equal(vaultAfter.shortAmounts.length, 0, 'Length of the short amounts array in the vault is incorrect')
+      assert.equal(
+        vaultAfter.collateralAmounts.length,
+        0,
+        'Length of the collateral amounts array in the vault is incorrect',
+      )
+      assert.equal(vaultAfter.longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
     })
   })
 })

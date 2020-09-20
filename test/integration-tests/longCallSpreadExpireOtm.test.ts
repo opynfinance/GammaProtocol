@@ -261,7 +261,7 @@ contract('Long Call Spread Option expires Otm flow', ([accountOwner1, nakedBuyer
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
       const ownerHigherStrikeCallBalanceBefore = new BigNumber(await higherStrikeCall.balanceOf(accountOwner1))
-      const ownerLowerStrikeCallBalanceBefore = new BigNumber(await higherStrikeCall.balanceOf(accountOwner1))
+      const ownerLowerStrikeCallBalanceBefore = new BigNumber(await lowerStrikeCall.balanceOf(accountOwner1))
       const higherStrikeCallSupplyBefore = new BigNumber(await higherStrikeCall.totalSupply())
       const lowerStrikeCallSupplyBefore = new BigNumber(await lowerStrikeCall.totalSupply())
 
@@ -307,7 +307,7 @@ contract('Long Call Spread Option expires Otm flow', ([accountOwner1, nakedBuyer
       const marginPoolWethBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
 
       const ownerHigherStrikeCallBalanceAfter = new BigNumber(await higherStrikeCall.balanceOf(accountOwner1))
-      const ownerLowerStrikeCallBalanceAfter = new BigNumber(await higherStrikeCall.balanceOf(accountOwner1))
+      const ownerLowerStrikeCallBalanceAfter = new BigNumber(await lowerStrikeCall.balanceOf(accountOwner1))
       const higherStrikeCallSupplyAfter = new BigNumber(await higherStrikeCall.totalSupply())
       const lowerStrikeCallSupplyAfter = new BigNumber(await lowerStrikeCall.totalSupply())
 

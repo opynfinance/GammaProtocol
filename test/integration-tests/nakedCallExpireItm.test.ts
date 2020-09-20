@@ -271,7 +271,7 @@ contract('Naked Call Option expires Itm flow', ([accountOwner1, buyer]) => {
       const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
       // owner sells their call option
       ethCall.transfer(buyer, scaledOptionsAmount, {from: accountOwner1})
-      // oracle orice decreases
+      // oracle orice increases
       const strikePriceChange = 100
       const expirySpotPrice = strikePrice + strikePriceChange
 

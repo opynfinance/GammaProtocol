@@ -683,5 +683,100 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
       )
       assert.equal(vaultAfter.longAmounts[0].toString(), '0', 'Incorrect amount of long stored in the vault')
     })
+    it('accountOwner2 should be able to close out the short call position before expiry', async () => {
+      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+      const collateralAmount = optionsAmount
+      const scaledCollateralAmount = createTokenAmount(collateralAmount, wethDecimals)
+
+      await higherStrikeCall.transfer(accountOwner2, scaledOptionsAmount, {from: accountOwner1})
+
+      // Keep track of balances before
+      const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner2))
+      const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
+      const ownerShortOtokenBalanceBefore = new BigNumber(await higherStrikeCall.balanceOf(accountOwner2))
+      const higherStrikeCallSupplyBefore = new BigNumber(await higherStrikeCall.totalSupply())
+
+      // Check that we start at a valid state
+      const vaultBefore = await controllerProxy.getVault(accountOwner2, vaultCounter1)
+      const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore)
+      assert.equal(vaultStateBefore[0].toString(), '0')
+      assert.equal(vaultStateBefore[1], true)
+
+      const actionArgs = [
+        {
+          actionType: ActionType.WithdrawCollateral,
+          owner: accountOwner2,
+          sender: accountOwner2,
+          asset: weth.address,
+          vaultId: vaultCounter2,
+          amount: scaledCollateralAmount,
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.BurnShortOption,
+          owner: accountOwner2,
+          sender: accountOwner2,
+          asset: higherStrikeCall.address,
+          vaultId: vaultCounter2,
+          amount: scaledOptionsAmount,
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+
+      await controllerProxy.operate(actionArgs, {from: accountOwner2})
+
+      // keep track of balances after
+      const ownerWethBalanceAfter = new BigNumber(await weth.balanceOf(accountOwner2))
+      const marginPoolWethBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
+
+      const ownerShortOtokenBalanceAfter = new BigNumber(await higherStrikeCall.balanceOf(accountOwner2))
+      const higherStrikeCallSupplyAfter = new BigNumber(await higherStrikeCall.totalSupply())
+
+      // check balances before and after changed as expected
+      assert.equal(ownerWethBalanceBefore.plus(scaledCollateralAmount).toString(), ownerWethBalanceAfter.toString())
+      assert.equal(
+        marginPoolWethBalanceBefore.minus(scaledCollateralAmount).toString(),
+        marginPoolWethBalanceAfter.toString(),
+      )
+      assert.equal(
+        ownerShortOtokenBalanceBefore.minus(scaledOptionsAmount).toString(),
+        ownerShortOtokenBalanceAfter.toString(),
+      )
+      assert.equal(
+        higherStrikeCallSupplyBefore.minus(scaledOptionsAmount).toString(),
+        higherStrikeCallSupplyAfter.toString(),
+      )
+
+      // Check that we end at a valid state
+      const vaultAfter = await controllerProxy.getVault(accountOwner2, vaultCounter1)
+      const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
+      assert.equal(vaultStateAfter[0].toString(), '0')
+      assert.equal(vaultStateAfter[1], true)
+
+      // Check the vault balances stored in the contract
+      assert.equal(vaultAfter.shortOtokens.length, 1, 'Length of the short otoken array in the vault is incorrect')
+      assert.equal(vaultAfter.collateralAssets.length, 1, 'Length of the collateral array in the vault is incorrect')
+      assert.equal(vaultAfter.longOtokens.length, 0, 'Length of the long otoken array in the vault is incorrect')
+
+      assert.equal(vaultAfter.shortOtokens[0], ZERO_ADDR, 'Incorrect short otoken in the vault')
+      assert.equal(vaultAfter.collateralAssets[0], ZERO_ADDR, 'Incorrect collateral asset in the vault')
+
+      assert.equal(vaultAfter.shortAmounts.length, 1, 'Length of the short amounts array in the vault is incorrect')
+      assert.equal(
+        vaultAfter.collateralAmounts.length,
+        1,
+        'Length of the collateral amounts array in the vault is incorrect',
+      )
+      assert.equal(vaultAfter.longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
+
+      assert.equal(vaultAfter.shortAmounts[0].toString(), '0', 'Incorrect amount of short stored in the vault')
+      assert.equal(
+        vaultAfter.collateralAmounts[0].toString(),
+        '0',
+        'Incorrect amount of collateral stored in the vault',
+      )
+    })
   })
 })

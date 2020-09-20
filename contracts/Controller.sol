@@ -694,15 +694,14 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         MarginAccount.Vault memory vault = getVault(_args.owner, _args.vaultId);
 
-        require(_isNotEmpty(vault.shortOtokens), "Controller: can not settle a vault with no otoken minted");
+        require(_isNotEmpty(vault.shortOtokens) || _isNotEmpty(vault.longOtokens), "Can't settle vault with no otoken");
 
-        OtokenInterface shortOtoken = OtokenInterface(vault.shortOtokens[0]);
+        OtokenInterface otoken = _isNotEmpty(vault.shortOtokens)
+            ? OtokenInterface(vault.shortOtokens[0])
+            : OtokenInterface(vault.longOtokens[0]);
 
-        require(now > shortOtoken.expiryTimestamp(), "Controller: can not settle vault with un-expired otoken");
-        require(
-            isPriceFinalized(address(shortOtoken)),
-            "Controller: otoken underlying asset price is not finalized yet"
-        );
+        require(now > otoken.expiryTimestamp(), "Controller: can not settle vault with un-expired otoken");
+        require(isPriceFinalized(address(otoken)), "Controller: otoken underlying asset price is not finalized yet");
 
         (uint256 payout, ) = calculator.getExcessCollateral(vault);
 
@@ -714,9 +713,9 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         delete vaults[_args.owner][_args.vaultId];
 
-        pool.transferToUser(shortOtoken.collateralAsset(), _args.to, payout);
+        pool.transferToUser(otoken.collateralAsset(), _args.to, payout);
 
-        emit VaultSettled(address(shortOtoken), _args.owner, _args.to, _args.vaultId, payout);
+        emit VaultSettled(address(otoken), _args.owner, _args.to, _args.vaultId, payout);
     }
 
     /**
