@@ -38,7 +38,7 @@ module.exports = async function(deployer, network, accounts) {
     await addressbook.setOracle(oracle.address, {from: deployerAddress})
     // deploy MarginPool module & set address
     await deployer.deploy(MarginPool, addressbook.address, {from: deployerAddress})
-    const pool = await MarginPool.dpeloyed()
+    const pool = await MarginPool.deployed()
     await addressbook.setMarginPool(pool.address)
     // deploy Calculator module & set address
     await deployer.deploy(MarginCalculator, addressbook.address, {from: deployerAddress})
@@ -49,7 +49,7 @@ module.exports = async function(deployer, network, accounts) {
     await deployer.deploy(Controller, {from: deployerAddress})
     const controller = await Controller.deployed()
     await addressbook.setController(controller.address)
-  } else if(network == "rinkeby") {
+  } else if (network == "rinkeby") {
     // deploy MarginAccount library
     await deployer.deploy(MarginAccount, {from: deployerAddress})
 
@@ -74,7 +74,7 @@ module.exports = async function(deployer, network, accounts) {
     await addressbook.setOracle(oracle.address, {from: deployerAddress})
     // deploy MarginPool module & set address
     await deployer.deploy(MarginPool, addressbook.address, {from: deployerAddress})
-    const pool = await MarginPool.dpeloyed()
+    const pool = await MarginPool.deployed()
     await addressbook.setMarginPool(pool.address)
     // deploy Calculator module & set address
     await deployer.deploy(MarginCalculator, addressbook.address, {from: deployerAddress})
