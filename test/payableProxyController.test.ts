@@ -426,7 +426,7 @@ contract(
         ]
         assert.equal(await controllerProxy.isExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
 
-        await controllerProxy.operate(actionArgs, {from: holder1})
+        await payableProxyController.operate(actionArgs, holder1, {from: holder1})
       })
     })
   },
