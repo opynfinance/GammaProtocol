@@ -410,7 +410,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
       )
     })
 
-    xit('accountOwner2: close an OTM long call spread position after expiry', async () => {
+    xit('accountOwner2: close an ITM short call position after expiry', async () => {
       const collateral = optionsAmount
       // oracle orice decreases
       const strikePriceChange = 100

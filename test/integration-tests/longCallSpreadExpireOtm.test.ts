@@ -384,7 +384,7 @@ contract('Long Call Spread Option expires Otm flow', ([accountOwner1, nakedBuyer
       )
     })
 
-    it('accountOwner2: close an OTM long call spread position after expiry', async () => {
+    it('accountOwner2: close an OTM short call position after expiry', async () => {
       const scaledCollateralAmount = createTokenAmount(optionsAmount, wethDecimals)
 
       // Keep track of balances before
