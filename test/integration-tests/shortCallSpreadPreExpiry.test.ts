@@ -9,10 +9,10 @@ import {
   MarginPoolInstance,
   OtokenFactoryInstance,
 } from '../../build/types/truffle-types'
-import {createTokenAmount, getExpiry} from '../utils'
+import {createTokenAmount, createValidExpiry} from '../utils'
 import BigNumber from 'bignumber.js'
 
-const {expectRevert} = require('@openzeppelin/test-helpers')
+const {expectRevert, time} = require('@openzeppelin/test-helpers')
 const AddressBook = artifacts.require('AddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const Otoken = artifacts.require('Otoken.sol')
@@ -71,7 +71,8 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
   const wethDecimals = 18
 
   before('set up contracts', async () => {
-    expiry = await getExpiry()
+    const now = (await time.latest()).toNumber()
+    expiry = createValidExpiry(now, 30)
 
     // setup usdc and weth
     usdc = await MockERC20.new('USDC', 'USDC', usdcDecimals)
@@ -173,9 +174,10 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
   })
 
   describe('Integration test: Open a short call spread and close it before expiry', () => {
+    const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+    const scaledCollateralAmount = createTokenAmount(collateralAmount, wethDecimals)
     before('accountOwner2 mints the higher strike call option, sends it to accountOwner1', async () => {
       const collateralToMintLong = optionsAmount
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
       const scaledCollateralToMintLong = createTokenAmount(collateralToMintLong, wethDecimals)
 
       const actionArgs = [
@@ -217,8 +219,6 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
       await higherStrikeCall.transfer(accountOwner1, scaledOptionsAmount, {from: accountOwner2})
     })
     it('accountOwner1 should be able to open a short put spread', async () => {
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
-      const scaledCollateralAmount = createTokenAmount(collateralAmount, wethDecimals)
       // Keep track of balances before
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
@@ -372,8 +372,6 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
     })
 
     it('accountOwner1 deposits more collateral into the safe vault', async () => {
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
-      const scaledCollateralAmount = createTokenAmount(collateralAmount, wethDecimals)
       // Keep track of balances before
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
@@ -444,8 +442,6 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
       )
     })
     it('withdraw excess collateral from the safe vault', async () => {
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
-      const scaledCollateralAmount = createTokenAmount(collateralAmount, wethDecimals)
       // Keep track of balances before
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
@@ -517,8 +513,6 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
     })
 
     it('accountOwner1 withdrawing collateral from the safe vault without excess colalteral should fail', async () => {
-      const scaledCollateralAmount = createTokenAmount(collateralAmount, wethDecimals)
-
       const actionArgs = [
         {
           actionType: ActionType.WithdrawCollateral,
@@ -536,8 +530,6 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
     })
 
     it('should be able to transfer long otokens to another address', async () => {
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
-
       // keep track of balances
       const ownerShortOtokenBalanceBeforeSell = new BigNumber(await lowerStrikeCall.balanceOf(accountOwner1))
       const nakedBuyerBalanceBeforeSell = new BigNumber(await lowerStrikeCall.balanceOf(nakedBuyer))
@@ -562,9 +554,6 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
     })
 
     it('accountOwner1 should be able to close out the short call spread position before expiry', async () => {
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
-      const scaledCollateralAmount = createTokenAmount(collateralAmount, wethDecimals)
-
       // Keep track of balances before
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
@@ -684,7 +673,6 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
       assert.equal(vaultAfter.longAmounts[0].toString(), '0', 'Incorrect amount of long stored in the vault')
     })
     it('accountOwner2 should be able to close out the short call position before expiry', async () => {
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
       const collateralAmount = optionsAmount
       const scaledCollateralAmount = createTokenAmount(collateralAmount, wethDecimals)
 
@@ -697,7 +685,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
       const higherStrikeCallSupplyBefore = new BigNumber(await higherStrikeCall.totalSupply())
 
       // Check that we start at a valid state
-      const vaultBefore = await controllerProxy.getVault(accountOwner2, vaultCounter1)
+      const vaultBefore = await controllerProxy.getVault(accountOwner2, vaultCounter2)
       const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore)
       assert.equal(vaultStateBefore[0].toString(), '0')
       assert.equal(vaultStateBefore[1], true)
@@ -750,7 +738,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
       )
 
       // Check that we end at a valid state
-      const vaultAfter = await controllerProxy.getVault(accountOwner2, vaultCounter1)
+      const vaultAfter = await controllerProxy.getVault(accountOwner2, vaultCounter2)
       const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
       assert.equal(vaultStateAfter[0].toString(), '0')
       assert.equal(vaultStateAfter[1], true)

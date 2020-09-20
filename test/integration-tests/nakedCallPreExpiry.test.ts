@@ -9,10 +9,10 @@ import {
   MarginPoolInstance,
   OtokenFactoryInstance,
 } from '../../build/types/truffle-types'
-import {createTokenAmount, getExpiry} from '../utils'
+import {createTokenAmount, createValidExpiry} from '../utils'
 import BigNumber from 'bignumber.js'
 
-const {expectRevert} = require('@openzeppelin/test-helpers')
+const {expectRevert, time} = require('@openzeppelin/test-helpers')
 const AddressBook = artifacts.require('AddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const Otoken = artifacts.require('Otoken.sol')
@@ -67,7 +67,8 @@ contract('Naked Call Option closed before expiry flow', ([accountOwner1, buyer])
   const wethDecimals = 18
 
   before('set up contracts', async () => {
-    expiry = await getExpiry()
+    const now = (await time.latest()).toNumber()
+    expiry = createValidExpiry(now, 30)
 
     // setup usdc and weth
     usdc = await MockERC20.new('USDC', 'USDC', usdcDecimals)
@@ -139,10 +140,9 @@ contract('Naked Call Option closed before expiry flow', ([accountOwner1, buyer])
   })
 
   describe('Integration test: Sell a naked call and close it before expiry', () => {
+    const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+    const scaledCollateralAmount = createTokenAmount(collateralAmount, wethDecimals)
     it('Seller should be able to open a short call option', async () => {
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
-      const scaledCollateralAmount = createTokenAmount(collateralAmount, wethDecimals)
-
       // Keep track of balances before
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
@@ -254,8 +254,6 @@ contract('Naked Call Option closed before expiry flow', ([accountOwner1, buyer])
     })
 
     it('deposit more collateral into the safe vault', async () => {
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
-      const scaledCollateralAmount = createTokenAmount(collateralAmount, wethDecimals)
       // Keep track of balances before
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
@@ -320,8 +318,6 @@ contract('Naked Call Option closed before expiry flow', ([accountOwner1, buyer])
       )
     })
     it('withdraw excess collateral from the safe vault', async () => {
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
-      const scaledCollateralAmount = createTokenAmount(collateralAmount, wethDecimals)
       // Keep track of balances before
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
@@ -387,7 +383,6 @@ contract('Naked Call Option closed before expiry flow', ([accountOwner1, buyer])
     })
 
     it('withdrawing collateral from the safe vault without excess colalteral should fail', async () => {
-      const scaledCollateralAmount = createTokenAmount(collateralAmount, wethDecimals)
       const actionArgs = [
         {
           actionType: ActionType.WithdrawCollateral,
@@ -405,7 +400,6 @@ contract('Naked Call Option closed before expiry flow', ([accountOwner1, buyer])
     })
 
     it('should be able to transfer long otokens to another address', async () => {
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
       // keep track of balances
       const ownerOtokenBalanceBeforeSell = new BigNumber(await ethCall.balanceOf(accountOwner1))
       const buyerBalanceBeforeSell = new BigNumber(await ethCall.balanceOf(buyer))
@@ -427,8 +421,6 @@ contract('Naked Call Option closed before expiry flow', ([accountOwner1, buyer])
     })
 
     it('should be able to close out the short position', async () => {
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
-      const scaledCollateralAmount = createTokenAmount(collateralAmount, wethDecimals)
       // Keep track of balances before
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))

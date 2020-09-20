@@ -9,7 +9,7 @@ import {
   MarginPoolInstance,
   OtokenFactoryInstance,
 } from '../../build/types/truffle-types'
-import {createTokenAmount, getExpiry} from '../utils'
+import {createTokenAmount, createValidExpiry} from '../utils'
 import BigNumber from 'bignumber.js'
 
 const {time} = require('@openzeppelin/test-helpers')
@@ -67,7 +67,8 @@ contract('Naked Call Option expires Otm flow', ([accountOwner1, buyer]) => {
   const wethDecimals = 18
 
   before('set up contracts', async () => {
-    expiry = await getExpiry()
+    const now = (await time.latest()).toNumber()
+    expiry = createValidExpiry(now, 30)
 
     // setup usdc and weth
     usdc = await MockERC20.new('USDC', 'USDC', usdcDecimals)
@@ -139,10 +140,10 @@ contract('Naked Call Option expires Otm flow', ([accountOwner1, buyer]) => {
   })
 
   describe('Integration test: Sell a naked put and close it after expires OTM', () => {
+    const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+    const scaledCollateralAmount = createTokenAmount(collateralAmount, wethDecimals)
+    const expirySpotPrice = 200
     it('Seller should be able to open a short call option', async () => {
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
-      const scaledCollateralAmount = createTokenAmount(collateralAmount, wethDecimals)
-
       const actionArgs = [
         {
           actionType: ActionType.OpenVault,
@@ -180,7 +181,6 @@ contract('Naked Call Option expires Otm flow', ([accountOwner1, buyer]) => {
     })
 
     it('Seller: close an OTM position after expiry', async () => {
-      const scaledCollateralAmount = createTokenAmount(collateralAmount, wethDecimals)
       // Keep track of balances before
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
@@ -197,8 +197,6 @@ contract('Naked Call Option expires Otm flow', ([accountOwner1, buyer]) => {
       if ((await time.latest()) < expiry) {
         await time.increaseTo(expiry + 2)
       }
-      const strikePriceChange = 100
-      const expirySpotPrice = strikePrice - strikePriceChange
       const scaledETHPrice = createTokenAmount(expirySpotPrice, 18)
       const scaledUSDCPrice = createTokenAmount(1, 18)
       await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, scaledETHPrice, true)
@@ -261,7 +259,6 @@ contract('Naked Call Option expires Otm flow', ([accountOwner1, buyer]) => {
     })
 
     it('Buyer: exercise OTM call option after expiry', async () => {
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
       // owner sells their call option
       ethCall.transfer(buyer, scaledOptionsAmount, {from: accountOwner1})
 

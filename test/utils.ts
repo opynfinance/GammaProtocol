@@ -1,7 +1,6 @@
 import {MockERC20Instance} from '../build/types/truffle-types'
 
 import BigNumber from 'bignumber.js'
-const {time} = require('@openzeppelin/test-helpers')
 
 export type vault = {
   shortAmounts: (BigNumber | string | number)[]
@@ -66,12 +65,6 @@ export const createTokenAmount = (num: number, decimals = 18) => {
  */
 export const createScaledNumber = (num: number): string => {
   return new BigNumber(num).times(1e18).toString()
-}
-
-export const getExpiry = async (): Promise<number> => {
-  const now = (await time.latest()).toNumber()
-  const multiplier = (now - 28800) / 86400
-  return (Number(multiplier.toFixed(0)) + 1) * 86400 + time.duration.days(30).toNumber() + 28800
 }
 
 export const underlyingPriceToCtokenPrice = async (

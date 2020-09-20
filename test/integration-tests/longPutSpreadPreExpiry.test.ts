@@ -9,10 +9,10 @@ import {
   MarginPoolInstance,
   OtokenFactoryInstance,
 } from '../../build/types/truffle-types'
-import {createTokenAmount, getExpiry} from '../utils'
+import {createTokenAmount, createValidExpiry} from '../utils'
 import BigNumber from 'bignumber.js'
 
-const {expectRevert} = require('@openzeppelin/test-helpers')
+const {expectRevert, time} = require('@openzeppelin/test-helpers')
 const AddressBook = artifacts.require('AddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const Otoken = artifacts.require('Otoken.sol')
@@ -71,7 +71,8 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
   const wethDecimals = 18
 
   before('set up contracts', async () => {
-    expiry = await getExpiry()
+    const now = (await time.latest()).toNumber()
+    expiry = createValidExpiry(now, 30)
 
     // setup usdc and weth
     usdc = await MockERC20.new('USDC', 'USDC', usdcDecimals)
@@ -170,9 +171,9 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
   })
 
   describe('Integration test: Open a long put spread and close it before expiry', () => {
+    const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
     before('accountOwner2 mints the higher strike put option, sends it to accountOwner1', async () => {
       const collateralToMintLong = higherStrike * optionsAmount
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
       const scaledCollateralAmount = createTokenAmount(collateralToMintLong, usdcDecimals)
 
       const actionArgs = [
@@ -214,7 +215,6 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
       higherStrikePut.transfer(accountOwner1, scaledOptionsAmount, {from: accountOwner2})
     })
     it('accountOwner1 should be able to open a long put spread', async () => {
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
       // Keep track of balances before
       const ownerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
       const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
@@ -349,7 +349,6 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
     })
 
     it('accountOwner1 deposits more collateral into the safe vault', async () => {
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
       const scaledCollateralAmount = createTokenAmount(collateralAmount, usdcDecimals)
       // Keep track of balances before
       const ownerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
@@ -421,7 +420,6 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
       )
     })
     it('accountOwner1 withdraws excess collateral from the safe vault', async () => {
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
       const scaledCollateralAmount = createTokenAmount(collateralAmount, usdcDecimals)
       // Keep track of balances before
       const ownerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
@@ -515,7 +513,6 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
     })
 
     it('accountOwner1 should be able to transfer long otokens to another address', async () => {
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
       // keep track of balances
       const ownerShortOtokenBalanceBeforeSell = new BigNumber(await lowerStrikePut.balanceOf(accountOwner1))
       const buyerBalanceBeforeSell = new BigNumber(await lowerStrikePut.balanceOf(buyer))
@@ -537,7 +534,6 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
     })
 
     it('accountOwner1 should be able to close out the long put spread position before expiry', async () => {
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
       // Keep track of balances before
       const ownerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
       const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
@@ -647,7 +643,6 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
     it('accountOwner2 should be able to close out the naked short put position before expiry', async () => {
       const collateralAmount = higherStrike * optionsAmount
       const scaledCollateralAmount = createTokenAmount(collateralAmount, usdcDecimals)
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
 
       await higherStrikePut.transfer(accountOwner2, scaledOptionsAmount, {from: accountOwner1})
       // Keep track of balances before
@@ -657,7 +652,7 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
       const higherStrikePutSupplyBefore = new BigNumber(await higherStrikePut.totalSupply())
 
       // Check that we start at a valid state
-      const vaultBefore = await controllerProxy.getVault(accountOwner2, vaultCounter1)
+      const vaultBefore = await controllerProxy.getVault(accountOwner2, vaultCounter2)
       const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore)
       assert.equal(vaultStateBefore[0].toString(), '0')
       assert.equal(vaultStateBefore[1], true)
@@ -710,7 +705,7 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
       )
 
       // Check that we end at a valid state
-      const vaultAfter = await controllerProxy.getVault(accountOwner2, vaultCounter1)
+      const vaultAfter = await controllerProxy.getVault(accountOwner2, vaultCounter2)
       const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
       assert.equal(vaultStateAfter[0].toString(), '0')
       assert.equal(vaultStateAfter[1], true)

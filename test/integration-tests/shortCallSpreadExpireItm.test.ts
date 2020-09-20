@@ -9,7 +9,7 @@ import {
   MarginPoolInstance,
   OtokenFactoryInstance,
 } from '../../build/types/truffle-types'
-import {createTokenAmount, getExpiry} from '../utils'
+import {createTokenAmount, createValidExpiry} from '../utils'
 import BigNumber from 'bignumber.js'
 
 const {time} = require('@openzeppelin/test-helpers')
@@ -71,7 +71,8 @@ contract('Short Call Spread Option expires Itm flow', ([accountOwner1, nakedBuye
   const wethDecimals = 18
 
   before('set up contracts', async () => {
-    expiry = await getExpiry()
+    const now = (await time.latest()).toNumber()
+    expiry = createValidExpiry(now, 30)
 
     // setup usdc and weth
     usdc = await MockERC20.new('USDC', 'USDC', usdcDecimals)
@@ -174,11 +175,11 @@ contract('Short Call Spread Option expires Itm flow', ([accountOwner1, nakedBuye
 
   describe('Integration test: Open a short call spread and close it after expires ITM', () => {
     const expirySpotPrice = 200
+    const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
     before(
       'accountOwner2 mints the higher strike call option, sends it to accountOwner1. accountOwner1 opens a short call spread',
       async () => {
         const collateralToMintLong = optionsAmount
-        const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
         const scaledCollateralToMintLong = createTokenAmount(collateralToMintLong, wethDecimals)
         const scaledCollateralToMintShort = createTokenAmount(collateralAmount, wethDecimals)
 
@@ -269,7 +270,6 @@ contract('Short Call Spread Option expires Itm flow', ([accountOwner1, nakedBuye
     )
 
     it('accountOwner1: close an ITM short call spread position after expiry', async () => {
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
       // Keep track of balances before
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
@@ -288,7 +288,7 @@ contract('Short Call Spread Option expires Itm flow', ([accountOwner1, nakedBuye
       if ((await time.latest()) < expiry) {
         await time.increaseTo(expiry + 2)
       }
-      const strikePriceChange = expirySpotPrice - lowerStrike
+      const strikePriceChange = Math.max(expirySpotPrice - lowerStrike, 0)
       const scaledETHPrice = createTokenAmount(expirySpotPrice, 18)
       const scaledUSDCPrice = createTokenAmount(1, 18)
       await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, scaledETHPrice, true)
@@ -360,7 +360,6 @@ contract('Short Call Spread Option expires Itm flow', ([accountOwner1, nakedBuye
     })
 
     it('nakedBuyer: exercise the lower strike ITM call option after expiry', async () => {
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
       /// accountOwner1 transfers their lower strike call option to the nakedBuyer
       await lowerStrikeCall.transfer(nakedBuyer, scaledOptionsAmount, {from: accountOwner1})
       // oracle orice decreases
@@ -414,9 +413,9 @@ contract('Short Call Spread Option expires Itm flow', ([accountOwner1, nakedBuye
       const shortOtokenSupplyBefore = new BigNumber(await higherStrikeCall.totalSupply())
 
       // Check that we start at a valid state
-      const vaultBefore = await controllerProxy.getVault(accountOwner2, vaultCounter1)
+      const vaultBefore = await controllerProxy.getVault(accountOwner2, vaultCounter2)
 
-      const strikePriceChange = expirySpotPrice - higherStrike
+      const strikePriceChange = Math.max(expirySpotPrice - higherStrike, 0)
       const collateralAmount = optionsAmount
       const collateralPayout = Math.max(collateralAmount - (strikePriceChange * optionsAmount) / expirySpotPrice, 0)
       const scaledPayout = createTokenAmount(collateralPayout, wethDecimals)
@@ -432,7 +431,7 @@ contract('Short Call Spread Option expires Itm flow', ([accountOwner1, nakedBuye
           owner: accountOwner2,
           sender: accountOwner2,
           asset: ZERO_ADDR,
-          vaultId: vaultCounter1,
+          vaultId: vaultCounter2,
           amount: '0',
           index: '0',
           data: ZERO_ADDR,
@@ -456,7 +455,7 @@ contract('Short Call Spread Option expires Itm flow', ([accountOwner1, nakedBuye
       assert.equal(shortOtokenSupplyBefore.toString(), shortOtokenSupplyAfter.toString())
 
       // Check that we end at a valid state
-      const vaultAfter = await controllerProxy.getVault(accountOwner2, vaultCounter1)
+      const vaultAfter = await controllerProxy.getVault(accountOwner2, vaultCounter2)
       const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
       assert.equal(vaultStateAfter[0].toString(), '0')
       assert.equal(vaultStateAfter[1], true)

@@ -9,7 +9,7 @@ import {
   MarginPoolInstance,
   OtokenFactoryInstance,
 } from '../../build/types/truffle-types'
-import {createTokenAmount, getExpiry} from '../utils'
+import {createTokenAmount, createValidExpiry} from '../utils'
 import BigNumber from 'bignumber.js'
 
 const {time} = require('@openzeppelin/test-helpers')
@@ -71,7 +71,8 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
   const wethDecimals = 18
 
   before('set up contracts', async () => {
-    expiry = await getExpiry()
+    const now = (await time.latest()).toNumber()
+    expiry = createValidExpiry(now, 30)
 
     // setup usdc and weth
     usdc = await MockERC20.new('USDC', 'USDC', usdcDecimals)
@@ -426,7 +427,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
       const lowerStrikeCallSupplyBefore = new BigNumber(await lowerStrikeCall.totalSupply())
 
       // Check that we start at a valid state
-      const vaultBefore = await controllerProxy.getVault(accountOwner2, vaultCounter1)
+      const vaultBefore = await controllerProxy.getVault(accountOwner2, vaultCounter2)
       const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore)
       assert.equal(vaultStateBefore[0].toString(), scaledCollateralAmount)
       assert.equal(vaultStateBefore[1], true)
@@ -437,7 +438,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
           owner: accountOwner2,
           sender: accountOwner2,
           asset: ZERO_ADDR,
-          vaultId: vaultCounter1,
+          vaultId: vaultCounter2,
           amount: '0',
           index: '0',
           data: ZERO_ADDR,
@@ -467,7 +468,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
       assert.equal(lowerStrikeCallSupplyBefore.toString(), lowerStrikeCallSupplyAfter.toString())
 
       // Check that we end at a valid state
-      const vaultAfter = await controllerProxy.getVault(accountOwner2, vaultCounter1)
+      const vaultAfter = await controllerProxy.getVault(accountOwner2, vaultCounter2)
       const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
       assert.equal(vaultStateAfter[0].toString(), '0')
       assert.equal(vaultStateAfter[1], true)
