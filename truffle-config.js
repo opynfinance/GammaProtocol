@@ -4,8 +4,8 @@ require('dotenv').config()
 const HDWalletProvider = require('@truffle/hdwallet-provider');
 
 const fs = require('fs');
-const mnemonic = fs.readFileSync(".secret").toString().trim();  // deployer wallet mnemonic
-const key = fs.readFileSync(".infuraKey").toString().trim();    // infura key
+const mnemonic = fs.existsSync(".secret") ? fs.readFileSync(".secret").toString().trim() : "put mnemonic into .secret file, don't paste it here";             // deployer wallet mnemonic
+const key = fs.existsSync(".infuraKey") ? fs.readFileSync(".infuraKey").toString().trim() : "put infura key inside a .infuraKey file, don't paste it here";   // infura key
 
 module.exports = {
   networks: {
