@@ -5,7 +5,7 @@ pragma solidity =0.6.10;
 
 pragma experimental ABIEncoderV2;
 
-import {WETH9} from "../../packages/canonical-weth/WETH9.sol";
+import {WETH9} from "../canonical-weth/WETH9.sol";
 import {ReentrancyGuard} from "../../packages/oz/ReentrancyGuard.sol";
 import {Actions} from "../../libs/Actions.sol";
 import {Controller} from "../../Controller.sol";

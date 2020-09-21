@@ -6,7 +6,7 @@ pragma solidity 0.6.10;
 pragma experimental ABIEncoderV2;
 
 import {CalleeInterface} from "../../interfaces/CalleeInterface.sol";
-import {WETH9} from "../../packages/canonical-weth/WETH9.sol";
+import {WETH9} from "../canonical-weth/WETH9.sol";
 
 /**
  * @author Opyn Team

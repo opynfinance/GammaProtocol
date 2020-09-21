@@ -1,10 +1,10 @@
 import {
   WETH9Instance,
-  CallTesterInstance,
   MockOtokenInstance,
   MockERC20Instance,
   MockOracleInstance,
   MockWhitelistModuleInstance,
+  MarginCalculatorInstance,
   MarginPoolInstance,
   ControllerInstance,
   AddressBookInstance,
@@ -45,387 +45,381 @@ enum ActionType {
   Call,
 }
 
-contract(
-  'PayableProxyController',
-  ([owner, accountOwner1, holder1, random]) => {
-    // ERC20 mock
-    let usdc: MockERC20Instance
-    let weth: WETH9Instance
-    // Oracle module
-    let oracle: MockOracleInstance
-    // calculator module
-    let calculator: MockMarginCalculatorInstance
-    // margin pool module
-    let marginPool: MarginPoolInstance
-    // whitelist module mock
-    let whitelist: MockWhitelistModuleInstance
-    // addressbook module mock
-    let addressBook: AddressBookInstance
-    // controller module
-    let controllerImplementation: ControllerInstance
-    let controllerProxy: ControllerInstance
-    // payable controller proxy
-    let payableProxyController: PayableProxyControllerInstance
+contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => {
+  // ERC20 mock
+  let usdc: MockERC20Instance
+  let weth: WETH9Instance
+  // Oracle module
+  let oracle: MockOracleInstance
+  // calculator module
+  let calculator: MarginCalculatorInstance
+  // margin pool module
+  let marginPool: MarginPoolInstance
+  // whitelist module mock
+  let whitelist: MockWhitelistModuleInstance
+  // addressbook module mock
+  let addressBook: AddressBookInstance
+  // controller module
+  let controllerImplementation: ControllerInstance
+  let controllerProxy: ControllerInstance
+  // payable controller proxy
+  let payableProxyController: PayableProxyControllerInstance
 
-    before('Deployment', async () => {
-      // addressbook deployment
-      addressBook = await AddressBook.new()
-      // ERC20 deployment
-      usdc = await MockERC20.new('USDC', 'USDC', 8)
-      weth = await WETH9.new()
-      // deploy Oracle module
-      oracle = await MockOracle.new(addressBook.address, {from: owner})
-      // calculator deployment
-      calculator = await MarginCalculator.new(addressBook.address)
-      // margin pool deployment
-      marginPool = await MarginPool.new(addressBook.address)
-      // whitelist module
-      whitelist = await MockWhitelistModule.new()
-      // set margin pool in addressbook
-      await addressBook.setMarginPool(marginPool.address)
-      // set calculator in addressbook
-      await addressBook.setMarginCalculator(calculator.address)
-      // set oracle in AddressBook
-      await addressBook.setOracle(oracle.address)
-      // set whitelist module address
-      await addressBook.setWhitelist(whitelist.address)
-      // deploy Controller module
-      const lib = await MarginAccount.new()
-      await Controller.link('MarginAccount', lib.address)
-      controllerImplementation = await Controller.new()
+  before('Deployment', async () => {
+    // addressbook deployment
+    addressBook = await AddressBook.new()
+    // ERC20 deployment
+    usdc = await MockERC20.new('USDC', 'USDC', 8)
+    weth = await WETH9.new()
+    // deploy Oracle module
+    oracle = await MockOracle.new(addressBook.address, {from: owner})
+    // calculator deployment
+    calculator = await MarginCalculator.new(addressBook.address)
+    // margin pool deployment
+    marginPool = await MarginPool.new(addressBook.address)
+    // whitelist module
+    whitelist = await MockWhitelistModule.new()
+    // set margin pool in addressbook
+    await addressBook.setMarginPool(marginPool.address)
+    // set calculator in addressbook
+    await addressBook.setMarginCalculator(calculator.address)
+    // set oracle in AddressBook
+    await addressBook.setOracle(oracle.address)
+    // set whitelist module address
+    await addressBook.setWhitelist(whitelist.address)
+    // deploy Controller module
+    const lib = await MarginAccount.new()
+    await Controller.link('MarginAccount', lib.address)
+    controllerImplementation = await Controller.new()
 
-      // set controller address in AddressBook
-      await addressBook.setController(controllerImplementation.address, {from: owner})
+    // set controller address in AddressBook
+    await addressBook.setController(controllerImplementation.address, {from: owner})
 
-      // check controller deployment
-      const controllerProxyAddress = await addressBook.getController()
-      controllerProxy = await Controller.at(controllerProxyAddress)
-      const proxy: OwnedUpgradeabilityProxyInstance = await OwnedUpgradeabilityProxy.at(controllerProxyAddress)
+    // check controller deployment
+    const controllerProxyAddress = await addressBook.getController()
+    controllerProxy = await Controller.at(controllerProxyAddress)
+    const proxy: OwnedUpgradeabilityProxyInstance = await OwnedUpgradeabilityProxy.at(controllerProxyAddress)
 
-      assert.equal(await proxy.proxyOwner(), addressBook.address, 'Proxy owner address mismatch')
-      assert.equal(await controllerProxy.owner(), owner, 'Controller owner address mismatch')
-      assert.equal(await controllerProxy.systemPaused(), false, 'System is paused')
+    assert.equal(await proxy.proxyOwner(), addressBook.address, 'Proxy owner address mismatch')
+    assert.equal(await controllerProxy.owner(), owner, 'Controller owner address mismatch')
+    assert.equal(await controllerProxy.systemPaused(), false, 'System is paused')
 
-      payableProxyController = await PayableProxyController.new(
-        controllerProxy.address,
-        marginPool.address,
-        weth.address,
-      )
+    payableProxyController = await PayableProxyController.new(controllerProxy.address, marginPool.address, weth.address)
 
-      // make everyone rich
-      await usdc.mint(accountOwner1, createTokenAmount(10000, 6))
-      await usdc.mint(accountOwner1, new BigNumber('1000000'))
-    })
+    // make everyone rich
+    await usdc.mint(accountOwner1, createTokenAmount(10000, 6))
+  })
 
-    describe('Wrap ETH and execute actions', () => {
-      it('should deposit a whitelisted collateral asset from account owner', async () => {
-        // set payabale proxy as operator
-        await controllerProxy.setOperator(payableProxyController.address, true, {from: accountOwner1})
-        // whitelist weth
-        await whitelist.whitelistCollateral(weth.address)
+  describe('Wrap ETH and execute actions', () => {
+    it('should deposit a whitelisted collateral asset from account owner', async () => {
+      // set payabale proxy as operator
+      await controllerProxy.setOperator(payableProxyController.address, true, {from: accountOwner1})
+      // whitelist weth
+      await whitelist.whitelistCollateral(weth.address)
 
-        const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
-        const collateralToDeposit = new BigNumber('5')
+      const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
+      const collateralToDeposit = new BigNumber('5')
 
-        const actionArgs = [
-          {
-            actionType: ActionType.OpenVault,
-            owner: accountOwner1,
-            sender: accountOwner1,
-            asset: ZERO_ADDR,
-            vaultId: vaultCounter.toNumber(),
-            amount: '0',
-            index: '0',
-            data: ZERO_ADDR,
-          },
-          {
-            actionType: ActionType.DepositCollateral,
-            owner: accountOwner1,
-            sender: payableProxyController.address,
-            asset: weth.address,
-            vaultId: vaultCounter.toNumber(),
-            amount: collateralToDeposit.toNumber(),
-            index: '0',
-            data: ZERO_ADDR,
-          },
-        ]
+      const actionArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: accountOwner1,
+          sender: accountOwner1,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounter.toNumber(),
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.DepositCollateral,
+          owner: accountOwner1,
+          sender: payableProxyController.address,
+          asset: weth.address,
+          vaultId: vaultCounter.toNumber(),
+          amount: collateralToDeposit.toNumber(),
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
 
-        const marginPoolBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
+      const marginPoolBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
 
-        await payableProxyController.operate(actionArgs, accountOwner1, {
-          from: accountOwner1,
-          value: collateralToDeposit.toString(),
-        })
-
-        const marginPoolBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
-        const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
-
-        assert.equal(
-          marginPoolBalanceAfter.minus(marginPoolBalanceBefore).toString(),
-          collateralToDeposit.toString(),
-          'Margin pool balance collateral asset balance mismatch',
-        )
-        assert.equal(vaultAfter.collateralAssets.length, 1, 'Vault collateral assets array length mismatch')
-        assert.equal(
-          vaultAfter.collateralAssets[0],
-          weth.address,
-          'Collateral asset address deposited into vault mismatch',
-        )
-        assert.equal(
-          new BigNumber(vaultAfter.collateralAmounts[0]).toString(),
-          collateralToDeposit.toString(),
-          'Collateral asset amount deposited into vault mismatch',
-        )
+      await payableProxyController.operate(actionArgs, accountOwner1, {
+        from: accountOwner1,
+        value: collateralToDeposit.toString(),
       })
 
-      it('should wrap ETH, execute actions and unwrap remaining WETH', async () => {
-        const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
-        const collateralToDeposit = new BigNumber('5')
-        const ethToSend = new BigNumber('7')
+      const marginPoolBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
+      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
 
-        const actionArgs = [
-          {
-            actionType: ActionType.OpenVault,
-            owner: accountOwner1,
-            sender: accountOwner1,
-            asset: ZERO_ADDR,
-            vaultId: vaultCounter.toNumber(),
-            amount: '0',
-            index: '0',
-            data: ZERO_ADDR,
-          },
-          {
-            actionType: ActionType.DepositCollateral,
-            owner: accountOwner1,
-            sender: payableProxyController.address,
-            asset: weth.address,
-            vaultId: vaultCounter.toNumber(),
-            amount: collateralToDeposit.toNumber(),
-            index: '0',
-            data: ZERO_ADDR,
-          },
-        ]
+      assert.equal(
+        marginPoolBalanceAfter.minus(marginPoolBalanceBefore).toString(),
+        collateralToDeposit.toString(),
+        'Margin pool balance collateral asset balance mismatch',
+      )
+      assert.equal(vaultAfter.collateralAssets.length, 1, 'Vault collateral assets array length mismatch')
+      assert.equal(
+        vaultAfter.collateralAssets[0],
+        weth.address,
+        'Collateral asset address deposited into vault mismatch',
+      )
+      assert.equal(
+        new BigNumber(vaultAfter.collateralAmounts[0]).toString(),
+        collateralToDeposit.toString(),
+        'Collateral asset amount deposited into vault mismatch',
+      )
+    })
 
-        const marginPoolBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
+    it('should wrap ETH, execute actions and unwrap remaining WETH', async () => {
+      const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
+      const collateralToDeposit = new BigNumber('5')
+      const ethToSend = new BigNumber('7')
 
-        await payableProxyController.operate(actionArgs, accountOwner1, {
+      const actionArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: accountOwner1,
+          sender: accountOwner1,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounter.toNumber(),
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.DepositCollateral,
+          owner: accountOwner1,
+          sender: payableProxyController.address,
+          asset: weth.address,
+          vaultId: vaultCounter.toNumber(),
+          amount: collateralToDeposit.toNumber(),
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+
+      const marginPoolBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
+
+      await payableProxyController.operate(actionArgs, accountOwner1, {
+        from: accountOwner1,
+        value: ethToSend.toString(),
+      })
+
+      const marginPoolBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
+      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
+
+      assert.equal(
+        marginPoolBalanceAfter.minus(marginPoolBalanceBefore).toString(),
+        collateralToDeposit.toString(),
+        'Margin pool balance collateral asset balance mismatch',
+      )
+      assert.equal(vaultAfter.collateralAssets.length, 1, 'Vault collateral assets array length mismatch')
+      assert.equal(
+        vaultAfter.collateralAssets[0],
+        weth.address,
+        'Collateral asset address deposited into vault mismatch',
+      )
+      assert.equal(
+        new BigNumber(vaultAfter.collateralAmounts[0]).toString(),
+        collateralToDeposit.toString(),
+        'Collateral asset amount deposited into vault mismatch',
+      )
+    })
+
+    it('should revert sending remaining ETH to address zero', async () => {
+      const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
+      const collateralToDeposit = new BigNumber('5')
+      const ethToSend = new BigNumber('7')
+
+      const actionArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: accountOwner1,
+          sender: accountOwner1,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounter.toNumber(),
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.DepositCollateral,
+          owner: accountOwner1,
+          sender: payableProxyController.address,
+          asset: weth.address,
+          vaultId: vaultCounter.toNumber(),
+          amount: collateralToDeposit.toNumber(),
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+      await expectRevert(
+        payableProxyController.operate(actionArgs, ZERO_ADDR, {
           from: accountOwner1,
           value: ethToSend.toString(),
-        })
-
-        const marginPoolBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
-        const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
-
-        assert.equal(
-          marginPoolBalanceAfter.minus(marginPoolBalanceBefore).toString(),
-          collateralToDeposit.toString(),
-          'Margin pool balance collateral asset balance mismatch',
-        )
-        assert.equal(vaultAfter.collateralAssets.length, 1, 'Vault collateral assets array length mismatch')
-        assert.equal(
-          vaultAfter.collateralAssets[0],
-          weth.address,
-          'Collateral asset address deposited into vault mismatch',
-        )
-        assert.equal(
-          new BigNumber(vaultAfter.collateralAmounts[0]).toString(),
-          collateralToDeposit.toString(),
-          'Collateral asset amount deposited into vault mismatch',
-        )
-      })
-
-      it('should revert sending remaining ETH to address zero', async () => {
-        const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
-        const collateralToDeposit = new BigNumber('5')
-        const ethToSend = new BigNumber('7')
-
-        const actionArgs = [
-          {
-            actionType: ActionType.OpenVault,
-            owner: accountOwner1,
-            sender: accountOwner1,
-            asset: ZERO_ADDR,
-            vaultId: vaultCounter.toNumber(),
-            amount: '0',
-            index: '0',
-            data: ZERO_ADDR,
-          },
-          {
-            actionType: ActionType.DepositCollateral,
-            owner: accountOwner1,
-            sender: payableProxyController.address,
-            asset: weth.address,
-            vaultId: vaultCounter.toNumber(),
-            amount: collateralToDeposit.toNumber(),
-            index: '0',
-            data: ZERO_ADDR,
-          },
-        ]
-        await expectRevert(
-          payableProxyController.operate(actionArgs, ZERO_ADDR, {
-            from: accountOwner1,
-            value: ethToSend.toString(),
-          }),
-          'PayableProxyController: cannot send ETH to address zero',
-        )
-      })
-
-      it('should revert calling fallback function unless caller is WETH token address', async () => {
-        const ethToSend = new BigNumber('7')
-
-        await expectRevert(
-          web3.eth.sendTransaction({
-            from: accountOwner1,
-            to: payableProxyController.address,
-            value: ethToSend.toString(),
-          }),
-          'PayableProxyController: Cannot receive ETH',
-        )
-      })
-
-      it('should revert calling operate on a vault from a random address other than owner or operator', async () => {
-        const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-        const actionArgs = [
-          {
-            actionType: ActionType.OpenVault,
-            owner: accountOwner1,
-            sender: accountOwner1,
-            asset: ZERO_ADDR,
-            vaultId: vaultCounterBefore.plus(1).toNumber(),
-            amount: '0',
-            index: '0',
-            data: ZERO_ADDR,
-          },
-        ]
-
-        await expectRevert(
-          payableProxyController.operate(actionArgs, ZERO_ADDR, {
-            from: random,
-          }),
-          'PayableProxyController: cannot execute action',
-        )
-      })
+        }),
+        'PayableProxyController: cannot send ETH to address zero',
+      )
     })
 
-    describe('Operate without ETH', () => {
-      it('should normally execute operate', async () => {
-        const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-        const actionArgs = [
-          {
-            actionType: ActionType.OpenVault,
-            owner: accountOwner1,
-            sender: accountOwner1,
-            asset: ZERO_ADDR,
-            vaultId: vaultCounterBefore.plus(1).toNumber(),
-            amount: '0',
-            index: '0',
-            data: ZERO_ADDR,
-          },
-        ]
+    it('should revert calling fallback function unless caller is WETH token address', async () => {
+      const ethToSend = new BigNumber('7')
 
-        await payableProxyController.operate(actionArgs, ZERO_ADDR, {
+      await expectRevert(
+        web3.eth.sendTransaction({
           from: accountOwner1,
-        })
-
-        const vaultCounterAfter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-        assert.equal(vaultCounterAfter.minus(vaultCounterBefore).toString(), '1', 'vault counter after mismatch')
-      })
+          to: payableProxyController.address,
+          value: ethToSend.toString(),
+        }),
+        'PayableProxyController: Cannot receive ETH',
+      )
     })
 
-    describe('Operate without owner address', () => {
-      let shortOtoken: MockOtokenInstance
+    it('should revert calling operate on a vault from a random address other than owner or operator', async () => {
+      const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
+      const actionArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: accountOwner1,
+          sender: accountOwner1,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounterBefore.plus(1).toNumber(),
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
 
-      before(async () => {
-        const expiryTime = new BigNumber(60 * 60 * 24) // after 1 day
-
-        shortOtoken = await MockOtoken.new()
-        // init otoken
-        await shortOtoken.init(
-          addressBook.address,
-          weth.address,
-          usdc.address,
-          usdc.address,
-          new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
-          new BigNumber(await time.latest()).plus(expiryTime),
-          true,
-        )
-        // whitelist short otoken to be used in the protocol
-        await whitelist.whitelistOtoken(shortOtoken.address, {from: owner})
-        // whitelist collateral
-        await whitelist.whitelistCollateral(usdc.address, {from: owner})
-        // open new vault, mintnaked short, sell it to holder 1
-        const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
-        const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e12)
-        const amountToMint = new BigNumber(1e12)
-        const actionArgs = [
-          {
-            actionType: ActionType.OpenVault,
-            owner: accountOwner1,
-            sender: accountOwner1,
-            asset: ZERO_ADDR,
-            vaultId: vaultCounter.toNumber(),
-            amount: '0',
-            index: '0',
-            data: ZERO_ADDR,
-          },
-          {
-            actionType: ActionType.MintShortOption,
-            owner: accountOwner1,
-            sender: accountOwner1,
-            asset: shortOtoken.address,
-            vaultId: vaultCounter.toNumber(),
-            amount: amountToMint.toString(),
-            index: '0',
-            data: ZERO_ADDR,
-          },
-          {
-            actionType: ActionType.DepositCollateral,
-            owner: accountOwner1,
-            sender: accountOwner1,
-            asset: usdc.address,
-            vaultId: vaultCounter.toNumber(),
-            amount: collateralToDeposit.toString(),
-            index: '0',
-            data: ZERO_ADDR,
-          },
-        ]
-        await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
-        await payableProxyController.operate(actionArgs, accountOwner1, {from: accountOwner1})
-        // transfer minted short otoken to hodler`
-        await shortOtoken.transfer(holder1, amountToMint.toString(), {from: accountOwner1})
-        await time.increase(60 * 61 * 24) // increase time with one hour in seconds
-        await oracle.setExpiryPriceFinalizedAllPeiodOver(
-          await shortOtoken.underlyingAsset(),
-          new BigNumber(await shortOtoken.expiryTimestamp()),
-          new BigNumber(150).times(1e18),
-          true,
-        )
-        await oracle.setExpiryPriceFinalizedAllPeiodOver(
-          await shortOtoken.strikeAsset(),
-          new BigNumber(await shortOtoken.expiryTimestamp()),
-          new BigNumber(1).times(1e18),
-          true,
-        )
-      })
-
-      it('should normally execute when owner address is equal to zero', async () => {
-        const shortAmountToBurn = new BigNumber(1)
-        const actionArgs = [
-          {
-            actionType: ActionType.Exercise,
-            owner: ZERO_ADDR,
-            sender: holder1,
-            asset: shortOtoken.address,
-            vaultId: '0',
-            amount: shortAmountToBurn.toString(),
-            index: '0',
-            data: ZERO_ADDR,
-          },
-        ]
-        assert.equal(await controllerProxy.isExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
-
-        await payableProxyController.operate(actionArgs, holder1, {from: holder1})
-      })
+      await expectRevert(
+        payableProxyController.operate(actionArgs, ZERO_ADDR, {
+          from: random,
+        }),
+        'PayableProxyController: cannot execute action',
+      )
     })
-  },
-)
+  })
+
+  describe('Operate without ETH', () => {
+    it('should normally execute operate', async () => {
+      const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
+      const actionArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: accountOwner1,
+          sender: accountOwner1,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounterBefore.plus(1).toNumber(),
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+
+      await payableProxyController.operate(actionArgs, ZERO_ADDR, {
+        from: accountOwner1,
+      })
+
+      const vaultCounterAfter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
+      assert.equal(vaultCounterAfter.minus(vaultCounterBefore).toString(), '1', 'vault counter after mismatch')
+    })
+  })
+
+  describe('Operate without owner address', () => {
+    let shortOtoken: MockOtokenInstance
+
+    before(async () => {
+      const expiryTime = new BigNumber(60 * 60 * 24) // after 1 day
+
+      shortOtoken = await MockOtoken.new()
+      // init otoken
+      await shortOtoken.init(
+        addressBook.address,
+        weth.address,
+        usdc.address,
+        usdc.address,
+        new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+        new BigNumber(await time.latest()).plus(expiryTime),
+        true,
+      )
+      // whitelist short otoken to be used in the protocol
+      await whitelist.whitelistOtoken(shortOtoken.address, {from: owner})
+      // whitelist collateral
+      await whitelist.whitelistCollateral(usdc.address, {from: owner})
+      // open new vault, mintnaked short, sell it to holder 1
+      const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
+      const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e12)
+      const amountToMint = new BigNumber(1e12)
+      const actionArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: accountOwner1,
+          sender: accountOwner1,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounter.toNumber(),
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.MintShortOption,
+          owner: accountOwner1,
+          sender: accountOwner1,
+          asset: shortOtoken.address,
+          vaultId: vaultCounter.toNumber(),
+          amount: amountToMint.toString(),
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.DepositCollateral,
+          owner: accountOwner1,
+          sender: accountOwner1,
+          asset: usdc.address,
+          vaultId: vaultCounter.toNumber(),
+          amount: collateralToDeposit.toString(),
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+      await usdc.approve(marginPool.address, collateralToDeposit.toString(), {from: accountOwner1})
+      await payableProxyController.operate(actionArgs, accountOwner1, {from: accountOwner1})
+      // transfer minted short otoken to hodler`
+      await shortOtoken.transfer(holder1, amountToMint.toString(), {from: accountOwner1})
+      // increase time with one hour in seconds
+      await time.increase(60 * 61 * 24)
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(
+        await shortOtoken.underlyingAsset(),
+        new BigNumber(await shortOtoken.expiryTimestamp()),
+        new BigNumber(150).times(1e18),
+        true,
+      )
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(
+        await shortOtoken.strikeAsset(),
+        new BigNumber(await shortOtoken.expiryTimestamp()),
+        new BigNumber(1).times(1e18),
+        true,
+      )
+    })
+
+    it('should normally execute when owner address is equal to zero', async () => {
+      const amountToBurn = new BigNumber(1e12)
+      const actionArgs = [
+        {
+          actionType: ActionType.Exercise,
+          owner: ZERO_ADDR,
+          sender: holder1,
+          asset: shortOtoken.address,
+          vaultId: '0',
+          amount: amountToBurn.toString(),
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+      assert.equal(await controllerProxy.isExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
+
+      await shortOtoken.transfer(payableProxyController.address, amountToBurn.toString(), {from: holder1})
+      await payableProxyController.operate(actionArgs, holder1, {from: holder1})
+    })
+  })
+})
