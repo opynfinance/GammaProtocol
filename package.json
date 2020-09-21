@@ -58,7 +58,7 @@
     "coverage": "truffle run coverage",
     "contract-size": "truffle run contract-size --checkMaxSize",
     "test:unit": "truffle test ./test/unit-tests/*.ts",
-    "generate:doc": "npm run doc:control-flow & npm run doc:control-flow:high-level & npm run doc:control-flow:controller & npm run doc:control-flow:pool & npm run doc:control-flow:oracle & npm run doc:control-flow:pricer & npm run doc:control-flow:otoken &has  npm run doc:control-flow:factory & npm run doc:control-flow:whitelist & npm run doc:control-flow:addressbook",
+    "generate:doc": "npm run doc:control-flow & npm run doc:control-flow:high-level & npm run doc:control-flow:controller & npm run doc:control-flow:pool & npm run doc:control-flow:oracle & npm run doc:control-flow:pricer & npm run doc:control-flow:otoken & npm run doc:control-flow:factory & npm run doc:control-flow:whitelist & npm run doc:control-flow:addressbook",
     "doc:control-flow": "surya graph -m contracts/*.sol | dot -Tpng > ./docs/control-flow/Gamma.png",
     "doc:control-flow:high-level": "surya graph -s contracts/*.sol | dot -Tpng > ./docs/control-flow/GammaHighLevel.png",
     "doc:control-flow:controller": "surya graph -m contracts/Controller.sol | dot -Tpng > ./docs/control-flow/GammaController.png",
