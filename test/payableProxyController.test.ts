@@ -15,7 +15,7 @@ import {
 import BigNumber from 'bignumber.js'
 import {createTokenAmount} from './utils'
 
-const {expectRevert, expectEvent, time} = require('@openzeppelin/test-helpers')
+const {expectRevert, time} = require('@openzeppelin/test-helpers')
 
 const WETH9 = artifacts.require('WETH9.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
