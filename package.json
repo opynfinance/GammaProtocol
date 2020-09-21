@@ -26,6 +26,7 @@
     "solhint": "3.0.0",
     "solhint-plugin-prettier": "0.0.4",
     "solidity-coverage": "0.7.5",
+    "surya": "^0.4.0",
     "truffle": "^5.1.32",
     "truffle-assertions": "0.9.2",
     "truffle-contract-size": "^2.0.0",
@@ -56,11 +57,24 @@
     "test": "CI=true truffle test",
     "coverage": "truffle run coverage",
     "contract-size": "truffle run contract-size --checkMaxSize",
-    "test:unit": "truffle test ./test/unit-tests/*.ts"
+    "test:unit": "truffle test ./test/unit-tests/*.ts",
+    "generate:doc": "npm run doc:control-flow & npm run doc:control-flow:high-level & npm run doc:control-flow:controller & npm run doc:control-flow:pool & npm run doc:control-flow:oracle & npm run doc:control-flow:pricer & npm run doc:control-flow:otoken &has  npm run doc:control-flow:factory & npm run doc:control-flow:whitelist & npm run doc:control-flow:addressbook",
+    "doc:control-flow": "surya graph -m contracts/*.sol | dot -Tpng > ./docs/control-flow/Gamma.png",
+    "doc:control-flow:high-level": "surya graph -s contracts/*.sol | dot -Tpng > ./docs/control-flow/GammaHighLevel.png",
+    "doc:control-flow:controller": "surya graph -m contracts/Controller.sol | dot -Tpng > ./docs/control-flow/GammaController.png",
+    "doc:control-flow:pool": "surya graph -m contracts/MarginPool.sol | dot -Tpng > ./docs/control-flow/GammaPool.png",
+    "doc:control-flow:calculator": "surya graph -m -l contracts/MarginCalculator.sol | dot -Tpng > ./docs/control-flow/GammaCalculator.png",
+    "doc:control-flow:oracle": "surya graph -m contracts/Oracle.sol | dot -Tpng > ./docs/control-flow/GammaOracle.png",
+    "doc:control-flow:pricer": "surya graph -m contracts/pricers/*.sol | dot -Tpng > ./docs/control-flow/GammaPricer.png",
+    "doc:control-flow:otoken": "surya graph -m contracts/Otoken.sol | dot -Tpng > ./docs/control-flow/GammaOtoken.png",
+    "doc:control-flow:factory": "surya graph -m contracts/OtokenFactory.sol | dot -Tpng > ./docs/control-flow/GammaFactory.png",
+    "doc:control-flow:whitelist": "surya graph -m contracts/Whitelist.sol | dot -Tpng > ./docs/control-flow/GammaWhitelist.png",
+    "doc:control-flow:addressbook": "surya graph -m contracts/AddressBook.sol | dot -Tpng > ./docs/control-flow/GammaAddressbook.png"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged"
+      "pre-commit": "lint-staged",
+      "pre-push": "generate-documentations"
     }
   },
   "lint-staged": {
@@ -71,6 +85,13 @@
     "test/**": [
       "npm run lint:tests:fix",
       "git add"
+    ]
+  },
+  "generate-documentations": {
+    "**/*.sol": [
+      "npm run generate:doc",
+      "git add .",
+      "git commit -a -m 'update docs'"
     ]
   },
   "repository": {
