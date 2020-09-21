@@ -74,7 +74,7 @@
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged",
-      "pre-push": "generate-documentations"
+      "pre-push": "npm run generate:doc && git add . && git commit -a -m 'update docs'"
     }
   },
   "lint-staged": {
@@ -85,13 +85,6 @@
     "test/**": [
       "npm run lint:tests:fix",
       "git add"
-    ]
-  },
-  "generate-documentations": {
-    "**/*.sol": [
-      "npm run generate:doc",
-      "git add .",
-      "git commit -a -m 'update docs'"
     ]
   },
   "repository": {
