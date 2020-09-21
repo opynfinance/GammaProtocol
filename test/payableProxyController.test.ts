@@ -49,7 +49,7 @@ enum ActionType {
 
 contract(
   'PayableProxyController',
-  ([owner, accountOwner1, accountOwner2, accountOperator1, holder1, terminator, random]) => {
+  ([owner, accountOwner1, holder1, random]) => {
     // ERC20 mock
     let usdc: MockERC20Instance
     let weth: WETH9Instance
