@@ -5,17 +5,60 @@ pragma solidity 0.6.10;
 
 import "../packages/oz/SignedSafeMath.sol";
 import "../libs/SignedConverter.sol";
+import "../packages/oz/SafeMath.sol";
 
 /**
  *
  */
 library FixedPointInt256 {
     using SignedSafeMath for int256;
+    using SafeMath for uint256;
 
     int256 private constant SCALING_FACTOR = 1e18;
+    uint256 private constant DECIMALS = 18;
 
     struct FixedPointInt {
         int256 value;
+    }
+
+    /**
+     * @notice Constructs an `FixedPointInt` from an unscaled uint which has {_decimals} decimals
+     * Examples:
+     * (1)  USDC    decimals = 6
+     *      Input:  8000000 USDC =>     Output: 8 * 1e18 (8.0 USDC)
+     * (2)  cUSDC   decimals = 8
+     *      Input:  8000000 cUSDC =>    Output: 8 * 1e16 (0.08 cUSDC)
+     * (3)  rUSD    decimals = 20 (random USD)
+     *      Input:  15                    =>   Output:  0       rUSDC
+     * @param _a uint256 to convert into a FixedPoint.
+     * @param _decimals the origianl decimals the number is denominated in.
+     * @return the converted FixedPoint.
+     */
+    function scaleFrom(uint256 _a, uint256 _decimals) internal pure returns (FixedPointInt memory) {
+        if (_decimals == DECIMALS) return FixedPointInt(SignedConverter.uintToInt(_a));
+        if (_decimals > DECIMALS) {
+            uint256 exp = _decimals - DECIMALS;
+            return FixedPointInt(SignedConverter.uintToInt(_a.div(10**exp)));
+        } else {
+            uint256 exp = DECIMALS - _decimals;
+            return FixedPointInt(SignedConverter.uintToInt(_a.mul(10**exp)));
+        }
+    }
+
+    /**
+     * @notice Convert a FixedPointInt256 back to uint256 amount with {_decimals} decimals
+     * @param _a FixedPointInt to convert back to uint256.
+     * @return the converted FixedPoint.
+     */
+    function unscaleTo(FixedPointInt memory _a, uint256 _decimals) internal pure returns (uint256) {
+        if (_decimals == DECIMALS) return SignedConverter.intToUint(_a.value);
+        if (_decimals > DECIMALS) {
+            uint256 exp = _decimals - DECIMALS;
+            return SignedConverter.intToUint(_a.value).mul(10**exp);
+        } else {
+            uint256 exp = DECIMALS - _decimals;
+            return SignedConverter.intToUint(_a.value).div(10**exp);
+        }
     }
 
     /**

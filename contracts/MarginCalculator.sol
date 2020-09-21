@@ -42,24 +42,24 @@ contract MarginCalculator {
         address strike = otoken.strikeAsset();
         address collateral = otoken.collateralAsset();
 
-        uint256 exchangeRate;
+        FPI.FixedPointInt memory exchangeRate;
 
         if (strike == collateral) {
-            exchangeRate = cashValueInStrike;
+            exchangeRate = _uintToFixedPoint(cashValueInStrike);
         } else {
             uint256 expiry = otoken.expiryTimestamp();
-            FPI.FixedPointInt memory rate = _convertAmountOnExpiryPrice(
+            exchangeRate = _convertAmountOnExpiryPrice(
                 _uintToFixedPoint(cashValueInStrike),
                 strike,
                 collateral,
                 expiry
             );
-            exchangeRate = rate.toUint();
         }
 
         // the exchangeRate was scaled by 1e18, if 1e18 otoken can take out 1 USDC, the exchangeRate is currently 1e18
         // we want to return: how much USDC unit can be take out by 1 (1e18 units) otoken
-        return _internalAmountToTokenAmount(exchangeRate, collateral);
+        uint256 collateralDecimals = uint256(ERC20Interface(collateral).decimals());
+        return FPI.unscaleTo(exchangeRate, collateralDecimals);
     }
 
     /**
@@ -80,9 +80,13 @@ contract MarginCalculator {
         bool hasCollateral = !_isEmptyAssetArray(_vault.collateralAssets);
 
         // collateral amount is always positive.
-        FPI.FixedPointInt memory collateralAmount = hasCollateral
-            ? _uintToFixedPoint(_tokenAmountToInternalAmount(_vault.collateralAmounts[0], _vault.collateralAssets[0]))
-            : _uintToFixedPoint(0);
+        FPI.FixedPointInt memory collateralAmount;
+        if (hasCollateral) {
+            uint256 colllateralDecimals = ERC20Interface(_vault.collateralAssets[0]).decimals();
+            collateralAmount = FPI.scaleFrom(_vault.collateralAmounts[0], colllateralDecimals);
+        } else {
+            collateralAmount = _uintToFixedPoint(0);
+        }
 
         // Vault contains no otokens: return collateral value.
         if (_isEmptyAssetArray(_vault.shortOtokens) && _isEmptyAssetArray(_vault.longOtokens)) {
@@ -96,14 +100,12 @@ contract MarginCalculator {
 
         bool isExcess = excessCollateral.isGreaterThanOrEqual(_uintToFixedPoint(0));
 
-        uint256 excessCollateralInternal = excessCollateral.toUint();
-
         address otoken = _isEmptyAssetArray(_vault.shortOtokens) ? _vault.longOtokens[0] : _vault.shortOtokens[0];
         address collateralAsset = hasCollateral
             ? _vault.collateralAssets[0]
             : OtokenInterface(otoken).collateralAsset();
-
-        uint256 excessCollateralExternal = _internalAmountToTokenAmount(excessCollateralInternal, collateralAsset);
+        uint256 collaterlDecimals = ERC20Interface(collateralAsset).decimals();
+        uint256 excessCollateralExternal = FPI.unscaleTo(excessCollateral, collaterlDecimals);
 
         return (excessCollateralExternal, isExcess);
     }
@@ -406,55 +408,5 @@ contract MarginCalculator {
      */
     function _isEmptyAssetArray(address[] memory _assets) internal pure returns (bool) {
         return _assets.length == 0 || _assets[0] == address(0);
-    }
-
-    /**
-     * @dev convert a uint256 amount
-     * Examples:
-     * (1)  USDC    decimals = 6
-     *      Input:  8000000 USDC =>     Output: 8 * 1e18 (8.0 USDC)
-     * (2)  cUSDC   decimals = 8
-     *      Input:  8000000 cUSDC =>    Output: 8 * 1e16 (0.08 cUSDC)
-     * (3)  rUSD    decimals = 20 (random USD)
-     *      Input:  15                    =>   Output:  0       rUSDC
-     * @return internal amount that is sacled by 1e18.
-     */
-    function _tokenAmountToInternalAmount(uint256 _amount, address _token) internal view returns (uint256) {
-        ERC20Interface token = ERC20Interface(_token);
-        uint256 decimals = uint256(token.decimals());
-        uint256 base = 18;
-        if (decimals == base) return _amount;
-        if (decimals > base) {
-            uint256 exp = decimals - base;
-            return _amount.div(10**exp);
-        } else {
-            uint256 exp = base - decimals;
-            return _amount.mul(10**exp);
-        }
-    }
-
-    /**
-     * @dev convert an internal amount (1e18) to native token amount
-     * Examples:
-     * (1)  USDC    decimals = 6
-     *      Input:  8 * 1e18 (8.0 USDC)   =>   Output:  8000000 USDC
-     * (2)  cUSDC   decimals = 8
-     *      Input:  8 * 1e16 (0.08 cUSDC) =>   Output:  8000000 cUSDC
-     * (3)  rUSD    decimals = 20 (random USD)
-     *      Input:  1                    =>    Output:  100     rUSDC
-     * @return token amount in its native form.
-     */
-    function _internalAmountToTokenAmount(uint256 _amount, address _token) internal view returns (uint256) {
-        ERC20Interface token = ERC20Interface(_token);
-        uint256 decimals = uint256(token.decimals());
-        uint256 base = 18;
-        if (decimals == base) return _amount;
-        if (decimals > base) {
-            uint256 exp = decimals - base;
-            return _amount.mul(10**exp);
-        } else {
-            uint256 exp = base - decimals;
-            return _amount.div(10**exp);
-        }
     }
 }
