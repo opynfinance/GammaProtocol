@@ -1,0 +1,4 @@
+root: ./
+structure:
+  readme: docs/contracts-documentation/README.md
+  summary: docs/contracts-documentation/SUMMARY.md
