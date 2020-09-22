@@ -143,7 +143,7 @@ contract('Naked Put Option expires Otm flow', ([accountOwner1, buyer]) => {
     const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
     const scaledCollateralAmount = createTokenAmount(collateralAmount, usdcDecimals)
     const expirySpotPrice = 400
-    it('Seller should be able to open a short put option', async () => {
+    before('Seller should be able to open a short put option', async () => {
       const actionArgs = [
         {
           actionType: ActionType.OpenVault,
