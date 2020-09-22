@@ -1,10 +1,10 @@
 # Functions:
 
-- [`constructor(address _addressBook)`](#MarginCalculator-constructor-address-)
+- [`constructor(address _addressBook)`]
 
-- [`getExpiredPayoutRate(address _otoken)`](#MarginCalculator-getExpiredPayoutRate-address-)
+- [`getExpiredPayoutRate(address _otoken)`]
 
-- [`getExcessCollateral(struct MarginAccount.Vault _vault)`](#MarginCalculator-getExcessCollateral-struct-MarginAccount-Vault-)
+- [`getExcessCollateral(struct MarginAccount.Vault _vault)`]
 
 # Function `constructor(address _addressBook)` {#MarginCalculator-constructor-address-}
 

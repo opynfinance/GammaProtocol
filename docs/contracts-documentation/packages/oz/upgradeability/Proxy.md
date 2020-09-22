@@ -2,9 +2,9 @@ Gives the possibility to delegate any call to a foreign implementation.
 
 # Functions:
 
-- [`implementation()`](#Proxy-implementation--)
+- [`implementation()`]
 
-- [`fallback()`](#Proxy-fallback--)
+- [`fallback()`]
 
 # Function `implementation() → address` {#Proxy-implementation--}
 

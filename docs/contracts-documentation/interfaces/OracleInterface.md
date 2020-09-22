@@ -1,28 +1,28 @@
 # Functions:
 
-- [`isLockingPeriodOver(address _asset, uint256 _expiryTimestamp)`](#OracleInterface-isLockingPeriodOver-address-uint256-)
+- [`isLockingPeriodOver(address _asset, uint256 _expiryTimestamp)`]
 
-- [`isDisputePeriodOver(address _asset, uint256 _expiryTimestamp)`](#OracleInterface-isDisputePeriodOver-address-uint256-)
+- [`isDisputePeriodOver(address _asset, uint256 _expiryTimestamp)`]
 
-- [`getExpiryPrice(address _asset, uint256 _expiryTimestamp)`](#OracleInterface-getExpiryPrice-address-uint256-)
+- [`getExpiryPrice(address _asset, uint256 _expiryTimestamp)`]
 
-- [`getPricer(address _asset)`](#OracleInterface-getPricer-address-)
+- [`getPricer(address _asset)`]
 
-- [`getPrice(address _asset)`](#OracleInterface-getPrice-address-)
+- [`getPrice(address _asset)`]
 
-- [`getPricerLockingPeriod(address _pricer)`](#OracleInterface-getPricerLockingPeriod-address-)
+- [`getPricerLockingPeriod(address _pricer)`]
 
-- [`getPricerDisputePeriod(address _pricer)`](#OracleInterface-getPricerDisputePeriod-address-)
+- [`getPricerDisputePeriod(address _pricer)`]
 
-- [`setAssetPricer(address _asset, address _pricer)`](#OracleInterface-setAssetPricer-address-address-)
+- [`setAssetPricer(address _asset, address _pricer)`]
 
-- [`setLockingPeriod(address _pricer, uint256 _lockingPeriod)`](#OracleInterface-setLockingPeriod-address-uint256-)
+- [`setLockingPeriod(address _pricer, uint256 _lockingPeriod)`]
 
-- [`setDisputePeriod(address _pricer, uint256 _disputePeriod)`](#OracleInterface-setDisputePeriod-address-uint256-)
+- [`setDisputePeriod(address _pricer, uint256 _disputePeriod)`]
 
-- [`setExpiryPrice(address _asset, uint256 _expiryTimestamp, uint256 _price)`](#OracleInterface-setExpiryPrice-address-uint256-uint256-)
+- [`setExpiryPrice(address _asset, uint256 _expiryTimestamp, uint256 _price)`]
 
-- [`disputeExpiryPrice(address _asset, uint256 _expiryTimestamp, uint256 _price)`](#OracleInterface-disputeExpiryPrice-address-uint256-uint256-)
+- [`disputeExpiryPrice(address _asset, uint256 _expiryTimestamp, uint256 _price)`]
 
 # Function `isLockingPeriodOver(address _asset, uint256 _expiryTimestamp) → bool` {#OracleInterface-isLockingPeriodOver-address-uint256-}
 

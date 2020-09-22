@@ -2,29 +2,29 @@ A wrapper to use ETH as collateral
 
 # Functions:
 
-- [`receive()`](#WETH9-receive--)
+- [`receive()`]
 
-- [`deposit()`](#WETH9-deposit--)
+- [`deposit()`]
 
-- [`withdraw(uint256 _wad)`](#WETH9-withdraw-uint256-)
+- [`withdraw(uint256 _wad)`]
 
-- [`totalSupply()`](#WETH9-totalSupply--)
+- [`totalSupply()`]
 
-- [`approve(address _guy, uint256 _wad)`](#WETH9-approve-address-uint256-)
+- [`approve(address _guy, uint256 _wad)`]
 
-- [`transfer(address _dst, uint256 _wad)`](#WETH9-transfer-address-uint256-)
+- [`transfer(address _dst, uint256 _wad)`]
 
-- [`transferFrom(address _src, address _dst, uint256 _wad)`](#WETH9-transferFrom-address-address-uint256-)
+- [`transferFrom(address _src, address _dst, uint256 _wad)`]
 
 # Events:
 
-- [`Approval(address src, address guy, uint256 wad)`](#WETH9-Approval-address-address-uint256-)
+- [`Approval(address src, address guy, uint256 wad)`]
 
-- [`Transfer(address src, address dst, uint256 wad)`](#WETH9-Transfer-address-address-uint256-)
+- [`Transfer(address src, address dst, uint256 wad)`]
 
-- [`Deposit(address dst, uint256 wad)`](#WETH9-Deposit-address-uint256-)
+- [`Deposit(address dst, uint256 wad)`]
 
-- [`Withdrawal(address src, uint256 wad)`](#WETH9-Withdrawal-address-uint256-)
+- [`Withdrawal(address src, uint256 wad)`]
 
 # Function `receive()` {#WETH9-receive--}
 

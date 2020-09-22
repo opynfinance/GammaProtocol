@@ -1,36 +1,36 @@
 # Functions:
 
-- [`testParseDespositAction(struct Actions.ActionArgs _args)`](#ActionTester-testParseDespositAction-struct-Actions-ActionArgs-)
+- [`testParseDespositAction(struct Actions.ActionArgs _args)`]
 
-- [`getDepositArgs()`](#ActionTester-getDepositArgs--)
+- [`getDepositArgs()`]
 
-- [`testParseWithdrawAction(struct Actions.ActionArgs _args)`](#ActionTester-testParseWithdrawAction-struct-Actions-ActionArgs-)
+- [`testParseWithdrawAction(struct Actions.ActionArgs _args)`]
 
-- [`getWithdrawArgs()`](#ActionTester-getWithdrawArgs--)
+- [`getWithdrawArgs()`]
 
-- [`testParseOpenVaultAction(struct Actions.ActionArgs _args)`](#ActionTester-testParseOpenVaultAction-struct-Actions-ActionArgs-)
+- [`testParseOpenVaultAction(struct Actions.ActionArgs _args)`]
 
-- [`getOpenVaultArgs()`](#ActionTester-getOpenVaultArgs--)
+- [`getOpenVaultArgs()`]
 
-- [`testParseExerciseAction(struct Actions.ActionArgs _args)`](#ActionTester-testParseExerciseAction-struct-Actions-ActionArgs-)
+- [`testParseExerciseAction(struct Actions.ActionArgs _args)`]
 
-- [`getExerciseArgs()`](#ActionTester-getExerciseArgs--)
+- [`getExerciseArgs()`]
 
-- [`testParseSettleVaultAction(struct Actions.ActionArgs _args)`](#ActionTester-testParseSettleVaultAction-struct-Actions-ActionArgs-)
+- [`testParseSettleVaultAction(struct Actions.ActionArgs _args)`]
 
-- [`getSettleVaultArgs()`](#ActionTester-getSettleVaultArgs--)
+- [`getSettleVaultArgs()`]
 
-- [`testParseMintAction(struct Actions.ActionArgs _args)`](#ActionTester-testParseMintAction-struct-Actions-ActionArgs-)
+- [`testParseMintAction(struct Actions.ActionArgs _args)`]
 
-- [`getMintArgs()`](#ActionTester-getMintArgs--)
+- [`getMintArgs()`]
 
-- [`testParseBurnAction(struct Actions.ActionArgs _args)`](#ActionTester-testParseBurnAction-struct-Actions-ActionArgs-)
+- [`testParseBurnAction(struct Actions.ActionArgs _args)`]
 
-- [`getBurnArgs()`](#ActionTester-getBurnArgs--)
+- [`getBurnArgs()`]
 
-- [`testParseCallAction(struct Actions.ActionArgs _args)`](#ActionTester-testParseCallAction-struct-Actions-ActionArgs-)
+- [`testParseCallAction(struct Actions.ActionArgs _args)`]
 
-- [`getCallArgs()`](#ActionTester-getCallArgs--)
+- [`getCallArgs()`]
 
 # Function `testParseDespositAction(struct Actions.ActionArgs _args)` {#ActionTester-testParseDespositAction-struct-Actions-ActionArgs-}
 

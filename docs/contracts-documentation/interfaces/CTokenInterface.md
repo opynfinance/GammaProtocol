@@ -2,9 +2,9 @@ Interface of Compound cToken
 
 # Functions:
 
-- [`exchangeRateStored()`](#CTokenInterface-exchangeRateStored--)
+- [`exchangeRateStored()`]
 
-- [`decimals()`](#CTokenInterface-decimals--)
+- [`decimals()`]
 
 # Function `exchangeRateStored() → uint256` {#CTokenInterface-exchangeRateStored--}
 

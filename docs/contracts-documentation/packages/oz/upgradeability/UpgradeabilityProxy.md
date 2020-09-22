@@ -2,11 +2,11 @@ This contract represents a proxy where the implementation address to which it wi
 
 # Functions:
 
-- [`implementation()`](#UpgradeabilityProxy-implementation--)
+- [`implementation()`]
 
 # Events:
 
-- [`Upgraded(address implementation)`](#UpgradeabilityProxy-Upgraded-address-)
+- [`Upgraded(address implementation)`]
 
 # Function `implementation() → address impl` {#UpgradeabilityProxy-implementation--}
 

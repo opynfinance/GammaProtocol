@@ -1,28 +1,28 @@
 # Functions:
 
-- [`testFromUnscaledInt(int256 a)`](#FixedPointInt256Tester-testFromUnscaledInt-int256-)
+- [`testFromUnscaledInt(int256 a)`]
 
-- [`testAdd(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b)`](#FixedPointInt256Tester-testAdd-struct-FixedPointInt256-FixedPointInt-struct-FixedPointInt256-FixedPointInt-)
+- [`testAdd(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b)`]
 
-- [`testSub(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b)`](#FixedPointInt256Tester-testSub-struct-FixedPointInt256-FixedPointInt-struct-FixedPointInt256-FixedPointInt-)
+- [`testSub(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b)`]
 
-- [`testMul(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b)`](#FixedPointInt256Tester-testMul-struct-FixedPointInt256-FixedPointInt-struct-FixedPointInt256-FixedPointInt-)
+- [`testMul(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b)`]
 
-- [`testDiv(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b)`](#FixedPointInt256Tester-testDiv-struct-FixedPointInt256-FixedPointInt-struct-FixedPointInt256-FixedPointInt-)
+- [`testDiv(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b)`]
 
-- [`testMin(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b)`](#FixedPointInt256Tester-testMin-struct-FixedPointInt256-FixedPointInt-struct-FixedPointInt256-FixedPointInt-)
+- [`testMin(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b)`]
 
-- [`testMax(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b)`](#FixedPointInt256Tester-testMax-struct-FixedPointInt256-FixedPointInt-struct-FixedPointInt256-FixedPointInt-)
+- [`testMax(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b)`]
 
-- [`testIsEqual(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b)`](#FixedPointInt256Tester-testIsEqual-struct-FixedPointInt256-FixedPointInt-struct-FixedPointInt256-FixedPointInt-)
+- [`testIsEqual(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b)`]
 
-- [`testIsGreaterThan(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b)`](#FixedPointInt256Tester-testIsGreaterThan-struct-FixedPointInt256-FixedPointInt-struct-FixedPointInt256-FixedPointInt-)
+- [`testIsGreaterThan(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b)`]
 
-- [`testIsGreaterThanOrEqual(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b)`](#FixedPointInt256Tester-testIsGreaterThanOrEqual-struct-FixedPointInt256-FixedPointInt-struct-FixedPointInt256-FixedPointInt-)
+- [`testIsGreaterThanOrEqual(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b)`]
 
-- [`testIsLessThan(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b)`](#FixedPointInt256Tester-testIsLessThan-struct-FixedPointInt256-FixedPointInt-struct-FixedPointInt256-FixedPointInt-)
+- [`testIsLessThan(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b)`]
 
-- [`testIsLessThanOrEqual(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b)`](#FixedPointInt256Tester-testIsLessThanOrEqual-struct-FixedPointInt256-FixedPointInt-struct-FixedPointInt256-FixedPointInt-)
+- [`testIsLessThanOrEqual(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b)`]
 
 # Function `testFromUnscaledInt(int256 a) → struct FixedPointInt256.FixedPointInt` {#FixedPointInt256Tester-testFromUnscaledInt-int256-}
 

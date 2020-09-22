@@ -2,19 +2,19 @@ This contract combines an upgradeability proxy with basic authorization control 
 
 # Functions:
 
-- [`constructor()`](#OwnedUpgradeabilityProxy-constructor--)
+- [`constructor()`]
 
-- [`proxyOwner()`](#OwnedUpgradeabilityProxy-proxyOwner--)
+- [`proxyOwner()`]
 
-- [`transferProxyOwnership(address _newOwner)`](#OwnedUpgradeabilityProxy-transferProxyOwnership-address-)
+- [`transferProxyOwnership(address _newOwner)`]
 
-- [`upgradeTo(address _implementation)`](#OwnedUpgradeabilityProxy-upgradeTo-address-)
+- [`upgradeTo(address _implementation)`]
 
-- [`upgradeToAndCall(address _implementation, bytes _data)`](#OwnedUpgradeabilityProxy-upgradeToAndCall-address-bytes-)
+- [`upgradeToAndCall(address _implementation, bytes _data)`]
 
 # Events:
 
-- [`ProxyOwnershipTransferred(address previousOwner, address newOwner)`](#OwnedUpgradeabilityProxy-ProxyOwnershipTransferred-address-address-)
+- [`ProxyOwnershipTransferred(address previousOwner, address newOwner)`]
 
 # Function `constructor()` {#OwnedUpgradeabilityProxy-constructor--}
 

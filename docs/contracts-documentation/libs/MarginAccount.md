@@ -1,16 +1,16 @@
 # Functions:
 
-- [`addShort(struct MarginAccount.Vault _vault, address _shortOtoken, uint256 _amount, uint256 _index)`](#MarginAccount-addShort-struct-MarginAccount-Vault-address-uint256-uint256-)
+- [`addShort(struct MarginAccount.Vault _vault, address _shortOtoken, uint256 _amount, uint256 _index)`]
 
-- [`removeShort(struct MarginAccount.Vault _vault, address _shortOtoken, uint256 _amount, uint256 _index)`](#MarginAccount-removeShort-struct-MarginAccount-Vault-address-uint256-uint256-)
+- [`removeShort(struct MarginAccount.Vault _vault, address _shortOtoken, uint256 _amount, uint256 _index)`]
 
-- [`addLong(struct MarginAccount.Vault _vault, address _longOtoken, uint256 _amount, uint256 _index)`](#MarginAccount-addLong-struct-MarginAccount-Vault-address-uint256-uint256-)
+- [`addLong(struct MarginAccount.Vault _vault, address _longOtoken, uint256 _amount, uint256 _index)`]
 
-- [`removeLong(struct MarginAccount.Vault _vault, address _longOtoken, uint256 _amount, uint256 _index)`](#MarginAccount-removeLong-struct-MarginAccount-Vault-address-uint256-uint256-)
+- [`removeLong(struct MarginAccount.Vault _vault, address _longOtoken, uint256 _amount, uint256 _index)`]
 
-- [`addCollateral(struct MarginAccount.Vault _vault, address _collateralAsset, uint256 _amount, uint256 _index)`](#MarginAccount-addCollateral-struct-MarginAccount-Vault-address-uint256-uint256-)
+- [`addCollateral(struct MarginAccount.Vault _vault, address _collateralAsset, uint256 _amount, uint256 _index)`]
 
-- [`removeCollateral(struct MarginAccount.Vault _vault, address _collateralAsset, uint256 _amount, uint256 _index)`](#MarginAccount-removeCollateral-struct-MarginAccount-Vault-address-uint256-uint256-)
+- [`removeCollateral(struct MarginAccount.Vault _vault, address _collateralAsset, uint256 _amount, uint256 _index)`]
 
 # Function `addShort(struct MarginAccount.Vault _vault, address _shortOtoken, uint256 _amount, uint256 _index)` {#MarginAccount-addShort-struct-MarginAccount-Vault-address-uint256-uint256-}
 

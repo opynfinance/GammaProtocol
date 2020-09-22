@@ -4,19 +4,19 @@ and deploy eip-1167 minimal proxies for otoken logic contract.
 
 # Functions:
 
-- [`constructor(address _addressBook)`](#OtokenFactory-constructor-address-)
+- [`constructor(address _addressBook)`]
 
-- [`createOtoken(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut)`](#OtokenFactory-createOtoken-address-address-address-uint256-uint256-bool-)
+- [`createOtoken(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut)`]
 
-- [`getOtokensLength()`](#OtokenFactory-getOtokensLength--)
+- [`getOtokensLength()`]
 
-- [`getOtoken(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut)`](#OtokenFactory-getOtoken-address-address-address-uint256-uint256-bool-)
+- [`getOtoken(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut)`]
 
-- [`getTargetOtokenAddress(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut)`](#OtokenFactory-getTargetOtokenAddress-address-address-address-uint256-uint256-bool-)
+- [`getTargetOtokenAddress(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut)`]
 
 # Events:
 
-- [`OtokenCreated(address tokenAddress, address creator, address underlying, address strike, address collateral, uint256 strikePrice, uint256 expiry, bool isPut)`](#OtokenFactory-OtokenCreated-address-address-address-address-address-uint256-uint256-bool-)
+- [`OtokenCreated(address tokenAddress, address creator, address underlying, address strike, address collateral, uint256 strikePrice, uint256 expiry, bool isPut)`]
 
 # Function `constructor(address _addressBook)` {#OtokenFactory-constructor-address-}
 

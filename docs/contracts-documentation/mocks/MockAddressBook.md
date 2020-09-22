@@ -1,32 +1,32 @@
 # Functions:
 
-- [`setOtokenImpl(address _newImpl)`](#MockAddressBook-setOtokenImpl-address-)
+- [`setOtokenImpl(address _newImpl)`]
 
-- [`setWhitelist(address _newImpl)`](#MockAddressBook-setWhitelist-address-)
+- [`setWhitelist(address _newImpl)`]
 
-- [`setOtokenFactory(address _otokenFactory)`](#MockAddressBook-setOtokenFactory-address-)
+- [`setOtokenFactory(address _otokenFactory)`]
 
-- [`setController(address _controller)`](#MockAddressBook-setController-address-)
+- [`setController(address _controller)`]
 
-- [`setOracle(address _oracleAddr)`](#MockAddressBook-setOracle-address-)
+- [`setOracle(address _oracleAddr)`]
 
-- [`setMarginCalculator(address _calculator)`](#MockAddressBook-setMarginCalculator-address-)
+- [`setMarginCalculator(address _calculator)`]
 
-- [`setMarginPool(address _pool)`](#MockAddressBook-setMarginPool-address-)
+- [`setMarginPool(address _pool)`]
 
-- [`getOtokenImpl()`](#MockAddressBook-getOtokenImpl--)
+- [`getOtokenImpl()`]
 
-- [`getWhitelist()`](#MockAddressBook-getWhitelist--)
+- [`getWhitelist()`]
 
-- [`getOtokenFactory()`](#MockAddressBook-getOtokenFactory--)
+- [`getOtokenFactory()`]
 
-- [`getOracle()`](#MockAddressBook-getOracle--)
+- [`getOracle()`]
 
-- [`getController()`](#MockAddressBook-getController--)
+- [`getController()`]
 
-- [`getMarginCalculator()`](#MockAddressBook-getMarginCalculator--)
+- [`getMarginCalculator()`]
 
-- [`getMarginPool()`](#MockAddressBook-getMarginPool--)
+- [`getMarginPool()`]
 
 # Function `setOtokenImpl(address _newImpl)` {#MockAddressBook-setOtokenImpl-address-}
 

@@ -1,8 +1,8 @@
 # Functions:
 
-- [`testFromInt(int256 a)`](#SignedConverterTester-testFromInt-int256-)
+- [`testFromInt(int256 a)`]
 
-- [`testFromUint(uint256 a)`](#SignedConverterTester-testFromUint-uint256-)
+- [`testFromUint(uint256 a)`]
 
 # Function `testFromInt(int256 a) → uint256` {#SignedConverterTester-testFromInt-int256-}
 

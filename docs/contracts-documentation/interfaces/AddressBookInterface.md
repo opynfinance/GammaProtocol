@@ -1,40 +1,40 @@
 # Functions:
 
-- [`getOtokenImpl()`](#AddressBookInterface-getOtokenImpl--)
+- [`getOtokenImpl()`]
 
-- [`getOtokenFactory()`](#AddressBookInterface-getOtokenFactory--)
+- [`getOtokenFactory()`]
 
-- [`getWhitelist()`](#AddressBookInterface-getWhitelist--)
+- [`getWhitelist()`]
 
-- [`getController()`](#AddressBookInterface-getController--)
+- [`getController()`]
 
-- [`getOracle()`](#AddressBookInterface-getOracle--)
+- [`getOracle()`]
 
-- [`getMarginPool()`](#AddressBookInterface-getMarginPool--)
+- [`getMarginPool()`]
 
-- [`getMarginCalculator()`](#AddressBookInterface-getMarginCalculator--)
+- [`getMarginCalculator()`]
 
-- [`getLiquidationManager()`](#AddressBookInterface-getLiquidationManager--)
+- [`getLiquidationManager()`]
 
-- [`getAddress(bytes32 _id)`](#AddressBookInterface-getAddress-bytes32-)
+- [`getAddress(bytes32 _id)`]
 
-- [`setOtokenImpl(address _otokenImpl)`](#AddressBookInterface-setOtokenImpl-address-)
+- [`setOtokenImpl(address _otokenImpl)`]
 
-- [`setOtokenFactory(address _factory)`](#AddressBookInterface-setOtokenFactory-address-)
+- [`setOtokenFactory(address _factory)`]
 
-- [`setOracleImpl(address _otokenImpl)`](#AddressBookInterface-setOracleImpl-address-)
+- [`setOracleImpl(address _otokenImpl)`]
 
-- [`setWhitelist(address _whitelist)`](#AddressBookInterface-setWhitelist-address-)
+- [`setWhitelist(address _whitelist)`]
 
-- [`setController(address _controller)`](#AddressBookInterface-setController-address-)
+- [`setController(address _controller)`]
 
-- [`setMarginPool(address _marginPool)`](#AddressBookInterface-setMarginPool-address-)
+- [`setMarginPool(address _marginPool)`]
 
-- [`setMarginCalculator(address _calculator)`](#AddressBookInterface-setMarginCalculator-address-)
+- [`setMarginCalculator(address _calculator)`]
 
-- [`setLiquidationManager(address _liquidationManager)`](#AddressBookInterface-setLiquidationManager-address-)
+- [`setLiquidationManager(address _liquidationManager)`]
 
-- [`setAddress(bytes32 _id, address _newImpl)`](#AddressBookInterface-setAddress-bytes32-address-)
+- [`setAddress(bytes32 _id, address _newImpl)`]
 
 # Function `getOtokenImpl() → address` {#AddressBookInterface-getOtokenImpl--}
 

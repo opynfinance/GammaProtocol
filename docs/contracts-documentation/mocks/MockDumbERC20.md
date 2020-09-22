@@ -1,30 +1,30 @@
 # Functions:
 
-- [`constructor(string name_, string symbol_, uint8 decimals_)`](#MockDumbERC20-constructor-string-string-uint8-)
+- [`constructor(string name_, string symbol_, uint8 decimals_)`]
 
-- [`name()`](#MockDumbERC20-name--)
+- [`name()`]
 
-- [`symbol()`](#MockDumbERC20-symbol--)
+- [`symbol()`]
 
-- [`decimals()`](#MockDumbERC20-decimals--)
+- [`decimals()`]
 
-- [`totalSupply()`](#MockDumbERC20-totalSupply--)
+- [`totalSupply()`]
 
-- [`balanceOf(address account)`](#MockDumbERC20-balanceOf-address-)
+- [`balanceOf(address account)`]
 
-- [`transfer(address recipient, uint256 amount)`](#MockDumbERC20-transfer-address-uint256-)
+- [`transfer(address recipient, uint256 amount)`]
 
-- [`allowance(address owner, address spender)`](#MockDumbERC20-allowance-address-address-)
+- [`allowance(address owner, address spender)`]
 
-- [`approve(address spender, uint256 amount)`](#MockDumbERC20-approve-address-uint256-)
+- [`approve(address spender, uint256 amount)`]
 
-- [`transferFrom(address sender, address recipient, uint256 amount)`](#MockDumbERC20-transferFrom-address-address-uint256-)
+- [`transferFrom(address sender, address recipient, uint256 amount)`]
 
-- [`mint(address recipient, uint256 amount)`](#MockDumbERC20-mint-address-uint256-)
+- [`mint(address recipient, uint256 amount)`]
 
-- [`burn(address recipient, uint256 amount)`](#MockDumbERC20-burn-address-uint256-)
+- [`burn(address recipient, uint256 amount)`]
 
-- [`setLocked(bool locked_)`](#MockDumbERC20-setLocked-bool-)
+- [`setLocked(bool locked_)`]
 
 # Function `constructor(string name_, string symbol_, uint8 decimals_)` {#MockDumbERC20-constructor-string-string-uint8-}
 

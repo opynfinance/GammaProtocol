@@ -1,10 +1,10 @@
 # Functions:
 
-- [`constructor(address _addressBook)`](#MockMarginCalculator-constructor-address-)
+- [`constructor(address _addressBook)`]
 
-- [`getExpiredCashValue(address _otoken)`](#MockMarginCalculator-getExpiredCashValue-address-)
+- [`getExpiredCashValue(address _otoken)`]
 
-- [`getExcessCollateral(struct MarginAccount.Vault _vault)`](#MockMarginCalculator-getExcessCollateral-struct-MarginAccount-Vault-)
+- [`getExcessCollateral(struct MarginAccount.Vault _vault)`]
 
 # Function `constructor(address _addressBook)` {#MockMarginCalculator-constructor-address-}
 

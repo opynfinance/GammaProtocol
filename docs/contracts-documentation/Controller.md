@@ -1,70 +1,70 @@
 # Functions:
 
-- [`initialize(address _addressBook, address _owner)`](#Controller-initialize-address-address-)
+- [`initialize(address _addressBook, address _owner)`]
 
-- [`setSystemPaused(bool _paused)`](#Controller-setSystemPaused-bool-)
+- [`setSystemPaused(bool _paused)`]
 
-- [`setEmergencyShutdown(bool _shutdown)`](#Controller-setEmergencyShutdown-bool-)
+- [`setEmergencyShutdown(bool _shutdown)`]
 
-- [`setTerminator(address _terminator)`](#Controller-setTerminator-address-)
+- [`setTerminator(address _terminator)`]
 
-- [`setPauser(address _pauser)`](#Controller-setPauser-address-)
+- [`setPauser(address _pauser)`]
 
-- [`setCallRestriction(bool _isRestricted)`](#Controller-setCallRestriction-bool-)
+- [`setCallRestriction(bool _isRestricted)`]
 
-- [`setOperator(address _operator, bool _isOperator)`](#Controller-setOperator-address-bool-)
+- [`setOperator(address _operator, bool _isOperator)`]
 
-- [`refreshConfiguration()`](#Controller-refreshConfiguration--)
+- [`refreshConfiguration()`]
 
-- [`operate(struct Actions.ActionArgs[] _actions)`](#Controller-operate-struct-Actions-ActionArgs---)
+- [`operate(struct Actions.ActionArgs[] _actions)`]
 
-- [`isOperator(address _owner, address _operator)`](#Controller-isOperator-address-address-)
+- [`isOperator(address _owner, address _operator)`]
 
-- [`getConfiguration()`](#Controller-getConfiguration--)
+- [`getConfiguration()`]
 
-- [`getVaultBalances(address _owner, uint256 _vaultId)`](#Controller-getVaultBalances-address-uint256-)
+- [`getVaultBalances(address _owner, uint256 _vaultId)`]
 
-- [`isPriceFinalized(address _otoken)`](#Controller-isPriceFinalized-address-)
+- [`isPriceFinalized(address _otoken)`]
 
-- [`getAccountVaultCounter(address _accountOwner)`](#Controller-getAccountVaultCounter-address-)
+- [`getAccountVaultCounter(address _accountOwner)`]
 
-- [`isExpired(address _otoken)`](#Controller-isExpired-address-)
+- [`isExpired(address _otoken)`]
 
-- [`getVault(address _owner, uint256 _vaultId)`](#Controller-getVault-address-uint256-)
+- [`getVault(address _owner, uint256 _vaultId)`]
 
 # Events:
 
-- [`AccountOperatorUpdated(address accountOwner, address operator, bool isSet)`](#Controller-AccountOperatorUpdated-address-address-bool-)
+- [`AccountOperatorUpdated(address accountOwner, address operator, bool isSet)`]
 
-- [`VaultOpened(address accountOwner, uint256 vaultId)`](#Controller-VaultOpened-address-uint256-)
+- [`VaultOpened(address accountOwner, uint256 vaultId)`]
 
-- [`LongOtokenDeposited(address otoken, address accountOwner, address from, uint256 vaultId, uint256 amount)`](#Controller-LongOtokenDeposited-address-address-address-uint256-uint256-)
+- [`LongOtokenDeposited(address otoken, address accountOwner, address from, uint256 vaultId, uint256 amount)`]
 
-- [`LongOtokenWithdrawed(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 amount)`](#Controller-LongOtokenWithdrawed-address-address-address-uint256-uint256-)
+- [`LongOtokenWithdrawed(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 amount)`]
 
-- [`CollateralAssetDeposited(address asset, address accountOwner, address from, uint256 vaultId, uint256 amount)`](#Controller-CollateralAssetDeposited-address-address-address-uint256-uint256-)
+- [`CollateralAssetDeposited(address asset, address accountOwner, address from, uint256 vaultId, uint256 amount)`]
 
-- [`CollateralAssetWithdrawed(address asset, address AccountOwner, address to, uint256 vaultId, uint256 amount)`](#Controller-CollateralAssetWithdrawed-address-address-address-uint256-uint256-)
+- [`CollateralAssetWithdrawed(address asset, address AccountOwner, address to, uint256 vaultId, uint256 amount)`]
 
-- [`ShortOtokenMinted(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 amount)`](#Controller-ShortOtokenMinted-address-address-address-uint256-uint256-)
+- [`ShortOtokenMinted(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 amount)`]
 
-- [`ShortOtokenBurned(address otoken, address AccountOwner, address from, uint256 vaultId, uint256 amount)`](#Controller-ShortOtokenBurned-address-address-address-uint256-uint256-)
+- [`ShortOtokenBurned(address otoken, address AccountOwner, address from, uint256 vaultId, uint256 amount)`]
 
-- [`Exercise(address otoken, address exerciser, address receiver, address collateralAsset, uint256 otokenBurned, uint256 payout)`](#Controller-Exercise-address-address-address-address-uint256-uint256-)
+- [`Exercise(address otoken, address exerciser, address receiver, address collateralAsset, uint256 otokenBurned, uint256 payout)`]
 
-- [`VaultSettled(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 payout)`](#Controller-VaultSettled-address-address-address-uint256-uint256-)
+- [`VaultSettled(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 payout)`]
 
-- [`CallExecuted(address from, address to, address vaultOwner, uint256 vaultId, bytes data)`](#Controller-CallExecuted-address-address-address-uint256-bytes-)
+- [`CallExecuted(address from, address to, address vaultOwner, uint256 vaultId, bytes data)`]
 
-- [`TerminatorUpdated(address oldTerminator, address newTerminator)`](#Controller-TerminatorUpdated-address-address-)
+- [`TerminatorUpdated(address oldTerminator, address newTerminator)`]
 
-- [`PauserUpdated(address oldPauser, address newPauser)`](#Controller-PauserUpdated-address-address-)
+- [`PauserUpdated(address oldPauser, address newPauser)`]
 
-- [`SystemPaused(bool isActive)`](#Controller-SystemPaused-bool-)
+- [`SystemPaused(bool isActive)`]
 
-- [`EmergencyShutdown(bool isActive)`](#Controller-EmergencyShutdown-bool-)
+- [`EmergencyShutdown(bool isActive)`]
 
-- [`CallRestricted(bool isRestricted)`](#Controller-CallRestricted-bool-)
+- [`CallRestricted(bool isRestricted)`]
 
 # Function `initialize(address _addressBook, address _owner)` {#Controller-initialize-address-address-}
 

@@ -2,27 +2,27 @@ Implementation of the {IERC20} interface.
 
 # Functions:
 
-- [`name()`](#ERC20Initializable-name--)
+- [`name()`]
 
-- [`symbol()`](#ERC20Initializable-symbol--)
+- [`symbol()`]
 
-- [`decimals()`](#ERC20Initializable-decimals--)
+- [`decimals()`]
 
-- [`totalSupply()`](#ERC20Initializable-totalSupply--)
+- [`totalSupply()`]
 
-- [`balanceOf(address account)`](#ERC20Initializable-balanceOf-address-)
+- [`balanceOf(address account)`]
 
-- [`transfer(address recipient, uint256 amount)`](#ERC20Initializable-transfer-address-uint256-)
+- [`transfer(address recipient, uint256 amount)`]
 
-- [`allowance(address owner, address spender)`](#ERC20Initializable-allowance-address-address-)
+- [`allowance(address owner, address spender)`]
 
-- [`approve(address spender, uint256 amount)`](#ERC20Initializable-approve-address-uint256-)
+- [`approve(address spender, uint256 amount)`]
 
-- [`transferFrom(address sender, address recipient, uint256 amount)`](#ERC20Initializable-transferFrom-address-address-uint256-)
+- [`transferFrom(address sender, address recipient, uint256 amount)`]
 
-- [`increaseAllowance(address spender, uint256 addedValue)`](#ERC20Initializable-increaseAllowance-address-uint256-)
+- [`increaseAllowance(address spender, uint256 addedValue)`]
 
-- [`decreaseAllowance(address spender, uint256 subtractedValue)`](#ERC20Initializable-decreaseAllowance-address-uint256-)
+- [`decreaseAllowance(address spender, uint256 subtractedValue)`]
 
 # Function `name() → string` {#ERC20Initializable-name--}
 

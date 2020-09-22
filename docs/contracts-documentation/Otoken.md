@@ -2,11 +2,11 @@ The Otoken inherits ERC20Initializable because we need to use the init instead o
 
 # Functions:
 
-- [`init(address _addressBook, address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiryTimestamp, bool _isPut)`](#Otoken-init-address-address-address-address-uint256-uint256-bool-)
+- [`init(address _addressBook, address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiryTimestamp, bool _isPut)`]
 
-- [`mintOtoken(address account, uint256 amount)`](#Otoken-mintOtoken-address-uint256-)
+- [`mintOtoken(address account, uint256 amount)`]
 
-- [`burnOtoken(address account, uint256 amount)`](#Otoken-burnOtoken-address-uint256-)
+- [`burnOtoken(address account, uint256 amount)`]
 
 # Function `init(address _addressBook, address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiryTimestamp, bool _isPut)` {#Otoken-init-address-address-address-address-uint256-uint256-bool-}
 

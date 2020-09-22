@@ -1,48 +1,48 @@
 # Functions:
 
-- [`getOtokenImpl()`](#AddressBook-getOtokenImpl--)
+- [`getOtokenImpl()`]
 
-- [`getOtokenFactory()`](#AddressBook-getOtokenFactory--)
+- [`getOtokenFactory()`]
 
-- [`getWhitelist()`](#AddressBook-getWhitelist--)
+- [`getWhitelist()`]
 
-- [`getController()`](#AddressBook-getController--)
+- [`getController()`]
 
-- [`getMarginPool()`](#AddressBook-getMarginPool--)
+- [`getMarginPool()`]
 
-- [`getMarginCalculator()`](#AddressBook-getMarginCalculator--)
+- [`getMarginCalculator()`]
 
-- [`getLiquidationManager()`](#AddressBook-getLiquidationManager--)
+- [`getLiquidationManager()`]
 
-- [`getOracle()`](#AddressBook-getOracle--)
+- [`getOracle()`]
 
-- [`setOtokenImpl(address _otokenImpl)`](#AddressBook-setOtokenImpl-address-)
+- [`setOtokenImpl(address _otokenImpl)`]
 
-- [`setOtokenFactory(address _otokenFactory)`](#AddressBook-setOtokenFactory-address-)
+- [`setOtokenFactory(address _otokenFactory)`]
 
-- [`setWhitelist(address _whitelist)`](#AddressBook-setWhitelist-address-)
+- [`setWhitelist(address _whitelist)`]
 
-- [`setController(address _controller)`](#AddressBook-setController-address-)
+- [`setController(address _controller)`]
 
-- [`setMarginPool(address _marginPool)`](#AddressBook-setMarginPool-address-)
+- [`setMarginPool(address _marginPool)`]
 
-- [`setMarginCalculator(address _marginCalculator)`](#AddressBook-setMarginCalculator-address-)
+- [`setMarginCalculator(address _marginCalculator)`]
 
-- [`setLiquidationManager(address _liquidationManager)`](#AddressBook-setLiquidationManager-address-)
+- [`setLiquidationManager(address _liquidationManager)`]
 
-- [`setOracle(address _oracle)`](#AddressBook-setOracle-address-)
+- [`setOracle(address _oracle)`]
 
-- [`getAddress(bytes32 _key)`](#AddressBook-getAddress-bytes32-)
+- [`getAddress(bytes32 _key)`]
 
-- [`setAddress(bytes32 _key, address _address)`](#AddressBook-setAddress-bytes32-address-)
+- [`setAddress(bytes32 _key, address _address)`]
 
-- [`updateImpl(bytes32 _id, address _newAddress)`](#AddressBook-updateImpl-bytes32-address-)
+- [`updateImpl(bytes32 _id, address _newAddress)`]
 
 # Events:
 
-- [`ProxyCreated(bytes32 id, address proxy)`](#AddressBook-ProxyCreated-bytes32-address-)
+- [`ProxyCreated(bytes32 id, address proxy)`]
 
-- [`AddressAdded(bytes32 id, address add)`](#AddressBook-AddressAdded-bytes32-address-)
+- [`AddressAdded(bytes32 id, address add)`]
 
 # Function `getOtokenImpl() → address` {#AddressBook-getOtokenImpl--}
 

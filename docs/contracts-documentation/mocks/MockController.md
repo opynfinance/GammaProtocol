@@ -1,10 +1,10 @@
 # Functions:
 
-- [`initialize(address _addressBook, address _owner)`](#MockController-initialize-address-address-)
+- [`initialize(address _addressBook, address _owner)`]
 
-- [`testMintOtoken(address _otoken, address _account, uint256 _amount)`](#MockController-testMintOtoken-address-address-uint256-)
+- [`testMintOtoken(address _otoken, address _account, uint256 _amount)`]
 
-- [`testBurnOtoken(address _otoken, address _account, uint256 _amount)`](#MockController-testBurnOtoken-address-address-uint256-)
+- [`testBurnOtoken(address _otoken, address _account, uint256 _amount)`]
 
 # Function `initialize(address _addressBook, address _owner)` {#MockController-initialize-address-address-}
 

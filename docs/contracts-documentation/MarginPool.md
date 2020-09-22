@@ -1,26 +1,26 @@
 # Functions:
 
-- [`constructor(address _addressBook)`](#MarginPool-constructor-address-)
+- [`constructor(address _addressBook)`]
 
-- [`transferToPool(address _asset, address _user, uint256 _amount)`](#MarginPool-transferToPool-address-address-uint256-)
+- [`transferToPool(address _asset, address _user, uint256 _amount)`]
 
-- [`transferToUser(address _asset, address payable _user, uint256 _amount)`](#MarginPool-transferToUser-address-address-payable-uint256-)
+- [`transferToUser(address _asset, address payable _user, uint256 _amount)`]
 
-- [`getStoredBalance(address _asset)`](#MarginPool-getStoredBalance-address-)
+- [`getStoredBalance(address _asset)`]
 
-- [`batchTransferToPool(address[] _asset, address[] _user, uint256[] _amount)`](#MarginPool-batchTransferToPool-address---address---uint256---)
+- [`batchTransferToPool(address[] _asset, address[] _user, uint256[] _amount)`]
 
-- [`batchTransferToUser(address[] _asset, address payable[] _user, uint256[] _amount)`](#MarginPool-batchTransferToUser-address---address-payable---uint256---)
+- [`batchTransferToUser(address[] _asset, address payable[] _user, uint256[] _amount)`]
 
-- [`farm(address _asset, address _receiver, uint256 _amount)`](#MarginPool-farm-address-address-uint256-)
+- [`farm(address _asset, address _receiver, uint256 _amount)`]
 
-- [`setFarmer(address _farmer)`](#MarginPool-setFarmer-address-)
+- [`setFarmer(address _farmer)`]
 
 # Events:
 
-- [`FarmerUpdated(address oldAddress, address newAddress)`](#MarginPool-FarmerUpdated-address-address-)
+- [`FarmerUpdated(address oldAddress, address newAddress)`]
 
-- [`AssetFarmed(address asset, address receiver, uint256 _amount)`](#MarginPool-AssetFarmed-address-address-uint256-)
+- [`AssetFarmed(address asset, address receiver, uint256 _amount)`]
 
 # Function `constructor(address _addressBook)` {#MarginPool-constructor-address-}
 

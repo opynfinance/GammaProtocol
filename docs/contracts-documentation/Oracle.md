@@ -1,46 +1,46 @@
 # Functions:
 
-- [`getPrice(address _asset)`](#Oracle-getPrice-address-)
+- [`getPrice(address _asset)`]
 
-- [`getExpiryPrice(address _asset, uint256 _expiryTimestamp)`](#Oracle-getExpiryPrice-address-uint256-)
+- [`getExpiryPrice(address _asset, uint256 _expiryTimestamp)`]
 
-- [`getPricer(address _asset)`](#Oracle-getPricer-address-)
+- [`getPricer(address _asset)`]
 
-- [`getDisputer()`](#Oracle-getDisputer--)
+- [`getDisputer()`]
 
-- [`getPricerLockingPeriod(address _pricer)`](#Oracle-getPricerLockingPeriod-address-)
+- [`getPricerLockingPeriod(address _pricer)`]
 
-- [`getPricerDisputePeriod(address _pricer)`](#Oracle-getPricerDisputePeriod-address-)
+- [`getPricerDisputePeriod(address _pricer)`]
 
-- [`isLockingPeriodOver(address _asset, uint256 _expiryTimestamp)`](#Oracle-isLockingPeriodOver-address-uint256-)
+- [`isLockingPeriodOver(address _asset, uint256 _expiryTimestamp)`]
 
-- [`isDisputePeriodOver(address _asset, uint256 _expiryTimestamp)`](#Oracle-isDisputePeriodOver-address-uint256-)
+- [`isDisputePeriodOver(address _asset, uint256 _expiryTimestamp)`]
 
-- [`setAssetPricer(address _asset, address _pricer)`](#Oracle-setAssetPricer-address-address-)
+- [`setAssetPricer(address _asset, address _pricer)`]
 
-- [`setLockingPeriod(address _pricer, uint256 _lockingPeriod)`](#Oracle-setLockingPeriod-address-uint256-)
+- [`setLockingPeriod(address _pricer, uint256 _lockingPeriod)`]
 
-- [`setDisputePeriod(address _pricer, uint256 _disputePeriod)`](#Oracle-setDisputePeriod-address-uint256-)
+- [`setDisputePeriod(address _pricer, uint256 _disputePeriod)`]
 
-- [`setDisputer(address _disputer)`](#Oracle-setDisputer-address-)
+- [`setDisputer(address _disputer)`]
 
-- [`disputeExpiryPrice(address _asset, uint256 _expiryTimestamp, uint256 _price)`](#Oracle-disputeExpiryPrice-address-uint256-uint256-)
+- [`disputeExpiryPrice(address _asset, uint256 _expiryTimestamp, uint256 _price)`]
 
-- [`setExpiryPrice(address _asset, uint256 _expiryTimestamp, uint256 _price)`](#Oracle-setExpiryPrice-address-uint256-uint256-)
+- [`setExpiryPrice(address _asset, uint256 _expiryTimestamp, uint256 _price)`]
 
 # Events:
 
-- [`DisputerUpdated(address newDisputer)`](#Oracle-DisputerUpdated-address-)
+- [`DisputerUpdated(address newDisputer)`]
 
-- [`PricerUpdated(address asset, address pricer)`](#Oracle-PricerUpdated-address-address-)
+- [`PricerUpdated(address asset, address pricer)`]
 
-- [`PricerLockingPeriodUpdated(address pricer, uint256 lockingPeriod)`](#Oracle-PricerLockingPeriodUpdated-address-uint256-)
+- [`PricerLockingPeriodUpdated(address pricer, uint256 lockingPeriod)`]
 
-- [`PricerDisputePeriodUpdated(address pricer, uint256 disputePeriod)`](#Oracle-PricerDisputePeriodUpdated-address-uint256-)
+- [`PricerDisputePeriodUpdated(address pricer, uint256 disputePeriod)`]
 
-- [`ExpiryPriceUpdated(address asset, uint256 expirtyTimestamp, uint256 price, uint256 onchainTimestamp)`](#Oracle-ExpiryPriceUpdated-address-uint256-uint256-uint256-)
+- [`ExpiryPriceUpdated(address asset, uint256 expirtyTimestamp, uint256 price, uint256 onchainTimestamp)`]
 
-- [`ExpiryPriceDisputed(address asset, uint256 expiryTimestamp, uint256 disputedPrice, uint256 newPrice, uint256 disputeTimestamp)`](#Oracle-ExpiryPriceDisputed-address-uint256-uint256-uint256-uint256-)
+- [`ExpiryPriceDisputed(address asset, uint256 expiryTimestamp, uint256 disputedPrice, uint256 newPrice, uint256 disputeTimestamp)`]
 
 # Function `getPrice(address _asset) → uint256` {#Oracle-getPrice-address-}
 

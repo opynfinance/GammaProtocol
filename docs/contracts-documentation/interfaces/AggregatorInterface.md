@@ -2,21 +2,21 @@ Interface of the Chainlink aggregator
 
 # Functions:
 
-- [`latestAnswer()`](#AggregatorInterface-latestAnswer--)
+- [`latestAnswer()`]
 
-- [`latestTimestamp()`](#AggregatorInterface-latestTimestamp--)
+- [`latestTimestamp()`]
 
-- [`latestRound()`](#AggregatorInterface-latestRound--)
+- [`latestRound()`]
 
-- [`getAnswer(uint256 roundId)`](#AggregatorInterface-getAnswer-uint256-)
+- [`getAnswer(uint256 roundId)`]
 
-- [`getTimestamp(uint256 roundId)`](#AggregatorInterface-getTimestamp-uint256-)
+- [`getTimestamp(uint256 roundId)`]
 
 # Events:
 
-- [`AnswerUpdated(int256 current, uint256 roundId, uint256 timestamp)`](#AggregatorInterface-AnswerUpdated-int256-uint256-uint256-)
+- [`AnswerUpdated(int256 current, uint256 roundId, uint256 timestamp)`]
 
-- [`NewRound(uint256 roundId, address startedBy, uint256 startedAt)`](#AggregatorInterface-NewRound-uint256-address-uint256-)
+- [`NewRound(uint256 roundId, address startedBy, uint256 startedAt)`]
 
 # Function `latestAnswer() → int256` {#AggregatorInterface-latestAnswer--}
 

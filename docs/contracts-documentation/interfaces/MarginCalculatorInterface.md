@@ -1,8 +1,8 @@
 # Functions:
 
-- [`getExpiredPayoutRate(address _otoken)`](#MarginCalculatorInterface-getExpiredPayoutRate-address-)
+- [`getExpiredPayoutRate(address _otoken)`]
 
-- [`getExcessCollateral(struct MarginAccount.Vault _vault)`](#MarginCalculatorInterface-getExcessCollateral-struct-MarginAccount-Vault-)
+- [`getExcessCollateral(struct MarginAccount.Vault _vault)`]
 
 # Function `getExpiredPayoutRate(address _otoken) → uint256` {#MarginCalculatorInterface-getExpiredPayoutRate-address-}
 

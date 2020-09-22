@@ -1,8 +1,8 @@
 # Functions:
 
-- [`initialize(address _addressBook, address _owner)`](#UpgradeableContractV1-initialize-address-address-)
+- [`initialize(address _addressBook, address _owner)`]
 
-- [`getV1Version()`](#UpgradeableContractV1-getV1Version--)
+- [`getV1Version()`]
 
 # Function `initialize(address _addressBook, address _owner)` {#UpgradeableContractV1-initialize-address-address-}
 

@@ -16,15 +16,15 @@ the owner.
 
 # Functions:
 
-- [`owner()`](#OwnableUpgradeSafe-owner--)
+- [`owner()`]
 
-- [`renounceOwnership()`](#OwnableUpgradeSafe-renounceOwnership--)
+- [`renounceOwnership()`]
 
-- [`transferOwnership(address newOwner)`](#OwnableUpgradeSafe-transferOwnership-address-)
+- [`transferOwnership(address newOwner)`]
 
 # Events:
 
-- [`OwnershipTransferred(address previousOwner, address newOwner)`](#OwnableUpgradeSafe-OwnershipTransferred-address-address-)
+- [`OwnershipTransferred(address previousOwner, address newOwner)`]
 
 # Function `owner() → address` {#OwnableUpgradeSafe-owner--}
 

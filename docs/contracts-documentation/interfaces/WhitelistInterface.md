@@ -1,18 +1,18 @@
 # Functions:
 
-- [`isWhitelistedProduct(address _underlying, address _strike, address _collateral, bool _isPut)`](#WhitelistInterface-isWhitelistedProduct-address-address-address-bool-)
+- [`isWhitelistedProduct(address _underlying, address _strike, address _collateral, bool _isPut)`]
 
-- [`isWhitelistedCollateral(address _collateral)`](#WhitelistInterface-isWhitelistedCollateral-address-)
+- [`isWhitelistedCollateral(address _collateral)`]
 
-- [`isWhitelistedOtoken(address _otoken)`](#WhitelistInterface-isWhitelistedOtoken-address-)
+- [`isWhitelistedOtoken(address _otoken)`]
 
-- [`whitelistProduct(address _underlying, address _strike, address _collateral, bool _isPut)`](#WhitelistInterface-whitelistProduct-address-address-address-bool-)
+- [`whitelistProduct(address _underlying, address _strike, address _collateral, bool _isPut)`]
 
-- [`whitelistCollateral(address _collateral)`](#WhitelistInterface-whitelistCollateral-address-)
+- [`whitelistCollateral(address _collateral)`]
 
-- [`whitelistOtoken(address _otoken)`](#WhitelistInterface-whitelistOtoken-address-)
+- [`whitelistOtoken(address _otoken)`]
 
-- [`isWhitelistedCallee(address _callee)`](#WhitelistInterface-isWhitelistedCallee-address-)
+- [`isWhitelistedCallee(address _callee)`]
 
 # Function `isWhitelistedProduct(address _underlying, address _strike, address _collateral, bool _isPut) → bool` {#WhitelistInterface-isWhitelistedProduct-address-address-address-bool-}
 

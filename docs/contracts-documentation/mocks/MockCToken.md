@@ -1,10 +1,10 @@
 # Functions:
 
-- [`constructor(string _name, string _symbol)`](#MockCToken-constructor-string-string-)
+- [`constructor(string _name, string _symbol)`]
 
-- [`mint(address account, uint256 amount)`](#MockCToken-mint-address-uint256-)
+- [`mint(address account, uint256 amount)`]
 
-- [`setExchangeRate(uint256 _exchangeRateStored)`](#MockCToken-setExchangeRate-uint256-)
+- [`setExchangeRate(uint256 _exchangeRateStored)`]
 
 # Function `constructor(string _name, string _symbol)` {#MockCToken-constructor-string-string-}
 

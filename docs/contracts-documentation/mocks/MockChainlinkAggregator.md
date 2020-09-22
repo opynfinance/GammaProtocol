@@ -1,16 +1,16 @@
 # Functions:
 
-- [`getAnswer(uint256 _roundId)`](#MockChainlinkAggregator-getAnswer-uint256-)
+- [`getAnswer(uint256 _roundId)`]
 
-- [`getTimestamp(uint256 _roundId)`](#MockChainlinkAggregator-getTimestamp-uint256-)
+- [`getTimestamp(uint256 _roundId)`]
 
-- [`latestAnswer()`](#MockChainlinkAggregator-latestAnswer--)
+- [`latestAnswer()`]
 
-- [`setRoundTimestamp(uint256 _roundId, uint256 _timestamp)`](#MockChainlinkAggregator-setRoundTimestamp-uint256-uint256-)
+- [`setRoundTimestamp(uint256 _roundId, uint256 _timestamp)`]
 
-- [`setRoundAnswer(uint256 _roundId, int256 _answer)`](#MockChainlinkAggregator-setRoundAnswer-uint256-int256-)
+- [`setRoundAnswer(uint256 _roundId, int256 _answer)`]
 
-- [`setLatestAnswer(int256 _answer)`](#MockChainlinkAggregator-setLatestAnswer-int256-)
+- [`setLatestAnswer(int256 _answer)`]
 
 # Function `getAnswer(uint256 _roundId) → int256` {#MockChainlinkAggregator-getAnswer-uint256-}
 

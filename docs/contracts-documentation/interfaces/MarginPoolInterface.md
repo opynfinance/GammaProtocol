@@ -1,12 +1,12 @@
 # Functions:
 
-- [`transferToPool(address _asset, address _user, uint256 _amount)`](#MarginPoolInterface-transferToPool-address-address-uint256-)
+- [`transferToPool(address _asset, address _user, uint256 _amount)`]
 
-- [`transferToUser(address _asset, address _user, uint256 _amount)`](#MarginPoolInterface-transferToUser-address-address-uint256-)
+- [`transferToUser(address _asset, address _user, uint256 _amount)`]
 
-- [`transferToPool(address[] _asset, address[] _user, uint256[] _amount)`](#MarginPoolInterface-transferToPool-address---address---uint256---)
+- [`transferToPool(address[] _asset, address[] _user, uint256[] _amount)`]
 
-- [`transferToUser(address[] _asset, address[] _user, uint256[] _amount)`](#MarginPoolInterface-transferToUser-address---address---uint256---)
+- [`transferToUser(address[] _asset, address[] _user, uint256[] _amount)`]
 
 # Function `transferToPool(address _asset, address _user, uint256 _amount)` {#MarginPoolInterface-transferToPool-address-address-uint256-}
 

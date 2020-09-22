@@ -2,23 +2,23 @@ Interface of the ERC20 standard as defined in the EIP.
 
 # Functions:
 
-- [`totalSupply()`](#IERC20-totalSupply--)
+- [`totalSupply()`]
 
-- [`balanceOf(address account)`](#IERC20-balanceOf-address-)
+- [`balanceOf(address account)`]
 
-- [`transfer(address recipient, uint256 amount)`](#IERC20-transfer-address-uint256-)
+- [`transfer(address recipient, uint256 amount)`]
 
-- [`allowance(address owner, address spender)`](#IERC20-allowance-address-address-)
+- [`allowance(address owner, address spender)`]
 
-- [`approve(address spender, uint256 amount)`](#IERC20-approve-address-uint256-)
+- [`approve(address spender, uint256 amount)`]
 
-- [`transferFrom(address sender, address recipient, uint256 amount)`](#IERC20-transferFrom-address-address-uint256-)
+- [`transferFrom(address sender, address recipient, uint256 amount)`]
 
 # Events:
 
-- [`Transfer(address from, address to, uint256 value)`](#IERC20-Transfer-address-address-uint256-)
+- [`Transfer(address from, address to, uint256 value)`]
 
-- [`Approval(address owner, address spender, uint256 value)`](#IERC20-Approval-address-address-uint256-)
+- [`Approval(address owner, address spender, uint256 value)`]
 
 # Function `totalSupply() → uint256` {#IERC20-totalSupply--}
 

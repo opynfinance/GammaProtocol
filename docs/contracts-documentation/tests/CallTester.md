@@ -1,10 +1,10 @@
 # Functions:
 
-- [`callFunction(address _sender, address _vaultOwner, uint256 _vaultId, bytes _data)`](#CallTester-callFunction-address-address-uint256-bytes-)
+- [`callFunction(address _sender, address _vaultOwner, uint256 _vaultId, bytes _data)`]
 
 # Events:
 
-- [`CallFunction(address sender, address vaultOwner, uint256 vaultId, bytes data)`](#CallTester-CallFunction-address-address-uint256-bytes-)
+- [`CallFunction(address sender, address vaultOwner, uint256 vaultId, bytes data)`]
 
 # Function `callFunction(address _sender, address _vaultOwner, uint256 _vaultId, bytes _data)` {#CallTester-callFunction-address-address-uint256-bytes-}
 

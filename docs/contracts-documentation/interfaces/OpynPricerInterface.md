@@ -1,6 +1,6 @@
 # Functions:
 
-- [`getPrice()`](#OpynPricerInterface-getPrice--)
+- [`getPrice()`]
 
 # Function `getPrice() → uint256` {#OpynPricerInterface-getPrice--}
 

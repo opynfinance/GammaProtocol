@@ -1,10 +1,10 @@
 # Functions:
 
-- [`constructor(address _cToken, address _underlying, address _underlyingPricer, address _oracle)`](#CompoundPricer-constructor-address-address-address-address-)
+- [`constructor(address _cToken, address _underlying, address _underlyingPricer, address _oracle)`]
 
-- [`getPrice()`](#CompoundPricer-getPrice--)
+- [`getPrice()`]
 
-- [`setExpiryPriceToOralce(uint256 _expiryTimestamp)`](#CompoundPricer-setExpiryPriceToOralce-uint256-)
+- [`setExpiryPriceToOralce(uint256 _expiryTimestamp)`]
 
 # Function `constructor(address _cToken, address _underlying, address _underlyingPricer, address _oracle)` {#CompoundPricer-constructor-address-address-address-address-}
 

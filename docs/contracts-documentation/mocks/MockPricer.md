@@ -1,12 +1,12 @@
 # Functions:
 
-- [`constructor(address _asset, address _oracle)`](#MockPricer-constructor-address-address-)
+- [`constructor(address _asset, address _oracle)`]
 
-- [`setPrice(uint256 _price)`](#MockPricer-setPrice-uint256-)
+- [`setPrice(uint256 _price)`]
 
-- [`getPrice()`](#MockPricer-getPrice--)
+- [`getPrice()`]
 
-- [`setExpiryPriceToOralce(uint256 _expiryTimestamp, uint256 _price)`](#MockPricer-setExpiryPriceToOralce-uint256-uint256-)
+- [`setExpiryPriceToOralce(uint256 _expiryTimestamp, uint256 _price)`]
 
 # Function `constructor(address _asset, address _oracle)` {#MockPricer-constructor-address-address-}
 

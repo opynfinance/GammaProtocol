@@ -1,48 +1,48 @@
 # Functions:
 
-- [`constructor(address _addressBook)`](#Whitelist-constructor-address-)
+- [`constructor(address _addressBook)`]
 
-- [`isWhitelistedProduct(address _underlying, address _strike, address _collateral, bool _isPut)`](#Whitelist-isWhitelistedProduct-address-address-address-bool-)
+- [`isWhitelistedProduct(address _underlying, address _strike, address _collateral, bool _isPut)`]
 
-- [`isWhitelistedCollateral(address _collateral)`](#Whitelist-isWhitelistedCollateral-address-)
+- [`isWhitelistedCollateral(address _collateral)`]
 
-- [`isWhitelistedOtoken(address _otoken)`](#Whitelist-isWhitelistedOtoken-address-)
+- [`isWhitelistedOtoken(address _otoken)`]
 
-- [`isWhitelistedCallee(address _callee)`](#Whitelist-isWhitelistedCallee-address-)
+- [`isWhitelistedCallee(address _callee)`]
 
-- [`whitelistProduct(address _underlying, address _strike, address _collateral, bool _isPut)`](#Whitelist-whitelistProduct-address-address-address-bool-)
+- [`whitelistProduct(address _underlying, address _strike, address _collateral, bool _isPut)`]
 
-- [`blacklistProduct(address _underlying, address _strike, address _collateral, bool _isPut)`](#Whitelist-blacklistProduct-address-address-address-bool-)
+- [`blacklistProduct(address _underlying, address _strike, address _collateral, bool _isPut)`]
 
-- [`whitelistCollateral(address _collateral)`](#Whitelist-whitelistCollateral-address-)
+- [`whitelistCollateral(address _collateral)`]
 
-- [`blacklistCollateral(address _collateral)`](#Whitelist-blacklistCollateral-address-)
+- [`blacklistCollateral(address _collateral)`]
 
-- [`whitelistOtoken(address _otokenAddress)`](#Whitelist-whitelistOtoken-address-)
+- [`whitelistOtoken(address _otokenAddress)`]
 
-- [`blacklistOtoken(address _otokenAddress)`](#Whitelist-blacklistOtoken-address-)
+- [`blacklistOtoken(address _otokenAddress)`]
 
-- [`whitelisteCallee(address _callee)`](#Whitelist-whitelisteCallee-address-)
+- [`whitelisteCallee(address _callee)`]
 
-- [`blacklistCallee(address _callee)`](#Whitelist-blacklistCallee-address-)
+- [`blacklistCallee(address _callee)`]
 
 # Events:
 
-- [`ProductWhitelisted(bytes32 productHash, address underlying, address strike, address collateral, bool isPut)`](#Whitelist-ProductWhitelisted-bytes32-address-address-address-bool-)
+- [`ProductWhitelisted(bytes32 productHash, address underlying, address strike, address collateral, bool isPut)`]
 
-- [`ProductBlacklisted(bytes32 productHash, address underlying, address strike, address collateral, bool isPut)`](#Whitelist-ProductBlacklisted-bytes32-address-address-address-bool-)
+- [`ProductBlacklisted(bytes32 productHash, address underlying, address strike, address collateral, bool isPut)`]
 
-- [`CollateralWhitelisted(address collateral)`](#Whitelist-CollateralWhitelisted-address-)
+- [`CollateralWhitelisted(address collateral)`]
 
-- [`CollateralBlacklisted(address collateral)`](#Whitelist-CollateralBlacklisted-address-)
+- [`CollateralBlacklisted(address collateral)`]
 
-- [`OtokenWhitelisted(address otoken)`](#Whitelist-OtokenWhitelisted-address-)
+- [`OtokenWhitelisted(address otoken)`]
 
-- [`OtokenBlacklisted(address otoken)`](#Whitelist-OtokenBlacklisted-address-)
+- [`OtokenBlacklisted(address otoken)`]
 
-- [`CalleeWhitelisted(address _callee)`](#Whitelist-CalleeWhitelisted-address-)
+- [`CalleeWhitelisted(address _callee)`]
 
-- [`CalleeBlacklisted(address _callee)`](#Whitelist-CalleeBlacklisted-address-)
+- [`CalleeBlacklisted(address _callee)`]
 
 # Function `constructor(address _addressBook)` {#Whitelist-constructor-address-}
 

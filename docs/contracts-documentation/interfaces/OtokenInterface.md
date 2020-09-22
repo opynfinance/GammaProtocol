@@ -1,22 +1,22 @@
 # Functions:
 
-- [`underlyingAsset()`](#OtokenInterface-underlyingAsset--)
+- [`underlyingAsset()`]
 
-- [`strikeAsset()`](#OtokenInterface-strikeAsset--)
+- [`strikeAsset()`]
 
-- [`collateralAsset()`](#OtokenInterface-collateralAsset--)
+- [`collateralAsset()`]
 
-- [`strikePrice()`](#OtokenInterface-strikePrice--)
+- [`strikePrice()`]
 
-- [`expiryTimestamp()`](#OtokenInterface-expiryTimestamp--)
+- [`expiryTimestamp()`]
 
-- [`isPut()`](#OtokenInterface-isPut--)
+- [`isPut()`]
 
-- [`init(address _addressBook, address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut)`](#OtokenInterface-init-address-address-address-address-uint256-uint256-bool-)
+- [`init(address _addressBook, address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut)`]
 
-- [`mintOtoken(address account, uint256 amount)`](#OtokenInterface-mintOtoken-address-uint256-)
+- [`mintOtoken(address account, uint256 amount)`]
 
-- [`burnOtoken(address account, uint256 amount)`](#OtokenInterface-burnOtoken-address-uint256-)
+- [`burnOtoken(address account, uint256 amount)`]
 
 # Function `underlyingAsset() → address` {#OtokenInterface-underlyingAsset--}
 

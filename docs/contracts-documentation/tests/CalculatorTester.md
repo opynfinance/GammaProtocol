@@ -1,8 +1,8 @@
 # Functions:
 
-- [`constructor(address _addressBook)`](#CalculatorTester-constructor-address-)
+- [`constructor(address _addressBook)`]
 
-- [`getExpiredCashValue(address _otoken)`](#CalculatorTester-getExpiredCashValue-address-)
+- [`getExpiredCashValue(address _otoken)`]
 
 # Function `constructor(address _addressBook)` {#CalculatorTester-constructor-address-}
 

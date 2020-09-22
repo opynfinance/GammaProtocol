@@ -1,8 +1,8 @@
 # Functions:
 
-- [`constructor(string _name, string _symbol, uint8 _decimals)`](#MockERC20-constructor-string-string-uint8-)
+- [`constructor(string _name, string _symbol, uint8 _decimals)`]
 
-- [`mint(address account, uint256 amount)`](#MockERC20-mint-address-uint256-)
+- [`mint(address account, uint256 amount)`]
 
 # Function `constructor(string _name, string _symbol, uint8 _decimals)` {#MockERC20-constructor-string-string-uint8-}
 

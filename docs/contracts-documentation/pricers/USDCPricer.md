@@ -1,10 +1,10 @@
 # Functions:
 
-- [`constructor(address _usdc, address _oracle)`](#USDCPricer-constructor-address-address-)
+- [`constructor(address _usdc, address _oracle)`]
 
-- [`getPrice()`](#USDCPricer-getPrice--)
+- [`getPrice()`]
 
-- [`setExpiryPriceToOralce(uint256 _expiryTimestamp)`](#USDCPricer-setExpiryPriceToOralce-uint256-)
+- [`setExpiryPriceToOralce(uint256 _expiryTimestamp)`]
 
 # Function `constructor(address _usdc, address _oracle)` {#USDCPricer-constructor-address-address-}
 

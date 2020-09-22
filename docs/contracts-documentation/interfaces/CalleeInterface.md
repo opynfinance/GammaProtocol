@@ -2,7 +2,7 @@ Contract interface that can be called from Controller as a call action.
 
 # Functions:
 
-- [`callFunction(address payable _sender, address _vaultOwner, uint256 _vaultId, bytes _data)`](#CalleeInterface-callFunction-address-payable-address-uint256-bytes-)
+- [`callFunction(address payable _sender, address _vaultOwner, uint256 _vaultId, bytes _data)`]
 
 # Function `callFunction(address payable _sender, address _vaultOwner, uint256 _vaultId, bytes _data)` {#CalleeInterface-callFunction-address-payable-address-uint256-bytes-}
 

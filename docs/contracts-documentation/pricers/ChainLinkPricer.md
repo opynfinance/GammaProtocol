@@ -1,10 +1,10 @@
 # Functions:
 
-- [`constructor(address _asset, address _aggregator, address _oracle)`](#ChainLinkPricer-constructor-address-address-address-)
+- [`constructor(address _asset, address _aggregator, address _oracle)`]
 
-- [`getPrice()`](#ChainLinkPricer-getPrice--)
+- [`getPrice()`]
 
-- [`setExpiryPriceToOralce(uint256 _expiryTimestamp, uint256 _roundId)`](#ChainLinkPricer-setExpiryPriceToOralce-uint256-uint256-)
+- [`setExpiryPriceToOralce(uint256 _expiryTimestamp, uint256 _roundId)`]
 
 # Function `constructor(address _asset, address _aggregator, address _oracle)` {#ChainLinkPricer-constructor-address-address-address-}
 
