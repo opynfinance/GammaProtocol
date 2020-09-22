@@ -10,18 +10,18 @@
 
 - [`UnwrappedETH(address to, uint256 amount)`]
 
-# Function `constructor(address payable weth)` {#FlashWrap-constructor-address-payable-}
+# Function `constructor(address payable weth)`
 
 No description
 
-# Function `callFunction(address payable _sender, address _vaultOwner, uint256 _vaultId, bytes _data)` {#FlashWrap-callFunction-address-payable-address-uint256-bytes-}
+# Function `callFunction(address payable _sender, address _vaultOwner, uint256 _vaultId, bytes _data)`
 
 No description
 
-# Event `WrappedETH(address to, uint256 amount)` {#FlashWrap-WrappedETH-address-uint256-}
+# Event `WrappedETH(address to, uint256 amount)`
 
 No description
 
-# Event `UnwrappedETH(address to, uint256 amount)` {#FlashWrap-UnwrappedETH-address-uint256-}
+# Event `UnwrappedETH(address to, uint256 amount)`
 
 No description

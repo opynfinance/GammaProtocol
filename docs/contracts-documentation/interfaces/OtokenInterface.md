@@ -18,38 +18,38 @@
 
 - [`burnOtoken(address account, uint256 amount)`]
 
-# Function `underlyingAsset() → address` {#OtokenInterface-underlyingAsset--}
+# Function `underlyingAsset() → address`
 
 No description
 
-# Function `strikeAsset() → address` {#OtokenInterface-strikeAsset--}
+# Function `strikeAsset() → address`
 
 No description
 
-# Function `collateralAsset() → address` {#OtokenInterface-collateralAsset--}
+# Function `collateralAsset() → address`
 
 No description
 
-# Function `strikePrice() → uint256` {#OtokenInterface-strikePrice--}
+# Function `strikePrice() → uint256`
 
 No description
 
-# Function `expiryTimestamp() → uint256` {#OtokenInterface-expiryTimestamp--}
+# Function `expiryTimestamp() → uint256`
 
 No description
 
-# Function `isPut() → bool` {#OtokenInterface-isPut--}
+# Function `isPut() → bool`
 
 No description
 
-# Function `init(address _addressBook, address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut)` {#OtokenInterface-init-address-address-address-address-uint256-uint256-bool-}
+# Function `init(address _addressBook, address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut)`
 
 No description
 
-# Function `mintOtoken(address account, uint256 amount)` {#OtokenInterface-mintOtoken-address-uint256-}
+# Function `mintOtoken(address account, uint256 amount)`
 
 No description
 
-# Function `burnOtoken(address account, uint256 amount)` {#OtokenInterface-burnOtoken-address-uint256-}
+# Function `burnOtoken(address account, uint256 amount)`
 
 No description

@@ -18,11 +18,11 @@ and deploy eip-1167 minimal proxies for otoken logic contract.
 
 - [`OtokenCreated(address tokenAddress, address creator, address underlying, address strike, address collateral, uint256 strikePrice, uint256 expiry, bool isPut)`]
 
-# Function `constructor(address _addressBook)` {#OtokenFactory-constructor-address-}
+# Function `constructor(address _addressBook)`
 
 No description
 
-# Function `createOtoken(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) → address` {#OtokenFactory-createOtoken-address-address-address-uint256-uint256-bool-}
+# Function `createOtoken(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) → address`
 
 deploy an eip-1167 minimal proxy with CREATE2 and register it to the whitelist module.
 
@@ -44,7 +44,7 @@ deploy an eip-1167 minimal proxy with CREATE2 and register it to the whitelist m
 
 - newOtoken address of the newly created option
 
-# Function `getOtokensLength() → uint256` {#OtokenFactory-getOtokensLength--}
+# Function `getOtokensLength() → uint256`
 
 No description
 
@@ -52,7 +52,7 @@ No description
 
 - length of the otokens array.
 
-# Function `getOtoken(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) → address` {#OtokenFactory-getOtoken-address-address-address-uint256-uint256-bool-}
+# Function `getOtoken(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) → address`
 
 No description
 
@@ -74,7 +74,7 @@ No description
 
 - otoken the address of target otoken.
 
-# Function `getTargetOtokenAddress(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) → address` {#OtokenFactory-getTargetOtokenAddress-address-address-address-uint256-uint256-bool-}
+# Function `getTargetOtokenAddress(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) → address`
 
 return the exact address that will be deployed at with _computeAddress
 
@@ -96,6 +96,6 @@ return the exact address that will be deployed at with _computeAddress
 
 - targetAddress the address this otoken will be deployed at.
 
-# Event `OtokenCreated(address tokenAddress, address creator, address underlying, address strike, address collateral, uint256 strikePrice, uint256 expiry, bool isPut)` {#OtokenFactory-OtokenCreated-address-address-address-address-address-uint256-uint256-bool-}
+# Event `OtokenCreated(address tokenAddress, address creator, address underlying, address strike, address collateral, uint256 strikePrice, uint256 expiry, bool isPut)`
 
 No description

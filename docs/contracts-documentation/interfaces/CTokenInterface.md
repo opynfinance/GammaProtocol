@@ -6,7 +6,7 @@ Interface of Compound cToken
 
 - [`decimals()`]
 
-# Function `exchangeRateStored() → uint256` {#CTokenInterface-exchangeRateStored--}
+# Function `exchangeRateStored() → uint256`
 
 No description
 
@@ -14,6 +14,6 @@ No description
 
 - Calculated exchange rate scaled by 1e18
 
-# Function `decimals() → uint256` {#CTokenInterface-decimals--}
+# Function `decimals() → uint256`
 
 No description

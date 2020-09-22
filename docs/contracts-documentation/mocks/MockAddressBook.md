@@ -28,58 +28,58 @@
 
 - [`getMarginPool()`]
 
-# Function `setOtokenImpl(address _newImpl)` {#MockAddressBook-setOtokenImpl-address-}
+# Function `setOtokenImpl(address _newImpl)`
 
 No description
 
-# Function `setWhitelist(address _newImpl)` {#MockAddressBook-setWhitelist-address-}
+# Function `setWhitelist(address _newImpl)`
 
 No description
 
-# Function `setOtokenFactory(address _otokenFactory)` {#MockAddressBook-setOtokenFactory-address-}
+# Function `setOtokenFactory(address _otokenFactory)`
 
 No description
 
-# Function `setController(address _controller)` {#MockAddressBook-setController-address-}
+# Function `setController(address _controller)`
 
 No description
 
-# Function `setOracle(address _oracleAddr)` {#MockAddressBook-setOracle-address-}
+# Function `setOracle(address _oracleAddr)`
 
 No description
 
-# Function `setMarginCalculator(address _calculator)` {#MockAddressBook-setMarginCalculator-address-}
+# Function `setMarginCalculator(address _calculator)`
 
 No description
 
-# Function `setMarginPool(address _pool)` {#MockAddressBook-setMarginPool-address-}
+# Function `setMarginPool(address _pool)`
 
 No description
 
-# Function `getOtokenImpl() → address` {#MockAddressBook-getOtokenImpl--}
+# Function `getOtokenImpl() → address`
 
 No description
 
-# Function `getWhitelist() → address` {#MockAddressBook-getWhitelist--}
+# Function `getWhitelist() → address`
 
 No description
 
-# Function `getOtokenFactory() → address` {#MockAddressBook-getOtokenFactory--}
+# Function `getOtokenFactory() → address`
 
 No description
 
-# Function `getOracle() → address` {#MockAddressBook-getOracle--}
+# Function `getOracle() → address`
 
 No description
 
-# Function `getController() → address` {#MockAddressBook-getController--}
+# Function `getController() → address`
 
 No description
 
-# Function `getMarginCalculator() → address` {#MockAddressBook-getMarginCalculator--}
+# Function `getMarginCalculator() → address`
 
 No description
 
-# Function `getMarginPool() → address` {#MockAddressBook-getMarginPool--}
+# Function `getMarginPool() → address`
 
 No description

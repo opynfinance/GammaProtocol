@@ -24,17 +24,17 @@ Implementation of the {IERC20} interface.
 
 - [`decreaseAllowance(address spender, uint256 subtractedValue)`]
 
-# Function `name() → string` {#ERC20Initializable-name--}
+# Function `name() → string`
 
 Returns the name of the token.
 
-# Function `symbol() → string` {#ERC20Initializable-symbol--}
+# Function `symbol() → string`
 
 Returns the symbol of the token, usually a shorter version of the
 
 name.
 
-# Function `decimals() → uint8` {#ERC20Initializable-decimals--}
+# Function `decimals() → uint8`
 
 Returns the number of decimals used to get its user representation.
 
@@ -54,15 +54,15 @@ no way affects any of the arithmetic of the contract, including
 
 {IERC20-balanceOf} and {IERC20-transfer}.
 
-# Function `totalSupply() → uint256` {#ERC20Initializable-totalSupply--}
+# Function `totalSupply() → uint256`
 
 See {IERC20-totalSupply}.
 
-# Function `balanceOf(address account) → uint256` {#ERC20Initializable-balanceOf-address-}
+# Function `balanceOf(address account) → uint256`
 
 See {IERC20-balanceOf}.
 
-# Function `transfer(address recipient, uint256 amount) → bool` {#ERC20Initializable-transfer-address-uint256-}
+# Function `transfer(address recipient, uint256 amount) → bool`
 
 See {IERC20-transfer}.
 
@@ -72,11 +72,11 @@ Requirements:
 
 - the caller must have a balance of at least `amount`.
 
-# Function `allowance(address owner, address spender) → uint256` {#ERC20Initializable-allowance-address-address-}
+# Function `allowance(address owner, address spender) → uint256`
 
 See {IERC20-allowance}.
 
-# Function `approve(address spender, uint256 amount) → bool` {#ERC20Initializable-approve-address-uint256-}
+# Function `approve(address spender, uint256 amount) → bool`
 
 See {IERC20-approve}.
 
@@ -84,7 +84,7 @@ Requirements:
 
 - `spender` cannot be the zero address.
 
-# Function `transferFrom(address sender, address recipient, uint256 amount) → bool` {#ERC20Initializable-transferFrom-address-address-uint256-}
+# Function `transferFrom(address sender, address recipient, uint256 amount) → bool`
 
 See {IERC20-transferFrom}.
 
@@ -102,7 +102,7 @@ Requirements:
 
 `amount`.
 
-# Function `increaseAllowance(address spender, uint256 addedValue) → bool` {#ERC20Initializable-increaseAllowance-address-uint256-}
+# Function `increaseAllowance(address spender, uint256 addedValue) → bool`
 
 Atomically increases the allowance granted to `spender` by the caller.
 
@@ -116,7 +116,7 @@ Requirements:
 
 - `spender` cannot be the zero address.
 
-# Function `decreaseAllowance(address spender, uint256 subtractedValue) → bool` {#ERC20Initializable-decreaseAllowance-address-uint256-}
+# Function `decreaseAllowance(address spender, uint256 subtractedValue) → bool`
 
 Atomically decreases the allowance granted to `spender` by the caller.
 

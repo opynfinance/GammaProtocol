@@ -8,7 +8,7 @@ The Otoken inherits ERC20Initializable because we need to use the init instead o
 
 - [`burnOtoken(address account, uint256 amount)`]
 
-# Function `init(address _addressBook, address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiryTimestamp, bool _isPut)` {#Otoken-init-address-address-address-address-uint256-uint256-bool-}
+# Function `init(address _addressBook, address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiryTimestamp, bool _isPut)`
 
 No description
 
@@ -26,7 +26,7 @@ No description
 
 - `_isPut`: is this a put option, if not it is a call
 
-# Function `mintOtoken(address account, uint256 amount)` {#Otoken-mintOtoken-address-uint256-}
+# Function `mintOtoken(address account, uint256 amount)`
 
 this is a Controller only method. Access control is taken care of by _beforeTokenTransfer hook.
 
@@ -36,7 +36,7 @@ this is a Controller only method. Access control is taken care of by _beforeToke
 
 - `amount`: the amount to mint
 
-# Function `burnOtoken(address account, uint256 amount)` {#Otoken-burnOtoken-address-uint256-}
+# Function `burnOtoken(address account, uint256 amount)`
 
 this is a Controller only method. Access control is taken care of by _beforeTokenTransfer hook.
 

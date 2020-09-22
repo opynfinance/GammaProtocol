@@ -26,11 +26,11 @@ the owner.
 
 - [`OwnershipTransferred(address previousOwner, address newOwner)`]
 
-# Function `owner() → address` {#OwnableUpgradeSafe-owner--}
+# Function `owner() → address`
 
 Returns the address of the current owner.
 
-# Function `renounceOwnership()` {#OwnableUpgradeSafe-renounceOwnership--}
+# Function `renounceOwnership()`
 
 Leaves the contract without owner. It will not be possible to call
 
@@ -40,12 +40,12 @@ NOTE: Renouncing ownership will leave the contract without an owner,
 
 thereby removing any functionality that is only available to the owner.
 
-# Function `transferOwnership(address newOwner)` {#OwnableUpgradeSafe-transferOwnership-address-}
+# Function `transferOwnership(address newOwner)`
 
 Transfers ownership of the contract to a new account (`newOwner`).
 
 Can only be called by the current owner.
 
-# Event `OwnershipTransferred(address previousOwner, address newOwner)` {#OwnableUpgradeSafe-OwnershipTransferred-address-address-}
+# Event `OwnershipTransferred(address previousOwner, address newOwner)`
 
 No description

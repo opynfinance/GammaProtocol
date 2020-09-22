@@ -6,7 +6,7 @@
 
 - [`setExpiryPriceToOralce(uint256 _expiryTimestamp, uint256 _roundId)`]
 
-# Function `constructor(address _asset, address _aggregator, address _oracle)` {#ChainLinkPricer-constructor-address-address-address-}
+# Function `constructor(address _asset, address _aggregator, address _oracle)`
 
 No description
 
@@ -18,7 +18,7 @@ No description
 
 - `_oracle`: the Opyn Oracle contract address.
 
-# Function `getPrice() → uint256` {#ChainLinkPricer-getPrice--}
+# Function `getPrice() → uint256`
 
 overides the getPrice function in OpynPricerInterface.
 
@@ -26,7 +26,7 @@ overides the getPrice function in OpynPricerInterface.
 
 - price of asset scaled by 1e18
 
-# Function `setExpiryPriceToOralce(uint256 _expiryTimestamp, uint256 _roundId)` {#ChainLinkPricer-setExpiryPriceToOralce-uint256-uint256-}
+# Function `setExpiryPriceToOralce(uint256 _expiryTimestamp, uint256 _roundId)`
 
 No description
 

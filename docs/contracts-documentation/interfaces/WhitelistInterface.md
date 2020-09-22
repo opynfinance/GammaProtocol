@@ -14,30 +14,30 @@
 
 - [`isWhitelistedCallee(address _callee)`]
 
-# Function `isWhitelistedProduct(address _underlying, address _strike, address _collateral, bool _isPut) → bool` {#WhitelistInterface-isWhitelistedProduct-address-address-address-bool-}
+# Function `isWhitelistedProduct(address _underlying, address _strike, address _collateral, bool _isPut) → bool`
 
 No description
 
-# Function `isWhitelistedCollateral(address _collateral) → bool` {#WhitelistInterface-isWhitelistedCollateral-address-}
+# Function `isWhitelistedCollateral(address _collateral) → bool`
 
 No description
 
-# Function `isWhitelistedOtoken(address _otoken) → bool` {#WhitelistInterface-isWhitelistedOtoken-address-}
+# Function `isWhitelistedOtoken(address _otoken) → bool`
 
 No description
 
-# Function `whitelistProduct(address _underlying, address _strike, address _collateral, bool _isPut)` {#WhitelistInterface-whitelistProduct-address-address-address-bool-}
+# Function `whitelistProduct(address _underlying, address _strike, address _collateral, bool _isPut)`
 
 No description
 
-# Function `whitelistCollateral(address _collateral)` {#WhitelistInterface-whitelistCollateral-address-}
+# Function `whitelistCollateral(address _collateral)`
 
 No description
 
-# Function `whitelistOtoken(address _otoken)` {#WhitelistInterface-whitelistOtoken-address-}
+# Function `whitelistOtoken(address _otoken)`
 
 No description
 
-# Function `isWhitelistedCallee(address _callee) → bool` {#WhitelistInterface-isWhitelistedCallee-address-}
+# Function `isWhitelistedCallee(address _callee) → bool`
 
 No description

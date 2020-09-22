@@ -4,10 +4,10 @@
 
 - [`getExpiredCashValue(address _otoken)`]
 
-# Function `constructor(address _addressBook)` {#CalculatorTester-constructor-address-}
+# Function `constructor(address _addressBook)`
 
 No description
 
-# Function `getExpiredCashValue(address _otoken) → uint256` {#CalculatorTester-getExpiredCashValue-address-}
+# Function `getExpiredCashValue(address _otoken) → uint256`
 
 No description

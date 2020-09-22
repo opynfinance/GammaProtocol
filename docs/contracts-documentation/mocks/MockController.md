@@ -6,7 +6,7 @@
 
 - [`testBurnOtoken(address _otoken, address _account, uint256 _amount)`]
 
-# Function `initialize(address _addressBook, address _owner)` {#MockController-initialize-address-address-}
+# Function `initialize(address _addressBook, address _owner)`
 
 this function is invoked by the proxy contract when this contract is added to the
 
@@ -16,10 +16,10 @@ AddressBook.
 
 - `_addressBook`: the address of the AddressBook*
 
-# Function `testMintOtoken(address _otoken, address _account, uint256 _amount)` {#MockController-testMintOtoken-address-address-uint256-}
+# Function `testMintOtoken(address _otoken, address _account, uint256 _amount)`
 
 this function is used to test if controller can mint otokens
 
-# Function `testBurnOtoken(address _otoken, address _account, uint256 _amount)` {#MockController-testBurnOtoken-address-address-uint256-}
+# Function `testBurnOtoken(address _otoken, address _account, uint256 _amount)`
 
 this function is used to test if controller can burn otokens

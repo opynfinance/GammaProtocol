@@ -12,26 +12,26 @@
 
 - [`setLatestAnswer(int256 _answer)`]
 
-# Function `getAnswer(uint256 _roundId) → int256` {#MockChainlinkAggregator-getAnswer-uint256-}
+# Function `getAnswer(uint256 _roundId) → int256`
 
 No description
 
-# Function `getTimestamp(uint256 _roundId) → uint256` {#MockChainlinkAggregator-getTimestamp-uint256-}
+# Function `getTimestamp(uint256 _roundId) → uint256`
 
 No description
 
-# Function `latestAnswer() → int256` {#MockChainlinkAggregator-latestAnswer--}
+# Function `latestAnswer() → int256`
 
 No description
 
-# Function `setRoundTimestamp(uint256 _roundId, uint256 _timestamp)` {#MockChainlinkAggregator-setRoundTimestamp-uint256-uint256-}
+# Function `setRoundTimestamp(uint256 _roundId, uint256 _timestamp)`
 
 function to mock setting round timestamp
 
-# Function `setRoundAnswer(uint256 _roundId, int256 _answer)` {#MockChainlinkAggregator-setRoundAnswer-uint256-int256-}
+# Function `setRoundAnswer(uint256 _roundId, int256 _answer)`
 
 function to mock setting round timestamp
 
-# Function `setLatestAnswer(int256 _answer)` {#MockChainlinkAggregator-setLatestAnswer-int256-}
+# Function `setLatestAnswer(int256 _answer)`
 
 No description

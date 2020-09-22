@@ -66,7 +66,7 @@
 
 - [`CallRestricted(bool isRestricted)`]
 
-# Function `initialize(address _addressBook, address _owner)` {#Controller-initialize-address-address-}
+# Function `initialize(address _addressBook, address _owner)`
 
 No description
 
@@ -76,7 +76,7 @@ No description
 
 - `_owner`: account owner address
 
-# Function `setSystemPaused(bool _paused)` {#Controller-setSystemPaused-bool-}
+# Function `setSystemPaused(bool _paused)`
 
 can only be called by the pauser
 
@@ -84,7 +84,7 @@ can only be called by the pauser
 
 - `_paused`: new boolean value to set systemPaused to
 
-# Function `setEmergencyShutdown(bool _shutdown)` {#Controller-setEmergencyShutdown-bool-}
+# Function `setEmergencyShutdown(bool _shutdown)`
 
 can only be called by the terminator
 
@@ -92,7 +92,7 @@ can only be called by the terminator
 
 - `_shutdown`: new boolean value to set systemShutdown to
 
-# Function `setTerminator(address _terminator)` {#Controller-setTerminator-address-}
+# Function `setTerminator(address _terminator)`
 
 can only be called by the owner
 
@@ -100,7 +100,7 @@ can only be called by the owner
 
 - `_terminator`: new terminator address
 
-# Function `setPauser(address _pauser)` {#Controller-setPauser-address-}
+# Function `setPauser(address _pauser)`
 
 can only be called by the owner
 
@@ -108,7 +108,7 @@ can only be called by the owner
 
 - `_pauser`: new pauser address
 
-# Function `setCallRestriction(bool _isRestricted)` {#Controller-setCallRestriction-bool-}
+# Function `setCallRestriction(bool _isRestricted)`
 
 can only be called by the owner
 
@@ -116,7 +116,7 @@ can only be called by the owner
 
 - `_isRestricted`: new call restriction
 
-# Function `setOperator(address _operator, bool _isOperator)` {#Controller-setOperator-address-bool-}
+# Function `setOperator(address _operator, bool _isOperator)`
 
 can only be updated by the vault owner
 
@@ -126,11 +126,11 @@ can only be updated by the vault owner
 
 - `_isOperator`: new boolean value that expresses if the sender is giving or revoking privileges for _operator
 
-# Function `refreshConfiguration()` {#Controller-refreshConfiguration--}
+# Function `refreshConfiguration()`
 
 updates the configuration of the controller. can only be called by the owner
 
-# Function `operate(struct Actions.ActionArgs[] _actions)` {#Controller-operate-struct-Actions-ActionArgs---}
+# Function `operate(struct Actions.ActionArgs[] _actions)`
 
 can only be called when the system is not shutdown
 
@@ -138,7 +138,7 @@ can only be called when the system is not shutdown
 
 - `_actions`: array of actions arguments
 
-# Function `isOperator(address _owner, address _operator) → bool` {#Controller-isOperator-address-address-}
+# Function `isOperator(address _owner, address _operator) → bool`
 
 No description
 
@@ -152,7 +152,7 @@ No description
 
 - true if the _operator is an approved operator for the _owner account
 
-# Function `getConfiguration() → address, address, address, address` {#Controller-getConfiguration--}
+# Function `getConfiguration() → address, address, address, address`
 
 No description
 
@@ -166,7 +166,7 @@ No description
 
 - the address of the pool module
 
-# Function `getVaultBalances(address _owner, uint256 _vaultId) → struct MarginAccount.Vault` {#Controller-getVaultBalances-address-uint256-}
+# Function `getVaultBalances(address _owner, uint256 _vaultId) → struct MarginAccount.Vault`
 
 if vault has no short oToken or the issued oToken is not expired yet, return the vault, else call getExcessCollateral and return it as collateral amount inside Vault struct.
 
@@ -180,7 +180,7 @@ if vault has no short oToken or the issued oToken is not expired yet, return the
 
 - Vault struct with balances
 
-# Function `isPriceFinalized(address _otoken) → bool` {#Controller-isPriceFinalized-address-}
+# Function `isPriceFinalized(address _otoken) → bool`
 
 return if an expired oToken contract’s settlement price has been finalized
 
@@ -192,7 +192,7 @@ return if an expired oToken contract’s settlement price has been finalized
 
 - true if the oToken has expired AND the oraclePrice at the expiry timestamp has been finalized, otherwise it returns false
 
-# Function `getAccountVaultCounter(address _accountOwner) → uint256` {#Controller-getAccountVaultCounter-address-}
+# Function `getAccountVaultCounter(address _accountOwner) → uint256`
 
 No description
 
@@ -204,7 +204,7 @@ No description
 
 - number of vaults
 
-# Function `isExpired(address _otoken) → bool` {#Controller-isExpired-address-}
+# Function `isExpired(address _otoken) → bool`
 
 No description
 
@@ -216,7 +216,7 @@ No description
 
 - true if the otoken has expired, otherwise it returns false
 
-# Function `getVault(address _owner, uint256 _vaultId) → struct MarginAccount.Vault` {#Controller-getVault-address-uint256-}
+# Function `getVault(address _owner, uint256 _vaultId) → struct MarginAccount.Vault`
 
 No description
 
@@ -230,66 +230,66 @@ No description
 
 - Vault struct that corresponds to the _vaultId of _owner
 
-# Event `AccountOperatorUpdated(address accountOwner, address operator, bool isSet)` {#Controller-AccountOperatorUpdated-address-address-bool-}
+# Event `AccountOperatorUpdated(address accountOwner, address operator, bool isSet)`
 
 No description
 
-# Event `VaultOpened(address accountOwner, uint256 vaultId)` {#Controller-VaultOpened-address-uint256-}
+# Event `VaultOpened(address accountOwner, uint256 vaultId)`
 
 No description
 
-# Event `LongOtokenDeposited(address otoken, address accountOwner, address from, uint256 vaultId, uint256 amount)` {#Controller-LongOtokenDeposited-address-address-address-uint256-uint256-}
+# Event `LongOtokenDeposited(address otoken, address accountOwner, address from, uint256 vaultId, uint256 amount)`
 
 No description
 
-# Event `LongOtokenWithdrawed(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 amount)` {#Controller-LongOtokenWithdrawed-address-address-address-uint256-uint256-}
+# Event `LongOtokenWithdrawed(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 amount)`
 
 No description
 
-# Event `CollateralAssetDeposited(address asset, address accountOwner, address from, uint256 vaultId, uint256 amount)` {#Controller-CollateralAssetDeposited-address-address-address-uint256-uint256-}
+# Event `CollateralAssetDeposited(address asset, address accountOwner, address from, uint256 vaultId, uint256 amount)`
 
 No description
 
-# Event `CollateralAssetWithdrawed(address asset, address AccountOwner, address to, uint256 vaultId, uint256 amount)` {#Controller-CollateralAssetWithdrawed-address-address-address-uint256-uint256-}
+# Event `CollateralAssetWithdrawed(address asset, address AccountOwner, address to, uint256 vaultId, uint256 amount)`
 
 No description
 
-# Event `ShortOtokenMinted(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 amount)` {#Controller-ShortOtokenMinted-address-address-address-uint256-uint256-}
+# Event `ShortOtokenMinted(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 amount)`
 
 No description
 
-# Event `ShortOtokenBurned(address otoken, address AccountOwner, address from, uint256 vaultId, uint256 amount)` {#Controller-ShortOtokenBurned-address-address-address-uint256-uint256-}
+# Event `ShortOtokenBurned(address otoken, address AccountOwner, address from, uint256 vaultId, uint256 amount)`
 
 No description
 
-# Event `Exercise(address otoken, address exerciser, address receiver, address collateralAsset, uint256 otokenBurned, uint256 payout)` {#Controller-Exercise-address-address-address-address-uint256-uint256-}
+# Event `Exercise(address otoken, address exerciser, address receiver, address collateralAsset, uint256 otokenBurned, uint256 payout)`
 
 No description
 
-# Event `VaultSettled(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 payout)` {#Controller-VaultSettled-address-address-address-uint256-uint256-}
+# Event `VaultSettled(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 payout)`
 
 No description
 
-# Event `CallExecuted(address from, address to, address vaultOwner, uint256 vaultId, bytes data)` {#Controller-CallExecuted-address-address-address-uint256-bytes-}
+# Event `CallExecuted(address from, address to, address vaultOwner, uint256 vaultId, bytes data)`
 
 No description
 
-# Event `TerminatorUpdated(address oldTerminator, address newTerminator)` {#Controller-TerminatorUpdated-address-address-}
+# Event `TerminatorUpdated(address oldTerminator, address newTerminator)`
 
 No description
 
-# Event `PauserUpdated(address oldPauser, address newPauser)` {#Controller-PauserUpdated-address-address-}
+# Event `PauserUpdated(address oldPauser, address newPauser)`
 
 No description
 
-# Event `SystemPaused(bool isActive)` {#Controller-SystemPaused-bool-}
+# Event `SystemPaused(bool isActive)`
 
 No description
 
-# Event `EmergencyShutdown(bool isActive)` {#Controller-EmergencyShutdown-bool-}
+# Event `EmergencyShutdown(bool isActive)`
 
 No description
 
-# Event `CallRestricted(bool isRestricted)` {#Controller-CallRestricted-bool-}
+# Event `CallRestricted(bool isRestricted)`
 
 No description

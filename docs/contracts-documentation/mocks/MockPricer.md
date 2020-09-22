@@ -8,18 +8,18 @@
 
 - [`setExpiryPriceToOralce(uint256 _expiryTimestamp, uint256 _price)`]
 
-# Function `constructor(address _asset, address _oracle)` {#MockPricer-constructor-address-address-}
+# Function `constructor(address _asset, address _oracle)`
 
 No description
 
-# Function `setPrice(uint256 _price)` {#MockPricer-setPrice-uint256-}
+# Function `setPrice(uint256 _price)`
 
 No description
 
-# Function `getPrice() → uint256` {#MockPricer-getPrice--}
+# Function `getPrice() → uint256`
 
 No description
 
-# Function `setExpiryPriceToOralce(uint256 _expiryTimestamp, uint256 _price)` {#MockPricer-setExpiryPriceToOralce-uint256-uint256-}
+# Function `setExpiryPriceToOralce(uint256 _expiryTimestamp, uint256 _price)`
 
 No description

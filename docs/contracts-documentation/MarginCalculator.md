@@ -6,11 +6,11 @@
 
 - [`getExcessCollateral(struct MarginAccount.Vault _vault)`]
 
-# Function `constructor(address _addressBook)` {#MarginCalculator-constructor-address-}
+# Function `constructor(address _addressBook)`
 
 No description
 
-# Function `getExpiredPayoutRate(address _otoken) → uint256` {#MarginCalculator-getExpiredPayoutRate-address-}
+# Function `getExpiredPayoutRate(address _otoken) → uint256`
 
 No description
 
@@ -22,7 +22,7 @@ No description
 
 - the exchange rate that shows how much collateral unit can be take out by 1 otoken unit, scaled by 1e18
 
-# Function `getExcessCollateral(struct MarginAccount.Vault _vault) → uint256, bool` {#MarginCalculator-getExcessCollateral-struct-MarginAccount-Vault-}
+# Function `getExcessCollateral(struct MarginAccount.Vault _vault) → uint256, bool`
 
 No description
 

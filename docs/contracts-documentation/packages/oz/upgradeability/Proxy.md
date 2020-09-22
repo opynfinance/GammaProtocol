@@ -6,7 +6,7 @@ Gives the possibility to delegate any call to a foreign implementation.
 
 - [`fallback()`]
 
-# Function `implementation() → address` {#Proxy-implementation--}
+# Function `implementation() → address`
 
 Tells the address of the implementation where every call will be delegated.
 
@@ -14,7 +14,7 @@ Tells the address of the implementation where every call will be delegated.
 
 - address of the implementation to which it will be delegated
 
-# Function `fallback()` {#Proxy-fallback--}
+# Function `fallback()`
 
 Fallback function allowing to perform a delegatecall to the given implementation.
 

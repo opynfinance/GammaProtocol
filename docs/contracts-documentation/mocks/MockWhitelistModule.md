@@ -18,38 +18,38 @@
 
 - [`blacklistCallee(address _callee)`]
 
-# Function `whitelistProduct(address _underlying, address _strike, address _collateral, bool _isPut) → bytes32 id` {#MockWhitelistModule-whitelistProduct-address-address-address-bool-}
+# Function `whitelistProduct(address _underlying, address _strike, address _collateral, bool _isPut) → bytes32 id`
 
 No description
 
-# Function `isWhitelistedProduct(address _underlying, address _strike, address _collateral, bool _isPut) → bool isValid` {#MockWhitelistModule-isWhitelistedProduct-address-address-address-bool-}
+# Function `isWhitelistedProduct(address _underlying, address _strike, address _collateral, bool _isPut) → bool isValid`
 
 No description
 
-# Function `whitelistOtoken(address _otoken)` {#MockWhitelistModule-whitelistOtoken-address-}
+# Function `whitelistOtoken(address _otoken)`
 
 No description
 
-# Function `isWhitelistedOtoken(address _otoken) → bool` {#MockWhitelistModule-isWhitelistedOtoken-address-}
+# Function `isWhitelistedOtoken(address _otoken) → bool`
 
 No description
 
-# Function `isWhitelistedCollateral(address _collateral) → bool` {#MockWhitelistModule-isWhitelistedCollateral-address-}
+# Function `isWhitelistedCollateral(address _collateral) → bool`
 
 No description
 
-# Function `whitelistCollateral(address _collateral)` {#MockWhitelistModule-whitelistCollateral-address-}
+# Function `whitelistCollateral(address _collateral)`
 
 No description
 
-# Function `isWhitelistedCallee(address _callee) → bool` {#MockWhitelistModule-isWhitelistedCallee-address-}
+# Function `isWhitelistedCallee(address _callee) → bool`
 
 No description
 
-# Function `whitelisteCallee(address _callee)` {#MockWhitelistModule-whitelisteCallee-address-}
+# Function `whitelisteCallee(address _callee)`
 
 No description
 
-# Function `blacklistCallee(address _callee)` {#MockWhitelistModule-blacklistCallee-address-}
+# Function `blacklistCallee(address _callee)`
 
 No description

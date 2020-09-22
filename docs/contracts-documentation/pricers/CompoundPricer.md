@@ -6,7 +6,7 @@
 
 - [`setExpiryPriceToOralce(uint256 _expiryTimestamp)`]
 
-# Function `constructor(address _cToken, address _underlying, address _underlyingPricer, address _oracle)` {#CompoundPricer-constructor-address-address-address-address-}
+# Function `constructor(address _cToken, address _underlying, address _underlyingPricer, address _oracle)`
 
 No description
 
@@ -20,7 +20,7 @@ No description
 
 - `_oracle`: the Opyn Oracle contract address.
 
-# Function `getPrice() → uint256` {#CompoundPricer-getPrice--}
+# Function `getPrice() → uint256`
 
 overides the getPrice function in OpynPricerInterface.
 
@@ -28,7 +28,7 @@ overides the getPrice function in OpynPricerInterface.
 
 - price of 1e8 cToken worth in USD, scaled by 1e18.
 
-# Function `setExpiryPriceToOralce(uint256 _expiryTimestamp)` {#CompoundPricer-setExpiryPriceToOralce-uint256-}
+# Function `setExpiryPriceToOralce(uint256 _expiryTimestamp)`
 
 No description
 

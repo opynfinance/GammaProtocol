@@ -6,14 +6,14 @@
 
 - [`getExcessCollateral(struct MarginAccount.Vault _vault)`]
 
-# Function `constructor(address _addressBook)` {#MockMarginCalculator-constructor-address-}
+# Function `constructor(address _addressBook)`
 
 No description
 
-# Function `getExpiredCashValue(address _otoken) → uint256` {#MockMarginCalculator-getExpiredCashValue-address-}
+# Function `getExpiredCashValue(address _otoken) → uint256`
 
 No description
 
-# Function `getExcessCollateral(struct MarginAccount.Vault _vault) → uint256, bool` {#MockMarginCalculator-getExcessCollateral-struct-MarginAccount-Vault-}
+# Function `getExcessCollateral(struct MarginAccount.Vault _vault) → uint256, bool`
 
 No description

@@ -8,7 +8,7 @@ This contract represents a proxy where the implementation address to which it wi
 
 - [`Upgraded(address implementation)`]
 
-# Function `implementation() → address impl` {#UpgradeabilityProxy-implementation--}
+# Function `implementation() → address impl`
 
 Tells the address of the current implementation
 
@@ -16,7 +16,7 @@ Tells the address of the current implementation
 
 - impl address of the current implementation
 
-# Event `Upgraded(address implementation)` {#UpgradeabilityProxy-Upgraded-address-}
+# Event `Upgraded(address implementation)`
 
 This event will be emitted every time the implementation gets upgraded
 

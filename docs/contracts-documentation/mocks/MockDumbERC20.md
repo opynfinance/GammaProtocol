@@ -26,54 +26,54 @@
 
 - [`setLocked(bool locked_)`]
 
-# Function `constructor(string name_, string symbol_, uint8 decimals_)` {#MockDumbERC20-constructor-string-string-uint8-}
+# Function `constructor(string name_, string symbol_, uint8 decimals_)`
 
 No description
 
-# Function `name() → string` {#MockDumbERC20-name--}
+# Function `name() → string`
 
 No description
 
-# Function `symbol() → string` {#MockDumbERC20-symbol--}
+# Function `symbol() → string`
 
 No description
 
-# Function `decimals() → uint8` {#MockDumbERC20-decimals--}
+# Function `decimals() → uint8`
 
 No description
 
-# Function `totalSupply() → uint256` {#MockDumbERC20-totalSupply--}
+# Function `totalSupply() → uint256`
 
 No description
 
-# Function `balanceOf(address account) → uint256` {#MockDumbERC20-balanceOf-address-}
+# Function `balanceOf(address account) → uint256`
 
 No description
 
-# Function `transfer(address recipient, uint256 amount) → bool` {#MockDumbERC20-transfer-address-uint256-}
+# Function `transfer(address recipient, uint256 amount) → bool`
 
 No description
 
-# Function `allowance(address owner, address spender) → uint256` {#MockDumbERC20-allowance-address-address-}
+# Function `allowance(address owner, address spender) → uint256`
 
 No description
 
-# Function `approve(address spender, uint256 amount) → bool` {#MockDumbERC20-approve-address-uint256-}
+# Function `approve(address spender, uint256 amount) → bool`
 
 No description
 
-# Function `transferFrom(address sender, address recipient, uint256 amount) → bool` {#MockDumbERC20-transferFrom-address-address-uint256-}
+# Function `transferFrom(address sender, address recipient, uint256 amount) → bool`
 
 No description
 
-# Function `mint(address recipient, uint256 amount)` {#MockDumbERC20-mint-address-uint256-}
+# Function `mint(address recipient, uint256 amount)`
 
 No description
 
-# Function `burn(address recipient, uint256 amount)` {#MockDumbERC20-burn-address-uint256-}
+# Function `burn(address recipient, uint256 amount)`
 
 No description
 
-# Function `setLocked(bool locked_)` {#MockDumbERC20-setLocked-bool-}
+# Function `setLocked(bool locked_)`
 
 No description

@@ -6,14 +6,14 @@
 
 - [`setExchangeRate(uint256 _exchangeRateStored)`]
 
-# Function `constructor(string _name, string _symbol)` {#MockCToken-constructor-string-string-}
+# Function `constructor(string _name, string _symbol)`
 
 No description
 
-# Function `mint(address account, uint256 amount)` {#MockCToken-mint-address-uint256-}
+# Function `mint(address account, uint256 amount)`
 
 No description
 
-# Function `setExchangeRate(uint256 _exchangeRateStored)` {#MockCToken-setExchangeRate-uint256-}
+# Function `setExchangeRate(uint256 _exchangeRateStored)`
 
 No description
