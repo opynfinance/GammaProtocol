@@ -41,7 +41,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
       assert.equal(await otoken.collateralAsset(), usdc.address)
       assert.equal((await otoken.strikePrice()).toString(), strikePrice.toString())
       assert.equal(await otoken.isPut(), isPut)
-      assert.equal((await otoken.expiry()).toNumber(), expiry)
+      assert.equal((await otoken.expiryTimestamp()).toNumber(), expiry)
     })
 
     it('should initilized the put option with valid name / symbol', async () => {
@@ -53,14 +53,14 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
     it('should revert when init is called again with the same parameters', async () => {
       await expectRevert(
         otoken.init(addressBookAddr, ETH_ADDR, usdc.address, usdc.address, strikePrice, expiry, isPut),
-        'Contract instance has already been initialized.',
+        'Contract instance has already been initialized',
       )
     })
 
     it('should revert when init is called again with different parameters', async () => {
       await expectRevert(
         otoken.init(addressBookAddr, usdc.address, ETH_ADDR, ETH_ADDR, strikePrice, expiry, false),
-        'Contract instance has already been initialized.',
+        'Contract instance has already been initialized',
       )
     })
 
@@ -217,14 +217,14 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
     it('should revert when minting from random address', async () => {
       await expectRevert(
         otoken.mintOtoken(user1, amountToMint, {from: random}),
-        'Otoken: Only Controller can mint Otokens.',
+        'Otoken: Only Controller can mint Otokens',
       )
     })
 
     it('should revert when someone try to mint for himself.', async () => {
       await expectRevert(
         otoken.mintOtoken(user1, amountToMint, {from: user1}),
-        'Otoken: Only Controller can mint Otokens.',
+        'Otoken: Only Controller can mint Otokens',
       )
     })
   })
@@ -264,14 +264,14 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
     it('should revert when burning from random address', async () => {
       await expectRevert(
         otoken.burnOtoken(user1, amountToMint, {from: random}),
-        'Otoken: Only Controller can burn Otokens.',
+        'Otoken: Only Controller can burn Otokens',
       )
     })
 
     it('should revert when someone trys to burn for himeself', async () => {
       await expectRevert(
         otoken.burnOtoken(user1, amountToMint, {from: user1}),
-        'Otoken: Only Controller can burn Otokens.',
+        'Otoken: Only Controller can burn Otokens',
       )
     })
 
