@@ -56,7 +56,8 @@
     "test": "CI=true truffle test",
     "coverage": "truffle run coverage",
     "contract-size": "truffle run contract-size --checkMaxSize",
-    "test:unit": "truffle test ./test/unit-tests/*.ts"
+    "test:unit": "truffle test ./test/unit-tests/*.ts",
+    "test:integration": "truffle test ./test/integration-tests/*.ts"
   },
   "husky": {
     "hooks": {
