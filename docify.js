@@ -1,24 +1,28 @@
 const NODE_DIR     = "node_modules";
 const INPUT_DIR    = "contracts";
-const CONFIG_DIR   = "docs/contracts-documentation/";
+const CONFIG_DIR   = "docs";
 const OUTPUT_DIR   = "docs/contracts-documentation";
 const README_FILE  = "README.md";
 const SUMMARY_FILE = "docs/contracts-documentation/SUMMARY.md";
-const EXCLUDE_FILE = "docs/contracts-documentation/exclude.txt";
+const EXCLUDE_LIST = ["packages", "interfaces", "mocks", "tests"]
 
 const fs        = require("fs");
 const path      = require("path");
 const spawnSync = require("child_process").spawnSync;
 
-const excludeList  = lines(EXCLUDE_FILE).map(line => INPUT_DIR + "/" + line);
 const relativePath = path.relative(path.dirname(SUMMARY_FILE), OUTPUT_DIR);
 
-function lines(pathName) {
-    return fs.readFileSync(pathName, {encoding: "utf8"}).split("\r").join("").split("\n");
+function exclude(pathName) {
+    for(i = 0; i < EXCLUDE_LIST.length; i++) {
+        if(pathName.includes(EXCLUDE_LIST[i])) {
+            return true;
+        }
+    }
+    return false;
 }
 
 function scan(pathName, indentation) {
-    if (!excludeList.includes(pathName)) {
+    if (!exclude(pathName)) {
         if (fs.lstatSync(pathName).isDirectory()) {
             fs.appendFileSync(SUMMARY_FILE, indentation + "* " + path.basename(pathName) + "\n");
             for (const fileName of fs.readdirSync(pathName))
@@ -38,7 +42,9 @@ function fix(pathName) {
             fix(pathName + "/" + fileName);
     }
     else if (pathName.endsWith(".md")) {
-        fs.writeFileSync(pathName, lines(pathName).filter(line => line.trim().length > 0).join("\n\n") + "\n");
+        const lines = fs.readFileSync(pathName, {encoding: "utf8"}).split("\r").join("").split("\n");
+        fs.unlinkSync(pathName)
+        fs.writeFileSync(pathName.toLowerCase(), lines.filter(line => line.trim().length > 0).join("\n\n") + "\n");
     }
 }
 
