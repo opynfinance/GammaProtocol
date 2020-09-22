@@ -131,10 +131,10 @@ contract('Naked Put Option closed before expiry flow', ([accountOwner1, buyer]) 
 
     // mint usdc to user
     const accountOwner1Usdc = createTokenAmount(2 * collateralAmount, usdcDecimals)
-    usdc.mint(accountOwner1, accountOwner1Usdc)
+    await usdc.mint(accountOwner1, accountOwner1Usdc)
 
     // have the user approve all the usdc transfers
-    usdc.approve(marginPool.address, accountOwner1Usdc, {from: accountOwner1})
+    await usdc.approve(marginPool.address, accountOwner1Usdc, {from: accountOwner1})
     // get the vault counter
     const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
     vaultCounter = vaultCounterBefore.toNumber() + 1
@@ -419,7 +419,7 @@ contract('Naked Put Option closed before expiry flow', ([accountOwner1, buyer]) 
       const buyerBalanceBeforeSell = new BigNumber(await ethPut.balanceOf(buyer))
 
       // owner sells their put option
-      ethPut.transfer(buyer, scaledOptionsAmount, {from: accountOwner1})
+      await ethPut.transfer(buyer, scaledOptionsAmount, {from: accountOwner1})
 
       const ownerOtokenBalanceAfterSell = new BigNumber(await ethPut.balanceOf(accountOwner1))
       const buyerBalanceAfterSell = new BigNumber(await ethPut.balanceOf(buyer))
@@ -431,7 +431,7 @@ contract('Naked Put Option closed before expiry flow', ([accountOwner1, buyer]) 
       assert.equal(buyerBalanceBeforeSell.plus(scaledOptionsAmount).toString(), buyerBalanceAfterSell.toString())
 
       // owner buys back their put option
-      ethPut.transfer(accountOwner1, scaledOptionsAmount, {from: buyer})
+      await ethPut.transfer(accountOwner1, scaledOptionsAmount, {from: buyer})
     })
 
     it('should be able to close out the short position', async () => {

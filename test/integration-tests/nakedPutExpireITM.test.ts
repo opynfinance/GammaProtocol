@@ -262,7 +262,7 @@ contract('Naked Put Option expires Itm flow', ([accountOwner1, buyer]) => {
 
     it('Buyer: exercise ITM put option after expiry', async () => {
       // owner sells their put option
-      ethPut.transfer(buyer, scaledOptionsAmount, {from: accountOwner1})
+      await ethPut.transfer(buyer, scaledOptionsAmount, {from: accountOwner1})
       // oracle orice decreases
       const strikePriceChange = Math.max(strikePrice - expirySpotPrice, 0)
 

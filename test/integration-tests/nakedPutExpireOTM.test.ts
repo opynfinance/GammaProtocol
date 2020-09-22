@@ -130,10 +130,10 @@ contract('Naked Put Option expires Otm flow', ([accountOwner1, buyer]) => {
 
     // mint usdc to user
     const accountOwner1Usdc = createTokenAmount(2 * collateralAmount, usdcDecimals)
-    usdc.mint(accountOwner1, accountOwner1Usdc)
+    await usdc.mint(accountOwner1, accountOwner1Usdc)
 
     // have the user approve all the usdc transfers
-    usdc.approve(marginPool.address, accountOwner1Usdc, {from: accountOwner1})
+    await usdc.approve(marginPool.address, accountOwner1Usdc, {from: accountOwner1})
 
     const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
     vaultCounter = vaultCounterBefore.toNumber() + 1
@@ -265,7 +265,7 @@ contract('Naked Put Option expires Otm flow', ([accountOwner1, buyer]) => {
 
     it('Buyer: exercise OTM put option after expiry', async () => {
       // owner sells their put option
-      ethPut.transfer(buyer, scaledOptionsAmount, {from: accountOwner1})
+      await ethPut.transfer(buyer, scaledOptionsAmount, {from: accountOwner1})
 
       // Keep track of balances before
       const ownerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(buyer))
