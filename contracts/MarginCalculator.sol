@@ -322,7 +322,8 @@ contract MarginCalculator {
             long.underlyingAsset() == short.underlyingAsset() &&
             long.strikeAsset() == short.strikeAsset() &&
             long.collateralAsset() == short.collateralAsset() &&
-            long.expiryTimestamp() == short.expiryTimestamp();
+            long.expiryTimestamp() == short.expiryTimestamp() &&
+            long.isPut() == short.isPut();
     }
 
     /**
