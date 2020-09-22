@@ -1,3 +1,7 @@
+## `CompoundPricer`
+
+A Pricer contract for Compound Asset.
+
 # Functions:
 
 - `constructor(address _cToken, address _underlying, address _underlyingPricer, address _oracle) (public)`

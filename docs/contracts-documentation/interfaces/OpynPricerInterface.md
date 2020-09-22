@@ -1,3 +1,5 @@
+## `OpynPricerInterface`
+
 # Functions:
 
 - `getPrice() (external)`

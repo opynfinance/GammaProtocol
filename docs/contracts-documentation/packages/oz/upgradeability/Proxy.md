@@ -1,3 +1,5 @@
+## `Proxy`
+
 Gives the possibility to delegate any call to a foreign implementation.
 
 # Functions:

@@ -1,3 +1,5 @@
+## `OwnableUpgradeSafe`
+
 Contract module which provides a basic access control mechanism, where
 
 there is an account (an owner) that can be granted exclusive access to
@@ -14,6 +16,10 @@ This module is used through inheritance. It will make available the modifier
 
 the owner.
 
+# Modifiers:
+
+- `onlyOwner()`
+
 # Functions:
 
 - `__Ownable_init(address _sender) (internal)`
@@ -28,7 +34,11 @@ the owner.
 
 # Events:
 
-- [`OwnershipTransferred(address previousOwner, address newOwner)`]
+- `OwnershipTransferred(address previousOwner, address newOwner)`
+
+# Modifier `onlyOwner()`
+
+Throws if called by any account other than the owner.
 
 # Function `__Ownable_init(address _sender)` (internal)
 

@@ -1,3 +1,13 @@
+## `MarginPool`
+
+contract that hold all protocol funds
+
+# Modifiers:
+
+- `onlyController()`
+
+- `onlyFarmer()`
+
 # Functions:
 
 - `constructor(address _addressBook) (public)`
@@ -18,9 +28,17 @@
 
 # Events:
 
-- [`FarmerUpdated(address oldAddress, address newAddress)`]
+- `FarmerUpdated(address oldAddress, address newAddress)`
 
-- [`AssetFarmed(address asset, address receiver, uint256 _amount)`]
+- `AssetFarmed(address asset, address receiver, uint256 _amount)`
+
+# Modifier `onlyController()`
+
+check if the sender is the Controller module
+
+# Modifier `onlyFarmer()`
+
+check if the sender is the farmer address
 
 # Function `constructor(address _addressBook)` (public)
 

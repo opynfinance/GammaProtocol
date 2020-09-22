@@ -1,3 +1,5 @@
+## `AddressBook`
+
 # Functions:
 
 - `getOtokenImpl() (external)`
@@ -40,9 +42,9 @@
 
 # Events:
 
-- [`ProxyCreated(bytes32 id, address proxy)`]
+- `ProxyCreated(bytes32 id, address proxy)`
 
-- [`AddressAdded(bytes32 id, address add)`]
+- `AddressAdded(bytes32 id, address add)`
 
 # Function `getOtokenImpl() → address` (external)
 

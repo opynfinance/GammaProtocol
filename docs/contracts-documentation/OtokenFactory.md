@@ -1,3 +1,9 @@
+## `OtokenFactory`
+
+SPDX-License-Identifier: UNLICENSED
+
+Create new otokens and keep track of all created tokens.
+
 Calculate contract address before each creation with CREATE2
 
 and deploy eip-1167 minimal proxies for otoken logic contract.
@@ -18,7 +24,7 @@ and deploy eip-1167 minimal proxies for otoken logic contract.
 
 # Events:
 
-- [`OtokenCreated(address tokenAddress, address creator, address underlying, address strike, address collateral, uint256 strikePrice, uint256 expiry, bool isPut)`]
+- `OtokenCreated(address tokenAddress, address creator, address underlying, address strike, address collateral, uint256 strikePrice, uint256 expiry, bool isPut)`
 
 # Function `constructor(address _addressBook)` (public)
 

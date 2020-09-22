@@ -1,3 +1,7 @@
+## `MockController`
+
+Upgradeable Controller that can mock minting and burning calls from controller.
+
 # Functions:
 
 - `initialize(address _addressBook, address _owner) (external)`

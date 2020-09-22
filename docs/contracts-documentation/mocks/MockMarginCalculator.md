@@ -1,3 +1,5 @@
+## `MockMarginCalculator`
+
 # Functions:
 
 - `constructor(address _addressBook) (public)`

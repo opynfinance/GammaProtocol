@@ -1,3 +1,5 @@
+## `MarginPoolInterface`
+
 # Functions:
 
 - `transferToPool(address _asset, address _user, uint256 _amount) (external)`

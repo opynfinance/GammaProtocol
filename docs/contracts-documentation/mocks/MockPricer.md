@@ -1,3 +1,5 @@
+## `MockPricer`
+
 # Functions:
 
 - `constructor(address _asset, address _oracle) (public)`

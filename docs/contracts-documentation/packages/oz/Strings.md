@@ -1,3 +1,5 @@
+## `Strings`
+
 String operations.
 
 # Functions:

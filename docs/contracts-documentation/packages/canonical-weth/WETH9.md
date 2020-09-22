@@ -1,3 +1,5 @@
+## `WETH9`
+
 A wrapper to use ETH as collateral
 
 # Functions:
@@ -18,13 +20,13 @@ A wrapper to use ETH as collateral
 
 # Events:
 
-- [`Approval(address src, address guy, uint256 wad)`]
+- `Approval(address src, address guy, uint256 wad)`
 
-- [`Transfer(address src, address dst, uint256 wad)`]
+- `Transfer(address src, address dst, uint256 wad)`
 
-- [`Deposit(address dst, uint256 wad)`]
+- `Deposit(address dst, uint256 wad)`
 
-- [`Withdrawal(address src, uint256 wad)`]
+- `Withdrawal(address src, uint256 wad)`
 
 # Function `receive()` (external)
 

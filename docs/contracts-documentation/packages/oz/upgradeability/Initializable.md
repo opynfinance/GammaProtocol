@@ -1,3 +1,5 @@
+## `Initializable`
+
 Helper contract to support initializer functions. To use it, replace
 
 the constructor with a function that has the `initializer` modifier.
@@ -13,3 +15,11 @@ WARNING: When used with inheritance, manual care must be taken to not invoke
 a parent initializer twice, or ensure that all initializers are idempotent,
 
 because this is not dealt with automatically as with constructors.
+
+# Modifiers:
+
+- `initializer()`
+
+# Modifier `initializer()`
+
+Modifier to use in the initializer function of a contract.

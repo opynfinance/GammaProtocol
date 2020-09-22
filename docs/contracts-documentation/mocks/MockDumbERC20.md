@@ -1,3 +1,7 @@
+## `MockDumbERC20`
+
+ERC20 Token that return false when operation failed
+
 # Functions:
 
 - `constructor(string name_, string symbol_, uint8 decimals_) (public)`

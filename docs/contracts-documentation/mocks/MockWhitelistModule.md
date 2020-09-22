@@ -1,3 +1,5 @@
+## `MockWhitelistModule`
+
 # Functions:
 
 - `whitelistProduct(address _underlying, address _strike, address _collateral, bool _isPut) (external)`

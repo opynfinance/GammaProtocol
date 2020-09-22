@@ -1,3 +1,7 @@
+## `MockOtoken`
+
+SPDX-License-Identifier: UNLICENSED
+
 The Otoken inherits ERC20Initializable because we need to use the init instead of constructor.
 
 # Functions:

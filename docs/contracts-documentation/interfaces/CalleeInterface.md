@@ -1,3 +1,5 @@
+## `CalleeInterface`
+
 Contract interface that can be called from Controller as a call action.
 
 # Functions:

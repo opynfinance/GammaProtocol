@@ -1,3 +1,5 @@
+## `Actions`
+
 # Functions:
 
 - `_parseOpenVaultArgs(struct Actions.ActionArgs _args) (internal)`

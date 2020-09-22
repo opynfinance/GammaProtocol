@@ -1,3 +1,5 @@
+## `SignedConverter`
+
 # Functions:
 
 - `uintToInt(uint256 a) (internal)`

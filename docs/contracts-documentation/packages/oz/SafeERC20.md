@@ -1,3 +1,5 @@
+## `SafeERC20`
+
 Wrappers around ERC20 operations that throw on failure (when the token
 
 contract returns false). Tokens that return no value (and instead revert or

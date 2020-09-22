@@ -1,3 +1,7 @@
+## `ChainLinkPricer`
+
+A Pricer contract for Chainlink for 1 asset
+
 # Functions:
 
 - `constructor(address _asset, address _aggregator, address _oracle) (public)`

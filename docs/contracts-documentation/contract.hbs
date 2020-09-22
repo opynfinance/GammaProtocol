@@ -1,4 +1,15 @@
+## `{{name}}`
+
+{{{natspec.userdoc}}}
+
 {{{natspec.devdoc}}}
+
+{{#if ownModifiers}}
+# Modifiers:
+{{#ownModifiers}}
+- `{{name}}({{args}})`
+{{/ownModifiers}}
+{{/if}}
 
 {{#if ownFunctions}}
 # Functions:
@@ -10,9 +21,22 @@
 {{#if ownEvents}}
 # Events:
 {{#ownEvents}}
-- [`{{name}}({{args}})`]
+- `{{name}}({{args}})`
 {{/ownEvents}}
 {{/if}}
+
+{{#ownModifiers}}
+# Modifier `{{name}}({{args}})`
+{{#if natspec.userdoc}}{{natspec.userdoc}}{{/if}}
+{{#if natspec.devdoc}}{{natspec.devdoc}}{{/if}}
+
+{{#if natspec.params}}
+## Parameters:
+{{#natspec.params}}
+- `{{param}}`: {{description}}
+{{/natspec.params}}
+{{/if}}
+{{/ownModifiers}}
 
 {{#ownFunctions}}
 # Function `{{name}}({{args}}){{#if outputs}} → {{outputs}}{{/if}}` ({{visibility}})

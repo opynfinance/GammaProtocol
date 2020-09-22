@@ -1,3 +1,7 @@
+## `MockChainlinkAggregator`
+
+Chainlink oracle mock
+
 # Functions:
 
 - `getAnswer(uint256 _roundId) (external)`

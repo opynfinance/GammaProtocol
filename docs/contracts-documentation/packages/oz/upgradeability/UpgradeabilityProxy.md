@@ -1,3 +1,5 @@
+## `UpgradeabilityProxy`
+
 This contract represents a proxy where the implementation address to which it will delegate can be upgraded
 
 # Functions:
@@ -10,7 +12,7 @@ This contract represents a proxy where the implementation address to which it wi
 
 # Events:
 
-- [`Upgraded(address implementation)`]
+- `Upgraded(address implementation)`
 
 # Function `implementation() → address impl` (public)
 

@@ -1,3 +1,7 @@
+## `USDCPricer`
+
+A Pricer contract for USDC.
+
 # Functions:
 
 - `constructor(address _usdc, address _oracle) (public)`

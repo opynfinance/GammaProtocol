@@ -1,3 +1,7 @@
+## `MockOracle`
+
+SPDX-License-Identifier: UNLICENSED
+
 The MockOracle contract let us easily manipulate the oracle state in testings.
 
 # Functions:

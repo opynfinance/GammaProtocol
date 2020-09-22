@@ -1,3 +1,5 @@
+## `MarginCalculatorInterface`
+
 # Functions:
 
 - `getExpiredPayoutRate(address _otoken) (external)`

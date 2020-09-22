@@ -1,3 +1,5 @@
+## `Create2`
+
 Helper to make usage of the `CREATE2` EVM opcode easier and safer.
 
 `CREATE2` can be used to compute in advance the address where a smart

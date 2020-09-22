@@ -1,3 +1,7 @@
+## `MarginCalculator`
+
+Calculator module that check if a given vault is valid.
+
 # Functions:
 
 - `constructor(address _addressBook) (public)`

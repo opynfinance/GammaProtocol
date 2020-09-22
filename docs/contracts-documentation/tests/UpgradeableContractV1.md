@@ -1,3 +1,7 @@
+## `UpgradeableContractV1`
+
+Upgradeable testing contract
+
 # Functions:
 
 - `initialize(address _addressBook, address _owner) (public)`

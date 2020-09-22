@@ -70,7 +70,6 @@
     "doc:control-flow:factory": "surya graph -m contracts/OtokenFactory.sol | dot -Tpng > ./docs/control-flow/GammaFactory.png",
     "doc:control-flow:whitelist": "surya graph -m contracts/Whitelist.sol | dot -Tpng > ./docs/control-flow/GammaWhitelist.png",
     "doc:control-flow:addressbook": "surya graph -m contracts/AddressBook.sol | dot -Tpng > ./docs/control-flow/GammaAddressbook.png",
-    "doc:contracts": "npx solidity-docgen --solc-module solc-0.6.10 -o ./docs/contracts-documentation",
     "docify": "node docify.js"
   },
   "husky": {

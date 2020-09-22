@@ -1,3 +1,21 @@
+## `Controller`
+
+contract that controls the gamma protocol and interaction with all sub contracts
+
+# Modifiers:
+
+- `notPaused()`
+
+- `notShutdown()`
+
+- `onlyTerminator()`
+
+- `onlyPauser()`
+
+- `onlyAuthorized(address _sender, address _accountOwner)`
+
+- `onlyWhitelistedCallee(address _callee)`
+
 # Functions:
 
 - `_isNotPaused() (internal)`
@@ -74,37 +92,71 @@
 
 # Events:
 
-- [`AccountOperatorUpdated(address accountOwner, address operator, bool isSet)`]
+- `AccountOperatorUpdated(address accountOwner, address operator, bool isSet)`
 
-- [`VaultOpened(address accountOwner, uint256 vaultId)`]
+- `VaultOpened(address accountOwner, uint256 vaultId)`
 
-- [`LongOtokenDeposited(address otoken, address accountOwner, address from, uint256 vaultId, uint256 amount)`]
+- `LongOtokenDeposited(address otoken, address accountOwner, address from, uint256 vaultId, uint256 amount)`
 
-- [`LongOtokenWithdrawed(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 amount)`]
+- `LongOtokenWithdrawed(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 amount)`
 
-- [`CollateralAssetDeposited(address asset, address accountOwner, address from, uint256 vaultId, uint256 amount)`]
+- `CollateralAssetDeposited(address asset, address accountOwner, address from, uint256 vaultId, uint256 amount)`
 
-- [`CollateralAssetWithdrawed(address asset, address AccountOwner, address to, uint256 vaultId, uint256 amount)`]
+- `CollateralAssetWithdrawed(address asset, address AccountOwner, address to, uint256 vaultId, uint256 amount)`
 
-- [`ShortOtokenMinted(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 amount)`]
+- `ShortOtokenMinted(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 amount)`
 
-- [`ShortOtokenBurned(address otoken, address AccountOwner, address from, uint256 vaultId, uint256 amount)`]
+- `ShortOtokenBurned(address otoken, address AccountOwner, address from, uint256 vaultId, uint256 amount)`
 
-- [`Exercise(address otoken, address exerciser, address receiver, address collateralAsset, uint256 otokenBurned, uint256 payout)`]
+- `Exercise(address otoken, address exerciser, address receiver, address collateralAsset, uint256 otokenBurned, uint256 payout)`
 
-- [`VaultSettled(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 payout)`]
+- `VaultSettled(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 payout)`
 
-- [`CallExecuted(address from, address to, address vaultOwner, uint256 vaultId, bytes data)`]
+- `CallExecuted(address from, address to, address vaultOwner, uint256 vaultId, bytes data)`
 
-- [`TerminatorUpdated(address oldTerminator, address newTerminator)`]
+- `TerminatorUpdated(address oldTerminator, address newTerminator)`
 
-- [`PauserUpdated(address oldPauser, address newPauser)`]
+- `PauserUpdated(address oldPauser, address newPauser)`
 
-- [`SystemPaused(bool isActive)`]
+- `SystemPaused(bool isActive)`
 
-- [`EmergencyShutdown(bool isActive)`]
+- `EmergencyShutdown(bool isActive)`
 
-- [`CallRestricted(bool isRestricted)`]
+- `CallRestricted(bool isRestricted)`
+
+# Modifier `notPaused()`
+
+modifier to check if the system is not paused
+
+# Modifier `notShutdown()`
+
+modifier to check if the system is not in an emergency shutdown state
+
+# Modifier `onlyTerminator()`
+
+modifier to check if sender is the terminator address
+
+# Modifier `onlyPauser()`
+
+modifier to check if the sender is the pauser address
+
+# Modifier `onlyAuthorized(address _sender, address _accountOwner)`
+
+modifier to check if the sender is an account owner or an approved account operator
+
+## Parameters:
+
+- `_sender`: sender address
+
+- `_accountOwner`: account owner address
+
+# Modifier `onlyWhitelistedCallee(address _callee)`
+
+modifier to check if the called address is a whitelisted callee address
+
+## Parameters:
+
+- `_callee`: called address
 
 # Function `_isNotPaused()` (internal)
 

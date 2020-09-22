@@ -1,3 +1,5 @@
+## `AggregatorInterface`
+
 Interface of the Chainlink aggregator
 
 # Functions:
@@ -14,9 +16,9 @@ Interface of the Chainlink aggregator
 
 # Events:
 
-- [`AnswerUpdated(int256 current, uint256 roundId, uint256 timestamp)`]
+- `AnswerUpdated(int256 current, uint256 roundId, uint256 timestamp)`
 
-- [`NewRound(uint256 roundId, address startedBy, uint256 startedAt)`]
+- `NewRound(uint256 roundId, address startedBy, uint256 startedAt)`
 
 # Function `latestAnswer() → int256` (external)
 

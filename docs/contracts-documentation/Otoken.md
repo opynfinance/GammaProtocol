@@ -1,3 +1,7 @@
+## `Otoken`
+
+Otoken is the ERC20 token for an option.
+
 The Otoken inherits ERC20Initializable because we need to use the init instead of constructor.
 
 # Functions:

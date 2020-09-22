@@ -1,4 +1,10 @@
+## `OwnedUpgradeabilityProxy`
+
 This contract combines an upgradeability proxy with basic authorization control functionalities
+
+# Modifiers:
+
+- `onlyProxyOwner()`
 
 # Functions:
 
@@ -16,7 +22,11 @@ This contract combines an upgradeability proxy with basic authorization control 
 
 # Events:
 
-- [`ProxyOwnershipTransferred(address previousOwner, address newOwner)`]
+- `ProxyOwnershipTransferred(address previousOwner, address newOwner)`
+
+# Modifier `onlyProxyOwner()`
+
+Throws if called by any account other than the owner.
 
 # Function `constructor()` (public)
 

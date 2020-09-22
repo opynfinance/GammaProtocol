@@ -1,3 +1,5 @@
+## `MarginAccountTester`
+
 # Functions:
 
 - `getVault(uint256 _vaultIndex) (external)`

@@ -1,3 +1,9 @@
+## `MarginAccount`
+
+The MarginAccount is a library that provides Controller with an Account of Vault structs, and
+
+the functions that manipulate vaults. Vaults describe positions that users have.
+
 # Functions:
 
 - `addShort(struct MarginAccount.Vault _vault, address _shortOtoken, uint256 _amount, uint256 _index) (external)`

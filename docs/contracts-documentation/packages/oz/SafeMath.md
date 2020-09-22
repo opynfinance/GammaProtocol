@@ -1,3 +1,5 @@
+## `SafeMath`
+
 Wrappers over Solidity's arithmetic operations with added overflow
 
 checks.

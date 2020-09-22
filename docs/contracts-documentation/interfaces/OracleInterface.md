@@ -1,3 +1,5 @@
+## `OracleInterface`
+
 # Functions:
 
 - `isLockingPeriodOver(address _asset, uint256 _expiryTimestamp) (external)`

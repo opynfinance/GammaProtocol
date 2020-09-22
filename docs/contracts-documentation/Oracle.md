@@ -1,3 +1,7 @@
+## `Oracle`
+
+The Oracle module provide the system with on-chain prices
+
 # Functions:
 
 - `getPrice(address _asset) (external)`
@@ -30,17 +34,17 @@
 
 # Events:
 
-- [`DisputerUpdated(address newDisputer)`]
+- `DisputerUpdated(address newDisputer)`
 
-- [`PricerUpdated(address asset, address pricer)`]
+- `PricerUpdated(address asset, address pricer)`
 
-- [`PricerLockingPeriodUpdated(address pricer, uint256 lockingPeriod)`]
+- `PricerLockingPeriodUpdated(address pricer, uint256 lockingPeriod)`
 
-- [`PricerDisputePeriodUpdated(address pricer, uint256 disputePeriod)`]
+- `PricerDisputePeriodUpdated(address pricer, uint256 disputePeriod)`
 
-- [`ExpiryPriceUpdated(address asset, uint256 expirtyTimestamp, uint256 price, uint256 onchainTimestamp)`]
+- `ExpiryPriceUpdated(address asset, uint256 expirtyTimestamp, uint256 price, uint256 onchainTimestamp)`
 
-- [`ExpiryPriceDisputed(address asset, uint256 expiryTimestamp, uint256 disputedPrice, uint256 newPrice, uint256 disputeTimestamp)`]
+- `ExpiryPriceDisputed(address asset, uint256 expiryTimestamp, uint256 disputedPrice, uint256 newPrice, uint256 disputeTimestamp)`
 
 # Function `getPrice(address _asset) → uint256` (external)
 

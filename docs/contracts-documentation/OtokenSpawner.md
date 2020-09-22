@@ -1,3 +1,13 @@
+## `OtokenSpawner`
+
+This contract spawns and initializes eip-1167 minimal proxies that
+
+point to existing logic contracts.
+
+This contract was modified from Spawner.sol
+
+https://github.com/0age/Spawner/blob/master/contracts/Spawner.sol to fit into OtokenFactory
+
 # Functions:
 
 - `_spawn(address logicContract, bytes initializationCalldata) (internal)`

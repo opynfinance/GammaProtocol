@@ -1,3 +1,5 @@
+## `IERC20`
+
 Interface of the ERC20 standard as defined in the EIP.
 
 # Functions:
@@ -16,9 +18,9 @@ Interface of the ERC20 standard as defined in the EIP.
 
 # Events:
 
-- [`Transfer(address from, address to, uint256 value)`]
+- `Transfer(address from, address to, uint256 value)`
 
-- [`Approval(address owner, address spender, uint256 value)`]
+- `Approval(address owner, address spender, uint256 value)`
 
 # Function `totalSupply() → uint256` (external)
 

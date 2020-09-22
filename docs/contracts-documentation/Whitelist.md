@@ -1,3 +1,11 @@
+## `Whitelist`
+
+The whitelist module keeps track of all valid Otoken contracts.
+
+# Modifiers:
+
+- `onlyFactory()`
+
 # Functions:
 
 - `constructor(address _addressBook) (public)`
@@ -28,21 +36,25 @@
 
 # Events:
 
-- [`ProductWhitelisted(bytes32 productHash, address underlying, address strike, address collateral, bool isPut)`]
+- `ProductWhitelisted(bytes32 productHash, address underlying, address strike, address collateral, bool isPut)`
 
-- [`ProductBlacklisted(bytes32 productHash, address underlying, address strike, address collateral, bool isPut)`]
+- `ProductBlacklisted(bytes32 productHash, address underlying, address strike, address collateral, bool isPut)`
 
-- [`CollateralWhitelisted(address collateral)`]
+- `CollateralWhitelisted(address collateral)`
 
-- [`CollateralBlacklisted(address collateral)`]
+- `CollateralBlacklisted(address collateral)`
 
-- [`OtokenWhitelisted(address otoken)`]
+- `OtokenWhitelisted(address otoken)`
 
-- [`OtokenBlacklisted(address otoken)`]
+- `OtokenBlacklisted(address otoken)`
 
-- [`CalleeWhitelisted(address _callee)`]
+- `CalleeWhitelisted(address _callee)`
 
-- [`CalleeBlacklisted(address _callee)`]
+- `CalleeBlacklisted(address _callee)`
+
+# Modifier `onlyFactory()`
+
+check if the sender is the Otoken Factory module
 
 # Function `constructor(address _addressBook)` (public)
 
