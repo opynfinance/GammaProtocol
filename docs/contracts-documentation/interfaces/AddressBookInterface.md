@@ -1,37 +1,109 @@
-## `AddressBookInterface`
+# Functions:
 
-### `getOtokenImpl() → address` (external)
+- [`getOtokenImpl()`](#AddressBookInterface-getOtokenImpl--)
 
-### `getOtokenFactory() → address` (external)
+- [`getOtokenFactory()`](#AddressBookInterface-getOtokenFactory--)
 
-### `getWhitelist() → address` (external)
+- [`getWhitelist()`](#AddressBookInterface-getWhitelist--)
 
-### `getController() → address` (external)
+- [`getController()`](#AddressBookInterface-getController--)
 
-### `getOracle() → address` (external)
+- [`getOracle()`](#AddressBookInterface-getOracle--)
 
-### `getMarginPool() → address` (external)
+- [`getMarginPool()`](#AddressBookInterface-getMarginPool--)
 
-### `getMarginCalculator() → address` (external)
+- [`getMarginCalculator()`](#AddressBookInterface-getMarginCalculator--)
 
-### `getLiquidationManager() → address` (external)
+- [`getLiquidationManager()`](#AddressBookInterface-getLiquidationManager--)
 
-### `getAddress(bytes32 _id) → address` (external)
+- [`getAddress(bytes32 _id)`](#AddressBookInterface-getAddress-bytes32-)
 
-### `setOtokenImpl(address _otokenImpl)` (external)
+- [`setOtokenImpl(address _otokenImpl)`](#AddressBookInterface-setOtokenImpl-address-)
 
-### `setOtokenFactory(address _factory)` (external)
+- [`setOtokenFactory(address _factory)`](#AddressBookInterface-setOtokenFactory-address-)
 
-### `setOracleImpl(address _otokenImpl)` (external)
+- [`setOracleImpl(address _otokenImpl)`](#AddressBookInterface-setOracleImpl-address-)
 
-### `setWhitelist(address _whitelist)` (external)
+- [`setWhitelist(address _whitelist)`](#AddressBookInterface-setWhitelist-address-)
 
-### `setController(address _controller)` (external)
+- [`setController(address _controller)`](#AddressBookInterface-setController-address-)
 
-### `setMarginPool(address _marginPool)` (external)
+- [`setMarginPool(address _marginPool)`](#AddressBookInterface-setMarginPool-address-)
 
-### `setMarginCalculator(address _calculator)` (external)
+- [`setMarginCalculator(address _calculator)`](#AddressBookInterface-setMarginCalculator-address-)
 
-### `setLiquidationManager(address _liquidationManager)` (external)
+- [`setLiquidationManager(address _liquidationManager)`](#AddressBookInterface-setLiquidationManager-address-)
 
-### `setAddress(bytes32 _id, address _newImpl)` (external)
+- [`setAddress(bytes32 _id, address _newImpl)`](#AddressBookInterface-setAddress-bytes32-address-)
+
+# Function `getOtokenImpl() → address` {#AddressBookInterface-getOtokenImpl--}
+
+No description
+
+# Function `getOtokenFactory() → address` {#AddressBookInterface-getOtokenFactory--}
+
+No description
+
+# Function `getWhitelist() → address` {#AddressBookInterface-getWhitelist--}
+
+No description
+
+# Function `getController() → address` {#AddressBookInterface-getController--}
+
+No description
+
+# Function `getOracle() → address` {#AddressBookInterface-getOracle--}
+
+No description
+
+# Function `getMarginPool() → address` {#AddressBookInterface-getMarginPool--}
+
+No description
+
+# Function `getMarginCalculator() → address` {#AddressBookInterface-getMarginCalculator--}
+
+No description
+
+# Function `getLiquidationManager() → address` {#AddressBookInterface-getLiquidationManager--}
+
+No description
+
+# Function `getAddress(bytes32 _id) → address` {#AddressBookInterface-getAddress-bytes32-}
+
+No description
+
+# Function `setOtokenImpl(address _otokenImpl)` {#AddressBookInterface-setOtokenImpl-address-}
+
+No description
+
+# Function `setOtokenFactory(address _factory)` {#AddressBookInterface-setOtokenFactory-address-}
+
+No description
+
+# Function `setOracleImpl(address _otokenImpl)` {#AddressBookInterface-setOracleImpl-address-}
+
+No description
+
+# Function `setWhitelist(address _whitelist)` {#AddressBookInterface-setWhitelist-address-}
+
+No description
+
+# Function `setController(address _controller)` {#AddressBookInterface-setController-address-}
+
+No description
+
+# Function `setMarginPool(address _marginPool)` {#AddressBookInterface-setMarginPool-address-}
+
+No description
+
+# Function `setMarginCalculator(address _calculator)` {#AddressBookInterface-setMarginCalculator-address-}
+
+No description
+
+# Function `setLiquidationManager(address _liquidationManager)` {#AddressBookInterface-setLiquidationManager-address-}
+
+No description
+
+# Function `setAddress(bytes32 _id, address _newImpl)` {#AddressBookInterface-setAddress-bytes32-address-}
+
+No description

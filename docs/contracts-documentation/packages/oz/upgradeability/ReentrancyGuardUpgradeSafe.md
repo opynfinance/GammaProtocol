@@ -1,5 +1,3 @@
-## `ReentrancyGuardUpgradeSafe`
-
 Contract module that helps prevent reentrant calls to a function.
 
 Inheriting from `ReentrancyGuard` will make the {nonReentrant} modifier
@@ -22,18 +20,4 @@ to protect against it, check out our blog post
 
 https://blog.openzeppelin.com/reentrancy-after-istanbul/[Reentrancy After Istanbul].
 
-### `nonReentrant()`
-
-Prevents a contract from calling itself, directly or indirectly.
-
-Calling a `nonReentrant` function from another `nonReentrant`
-
-function is not supported. It is possible to prevent this from happening
-
-by making the `nonReentrant` function external, and make it call a
-
-`private` function that does the actual work.
-
-### `__ReentrancyGuard_init()` (internal)
-
-### `__ReentrancyGuard_init_unchained()` (internal)
+# Functions:

@@ -1,29 +1,19 @@
-## `MockMarginCalculator`
+# Functions:
 
-### `constructor(address _addressBook)` (public)
+- [`constructor(address _addressBook)`](#MockMarginCalculator-constructor-address-)
 
-### `getExpiredCashValue(address _otoken) → uint256` (public)
+- [`getExpiredCashValue(address _otoken)`](#MockMarginCalculator-getExpiredCashValue-address-)
 
-### `getExcessCollateral(struct MarginAccount.Vault _vault) → uint256, bool` (public)
+- [`getExcessCollateral(struct MarginAccount.Vault _vault)`](#MockMarginCalculator-getExcessCollateral-struct-MarginAccount-Vault-)
 
-### `_getMarginRequired(struct MarginAccount.Vault _vault) → struct FixedPointInt256.FixedPointInt marginRequired` (internal)
+# Function `constructor(address _addressBook)` {#MockMarginCalculator-constructor-address-}
 
-### `_getPutSpreadMarginRequired(struct FixedPointInt256.FixedPointInt _shortAmount, struct FixedPointInt256.FixedPointInt _longAmount, struct FixedPointInt256.FixedPointInt _shortStrike, struct FixedPointInt256.FixedPointInt _longStrike) → struct FixedPointInt256.FixedPointInt` (internal)
+No description
 
-### `_getCallSpreadMarginRequired(struct FixedPointInt256.FixedPointInt _shortAmount, struct FixedPointInt256.FixedPointInt _longAmount, struct FixedPointInt256.FixedPointInt _shortStrike, struct FixedPointInt256.FixedPointInt _longStrike) → struct FixedPointInt256.FixedPointInt` (internal)
+# Function `getExpiredCashValue(address _otoken) → uint256` {#MockMarginCalculator-getExpiredCashValue-address-}
 
-### `_getExpiredPutSpreadCashValue(struct FixedPointInt256.FixedPointInt _shortAmount, struct FixedPointInt256.FixedPointInt _longAmount, struct FixedPointInt256.FixedPointInt _shortCashValue, struct FixedPointInt256.FixedPointInt _longCashValue) → struct FixedPointInt256.FixedPointInt` (internal)
+No description
 
-### `_getExpiredCallSpreadCashValue(struct FixedPointInt256.FixedPointInt _shortAmount, struct FixedPointInt256.FixedPointInt _longAmount, struct FixedPointInt256.FixedPointInt _shortCashValue, struct FixedPointInt256.FixedPointInt _longCashValue, struct FixedPointInt256.FixedPointInt _underlyingPriceInt) → struct FixedPointInt256.FixedPointInt` (internal)
+# Function `getExcessCollateral(struct MarginAccount.Vault _vault) → uint256, bool` {#MockMarginCalculator-getExcessCollateral-struct-MarginAccount-Vault-}
 
-### `_checkIsValidSpread(struct MarginAccount.Vault _vault)` (internal)
-
-### `_isMarginableLong(struct MarginAccount.Vault _vault) → bool` (internal)
-
-### `_isMarginableCollateral(struct MarginAccount.Vault _vault) → bool` (internal)
-
-### `_getUnderlyingPrice(address _otoken) → uint256, bool` (internal)
-
-### `_uint256ToFixedPointInt(uint256 _num) → struct FixedPointInt256.FixedPointInt` (internal)
-
-### `_isEmptyAssetArray(address[] _assets) → bool` (internal)
+No description

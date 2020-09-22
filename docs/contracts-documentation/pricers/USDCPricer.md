@@ -1,15 +1,27 @@
-## `USDCPricer`
+# Functions:
 
-A Pricer contract for USDC.
+- [`constructor(address _usdc, address _oracle)`](#USDCPricer-constructor-address-address-)
 
-### `constructor(address _usdc, address _oracle)` (public)
+- [`getPrice()`](#USDCPricer-getPrice--)
 
-### `getPrice() → uint256` (external)
+- [`setExpiryPriceToOralce(uint256 _expiryTimestamp)`](#USDCPricer-setExpiryPriceToOralce-uint256-)
 
-get live price for USDC, always return 1
+# Function `constructor(address _usdc, address _oracle)` {#USDCPricer-constructor-address-address-}
+
+No description
+
+# Function `getPrice() → uint256` {#USDCPricer-getPrice--}
 
 overides the getPrice function in OpynPricerInterface.
 
-### `setExpiryPriceToOralce(uint256 _expiryTimestamp)` (external)
+## Return Values:
 
-Set the expiry price to the oracle
+- price of 1e8 cToken worth in USD, scaled by 1e18.
+
+# Function `setExpiryPriceToOralce(uint256 _expiryTimestamp)` {#USDCPricer-setExpiryPriceToOralce-uint256-}
+
+No description
+
+## Parameters:
+
+- `_expiryTimestamp`: the expiry want to send

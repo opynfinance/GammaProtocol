@@ -1,103 +1,209 @@
-## `AddressBook`
+# Functions:
 
-### `getOtokenImpl() → address` (external)
+- [`getOtokenImpl()`](#AddressBook-getOtokenImpl--)
 
-return otoken implementation address
+- [`getOtokenFactory()`](#AddressBook-getOtokenFactory--)
 
-### `getOtokenFactory() → address` (external)
+- [`getWhitelist()`](#AddressBook-getWhitelist--)
 
-return otoken factory address
+- [`getController()`](#AddressBook-getController--)
 
-### `getWhitelist() → address` (external)
+- [`getMarginPool()`](#AddressBook-getMarginPool--)
 
-return whitelist address
+- [`getMarginCalculator()`](#AddressBook-getMarginCalculator--)
 
-### `getController() → address` (external)
+- [`getLiquidationManager()`](#AddressBook-getLiquidationManager--)
 
-return controller address
+- [`getOracle()`](#AddressBook-getOracle--)
 
-### `getMarginPool() → address` (external)
+- [`setOtokenImpl(address _otokenImpl)`](#AddressBook-setOtokenImpl-address-)
 
-return pool address
+- [`setOtokenFactory(address _otokenFactory)`](#AddressBook-setOtokenFactory-address-)
 
-### `getMarginCalculator() → address` (external)
+- [`setWhitelist(address _whitelist)`](#AddressBook-setWhitelist-address-)
 
-return margin calculator address
+- [`setController(address _controller)`](#AddressBook-setController-address-)
 
-### `getLiquidationManager() → address` (external)
+- [`setMarginPool(address _marginPool)`](#AddressBook-setMarginPool-address-)
 
-return liquidation manager address
+- [`setMarginCalculator(address _marginCalculator)`](#AddressBook-setMarginCalculator-address-)
 
-### `getOracle() → address` (external)
+- [`setLiquidationManager(address _liquidationManager)`](#AddressBook-setLiquidationManager-address-)
 
-return oracle address
+- [`setOracle(address _oracle)`](#AddressBook-setOracle-address-)
 
-### `setOtokenImpl(address _otokenImpl)` (external)
+- [`getAddress(bytes32 _key)`](#AddressBook-getAddress-bytes32-)
 
-set otoken implementation address
+- [`setAddress(bytes32 _key, address _address)`](#AddressBook-setAddress-bytes32-address-)
+
+- [`updateImpl(bytes32 _id, address _newAddress)`](#AddressBook-updateImpl-bytes32-address-)
+
+# Events:
+
+- [`ProxyCreated(bytes32 id, address proxy)`](#AddressBook-ProxyCreated-bytes32-address-)
+
+- [`AddressAdded(bytes32 id, address add)`](#AddressBook-AddressAdded-bytes32-address-)
+
+# Function `getOtokenImpl() → address` {#AddressBook-getOtokenImpl--}
+
+No description
+
+## Return Values:
+
+- otoken implementation address
+
+# Function `getOtokenFactory() → address` {#AddressBook-getOtokenFactory--}
+
+No description
+
+## Return Values:
+
+- otoken factory address
+
+# Function `getWhitelist() → address` {#AddressBook-getWhitelist--}
+
+No description
+
+## Return Values:
+
+- whitelist address
+
+# Function `getController() → address` {#AddressBook-getController--}
+
+No description
+
+## Return Values:
+
+- controller address
+
+# Function `getMarginPool() → address` {#AddressBook-getMarginPool--}
+
+No description
+
+## Return Values:
+
+- pool address
+
+# Function `getMarginCalculator() → address` {#AddressBook-getMarginCalculator--}
+
+No description
+
+## Return Values:
+
+- margin calculator address
+
+# Function `getLiquidationManager() → address` {#AddressBook-getLiquidationManager--}
+
+No description
+
+## Return Values:
+
+- liquidation manager address
+
+# Function `getOracle() → address` {#AddressBook-getOracle--}
+
+No description
+
+## Return Values:
+
+- oracle address
+
+# Function `setOtokenImpl(address _otokenImpl)` {#AddressBook-setOtokenImpl-address-}
 
 can only be called by addressbook owner
 
-### `setOtokenFactory(address _otokenFactory)` (external)
+## Parameters:
 
-set otoken factory address
+- `_otokenImpl`: otoken implementation address
 
-can only be called by addressbook owner
-
-### `setWhitelist(address _whitelist)` (external)
-
-set whitelist address
+# Function `setOtokenFactory(address _otokenFactory)` {#AddressBook-setOtokenFactory-address-}
 
 can only be called by addressbook owner
 
-### `setController(address _controller)` (external)
+## Parameters:
 
-set controller address
+- `_otokenFactory`: otoken factory address
 
-can only be called by addressbook owner
-
-### `setMarginPool(address _marginPool)` (external)
-
-set pool address
+# Function `setWhitelist(address _whitelist)` {#AddressBook-setWhitelist-address-}
 
 can only be called by addressbook owner
 
-### `setMarginCalculator(address _marginCalculator)` (external)
+## Parameters:
 
-set margin calculator address
+- `_whitelist`: whitelist address
 
-can only be called by addressbook owner
-
-### `setLiquidationManager(address _liquidationManager)` (external)
-
-set liquidation manager address
+# Function `setController(address _controller)` {#AddressBook-setController-address-}
 
 can only be called by addressbook owner
 
-### `setOracle(address _oracle)` (external)
+## Parameters:
 
-set oracle address
+- `_controller`: controller address
 
-can only be called by addressbook owner
-
-### `getAddress(bytes32 _key) → address` (public)
-
-return an address for specific key
-
-### `setAddress(bytes32 _key, address _address)` (public)
-
-set a specific address for a specific key
+# Function `setMarginPool(address _marginPool)` {#AddressBook-setMarginPool-address-}
 
 can only be called by addressbook owner
 
-### `updateImpl(bytes32 _id, address _newAddress)` (public)
+## Parameters:
+
+- `_marginPool`: pool address
+
+# Function `setMarginCalculator(address _marginCalculator)` {#AddressBook-setMarginCalculator-address-}
+
+can only be called by addressbook owner
+
+## Parameters:
+
+- `_marginCalculator`: margin calculator address
+
+# Function `setLiquidationManager(address _liquidationManager)` {#AddressBook-setLiquidationManager-address-}
+
+can only be called by addressbook owner
+
+## Parameters:
+
+- `_liquidationManager`: liquidation manager address
+
+# Function `setOracle(address _oracle)` {#AddressBook-setOracle-address-}
+
+can only be called by addressbook owner
+
+## Parameters:
+
+- `_oracle`: oracle address
+
+# Function `getAddress(bytes32 _key) → address` {#AddressBook-getAddress-bytes32-}
+
+No description
+
+## Parameters:
+
+- `_key`: key address
+
+# Function `setAddress(bytes32 _key, address _address)` {#AddressBook-setAddress-bytes32-address-}
+
+can only be called by addressbook owner
+
+## Parameters:
+
+- `_key`: key
+
+- `_address`: address
+
+# Function `updateImpl(bytes32 _id, address _newAddress)` {#AddressBook-updateImpl-bytes32-address-}
 
 internal function to update the implementation of a specific component of the protocol
 
-### `ProxyCreated(bytes32 id, address proxy)`
+## Parameters:
 
-event emitted when a new proxy get created
+- `_id`: the id of the contract to be updated
 
-### `AddressAdded(bytes32 id, address add)`
+- `_newAddress`: the address of the new implementation*
 
-event emitted when a new address get added
+# Event `ProxyCreated(bytes32 id, address proxy)` {#AddressBook-ProxyCreated-bytes32-address-}
+
+No description
+
+# Event `AddressAdded(bytes32 id, address add)` {#AddressBook-AddressAdded-bytes32-address-}
+
+No description

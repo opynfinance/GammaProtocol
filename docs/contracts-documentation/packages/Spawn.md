@@ -1,9 +1,7 @@
-## `Spawn`
+# Functions:
 
-This contract provides creation code that is used by Spawner in order
+- [`constructor(address logicContract, bytes initializationCalldata)`](#Spawn-constructor-address-bytes-)
 
-to initialize and deploy eip-1167 minimal proxies for a given logic contract.
+# Function `constructor(address logicContract, bytes initializationCalldata)` {#Spawn-constructor-address-bytes-}
 
-SPDX-License-Identifier: MIT
-
-### `constructor(address logicContract, bytes initializationCalldata)` (public)
+No description

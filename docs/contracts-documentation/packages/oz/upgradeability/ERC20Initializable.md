@@ -1,66 +1,40 @@
-## `ERC20Initializable`
-
-this contract was renamed from ERC20UpgradeSafe to ERC20Initializable
-
-This implementation is agnostic to the way tokens are created. This means
-
-that a supply mechanism has to be added in a derived contract using {_mint}.
-
-For a generic mechanism see {ERC20MinterPauser}.
-
-TIP: For a detailed writeup see our guide
-
-https://forum.zeppelin.solutions/t/how-to-implement-erc20-supply-mechanisms/226[How
-
-to implement supply mechanisms].
-
-We have followed general OpenZeppelin guidelines: functions revert instead
-
-of returning `false` on failure. This behavior is nonetheless conventional
-
-and does not conflict with the expectations of ERC20 applications.
-
-Additionally, an {Approval} event is emitted on calls to {transferFrom}.
-
-This allows applications to reconstruct the allowance for all accounts just
-
-by listening to said events. Other implementations of the EIP may not emit
-
-these events, as it isn't required by the specification.
-
-Finally, the non-standard {decreaseAllowance} and {increaseAllowance}
-
-functions have been added to mitigate the well-known issues around setting
-
-allowances. See {IERC20-approve}.
-
 Implementation of the {IERC20} interface.
 
-### `__ERC20_init(string name, string symbol)` (internal)
+# Functions:
 
-Sets the values for {name} and {symbol}, initializes {decimals} with
+- [`name()`](#ERC20Initializable-name--)
 
-a default value of 18.
+- [`symbol()`](#ERC20Initializable-symbol--)
 
-To select a different value for {decimals}, use {_setupDecimals}.
+- [`decimals()`](#ERC20Initializable-decimals--)
 
-All three of these values are immutable: they can only be set once during
+- [`totalSupply()`](#ERC20Initializable-totalSupply--)
 
-construction.
+- [`balanceOf(address account)`](#ERC20Initializable-balanceOf-address-)
 
-### `__ERC20_init_unchained(string name, string symbol)` (internal)
+- [`transfer(address recipient, uint256 amount)`](#ERC20Initializable-transfer-address-uint256-)
 
-### `name() → string` (public)
+- [`allowance(address owner, address spender)`](#ERC20Initializable-allowance-address-address-)
+
+- [`approve(address spender, uint256 amount)`](#ERC20Initializable-approve-address-uint256-)
+
+- [`transferFrom(address sender, address recipient, uint256 amount)`](#ERC20Initializable-transferFrom-address-address-uint256-)
+
+- [`increaseAllowance(address spender, uint256 addedValue)`](#ERC20Initializable-increaseAllowance-address-uint256-)
+
+- [`decreaseAllowance(address spender, uint256 subtractedValue)`](#ERC20Initializable-decreaseAllowance-address-uint256-)
+
+# Function `name() → string` {#ERC20Initializable-name--}
 
 Returns the name of the token.
 
-### `symbol() → string` (public)
+# Function `symbol() → string` {#ERC20Initializable-symbol--}
 
 Returns the symbol of the token, usually a shorter version of the
 
 name.
 
-### `decimals() → uint8` (public)
+# Function `decimals() → uint8` {#ERC20Initializable-decimals--}
 
 Returns the number of decimals used to get its user representation.
 
@@ -80,15 +54,15 @@ no way affects any of the arithmetic of the contract, including
 
 {IERC20-balanceOf} and {IERC20-transfer}.
 
-### `totalSupply() → uint256` (public)
+# Function `totalSupply() → uint256` {#ERC20Initializable-totalSupply--}
 
 See {IERC20-totalSupply}.
 
-### `balanceOf(address account) → uint256` (public)
+# Function `balanceOf(address account) → uint256` {#ERC20Initializable-balanceOf-address-}
 
 See {IERC20-balanceOf}.
 
-### `transfer(address recipient, uint256 amount) → bool` (public)
+# Function `transfer(address recipient, uint256 amount) → bool` {#ERC20Initializable-transfer-address-uint256-}
 
 See {IERC20-transfer}.
 
@@ -98,11 +72,11 @@ Requirements:
 
 - the caller must have a balance of at least `amount`.
 
-### `allowance(address owner, address spender) → uint256` (public)
+# Function `allowance(address owner, address spender) → uint256` {#ERC20Initializable-allowance-address-address-}
 
 See {IERC20-allowance}.
 
-### `approve(address spender, uint256 amount) → bool` (public)
+# Function `approve(address spender, uint256 amount) → bool` {#ERC20Initializable-approve-address-uint256-}
 
 See {IERC20-approve}.
 
@@ -110,7 +84,7 @@ Requirements:
 
 - `spender` cannot be the zero address.
 
-### `transferFrom(address sender, address recipient, uint256 amount) → bool` (public)
+# Function `transferFrom(address sender, address recipient, uint256 amount) → bool` {#ERC20Initializable-transferFrom-address-address-uint256-}
 
 See {IERC20-transferFrom}.
 
@@ -128,7 +102,7 @@ Requirements:
 
 `amount`.
 
-### `increaseAllowance(address spender, uint256 addedValue) → bool` (public)
+# Function `increaseAllowance(address spender, uint256 addedValue) → bool` {#ERC20Initializable-increaseAllowance-address-uint256-}
 
 Atomically increases the allowance granted to `spender` by the caller.
 
@@ -142,7 +116,7 @@ Requirements:
 
 - `spender` cannot be the zero address.
 
-### `decreaseAllowance(address spender, uint256 subtractedValue) → bool` (public)
+# Function `decreaseAllowance(address spender, uint256 subtractedValue) → bool` {#ERC20Initializable-decreaseAllowance-address-uint256-}
 
 Atomically decreases the allowance granted to `spender` by the caller.
 
@@ -159,93 +133,3 @@ Requirements:
 - `spender` must have allowance for the caller of at least
 
 `subtractedValue`.
-
-### `_transfer(address sender, address recipient, uint256 amount)` (internal)
-
-Moves tokens `amount` from `sender` to `recipient`.
-
-This is internal function is equivalent to {transfer}, and can be used to
-
-e.g. implement automatic token fees, slashing mechanisms, etc.
-
-Emits a {Transfer} event.
-
-Requirements:
-
-- `sender` cannot be the zero address.
-
-- `recipient` cannot be the zero address.
-
-- `sender` must have a balance of at least `amount`.
-
-### `_mint(address account, uint256 amount)` (internal)
-
-Creates `amount` tokens and assigns them to `account`, increasing
-
-the total supply.
-
-Emits a {Transfer} event with `from` set to the zero address.
-
-Requirements
-
-- `to` cannot be the zero address.
-
-### `_burn(address account, uint256 amount)` (internal)
-
-Destroys `amount` tokens from `account`, reducing the
-
-total supply.
-
-Emits a {Transfer} event with `to` set to the zero address.
-
-Requirements
-
-- `account` cannot be the zero address.
-
-- `account` must have at least `amount` tokens.
-
-### `_approve(address owner, address spender, uint256 amount)` (internal)
-
-Sets `amount` as the allowance of `spender` over the `owner`s tokens.
-
-This is internal function is equivalent to `approve`, and can be used to
-
-e.g. set automatic allowances for certain subsystems, etc.
-
-Emits an {Approval} event.
-
-Requirements:
-
-- `owner` cannot be the zero address.
-
-- `spender` cannot be the zero address.
-
-### `_setupDecimals(uint8 decimals_)` (internal)
-
-Sets {decimals} to a value other than the default one of 18.
-
-WARNING: This function should only be called from the constructor. Most
-
-applications that interact with token contracts will not expect
-
-{decimals} to ever change, and may work incorrectly if it does.
-
-### `_beforeTokenTransfer(address from, address to, uint256 amount)` (internal)
-
-Hook that is called before any transfer of tokens. This includes
-
-minting and burning.
-
-Calling conditions:
-
-- when `from` and `to` are both non-zero, `amount` of ``from``'s tokens
-
-will be to transferred to `to`.
-
-- when `from` is zero, `amount` tokens will be minted for `to`.
-
-- when `to` is zero, `amount` of ``from``'s tokens will be burned.
-
-- `from` and `to` are never both zero.
-
-To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].

@@ -1,3 +1,7 @@
-## `OpynPricerInterface`
+# Functions:
 
-### `getPrice() → uint256` (external)
+- [`getPrice()`](#OpynPricerInterface-getPrice--)
+
+# Function `getPrice() → uint256` {#OpynPricerInterface-getPrice--}
+
+No description

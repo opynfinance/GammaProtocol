@@ -1,5 +1,7 @@
-## `UpgradeableContractV2`
+# Functions:
 
-Upgradeable testing contract
+- [`getV2Version()`](#UpgradeableContractV2-getV2Version--)
 
-### `getV2Version() → uint256` (external)
+# Function `getV2Version() → uint256` {#UpgradeableContractV2-getV2Version--}
+
+No description

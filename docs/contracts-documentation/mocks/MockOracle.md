@@ -1,37 +1,99 @@
-## `MockOracle`
-
-SPDX-License-Identifier: UNLICENSED
-
 The MockOracle contract let us easily manipulate the oracle state in testings.
 
-### `setRealTimePrice(address _asset, uint256 _price)` (external)
+# Functions:
 
-### `getPrice(address _asset) → uint256` (external)
+- [`setRealTimePrice(address _asset, uint256 _price)`](#MockOracle-setRealTimePrice-address-uint256-)
 
-### `setExpiryPriceFinalizedAllPeiodOver(address _asset, uint256 _expiryTimestamp, uint256 _price, bool _isFinalized)` (external)
+- [`getPrice(address _asset)`](#MockOracle-getPrice-address-)
 
-### `setExpiryPrice(address _asset, uint256 _expiryTimestamp, uint256 _price)` (external)
+- [`setExpiryPriceFinalizedAllPeiodOver(address _asset, uint256 _expiryTimestamp, uint256 _price, bool _isFinalized)`](#MockOracle-setExpiryPriceFinalizedAllPeiodOver-address-uint256-uint256-bool-)
 
-### `setIsFinalized(address _asset, uint256 _expiryTimestamp, bool _isFinalized)` (external)
+- [`setExpiryPrice(address _asset, uint256 _expiryTimestamp, uint256 _price)`](#MockOracle-setExpiryPrice-address-uint256-uint256-)
 
-### `getExpiryPrice(address _asset, uint256 _expiryTimestamp) → uint256, bool` (external)
+- [`setIsFinalized(address _asset, uint256 _expiryTimestamp, bool _isFinalized)`](#MockOracle-setIsFinalized-address-uint256-bool-)
 
-### `getPricer(address _asset) → address` (external)
+- [`getExpiryPrice(address _asset, uint256 _expiryTimestamp)`](#MockOracle-getExpiryPrice-address-uint256-)
 
-### `getPricerLockingPeriod(address _pricer) → uint256` (external)
+- [`getPricer(address _asset)`](#MockOracle-getPricer-address-)
 
-### `getPricerDisputePeriod(address _pricer) → uint256` (external)
+- [`getPricerLockingPeriod(address _pricer)`](#MockOracle-getPricerLockingPeriod-address-)
 
-### `isLockingPeriodOver(address _asset, uint256 _expiryTimestamp) → bool` (public)
+- [`getPricerDisputePeriod(address _pricer)`](#MockOracle-getPricerDisputePeriod-address-)
 
-### `setIsLockingPeriodOver(address _asset, uint256 _expiryTimestamp, bool _result)` (external)
+- [`isLockingPeriodOver(address _asset, uint256 _expiryTimestamp)`](#MockOracle-isLockingPeriodOver-address-uint256-)
 
-### `isDisputePeriodOver(address _asset, uint256 _expiryTimestamp) → bool` (external)
+- [`setIsLockingPeriodOver(address _asset, uint256 _expiryTimestamp, bool _result)`](#MockOracle-setIsLockingPeriodOver-address-uint256-bool-)
 
-### `setIsDisputePeriodOver(address _asset, uint256 _expiryTimestamp, bool _result)` (external)
+- [`isDisputePeriodOver(address _asset, uint256 _expiryTimestamp)`](#MockOracle-isDisputePeriodOver-address-uint256-)
 
-### `setAssetPricer(address _asset, address _pricer)` (external)
+- [`setIsDisputePeriodOver(address _asset, uint256 _expiryTimestamp, bool _result)`](#MockOracle-setIsDisputePeriodOver-address-uint256-bool-)
 
-### `setLockingPeriod(address _pricer, uint256 _lockingPeriod)` (external)
+- [`setAssetPricer(address _asset, address _pricer)`](#MockOracle-setAssetPricer-address-address-)
 
-### `setDisputePeriod(address _pricer, uint256 _disputePeriod)` (external)
+- [`setLockingPeriod(address _pricer, uint256 _lockingPeriod)`](#MockOracle-setLockingPeriod-address-uint256-)
+
+- [`setDisputePeriod(address _pricer, uint256 _disputePeriod)`](#MockOracle-setDisputePeriod-address-uint256-)
+
+# Function `setRealTimePrice(address _asset, uint256 _price)` {#MockOracle-setRealTimePrice-address-uint256-}
+
+No description
+
+# Function `getPrice(address _asset) → uint256` {#MockOracle-getPrice-address-}
+
+No description
+
+# Function `setExpiryPriceFinalizedAllPeiodOver(address _asset, uint256 _expiryTimestamp, uint256 _price, bool _isFinalized)` {#MockOracle-setExpiryPriceFinalizedAllPeiodOver-address-uint256-uint256-bool-}
+
+No description
+
+# Function `setExpiryPrice(address _asset, uint256 _expiryTimestamp, uint256 _price)` {#MockOracle-setExpiryPrice-address-uint256-uint256-}
+
+No description
+
+# Function `setIsFinalized(address _asset, uint256 _expiryTimestamp, bool _isFinalized)` {#MockOracle-setIsFinalized-address-uint256-bool-}
+
+No description
+
+# Function `getExpiryPrice(address _asset, uint256 _expiryTimestamp) → uint256, bool` {#MockOracle-getExpiryPrice-address-uint256-}
+
+No description
+
+# Function `getPricer(address _asset) → address` {#MockOracle-getPricer-address-}
+
+No description
+
+# Function `getPricerLockingPeriod(address _pricer) → uint256` {#MockOracle-getPricerLockingPeriod-address-}
+
+No description
+
+# Function `getPricerDisputePeriod(address _pricer) → uint256` {#MockOracle-getPricerDisputePeriod-address-}
+
+No description
+
+# Function `isLockingPeriodOver(address _asset, uint256 _expiryTimestamp) → bool` {#MockOracle-isLockingPeriodOver-address-uint256-}
+
+No description
+
+# Function `setIsLockingPeriodOver(address _asset, uint256 _expiryTimestamp, bool _result)` {#MockOracle-setIsLockingPeriodOver-address-uint256-bool-}
+
+No description
+
+# Function `isDisputePeriodOver(address _asset, uint256 _expiryTimestamp) → bool` {#MockOracle-isDisputePeriodOver-address-uint256-}
+
+No description
+
+# Function `setIsDisputePeriodOver(address _asset, uint256 _expiryTimestamp, bool _result)` {#MockOracle-setIsDisputePeriodOver-address-uint256-bool-}
+
+No description
+
+# Function `setAssetPricer(address _asset, address _pricer)` {#MockOracle-setAssetPricer-address-address-}
+
+No description
+
+# Function `setLockingPeriod(address _pricer, uint256 _lockingPeriod)` {#MockOracle-setLockingPeriod-address-uint256-}
+
+No description
+
+# Function `setDisputePeriod(address _pricer, uint256 _disputePeriod)` {#MockOracle-setDisputePeriod-address-uint256-}
+
+No description

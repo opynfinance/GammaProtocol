@@ -1,32 +1,47 @@
-## `{{name}}`
-
-{{{natspec.userdoc}}}
-
 {{{natspec.devdoc}}}
 
-{{#each ownModifiers}}
-### `{{name}}({{args}})`
+{{#if ownFunctions}}
+# Functions:
+{{#ownFunctions}}
+{{#if (or (eq visibility "public") (eq visibility "external"))}}
+- [`{{name}}({{args}})`](#{{anchor}})
+{{/if}}
+{{/ownFunctions}}
+{{/if}}
 
-{{{natspec.userdoc}}}
+{{#if ownEvents}}
+# Events:
+{{#ownEvents}}
+- [`{{name}}({{args}})`](#{{anchor}})
+{{/ownEvents}}
+{{/if}}
 
-{{{natspec.devdoc}}}
+{{#ownFunctions}}
+{{#if (or (eq visibility "public") (eq visibility "external"))}}
+# Function `{{name}}({{args}}){{#if outputs}} → {{outputs}}{{/if}}` {#{{anchor~}} }
+{{#if natspec.devdoc}}{{natspec.devdoc}}{{else}}No description{{/if}}
+{{#if natspec.params}}
+## Parameters:
+{{#natspec.params}}
+- `{{param}}`: {{description}}
+{{/natspec.params}}
+{{/if}}
+{{#if natspec.returns}}
+## Return Values:
+{{#natspec.returns}}
+- {{param}} {{description}}
+{{/natspec.returns}}
+{{/if}}
+{{/if}}
+{{/ownFunctions}}
 
-{{/each}}
-
-{{#each ownFunctions}}
-### `{{name}}({{args}}){{#if outputs}} → {{outputs}}{{/if}}` ({{visibility}})
-
-{{{natspec.userdoc}}}
-
-{{{natspec.devdoc}}}
-
-{{/each}}
-
-{{#each ownEvents}}
-### `{{name}}({{args}})`
-
-{{{natspec.userdoc}}}
-
-{{{natspec.devdoc}}}
-
-{{/each}}
+{{#ownEvents}}
+# Event `{{name}}({{args}})` {#{{anchor~}} }
+{{#if natspec.devdoc}}{{natspec.devdoc}}{{else}}No description{{/if}}
+{{#if natspec.params}}
+## Parameters:
+{{#natspec.params}}
+- `{{param}}`: {{description}}
+{{/natspec.params}}
+{{/if}}
+{{/ownEvents}}

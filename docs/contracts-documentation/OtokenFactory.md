@@ -1,39 +1,101 @@
-## `OtokenFactory`
-
-SPDX-License-Identifier: UNLICENSED
-
-Create new otokens and keep track of all created tokens.
-
 Calculate contract address before each creation with CREATE2
 
 and deploy eip-1167 minimal proxies for otoken logic contract.
 
-### `constructor(address _addressBook)` (public)
+# Functions:
 
-### `createOtoken(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) → address` (external)
+- [`constructor(address _addressBook)`](#OtokenFactory-constructor-address-)
 
-create new otokens
+- [`createOtoken(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut)`](#OtokenFactory-createOtoken-address-address-address-uint256-uint256-bool-)
+
+- [`getOtokensLength()`](#OtokenFactory-getOtokensLength--)
+
+- [`getOtoken(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut)`](#OtokenFactory-getOtoken-address-address-address-uint256-uint256-bool-)
+
+- [`getTargetOtokenAddress(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut)`](#OtokenFactory-getTargetOtokenAddress-address-address-address-uint256-uint256-bool-)
+
+# Events:
+
+- [`OtokenCreated(address tokenAddress, address creator, address underlying, address strike, address collateral, uint256 strikePrice, uint256 expiry, bool isPut)`](#OtokenFactory-OtokenCreated-address-address-address-address-address-uint256-uint256-bool-)
+
+# Function `constructor(address _addressBook)` {#OtokenFactory-constructor-address-}
+
+No description
+
+# Function `createOtoken(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) → address` {#OtokenFactory-createOtoken-address-address-address-uint256-uint256-bool-}
 
 deploy an eip-1167 minimal proxy with CREATE2 and register it to the whitelist module.
 
-### `getOtokensLength() → uint256` (external)
+## Parameters:
 
-Get the total otokens created by the factory.
+- `_underlyingAsset`: asset that the option references
 
-### `getOtoken(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) → address` (external)
+- `_strikeAsset`: asset that the strike price is denominated in
 
-get the otoken address. If no token has been created with these parameters, will return address(0).
+- `_collateralAsset`: asset that is held as collateral against short/written options
 
-### `getTargetOtokenAddress(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) → address` (external)
+- `_strikePrice`: strike price with decimals = 18
 
-get the address at which a new otoken with these paramters will be deployed
+- `_expiry`: expiration timestamp in second
+
+- `_isPut`: is this a put option, if not it is a call
+
+## Return Values:
+
+- newOtoken address of the newly created option
+
+# Function `getOtokensLength() → uint256` {#OtokenFactory-getOtokensLength--}
+
+No description
+
+## Return Values:
+
+- length of the otokens array.
+
+# Function `getOtoken(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) → address` {#OtokenFactory-getOtoken-address-address-address-uint256-uint256-bool-}
+
+No description
+
+## Parameters:
+
+- `_underlyingAsset`: asset that the option references
+
+- `_strikeAsset`: asset that the strike price is denominated in
+
+- `_collateralAsset`: asset that is held as collateral against short/written options
+
+- `_strikePrice`: strike price with decimals = 18
+
+- `_expiry`: expiration timestamp in second
+
+- `_isPut`: is this a put option, if not it is a call
+
+## Return Values:
+
+- otoken the address of target otoken.
+
+# Function `getTargetOtokenAddress(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) → address` {#OtokenFactory-getTargetOtokenAddress-address-address-address-uint256-uint256-bool-}
 
 return the exact address that will be deployed at with _computeAddress
 
-### `_getOptionId(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) → bytes32` (internal)
+## Parameters:
 
-internal function to hash paramters and get option id. Each option has a unique id.
+- `_underlyingAsset`: asset that the option references
 
-### `OtokenCreated(address tokenAddress, address creator, address underlying, address strike, address collateral, uint256 strikePrice, uint256 expiry, bool isPut)`
+- `_strikeAsset`: asset that the strike price is denominated in
 
-emitted when factory create a new Option
+- `_collateralAsset`: asset that is held as collateral against short/written options
+
+- `_strikePrice`: strike price with decimals = 18
+
+- `_expiry`: expiration timestamp in second
+
+- `_isPut`: is this a put option, if not it is a call
+
+## Return Values:
+
+- targetAddress the address this otoken will be deployed at.
+
+# Event `OtokenCreated(address tokenAddress, address creator, address underlying, address strike, address collateral, uint256 strikePrice, uint256 expiry, bool isPut)` {#OtokenFactory-OtokenCreated-address-address-address-address-address-uint256-uint256-bool-}
+
+No description

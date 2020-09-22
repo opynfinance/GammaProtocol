@@ -1,19 +1,55 @@
-## `OtokenInterface`
+# Functions:
 
-### `underlyingAsset() → address` (external)
+- [`underlyingAsset()`](#OtokenInterface-underlyingAsset--)
 
-### `strikeAsset() → address` (external)
+- [`strikeAsset()`](#OtokenInterface-strikeAsset--)
 
-### `collateralAsset() → address` (external)
+- [`collateralAsset()`](#OtokenInterface-collateralAsset--)
 
-### `strikePrice() → uint256` (external)
+- [`strikePrice()`](#OtokenInterface-strikePrice--)
 
-### `expiryTimestamp() → uint256` (external)
+- [`expiryTimestamp()`](#OtokenInterface-expiryTimestamp--)
 
-### `isPut() → bool` (external)
+- [`isPut()`](#OtokenInterface-isPut--)
 
-### `init(address _addressBook, address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut)` (external)
+- [`init(address _addressBook, address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut)`](#OtokenInterface-init-address-address-address-address-uint256-uint256-bool-)
 
-### `mintOtoken(address account, uint256 amount)` (external)
+- [`mintOtoken(address account, uint256 amount)`](#OtokenInterface-mintOtoken-address-uint256-)
 
-### `burnOtoken(address account, uint256 amount)` (external)
+- [`burnOtoken(address account, uint256 amount)`](#OtokenInterface-burnOtoken-address-uint256-)
+
+# Function `underlyingAsset() → address` {#OtokenInterface-underlyingAsset--}
+
+No description
+
+# Function `strikeAsset() → address` {#OtokenInterface-strikeAsset--}
+
+No description
+
+# Function `collateralAsset() → address` {#OtokenInterface-collateralAsset--}
+
+No description
+
+# Function `strikePrice() → uint256` {#OtokenInterface-strikePrice--}
+
+No description
+
+# Function `expiryTimestamp() → uint256` {#OtokenInterface-expiryTimestamp--}
+
+No description
+
+# Function `isPut() → bool` {#OtokenInterface-isPut--}
+
+No description
+
+# Function `init(address _addressBook, address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut)` {#OtokenInterface-init-address-address-address-address-uint256-uint256-bool-}
+
+No description
+
+# Function `mintOtoken(address account, uint256 amount)` {#OtokenInterface-mintOtoken-address-uint256-}
+
+No description
+
+# Function `burnOtoken(address account, uint256 amount)` {#OtokenInterface-burnOtoken-address-uint256-}
+
+No description
