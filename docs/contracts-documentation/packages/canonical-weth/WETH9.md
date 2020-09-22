@@ -28,17 +28,17 @@ A wrapper to use ETH as collateral
 
 - `Withdrawal(address src, uint256 wad)`
 
-### Function `receive()` (external)
+### Function `receive() external`
 
 fallback function that receive ETH
 
 will get called in a tx with
 
-### Function `deposit()` (public)
+### Function `deposit() public`
 
 Wrap deposited ETH into WETH
 
-### Function `withdraw(uint256 _wad)` (public)
+### Function `withdraw(uint256 _wad) public`
 
 withdraw ETH from contract
 
@@ -48,7 +48,7 @@ Unwrap from WETH to ETH
 
 - `_wad`: amount WETH to unwrap and withdraw
 
-### Function `totalSupply() → uint256` (public)
+### Function `totalSupply() → uint256 public`
 
 get ETH total supply
 
@@ -56,7 +56,7 @@ get ETH total supply
 
 - total supply
 
-### Function `approve(address _guy, uint256 _wad) → bool` (public)
+### Function `approve(address _guy, uint256 _wad) → bool public`
 
 approve transfer
 
@@ -70,7 +70,7 @@ approve transfer
 
 - true if tx succeeded
 
-### Function `transfer(address _dst, uint256 _wad) → bool` (public)
+### Function `transfer(address _dst, uint256 _wad) → bool public`
 
 transfer WETH
 
@@ -84,7 +84,7 @@ transfer WETH
 
 - true if tx succeeded
 
-### Function `transferFrom(address _src, address _dst, uint256 _wad) → bool` (public)
+### Function `transferFrom(address _src, address _dst, uint256 _wad) → bool public`
 
 transfer from address
 

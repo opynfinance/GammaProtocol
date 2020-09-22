@@ -42,4 +42,4 @@ by making the `nonReentrant` function external, and make it call a
 
 `private` function that does the actual work.
 
-### Function `constructor()` (internal)
+### Function `constructor() internal`

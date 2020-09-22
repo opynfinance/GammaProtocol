@@ -8,7 +8,7 @@ Upgradeable testing contract
 
 - `getV1Version() (external)`
 
-### Function `initialize(address _addressBook, address _owner)` (public)
+### Function `initialize(address _addressBook, address _owner) public`
 
 this function is invoked by the proxy contract when this contract is added to the
 
@@ -18,4 +18,4 @@ AddressBook.
 
 - `_addressBook`: the address of the AddressBook*
 
-### Function `getV1Version() → uint256` (external)
+### Function `getV1Version() → uint256 external`

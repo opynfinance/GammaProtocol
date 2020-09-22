@@ -14,7 +14,7 @@ This contract represents a proxy where the implementation address to which it wi
 
 - `Upgraded(address implementation)`
 
-### Function `implementation() → address impl` (public)
+### Function `implementation() → address impl public`
 
 Tells the address of the current implementation
 
@@ -22,7 +22,7 @@ Tells the address of the current implementation
 
 - impl address of the current implementation
 
-### Function `setImplementation(address _newImplementation)` (internal)
+### Function `setImplementation(address _newImplementation) internal`
 
 Sets the address of the current implementation
 
@@ -30,7 +30,7 @@ Sets the address of the current implementation
 
 - `_newImplementation`: address representing the new implementation to be set
 
-### Function `_upgradeTo(address _newImplementation)` (internal)
+### Function `_upgradeTo(address _newImplementation) internal`
 
 Upgrades the implementation address
 

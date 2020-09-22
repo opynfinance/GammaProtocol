@@ -40,7 +40,7 @@ check if the sender is the Controller module
 
 check if the sender is the farmer address
 
-### Function `constructor(address _addressBook)` (public)
+### Function `constructor(address _addressBook) public`
 
 contructor
 
@@ -48,7 +48,7 @@ contructor
 
 - `_addressBook`: adressbook module
 
-### Function `transferToPool(address _asset, address _user, uint256 _amount)` (public)
+### Function `transferToPool(address _asset, address _user, uint256 _amount) public`
 
 transfers asset from user to pool
 
@@ -64,7 +64,7 @@ token decimals in Controller before being passed to MarginPool
 
 - `_amount`: amount of token to transfer from _user, scaled to 1e18 of precision
 
-### Function `transferToUser(address _asset, address payable _user, uint256 _amount)` (public)
+### Function `transferToUser(address _asset, address payable _user, uint256 _amount) public`
 
 transfers asset from pool to user
 
@@ -80,7 +80,7 @@ token decimals in Controller before being passed to MarginPool
 
 - `_amount`: amount of token to transfer to _user, scaled to 1e18 of precision
 
-### Function `getStoredBalance(address _asset) → uint256` (external)
+### Function `getStoredBalance(address _asset) → uint256 external`
 
 get asset stored balance
 
@@ -92,7 +92,7 @@ get asset stored balance
 
 - asset balance
 
-### Function `batchTransferToPool(address[] _asset, address[] _user, uint256[] _amount)` (external)
+### Function `batchTransferToPool(address[] _asset, address[] _user, uint256[] _amount) external`
 
 transfers multiple assets from users to pool
 
@@ -108,7 +108,7 @@ token decimals in Controller before being passed to MarginPool
 
 - `_amount`: amount of each token to transfer to _user, scaled to 1e18 of precision
 
-### Function `batchTransferToUser(address[] _asset, address payable[] _user, uint256[] _amount)` (external)
+### Function `batchTransferToUser(address[] _asset, address payable[] _user, uint256[] _amount) external`
 
 transfers multiple assets from pool to users
 
@@ -124,7 +124,7 @@ token decimals in Controller before being passed to MarginPool
 
 - `_amount`: amount of each token to transfer to _user, scaled to 1e18 of precision
 
-### Function `farm(address _asset, address _receiver, uint256 _amount)` (external)
+### Function `farm(address _asset, address _receiver, uint256 _amount) external`
 
 function to collect excess balance
 
@@ -138,7 +138,7 @@ can only be called by farmer address
 
 - `_amount`: amount to harvest
 
-### Function `setFarmer(address _farmer)` (external)
+### Function `setFarmer(address _farmer) external`
 
 function to set farmer address
 

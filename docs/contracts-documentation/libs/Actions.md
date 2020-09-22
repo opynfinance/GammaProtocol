@@ -18,7 +18,7 @@
 
 - `_parseCallArgs(struct Actions.ActionArgs _args) (internal)`
 
-### Function `_parseOpenVaultArgs(struct Actions.ActionArgs _args) → struct Actions.OpenVaultArgs` (internal)
+### Function `_parseOpenVaultArgs(struct Actions.ActionArgs _args) → struct Actions.OpenVaultArgs internal`
 
 Parses the passed in action argmuents to get the argmuents for an open vault action
 
@@ -30,7 +30,7 @@ Parses the passed in action argmuents to get the argmuents for an open vault act
 
 - The arguments for a open vault action
 
-### Function `_parseMintArgs(struct Actions.ActionArgs _args) → struct Actions.MintArgs` (internal)
+### Function `_parseMintArgs(struct Actions.ActionArgs _args) → struct Actions.MintArgs internal`
 
 Parses the passed in action argmuents to get the argmuents for a mint action
 
@@ -42,7 +42,7 @@ Parses the passed in action argmuents to get the argmuents for a mint action
 
 - The arguments for a mint action
 
-### Function `_parseBurnArgs(struct Actions.ActionArgs _args) → struct Actions.BurnArgs` (internal)
+### Function `_parseBurnArgs(struct Actions.ActionArgs _args) → struct Actions.BurnArgs internal`
 
 Parses the passed in action argmuents to get the argmuents for a burn action
 
@@ -54,7 +54,7 @@ Parses the passed in action argmuents to get the argmuents for a burn action
 
 - The arguments for a burn action
 
-### Function `_parseDepositArgs(struct Actions.ActionArgs _args) → struct Actions.DepositArgs` (internal)
+### Function `_parseDepositArgs(struct Actions.ActionArgs _args) → struct Actions.DepositArgs internal`
 
 Parses the passed in action argmuents to get the argmuents for a deposit action
 
@@ -66,7 +66,7 @@ Parses the passed in action argmuents to get the argmuents for a deposit action
 
 - The arguments for a deposit action
 
-### Function `_parseWithdrawArgs(struct Actions.ActionArgs _args) → struct Actions.WithdrawArgs` (internal)
+### Function `_parseWithdrawArgs(struct Actions.ActionArgs _args) → struct Actions.WithdrawArgs internal`
 
 Parses the passed in action argmuents to get the argmuents for a withdraw action
 
@@ -78,7 +78,7 @@ Parses the passed in action argmuents to get the argmuents for a withdraw action
 
 - The arguments for a withdraw action
 
-### Function `_parseExerciseArgs(struct Actions.ActionArgs _args) → struct Actions.ExerciseArgs` (internal)
+### Function `_parseExerciseArgs(struct Actions.ActionArgs _args) → struct Actions.ExerciseArgs internal`
 
 Parses the passed in action argmuents to get the argmuents for an exercise action
 
@@ -90,7 +90,7 @@ Parses the passed in action argmuents to get the argmuents for an exercise actio
 
 - The arguments for a exercise action
 
-### Function `_parseSettleVaultArgs(struct Actions.ActionArgs _args) → struct Actions.SettleVaultArgs` (internal)
+### Function `_parseSettleVaultArgs(struct Actions.ActionArgs _args) → struct Actions.SettleVaultArgs internal`
 
 Parses the passed in action argmuents to get the argmuents for a settle vault action
 
@@ -102,7 +102,7 @@ Parses the passed in action argmuents to get the argmuents for a settle vault ac
 
 - The arguments for a settle vault action
 
-### Function `_parseCallArgs(struct Actions.ActionArgs _args) → struct Actions.CallArgs` (internal)
+### Function `_parseCallArgs(struct Actions.ActionArgs _args) → struct Actions.CallArgs internal`
 
 Parses the passed in action argmuents to get the argmuents for a call action
 

@@ -16,7 +16,7 @@ Collection of functions related to the address type
 
 - `functionCallWithValue(address target, bytes data, uint256 value, string errorMessage) (internal)`
 
-### Function `isContract(address account) → bool` (internal)
+### Function `isContract(address account) → bool internal`
 
 Returns true if `account` is a contract.
 
@@ -42,7 +42,7 @@ types of addresses:
 
 ====
 
-### Function `sendValue(address payable recipient, uint256 amount)` (internal)
+### Function `sendValue(address payable recipient, uint256 amount) internal`
 
 Replacement for Solidity's `transfer`: sends `amount` wei to
 
@@ -66,7 +66,7 @@ taken to not create reentrancy vulnerabilities. Consider using
 
 https://solidity.readthedocs.io/en/v0.5.11/security-considerations.html#use-the-checks-effects-interactions-pattern[checks-effects-interactions pattern].
 
-### Function `functionCall(address target, bytes data) → bytes` (internal)
+### Function `functionCall(address target, bytes data) → bytes internal`
 
 Performs a Solidity function call using a low level `call`. A
 
@@ -90,7 +90,7 @@ Requirements:
 
 _Available since v3.1._
 
-### Function `functionCall(address target, bytes data, string errorMessage) → bytes` (internal)
+### Function `functionCall(address target, bytes data, string errorMessage) → bytes internal`
 
 Same as {xref-Address-functionCall-address-bytes-}[`functionCall`], but with
 
@@ -98,7 +98,7 @@ Same as {xref-Address-functionCall-address-bytes-}[`functionCall`], but with
 
 _Available since v3.1._
 
-### Function `functionCallWithValue(address target, bytes data, uint256 value) → bytes` (internal)
+### Function `functionCallWithValue(address target, bytes data, uint256 value) → bytes internal`
 
 Same as {xref-Address-functionCall-address-bytes-}[`functionCall`],
 
@@ -112,7 +112,7 @@ Requirements:
 
 _Available since v3.1._
 
-### Function `functionCallWithValue(address target, bytes data, uint256 value, string errorMessage) → bytes` (internal)
+### Function `functionCallWithValue(address target, bytes data, uint256 value, string errorMessage) → bytes internal`
 
 Same as {xref-Address-functionCallWithValue-address-bytes-uint256-}[`functionCallWithValue`], but
 

@@ -26,7 +26,7 @@
 
 - `isLessThanOrEqual(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) (internal)`
 
-### Function `fromUnscaledInt(int256 a) → struct FixedPointInt256.FixedPointInt` (internal)
+### Function `fromUnscaledInt(int256 a) → struct FixedPointInt256.FixedPointInt internal`
 
 Constructs an `FixedPointInt` from an unscaled int, e.g., `b=5` gets stored internally as `5**18`.
 
@@ -38,7 +38,7 @@ Constructs an `FixedPointInt` from an unscaled int, e.g., `b=5` gets stored inte
 
 - the converted FixedPoint.
 
-### Function `add(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → struct FixedPointInt256.FixedPointInt` (internal)
+### Function `add(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → struct FixedPointInt256.FixedPointInt internal`
 
 return the sum of two signed integer
 
@@ -52,7 +52,7 @@ return the sum of two signed integer
 
 - sum of two signed integer
 
-### Function `sub(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → struct FixedPointInt256.FixedPointInt` (internal)
+### Function `sub(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → struct FixedPointInt256.FixedPointInt internal`
 
 return the difference of two signed integer
 
@@ -66,7 +66,7 @@ return the difference of two signed integer
 
 - difference of two fixed point
 
-### Function `mul(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → struct FixedPointInt256.FixedPointInt` (internal)
+### Function `mul(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → struct FixedPointInt256.FixedPointInt internal`
 
 multiply two signed integer
 
@@ -82,7 +82,7 @@ rounds to zero if a*b < SCALING_FACTOR / 2
 
 - mul of two fixed point
 
-### Function `div(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → struct FixedPointInt256.FixedPointInt` (internal)
+### Function `div(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → struct FixedPointInt256.FixedPointInt internal`
 
 divide two FixedPoint
 
@@ -98,7 +98,7 @@ rounds to zero if a*b < SCALING_FACTOR / 2
 
 - div of two signed integer
 
-### Function `min(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → struct FixedPointInt256.FixedPointInt` (internal)
+### Function `min(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → struct FixedPointInt256.FixedPointInt internal`
 
 the minimum between a and b
 
@@ -112,7 +112,7 @@ the minimum between a and b
 
 - min of two signed integer
 
-### Function `max(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → struct FixedPointInt256.FixedPointInt` (internal)
+### Function `max(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → struct FixedPointInt256.FixedPointInt internal`
 
 the maximum between a and b
 
@@ -126,7 +126,7 @@ the maximum between a and b
 
 - max of two signed integer
 
-### Function `isEqual(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → bool` (internal)
+### Function `isEqual(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → bool internal`
 
 Whether `a` is equal to `b`.
 
@@ -140,7 +140,7 @@ Whether `a` is equal to `b`.
 
 - True if equal, or False.
 
-### Function `isGreaterThan(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → bool` (internal)
+### Function `isGreaterThan(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → bool internal`
 
 Whether `a` is greater than `b`.
 
@@ -154,7 +154,7 @@ Whether `a` is greater than `b`.
 
 - True if `a > b`, or False.
 
-### Function `isGreaterThanOrEqual(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → bool` (internal)
+### Function `isGreaterThanOrEqual(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → bool internal`
 
 Whether `a` is greater than or equal to `b`.
 
@@ -168,7 +168,7 @@ Whether `a` is greater than or equal to `b`.
 
 - True if `a >= b`, or False.
 
-### Function `isLessThan(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → bool` (internal)
+### Function `isLessThan(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → bool internal`
 
 Whether `a` is less than `b`.
 
@@ -182,7 +182,7 @@ Whether `a` is less than `b`.
 
 - True if `a < b`, or False.
 
-### Function `isLessThanOrEqual(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → bool` (internal)
+### Function `isLessThanOrEqual(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → bool internal`
 
 Whether `a` is less than or equal to `b`.
 

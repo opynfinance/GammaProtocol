@@ -14,7 +14,7 @@ https://github.com/0age/Spawner/blob/master/contracts/Spawner.sol to fit into Ot
 
 - `_computeAddress(address logicContract, bytes initializationCalldata) (internal)`
 
-### Function `_spawn(address logicContract, bytes initializationCalldata) → address` (internal)
+### Function `_spawn(address logicContract, bytes initializationCalldata) → address internal`
 
 Internal function for spawning an eip-1167 minimal proxy using `CREATE2`.
 
@@ -32,7 +32,7 @@ contract creation.
 
 - spawnedContract The address of the newly-spawned contract.
 
-### Function `_computeAddress(address logicContract, bytes initializationCalldata) → address target` (internal)
+### Function `_computeAddress(address logicContract, bytes initializationCalldata) → address target internal`
 
 Internal view function for finding the address of the standard
 

@@ -26,9 +26,9 @@ and deploy eip-1167 minimal proxies for otoken logic contract.
 
 - `OtokenCreated(address tokenAddress, address creator, address underlying, address strike, address collateral, uint256 strikePrice, uint256 expiry, bool isPut)`
 
-### Function `constructor(address _addressBook)` (public)
+### Function `constructor(address _addressBook) public`
 
-### Function `createOtoken(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) → address` (external)
+### Function `createOtoken(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) → address external`
 
 create new otokens
 
@@ -52,7 +52,7 @@ deploy an eip-1167 minimal proxy with CREATE2 and register it to the whitelist m
 
 - newOtoken address of the newly created option
 
-### Function `getOtokensLength() → uint256` (external)
+### Function `getOtokensLength() → uint256 external`
 
 Get the total otokens created by the factory.
 
@@ -60,7 +60,7 @@ Get the total otokens created by the factory.
 
 - length of the otokens array.
 
-### Function `getOtoken(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) → address` (external)
+### Function `getOtoken(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) → address external`
 
 get the otoken address. If no token has been created with these parameters, will return address(0).
 
@@ -82,7 +82,7 @@ get the otoken address. If no token has been created with these parameters, will
 
 - otoken the address of target otoken.
 
-### Function `getTargetOtokenAddress(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) → address` (external)
+### Function `getTargetOtokenAddress(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) → address external`
 
 get the address at which a new otoken with these paramters will be deployed
 
@@ -106,7 +106,7 @@ return the exact address that will be deployed at with _computeAddress
 
 - targetAddress the address this otoken will be deployed at.
 
-### Function `_getOptionId(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) → bytes32` (internal)
+### Function `_getOptionId(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) → bytes32 internal`
 
 internal function to hash paramters and get option id. Each option has a unique id.
 

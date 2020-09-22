@@ -24,7 +24,7 @@ The Otoken inherits ERC20Initializable because we need to use the init instead o
 
 - `_beforeTokenTransfer(address from, address to, uint256 amount) (internal)`
 
-### Function `init(address _addressBook, address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiryTimestamp, bool _isPut)` (external)
+### Function `init(address _addressBook, address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiryTimestamp, bool _isPut) external`
 
 initialize the otoken.
 
@@ -42,7 +42,7 @@ initialize the otoken.
 
 - `_isPut`: is this a put option, if not it is a call
 
-### Function `mintOtoken(address account, uint256 amount)` (external)
+### Function `mintOtoken(address account, uint256 amount) external`
 
 Mint oToken for an account.
 
@@ -54,7 +54,7 @@ this is a Controller only method. Access control is taken care of by _beforeToke
 
 - `amount`: the amount to mint
 
-### Function `burnOtoken(address account, uint256 amount)` (external)
+### Function `burnOtoken(address account, uint256 amount) external`
 
 Burn oToken from an account.
 
@@ -66,7 +66,7 @@ this is a Controller only method. Access control is taken care of by _beforeToke
 
 - `amount`: the amount to burn
 
-### Function `_getNameAndSymbol() → string tokenName, string tokenSymbol` (internal)
+### Function `_getNameAndSymbol() → string tokenName, string tokenSymbol internal`
 
 generate name and symbol for an option
 
@@ -78,7 +78,7 @@ this function use named return variable to avoid stack-too-deep error
 
 - tokenSymbol oETHUSDC-05SEP20-200P
 
-### Function `_getTokenSymbol(address token) → string` (internal)
+### Function `_getTokenSymbol(address token) → string internal`
 
 get token symbol
 
@@ -86,7 +86,7 @@ get token symbol
 
 - `token`: the ERC20 token address
 
-### Function `_uintTo2Chars(uint256 number) → string` (internal)
+### Function `_uintTo2Chars(uint256 number) → string internal`
 
 Internal function to get the number with 2 characters.
 
@@ -94,7 +94,7 @@ Internal function to get the number with 2 characters.
 
 - The 2 characters for the number.
 
-### Function `_getOptionType(bool _isPut) → string shortString, string longString` (internal)
+### Function `_getOptionType(bool _isPut) → string shortString, string longString internal`
 
 return string of option type
 
@@ -104,7 +104,7 @@ return string of option type
 
 - longString Put or Call
 
-### Function `_getMonth(uint256 _month) → string shortString, string longString` (internal)
+### Function `_getMonth(uint256 _month) → string shortString, string longString internal`
 
 return string of month.
 
@@ -114,7 +114,7 @@ return string of month.
 
 - longString September, December ...etc
 
-### Function `_beforeTokenTransfer(address from, address to, uint256 amount)` (internal)
+### Function `_beforeTokenTransfer(address from, address to, uint256 amount) internal`
 
 this function overrides the _beforeTokenTransfer hook in ERC20Initializable.sol.
 

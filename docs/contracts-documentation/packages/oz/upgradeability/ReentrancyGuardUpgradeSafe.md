@@ -44,6 +44,6 @@ by making the `nonReentrant` function external, and make it call a
 
 `private` function that does the actual work.
 
-### Function `__ReentrancyGuard_init()` (internal)
+### Function `__ReentrancyGuard_init() internal`
 
-### Function `__ReentrancyGuard_init_unchained()` (internal)
+### Function `__ReentrancyGuard_init_unchained() internal`

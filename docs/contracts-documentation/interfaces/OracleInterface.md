@@ -26,26 +26,26 @@
 
 - `disputeExpiryPrice(address _asset, uint256 _expiryTimestamp, uint256 _price) (external)`
 
-### Function `isLockingPeriodOver(address _asset, uint256 _expiryTimestamp) → bool` (external)
+### Function `isLockingPeriodOver(address _asset, uint256 _expiryTimestamp) → bool external`
 
-### Function `isDisputePeriodOver(address _asset, uint256 _expiryTimestamp) → bool` (external)
+### Function `isDisputePeriodOver(address _asset, uint256 _expiryTimestamp) → bool external`
 
-### Function `getExpiryPrice(address _asset, uint256 _expiryTimestamp) → uint256, bool` (external)
+### Function `getExpiryPrice(address _asset, uint256 _expiryTimestamp) → uint256, bool external`
 
-### Function `getPricer(address _asset) → address` (external)
+### Function `getPricer(address _asset) → address external`
 
-### Function `getPrice(address _asset) → uint256` (external)
+### Function `getPrice(address _asset) → uint256 external`
 
-### Function `getPricerLockingPeriod(address _pricer) → uint256` (external)
+### Function `getPricerLockingPeriod(address _pricer) → uint256 external`
 
-### Function `getPricerDisputePeriod(address _pricer) → uint256` (external)
+### Function `getPricerDisputePeriod(address _pricer) → uint256 external`
 
-### Function `setAssetPricer(address _asset, address _pricer)` (external)
+### Function `setAssetPricer(address _asset, address _pricer) external`
 
-### Function `setLockingPeriod(address _pricer, uint256 _lockingPeriod)` (external)
+### Function `setLockingPeriod(address _pricer, uint256 _lockingPeriod) external`
 
-### Function `setDisputePeriod(address _pricer, uint256 _disputePeriod)` (external)
+### Function `setDisputePeriod(address _pricer, uint256 _disputePeriod) external`
 
-### Function `setExpiryPrice(address _asset, uint256 _expiryTimestamp, uint256 _price)` (external)
+### Function `setExpiryPrice(address _asset, uint256 _expiryTimestamp, uint256 _price) external`
 
-### Function `disputeExpiryPrice(address _asset, uint256 _expiryTimestamp, uint256 _price)` (external)
+### Function `disputeExpiryPrice(address _asset, uint256 _expiryTimestamp, uint256 _price) external`

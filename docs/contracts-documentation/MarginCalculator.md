@@ -40,9 +40,9 @@ Calculator module that check if a given vault is valid.
 
 - `_internalAmountToTokenAmount(uint256 _amount, address _token) (internal)`
 
-### Function `constructor(address _addressBook)` (public)
+### Function `constructor(address _addressBook) public`
 
-### Function `getExpiredPayoutRate(address _otoken) → uint256` (external)
+### Function `getExpiredPayoutRate(address _otoken) → uint256 external`
 
 Return the net worth of an expired oToken in collateral.
 
@@ -54,7 +54,7 @@ Return the net worth of an expired oToken in collateral.
 
 - the exchange rate that shows how much collateral unit can be take out by 1 otoken unit, scaled by 1e18
 
-### Function `getExcessCollateral(struct MarginAccount.Vault _vault) → uint256, bool` (public)
+### Function `getExcessCollateral(struct MarginAccount.Vault _vault) → uint256, bool public`
 
 returns the net value of a vault in the valid collateral asset for that vault i.e. USDC for puts/ ETH for calls
 
@@ -68,7 +68,7 @@ returns the net value of a vault in the valid collateral asset for that vault i.
 
 - isExcess true if there's excess margin in the vault. In this case, collateral can be taken out from the vault. False if there is insufficient margin and additional collateral needs to be added to the vault to create the position.
 
-### Function `_getExpiredCashValue(address _otoken) → uint256` (internal)
+### Function `_getExpiredCashValue(address _otoken) → uint256 internal`
 
 Return the cash value of an expired oToken.
 
@@ -84,7 +84,7 @@ For put return Max(0, oToken.strike - ETH Price)
 
 - the cash value of an expired otoken, denominated in strike asset. scaled by 1e18
 
-### Function `_getMarginRequired(struct MarginAccount.Vault _vault) → struct FixedPointInt256.FixedPointInt` (internal)
+### Function `_getMarginRequired(struct MarginAccount.Vault _vault) → struct FixedPointInt256.FixedPointInt internal`
 
 Calculate the amount of collateral needed for a spread vault.
 
@@ -98,7 +98,7 @@ The vault passed in already pass amount array length = asset array length check.
 
 - marginRequired the minimal amount of collateral needed in a vault.
 
-### Function `_getPutSpreadMarginRequired(struct FixedPointInt256.FixedPointInt _shortAmount, struct FixedPointInt256.FixedPointInt _longAmount, struct FixedPointInt256.FixedPointInt _shortStrike, struct FixedPointInt256.FixedPointInt _longStrike) → struct FixedPointInt256.FixedPointInt` (internal)
+### Function `_getPutSpreadMarginRequired(struct FixedPointInt256.FixedPointInt _shortAmount, struct FixedPointInt256.FixedPointInt _longAmount, struct FixedPointInt256.FixedPointInt _shortStrike, struct FixedPointInt256.FixedPointInt _longStrike) → struct FixedPointInt256.FixedPointInt internal`
 
 calculate put spread margin requirement.
 
@@ -110,7 +110,7 @@ marginRequired = max( (short amount * short strike) - (long strike * min (short 
 
 - margin requirement denominated in strike asset.
 
-### Function `_getCallSpreadMarginRequired(struct FixedPointInt256.FixedPointInt _shortAmount, struct FixedPointInt256.FixedPointInt _longAmount, struct FixedPointInt256.FixedPointInt _shortStrike, struct FixedPointInt256.FixedPointInt _longStrike) → struct FixedPointInt256.FixedPointInt` (internal)
+### Function `_getCallSpreadMarginRequired(struct FixedPointInt256.FixedPointInt _shortAmount, struct FixedPointInt256.FixedPointInt _longAmount, struct FixedPointInt256.FixedPointInt _shortStrike, struct FixedPointInt256.FixedPointInt _longStrike) → struct FixedPointInt256.FixedPointInt internal`
 
 calculate call spread marigin requirement.
 
@@ -126,7 +126,7 @@ if long strike = 0 (no long token), then return net = short amount.
 
 - margin requirement denominated in underlying asset.
 
-### Function `_getExpiredPutSpreadCashValue(struct FixedPointInt256.FixedPointInt _shortAmount, struct FixedPointInt256.FixedPointInt _longAmount, struct FixedPointInt256.FixedPointInt _shortCashValue, struct FixedPointInt256.FixedPointInt _longCashValue) → struct FixedPointInt256.FixedPointInt` (internal)
+### Function `_getExpiredPutSpreadCashValue(struct FixedPointInt256.FixedPointInt _shortAmount, struct FixedPointInt256.FixedPointInt _longAmount, struct FixedPointInt256.FixedPointInt _shortCashValue, struct FixedPointInt256.FixedPointInt _longCashValue) → struct FixedPointInt256.FixedPointInt internal`
 
 calculate cash value for an expired put spread vault.
 
@@ -136,7 +136,7 @@ Formula: net = (short cash value * short amount) - ( long cash value * long Amou
 
 - cash value denominated in strike asset.
 
-### Function `_getExpiredCallSpreadCashValue(struct FixedPointInt256.FixedPointInt _shortAmount, struct FixedPointInt256.FixedPointInt _longAmount, struct FixedPointInt256.FixedPointInt _shortCashValue, struct FixedPointInt256.FixedPointInt _longCashValue, struct FixedPointInt256.FixedPointInt _underlyingPriceInt) → struct FixedPointInt256.FixedPointInt` (internal)
+### Function `_getExpiredCallSpreadCashValue(struct FixedPointInt256.FixedPointInt _shortAmount, struct FixedPointInt256.FixedPointInt _longAmount, struct FixedPointInt256.FixedPointInt _shortCashValue, struct FixedPointInt256.FixedPointInt _longCashValue, struct FixedPointInt256.FixedPointInt _underlyingPriceInt) → struct FixedPointInt256.FixedPointInt internal`
 
 calculate cash value for an expired call spread vault.
 
@@ -150,7 +150,7 @@ Underlying price
 
 - cash value denominated in underlying asset.
 
-### Function `_checkIsValidSpread(struct MarginAccount.Vault _vault)` (internal)
+### Function `_checkIsValidSpread(struct MarginAccount.Vault _vault) internal`
 
 ensure that the vault contains
 
@@ -164,7 +164,7 @@ c) at most 1 series of option used as the short option.
 
 - `_vault`: the vault to check.
 
-### Function `_isMarginableLong(struct MarginAccount.Vault _vault) → bool` (internal)
+### Function `_isMarginableLong(struct MarginAccount.Vault _vault) → bool internal`
 
 if there is a short option in the vault, ensure that the long option series being used is a valid margin.
 
@@ -172,7 +172,7 @@ if there is a short option in the vault, ensure that the long option series bein
 
 - `_vault`: the vault to check.
 
-### Function `_isMarginableCollateral(struct MarginAccount.Vault _vault) → bool` (internal)
+### Function `_isMarginableCollateral(struct MarginAccount.Vault _vault) → bool internal`
 
 if there is a short option in the vault, ensure that the collateral asset being used is a valid margin.
 
@@ -180,7 +180,7 @@ if there is a short option in the vault, ensure that the collateral asset being 
 
 - `_vault`: the vault to check.
 
-### Function `_getAssetPrice(address _asset, uint256 _expiry) → uint256 price, bool isFinalized` (internal)
+### Function `_getAssetPrice(address _asset, uint256 _expiry) → uint256 price, bool isFinalized internal`
 
 internal function to get price of an asset
 
@@ -194,7 +194,7 @@ internal function to get price of an asset
 
 - isFinalized the price is finalized by the oracle and can't be changed
 
-### Function `_getToCollateralRate(address _short) → struct FixedPointInt256.FixedPointInt` (internal)
+### Function `_getToCollateralRate(address _short) → struct FixedPointInt256.FixedPointInt internal`
 
 internal function to calculate strike / underlying to collateral exchange rate.
 
@@ -206,7 +206,7 @@ for put, returns collateral / strike rate
 
 - the exchange rate to convert amount in strike or underlying to equivilent value of collateral.
 
-### Function `_uint256ToFPI(uint256 _num) → struct FixedPointInt256.FixedPointInt` (internal)
+### Function `_uint256ToFPI(uint256 _num) → struct FixedPointInt256.FixedPointInt internal`
 
 convert uint256 to FixedPointInt, no scaling invloved
 
@@ -214,7 +214,7 @@ convert uint256 to FixedPointInt, no scaling invloved
 
 - the FixedPointInt format of input
 
-### Function `_isEmptyAssetArray(address[] _assets) → bool` (internal)
+### Function `_isEmptyAssetArray(address[] _assets) → bool internal`
 
 check if array is empty or only have address(0)
 
@@ -222,7 +222,7 @@ check if array is empty or only have address(0)
 
 - isEmpty or not
 
-### Function `_tokenAmountToInternalAmount(uint256 _amount, address _token) → uint256` (internal)
+### Function `_tokenAmountToInternalAmount(uint256 _amount, address _token) → uint256 internal`
 
 convert a uint256 amount
 
@@ -244,7 +244,7 @@ Input:  15                    =>   Output:  0       rUSDC
 
 - internal amount that is sacled by 1e18.
 
-### Function `_internalAmountToTokenAmount(uint256 _amount, address _token) → uint256` (internal)
+### Function `_internalAmountToTokenAmount(uint256 _amount, address _token) → uint256 internal`
 
 convert an internal amount (1e18) to native token amount
 

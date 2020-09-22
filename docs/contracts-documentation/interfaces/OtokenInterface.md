@@ -20,20 +20,20 @@
 
 - `burnOtoken(address account, uint256 amount) (external)`
 
-### Function `underlyingAsset() → address` (external)
+### Function `underlyingAsset() → address external`
 
-### Function `strikeAsset() → address` (external)
+### Function `strikeAsset() → address external`
 
-### Function `collateralAsset() → address` (external)
+### Function `collateralAsset() → address external`
 
-### Function `strikePrice() → uint256` (external)
+### Function `strikePrice() → uint256 external`
 
-### Function `expiryTimestamp() → uint256` (external)
+### Function `expiryTimestamp() → uint256 external`
 
-### Function `isPut() → bool` (external)
+### Function `isPut() → bool external`
 
-### Function `init(address _addressBook, address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut)` (external)
+### Function `init(address _addressBook, address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) external`
 
-### Function `mintOtoken(address account, uint256 amount)` (external)
+### Function `mintOtoken(address account, uint256 amount) external`
 
-### Function `burnOtoken(address account, uint256 amount)` (external)
+### Function `burnOtoken(address account, uint256 amount) external`

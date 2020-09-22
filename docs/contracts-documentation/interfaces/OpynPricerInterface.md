@@ -4,4 +4,4 @@
 
 - `getPrice() (external)`
 
-### Function `getPrice() → uint256` (external)
+### Function `getPrice() → uint256 external`

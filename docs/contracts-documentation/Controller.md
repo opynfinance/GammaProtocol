@@ -158,15 +158,15 @@ modifier to check if the called address is a whitelisted callee address
 
 - `_callee`: called address
 
-### Function `_isNotPaused()` (internal)
+### Function `_isNotPaused() internal`
 
 check if the system is not paused
 
-### Function `_isNotShutdown()` (internal)
+### Function `_isNotShutdown() internal`
 
 check if the system is not in an emergency shutdown state
 
-### Function `_isAuthorized(address _sender, address _accountOwner)` (internal)
+### Function `_isAuthorized(address _sender, address _accountOwner) internal`
 
 check if the sender is an authorized operator
 
@@ -176,7 +176,7 @@ check if the sender is an authorized operator
 
 - `_accountOwner`: owner of a vault
 
-### Function `initialize(address _addressBook, address _owner)` (external)
+### Function `initialize(address _addressBook, address _owner) external`
 
 initalize the deployed contract
 
@@ -186,7 +186,7 @@ initalize the deployed contract
 
 - `_owner`: account owner address
 
-### Function `setSystemPaused(bool _paused)` (external)
+### Function `setSystemPaused(bool _paused) external`
 
 allows the pauser to toggle the pause variable and pause or unpause the system
 
@@ -196,7 +196,7 @@ can only be called by the pauser
 
 - `_paused`: new boolean value to set systemPaused to
 
-### Function `setEmergencyShutdown(bool _shutdown)` (external)
+### Function `setEmergencyShutdown(bool _shutdown) external`
 
 allows the terminator to toggle the emergency shutdown variable and put the system in an emergency shutdown state or return to a non-emergency shutdown state
 
@@ -206,7 +206,7 @@ can only be called by the terminator
 
 - `_shutdown`: new boolean value to set systemShutdown to
 
-### Function `setTerminator(address _terminator)` (external)
+### Function `setTerminator(address _terminator) external`
 
 allows the owner to set the terminator address
 
@@ -216,7 +216,7 @@ can only be called by the owner
 
 - `_terminator`: new terminator address
 
-### Function `setPauser(address _pauser)` (external)
+### Function `setPauser(address _pauser) external`
 
 allows the owner to set the pauser address
 
@@ -226,7 +226,7 @@ can only be called by the owner
 
 - `_pauser`: new pauser address
 
-### Function `setCallRestriction(bool _isRestricted)` (external)
+### Function `setCallRestriction(bool _isRestricted) external`
 
 allows the owner to toggle the restriction on whitelisted call actions and only allow whitelisted call addresses or allow any arbitrary call addresses
 
@@ -236,7 +236,7 @@ can only be called by the owner
 
 - `_isRestricted`: new call restriction
 
-### Function `setOperator(address _operator, bool _isOperator)` (external)
+### Function `setOperator(address _operator, bool _isOperator) external`
 
 allows a user to give or revoke privileges to an operator which can act on their behalf on their vaults
 
@@ -248,11 +248,11 @@ can only be updated by the vault owner
 
 - `_isOperator`: new boolean value that expresses if the sender is giving or revoking privileges for _operator
 
-### Function `refreshConfiguration()` (external)
+### Function `refreshConfiguration() external`
 
 updates the configuration of the controller. can only be called by the owner
 
-### Function `operate(struct Actions.ActionArgs[] _actions)` (external)
+### Function `operate(struct Actions.ActionArgs[] _actions) external`
 
 execute a number of actions on specific vaults
 
@@ -262,7 +262,7 @@ can only be called when the system is not shutdown
 
 - `_actions`: array of actions arguments
 
-### Function `isOperator(address _owner, address _operator) → bool` (external)
+### Function `isOperator(address _owner, address _operator) → bool external`
 
 check if a specific address is an operator for an owner account
 
@@ -276,7 +276,7 @@ check if a specific address is an operator for an owner account
 
 - true if the _operator is an approved operator for the _owner account
 
-### Function `getConfiguration() → address, address, address, address` (external)
+### Function `getConfiguration() → address, address, address, address external`
 
 returns the current controller configuration
 
@@ -290,7 +290,7 @@ returns the current controller configuration
 
 - the address of the pool module
 
-### Function `getVaultBalances(address _owner, uint256 _vaultId) → struct MarginAccount.Vault` (external)
+### Function `getVaultBalances(address _owner, uint256 _vaultId) → struct MarginAccount.Vault external`
 
 before expiry or if there is no short oToken in a vault, return a the vault, if the short oToken has expired, adjust the vault collateral balances by the net option proceeds
 
@@ -306,7 +306,7 @@ if vault has no short oToken or the issued oToken is not expired yet, return the
 
 - Vault struct with balances
 
-### Function `isPriceFinalized(address _otoken) → bool` (public)
+### Function `isPriceFinalized(address _otoken) → bool public`
 
 return if an expired oToken contract’s settlement price has been finalized
 
@@ -318,7 +318,7 @@ return if an expired oToken contract’s settlement price has been finalized
 
 - true if the oToken has expired AND the oraclePrice at the expiry timestamp has been finalized, otherwise it returns false
 
-### Function `getAccountVaultCounter(address _accountOwner) → uint256` (external)
+### Function `getAccountVaultCounter(address _accountOwner) → uint256 external`
 
 get the number of current vaults for a specified account owner
 
@@ -330,7 +330,7 @@ get the number of current vaults for a specified account owner
 
 - number of vaults
 
-### Function `isExpired(address _otoken) → bool` (public)
+### Function `isExpired(address _otoken) → bool public`
 
 check if an oToken has expired
 
@@ -342,7 +342,7 @@ check if an oToken has expired
 
 - true if the otoken has expired, otherwise it returns false
 
-### Function `getVault(address _owner, uint256 _vaultId) → struct MarginAccount.Vault` (public)
+### Function `getVault(address _owner, uint256 _vaultId) → struct MarginAccount.Vault public`
 
 return a specific vault
 
@@ -356,7 +356,7 @@ return a specific vault
 
 - Vault struct that corresponds to the _vaultId of _owner
 
-### Function `_runActions(struct Actions.ActionArgs[] _actions) → bool, address, uint256` (internal)
+### Function `_runActions(struct Actions.ActionArgs[] _actions) → bool, address, uint256 internal`
 
 execute a variety of actions
 
@@ -374,7 +374,7 @@ for each action in the action array, execute the corresponding action, only one 
 
 - the vault Id if a vault has changed
 
-### Function `_verifyFinalState(address _owner, uint256 _vaultId)` (internal)
+### Function `_verifyFinalState(address _owner, uint256 _vaultId) internal`
 
 verify the vault final state after executing all actions
 
@@ -384,7 +384,7 @@ verify the vault final state after executing all actions
 
 - `_vaultId`: vault id of the final vault
 
-### Function `_openVault(struct Actions.OpenVaultArgs _args)` (internal)
+### Function `_openVault(struct Actions.OpenVaultArgs _args) internal`
 
 open a new vault inside an account
 
@@ -394,7 +394,7 @@ only the account owner or operator can open a vault, cannot be called when syste
 
 - `_args`: OpenVaultArgs structure
 
-### Function `_depositLong(struct Actions.DepositArgs _args)` (internal)
+### Function `_depositLong(struct Actions.DepositArgs _args) internal`
 
 deposit a long oToken into a vault
 
@@ -404,7 +404,7 @@ cannot be called when system is paused or shutdown
 
 - `_args`: DepositArgs structure
 
-### Function `_withdrawLong(struct Actions.WithdrawArgs _args)` (internal)
+### Function `_withdrawLong(struct Actions.WithdrawArgs _args) internal`
 
 withdraw a long oToken from a vault
 
@@ -414,7 +414,7 @@ only the account owner or operator can withdraw a long oToken from a vault, cann
 
 - `_args`: WithdrawArgs structure
 
-### Function `_depositCollateral(struct Actions.DepositArgs _args)` (internal)
+### Function `_depositCollateral(struct Actions.DepositArgs _args) internal`
 
 deposit a collateral asset into a vault
 
@@ -424,7 +424,7 @@ cannot be called when the system is paused or shutdown
 
 - `_args`: DepositArgs structure
 
-### Function `_withdrawCollateral(struct Actions.WithdrawArgs _args)` (internal)
+### Function `_withdrawCollateral(struct Actions.WithdrawArgs _args) internal`
 
 withdraw a collateral asset from a vault
 
@@ -434,7 +434,7 @@ only the account owner or operator can withdraw a collateral from a vault, canno
 
 - `_args`: WithdrawArgs structure
 
-### Function `_mintOtoken(struct Actions.MintArgs _args)` (internal)
+### Function `_mintOtoken(struct Actions.MintArgs _args) internal`
 
 mint short oTokens from a vault which creates an obligation recorded in a vault
 
@@ -444,7 +444,7 @@ only the account owner or operator can mint short oTokens from a vault, cannot b
 
 - `_args`: MintArgs structure
 
-### Function `_burnOtoken(struct Actions.BurnArgs _args)` (internal)
+### Function `_burnOtoken(struct Actions.BurnArgs _args) internal`
 
 burn oTokens to reduce or remove minted oToken obligation recorded in a vault
 
@@ -454,7 +454,7 @@ only the account owner or operator can burn oTokens for a vault, cannot be calle
 
 - `_args`: MintArgs structure
 
-### Function `_exercise(struct Actions.ExerciseArgs _args)` (internal)
+### Function `_exercise(struct Actions.ExerciseArgs _args) internal`
 
 exercise an oToken after expiry, receiving the payout of the oToken in the collateral asset
 
@@ -464,7 +464,7 @@ cannot be called when system is paused
 
 - `_args`: ExerciseArgs structure
 
-### Function `_settleVault(struct Actions.SettleVaultArgs _args)` (internal)
+### Function `_settleVault(struct Actions.SettleVaultArgs _args) internal`
 
 settle a vault after expiry, removing the remaining collateral in a vault after both long and short oToken payouts have been removed
 
@@ -474,7 +474,7 @@ deletes a vault of vaultId after remaining collateral is removed, cannot be call
 
 - `_args`: SettleVaultArgs structure
 
-### Function `_call(struct Actions.CallArgs _args)` (internal)
+### Function `_call(struct Actions.CallArgs _args) internal`
 
 execute arbitrary calls
 
@@ -484,7 +484,7 @@ cannot be called when system is paused or shutdown
 
 - `_args`: Call action
 
-### Function `_checkVaultId(address _accountOwner, uint256 _vaultId) → bool` (internal)
+### Function `_checkVaultId(address _accountOwner, uint256 _vaultId) → bool internal`
 
 check if a vault id is valid
 
@@ -498,9 +498,9 @@ check if a vault id is valid
 
 - true if the _vaultId is valid, otherwise it returns falue
 
-### Function `_isNotEmpty(address[] _array) → bool` (internal)
+### Function `_isNotEmpty(address[] _array) → bool internal`
 
-### Function `_getPayout(address _otoken, uint256 _amount) → uint256` (internal)
+### Function `_getPayout(address _otoken, uint256 _amount) → uint256 internal`
 
 get the oToken's payout after expiry, in the collateral asset
 
@@ -514,7 +514,7 @@ get the oToken's payout after expiry, in the collateral asset
 
 - amount of collateral to pay out
 
-### Function `_isCalleeWhitelisted(address _callee) → bool` (internal)
+### Function `_isCalleeWhitelisted(address _callee) → bool internal`
 
 return if a callee address is whitelisted or not
 
@@ -526,7 +526,7 @@ return if a callee address is whitelisted or not
 
 - true if callee address is whitelisted, otherwise false
 
-### Function `_refreshConfigInternal()` (internal)
+### Function `_refreshConfigInternal() internal`
 
 updates the internal configuration of the controller
 

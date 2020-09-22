@@ -10,4 +10,4 @@ SPDX-License-Identifier: MIT
 
 - `constructor(address logicContract, bytes initializationCalldata) (public)`
 
-### Function `constructor(address logicContract, bytes initializationCalldata)` (public)
+### Function `constructor(address logicContract, bytes initializationCalldata) public`

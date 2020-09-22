@@ -10,7 +10,7 @@ A Pricer contract for Chainlink for 1 asset
 
 - `setExpiryPriceToOralce(uint256 _expiryTimestamp, uint256 _roundId) (external)`
 
-### Function `constructor(address _asset, address _aggregator, address _oracle)` (public)
+### Function `constructor(address _asset, address _aggregator, address _oracle) public`
 
 #### Parameters:
 
@@ -20,7 +20,7 @@ A Pricer contract for Chainlink for 1 asset
 
 - `_oracle`: the Opyn Oracle contract address.
 
-### Function `getPrice() → uint256` (external)
+### Function `getPrice() → uint256 external`
 
 get live price for the asset.
 
@@ -30,7 +30,7 @@ overides the getPrice function in OpynPricerInterface.
 
 - price of asset scaled by 1e18
 
-### Function `setExpiryPriceToOralce(uint256 _expiryTimestamp, uint256 _roundId)` (external)
+### Function `setExpiryPriceToOralce(uint256 _expiryTimestamp, uint256 _roundId) external`
 
 Set the expiry price to the oracle
 

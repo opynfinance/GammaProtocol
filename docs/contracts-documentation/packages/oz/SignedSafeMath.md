@@ -12,7 +12,7 @@ Signed math operations with safety checks that revert on error.
 
 - `add(int256 a, int256 b) (internal)`
 
-### Function `mul(int256 a, int256 b) → int256` (internal)
+### Function `mul(int256 a, int256 b) → int256 internal`
 
 Returns the multiplication of two signed integers, reverting on
 
@@ -24,7 +24,7 @@ Requirements:
 
 - Multiplication cannot overflow.
 
-### Function `div(int256 a, int256 b) → int256` (internal)
+### Function `div(int256 a, int256 b) → int256 internal`
 
 Returns the integer division of two signed integers. Reverts on
 
@@ -40,7 +40,7 @@ Requirements:
 
 - The divisor cannot be zero.
 
-### Function `sub(int256 a, int256 b) → int256` (internal)
+### Function `sub(int256 a, int256 b) → int256 internal`
 
 Returns the subtraction of two signed integers, reverting on
 
@@ -52,7 +52,7 @@ Requirements:
 
 - Subtraction cannot overflow.
 
-### Function `add(int256 a, int256 b) → int256` (internal)
+### Function `add(int256 a, int256 b) → int256 internal`
 
 Returns the addition of two signed integers, reverting on
 

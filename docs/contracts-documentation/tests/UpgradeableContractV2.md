@@ -6,4 +6,4 @@ Upgradeable testing contract
 
 - `getV2Version() (external)`
 
-### Function `getV2Version() → uint256` (external)
+### Function `getV2Version() → uint256 external`

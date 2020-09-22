@@ -10,6 +10,6 @@ Call action testing contract
 
 - `CallFunction(address sender, address vaultOwner, uint256 vaultId, bytes data)`
 
-### Function `callFunction(address _sender, address _vaultOwner, uint256 _vaultId, bytes _data)` (external)
+### Function `callFunction(address _sender, address _vaultOwner, uint256 _vaultId, bytes _data) external`
 
 ### Event `CallFunction(address sender, address vaultOwner, uint256 vaultId, bytes data)`

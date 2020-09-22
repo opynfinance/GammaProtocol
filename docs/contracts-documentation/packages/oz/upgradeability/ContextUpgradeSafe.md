@@ -10,10 +10,10 @@
 
 - `_msgData() (internal)`
 
-### Function `__Context_init()` (internal)
+### Function `__Context_init() internal`
 
-### Function `__Context_init_unchained()` (internal)
+### Function `__Context_init_unchained() internal`
 
-### Function `_msgSender() → address payable` (internal)
+### Function `_msgSender() → address payable internal`
 
-### Function `_msgData() → bytes` (internal)
+### Function `_msgData() → bytes internal`

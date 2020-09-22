@@ -40,17 +40,17 @@ the owner.
 
 Throws if called by any account other than the owner.
 
-### Function `__Ownable_init(address _sender)` (internal)
+### Function `__Ownable_init(address _sender) internal`
 
 Initializes the contract setting the deployer as the initial owner.
 
-### Function `__Ownable_init_unchained(address _sender)` (internal)
+### Function `__Ownable_init_unchained(address _sender) internal`
 
-### Function `owner() → address` (public)
+### Function `owner() → address public`
 
 Returns the address of the current owner.
 
-### Function `renounceOwnership()` (public)
+### Function `renounceOwnership() public`
 
 Leaves the contract without owner. It will not be possible to call
 
@@ -60,7 +60,7 @@ NOTE: Renouncing ownership will leave the contract without an owner,
 
 thereby removing any functionality that is only available to the owner.
 
-### Function `transferOwnership(address newOwner)` (public)
+### Function `transferOwnership(address newOwner) public`
 
 Transfers ownership of the contract to a new account (`newOwner`).
 

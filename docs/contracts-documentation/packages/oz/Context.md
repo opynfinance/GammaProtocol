@@ -6,6 +6,6 @@
 
 - `_msgData() (internal)`
 
-### Function `_msgSender() → address payable` (internal)
+### Function `_msgSender() → address payable internal`
 
-### Function `_msgData() → bytes` (internal)
+### Function `_msgData() → bytes internal`

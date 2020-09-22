@@ -28,11 +28,11 @@ This contract combines an upgradeability proxy with basic authorization control 
 
 Throws if called by any account other than the owner.
 
-### Function `constructor()` (public)
+### Function `constructor() public`
 
 the constructor sets the original owner of the contract to the sender account.
 
-### Function `proxyOwner() → address owner` (public)
+### Function `proxyOwner() → address owner public`
 
 Tells the address of the owner
 
@@ -40,7 +40,7 @@ Tells the address of the owner
 
 - owner the address of the owner
 
-### Function `setUpgradeabilityOwner(address _newProxyOwner)` (internal)
+### Function `setUpgradeabilityOwner(address _newProxyOwner) internal`
 
 Sets the address of the owner
 
@@ -48,7 +48,7 @@ Sets the address of the owner
 
 - `_newProxyOwner`: address of new proxy owner
 
-### Function `transferProxyOwnership(address _newOwner)` (public)
+### Function `transferProxyOwnership(address _newOwner) public`
 
 Allows the current owner to transfer control of the contract to a newOwner.
 
@@ -56,7 +56,7 @@ Allows the current owner to transfer control of the contract to a newOwner.
 
 - `_newOwner`: The address to transfer ownership to.
 
-### Function `upgradeTo(address _implementation)` (public)
+### Function `upgradeTo(address _implementation) public`
 
 Allows the proxy owner to upgrade the current version of the proxy.
 
@@ -64,7 +64,7 @@ Allows the proxy owner to upgrade the current version of the proxy.
 
 - `_implementation`: representing the address of the new implementation to be set.
 
-### Function `upgradeToAndCall(address _implementation, bytes _data)` (public)
+### Function `upgradeToAndCall(address _implementation, bytes _data) public`
 
 Allows the proxy owner to upgrade the current version of the proxy and call the new implementation
 
