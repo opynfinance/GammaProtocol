@@ -2797,7 +2797,13 @@ contract(
           )
 
           await oracle.setExpiryPriceFinalizedAllPeiodOver(
-            usdc.address,
+            await firstOtoken.strikeAsset(),
+            new BigNumber(await firstOtoken.expiryTimestamp()),
+            new BigNumber(1).times(1e18),
+            true,
+          )
+          await oracle.setExpiryPriceFinalizedAllPeiodOver(
+            await secondOtoken.strikeAsset(),
             new BigNumber(await firstOtoken.expiryTimestamp()),
             new BigNumber(1).times(1e18),
             true,
