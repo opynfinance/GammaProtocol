@@ -139,7 +139,7 @@ contract('Naked Put Option expires Otm flow', ([accountOwner1, buyer]) => {
     vaultCounter = vaultCounterBefore.toNumber() + 1
   })
 
-  describe('Integration test: Sell a naked put and close it after expires OTM', () => {
+  describe('Integration test: Close a naked put after it expires OTM', () => {
     const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
     const scaledCollateralAmount = createTokenAmount(collateralAmount, usdcDecimals)
     const expirySpotPrice = 400
