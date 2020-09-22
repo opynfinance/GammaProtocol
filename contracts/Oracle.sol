@@ -3,7 +3,6 @@
  */
 pragma solidity 0.6.10;
 
-import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
 import {OpynPricerInterface} from "./interfaces/OpynPricerInterface.sol";
 import {Ownable} from "./packages/oz/Ownable.sol";
 import {SafeMath} from "./packages/oz/SafeMath.sol";
@@ -58,19 +57,6 @@ contract Oracle is Ownable {
         uint256 disputeTimestamp
     );
 
-    /// @notice AddressBook module
-    address public addressBook;
-
-    /**
-     * @notice contructor
-     * @param _addressBook adressbook module
-     */
-    constructor(address _addressBook) public {
-        require(_addressBook != address(0), "Oracle: Invalid address book");
-
-        addressBook = _addressBook;
-    }
-
     /**
      * @notice get the live price from oracle
      * @param _asset the asset address
@@ -78,7 +64,7 @@ contract Oracle is Ownable {
      * e.g. 173689000000000000000 => 175.689 USD
      */
     function getPrice(address _asset) external view returns (uint256) {
-        require(assetPricer[_asset] != address(0), "Oracle: Pricer for this asset not set.");
+        require(assetPricer[_asset] != address(0), "Oracle: Pricer for this asset not set");
         return OpynPricerInterface(assetPricer[_asset]).getPrice();
     }
 

@@ -197,18 +197,6 @@ contract('AddressBook', ([owner, otokenImplAdd, marginPoolAdd, liquidationManage
     })
   })
 
-  describe('Set weth', () => {
-    it('should revert adding weth address from non-owner address', async () => {
-      await expectRevert(addressBook.setWeth(weth.address, {from: random}), 'Ownable: caller is not the owner')
-    })
-
-    it('should set weth address', async () => {
-      await addressBook.setWeth(weth.address, {from: owner})
-
-      assert.equal(await addressBook.getWeth(), weth.address, 'WETH address mismatch')
-    })
-  })
-
   describe('Set arbitrary address', () => {
     const modulekey = web3.utils.fromAscii('newModule')
     let module: UpgradeableContractV1Instance

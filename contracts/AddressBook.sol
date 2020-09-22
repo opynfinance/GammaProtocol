@@ -27,8 +27,6 @@ contract AddressBook is Ownable {
     bytes32 private constant LIQUIDATION_MANAGER = "LIQUIDATION_MANAGER";
     /// @dev oracle key
     bytes32 private constant ORACLE = "ORACLE";
-    /// @dev weth token key
-    bytes32 private constant WETH = "WETH";
 
     /// @dev a mapping between key and address
     mapping(bytes32 => address) private addresses;
@@ -103,14 +101,6 @@ contract AddressBook is Ownable {
     }
 
     /**
-     * @notice return WETH token
-     * @return WETH address
-     */
-    function getWeth() external view returns (address) {
-        return getAddress(WETH);
-    }
-
-    /**
      * @notice set otoken implementation address
      * @dev can only be called by addressbook owner
      * @param _otokenImpl otoken implementation address
@@ -180,15 +170,6 @@ contract AddressBook is Ownable {
      */
     function setOracle(address _oracle) external onlyOwner {
         setAddress(ORACLE, _oracle);
-    }
-
-    /**
-     * @notice set WETH address
-     * @dev can only be called by addressbook owner
-     * @param _weth weth address
-     */
-    function setWeth(address _weth) external onlyOwner {
-        setAddress(WETH, _weth);
     }
 
     /**
