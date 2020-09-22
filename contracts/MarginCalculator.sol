@@ -72,12 +72,8 @@ contract MarginCalculator {
      * False if there is insufficient margin and additional collateral needs to be added to the vault to create the position.
      */
     function getExcessCollateral(MarginAccount.Vault memory _vault) public view returns (uint256, bool) {
-        // ensure the number of collateral, long and short array is valid.
-        _checkIsValidSpread(_vault);
-        // ensure that the collateral asset is valid for the short asset
-        require(_isMarginableCollateral(_vault), "MarginCalculator: collateral asset not marginable for short asset");
-        // ensure the long asset is valid for the short asset.
-        require(_isMarginableLong(_vault), "MarginCalculator: long asset not marginable for short asset");
+        // include all the checks for vault
+        _checkIsValidVault(_vault);
 
         bool hasCollateral = !_isEmptyAssetArray(_vault.collateralAssets);
 
@@ -103,11 +99,8 @@ contract MarginCalculator {
         bool isExcess = excessCollateral.isGreaterThanOrEqual(_uintToFixedPoint(0));
 
         address otoken = _isEmptyAssetArray(_vault.shortOtokens) ? _vault.longOtokens[0] : _vault.shortOtokens[0];
-        address collateralAsset = hasCollateral
-            ? _vault.collateralAssets[0]
-            : OtokenInterface(otoken).collateralAsset();
-        uint256 collaterlDecimals = ERC20Interface(collateralAsset).decimals();
-        uint256 excessCollateralExternal = FPI.unscaleTo(excessCollateral, collaterlDecimals);
+        uint256 collateralDecimals = ERC20Interface(OtokenInterface(otoken).collateralAsset()).decimals();
+        uint256 excessCollateralExternal = FPI.unscaleTo(excessCollateral, collateralDecimals);
 
         return (excessCollateralExternal, isExcess);
     }
@@ -303,7 +296,8 @@ contract MarginCalculator {
      * c) at most 1 series of option used as the short option.
      * @param _vault the vault to check.
      */
-    function _checkIsValidSpread(MarginAccount.Vault memory _vault) internal pure {
+    function _checkIsValidVault(MarginAccount.Vault memory _vault) internal view {
+        // ensure all the arrays in the vault is valid
         require(_vault.shortOtokens.length <= 1, "MarginCalculator: Too many short otokens in the vault");
         require(_vault.longOtokens.length <= 1, "MarginCalculator: Too many long otokens in the vault");
         require(_vault.collateralAssets.length <= 1, "MarginCalculator: Too many collateral assets in the vault");
@@ -320,6 +314,12 @@ contract MarginCalculator {
             _vault.collateralAssets.length == _vault.collateralAmounts.length,
             "MarginCalculator: Collateral asset and amount mismatch"
         );
+
+        // ensure the long asset is valid for the short asset.
+        require(_isMarginableLong(_vault), "MarginCalculator: long asset not marginable for short asset");
+
+        // ensure that the collateral asset is valid for the short asset
+        require(_isMarginableCollateral(_vault), "MarginCalculator: collateral asset not marginable for short asset");
     }
 
     /**
