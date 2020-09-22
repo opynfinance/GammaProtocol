@@ -29,7 +29,7 @@ contract('MarginCalculator Test Engine', () => {
   let dai: MockERC20Instance
   let weth: MockERC20Instance
 
-  const usdcDecimals = 18
+  const usdcDecimals = 6
   const wethDecimals = 18
 
   before('set up contracts', async () => {
@@ -112,7 +112,7 @@ contract('MarginCalculator Test Engine', () => {
         )
         // Check that the test passes, only fail if it doesn't
         const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
-        assert.equal(netValue.toString(), createTokenAmount(expectedNetValue), testToString(tests[i]))
+        assert.equal(netValue.toString(), createTokenAmount(expectedNetValue, usdcDecimals), testToString(tests[i]))
         assert.equal(isExcess, expectedIsExcess, testToString(tests[i]))
       }
     })
@@ -180,7 +180,7 @@ contract('MarginCalculator Test Engine', () => {
 
         // Check that the test passes, only fail if it doesn't
         const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
-        assert.equal(netValue.toString(), createTokenAmount(expectedNetValue), testToString(tests[i]))
+        assert.equal(netValue.toString(), createTokenAmount(expectedNetValue, usdcDecimals), testToString(tests[i]))
         assert.equal(isExcess, expectedIsExcess, testToString(tests[i]))
       }
     })
