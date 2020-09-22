@@ -33,7 +33,8 @@ contract MarginCalculator {
     /**
      * @notice Return the net worth of an expired oToken, denomincated in collateral.
      * @param _otoken otoken address
-     * @return the exchange rate that shows how much collateral unit can be take out by 1 otoken unit, scaled by 1e18
+     * @return the exchange rate that shows how much collateral unit can be take out by 1 otoken unit, scaled by 1e18.
+     * Or how much collateral can be taken out for 1 (1e18) otoken
      */
     function getExpiredPayoutRate(address _otoken) external view returns (uint256) {
         uint256 cashValueInStrike = _getExpiredCashValue(_otoken);
