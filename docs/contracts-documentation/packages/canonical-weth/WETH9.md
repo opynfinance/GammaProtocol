@@ -1,111 +1,51 @@
+## `WETH9`
+
 A wrapper to use ETH as collateral
 
-# Functions:
+### `receive()` (external)
 
-- [`receive()`](#WETH9-receive--)
-
-- [`deposit()`](#WETH9-deposit--)
-
-- [`withdraw(uint256 _wad)`](#WETH9-withdraw-uint256-)
-
-- [`totalSupply()`](#WETH9-totalSupply--)
-
-- [`approve(address _guy, uint256 _wad)`](#WETH9-approve-address-uint256-)
-
-- [`transfer(address _dst, uint256 _wad)`](#WETH9-transfer-address-uint256-)
-
-- [`transferFrom(address _src, address _dst, uint256 _wad)`](#WETH9-transferFrom-address-address-uint256-)
-
-# Events:
-
-- [`Approval(address src, address guy, uint256 wad)`](#WETH9-Approval-address-address-uint256-)
-
-- [`Transfer(address src, address dst, uint256 wad)`](#WETH9-Transfer-address-address-uint256-)
-
-- [`Deposit(address dst, uint256 wad)`](#WETH9-Deposit-address-uint256-)
-
-- [`Withdrawal(address src, uint256 wad)`](#WETH9-Withdrawal-address-uint256-)
-
-# Function `receive()` {#WETH9-receive--}
+fallback function that receive ETH
 
 will get called in a tx with
 
-# Function `deposit()` {#WETH9-deposit--}
+### `deposit()` (public)
 
-No description
+Wrap deposited ETH into WETH
 
-# Function `withdraw(uint256 _wad)` {#WETH9-withdraw-uint256-}
+### `withdraw(uint256 _wad)` (public)
+
+withdraw ETH from contract
 
 Unwrap from WETH to ETH
 
-## Parameters:
+### `totalSupply() → uint256` (public)
 
-- `_wad`: amount WETH to unwrap and withdraw
+get ETH total supply
 
-# Function `totalSupply() → uint256` {#WETH9-totalSupply--}
+### `approve(address _guy, uint256 _wad) → bool` (public)
 
-No description
+approve transfer
 
-## Return Values:
+### `transfer(address _dst, uint256 _wad) → bool` (public)
 
-- total supply
+transfer WETH
 
-# Function `approve(address _guy, uint256 _wad) → bool` {#WETH9-approve-address-uint256-}
+### `transferFrom(address _src, address _dst, uint256 _wad) → bool` (public)
 
-No description
+transfer from address
 
-## Parameters:
+### `Approval(address src, address guy, uint256 wad)`
 
-- `_guy`: address to approve
+emmitted when a sender approve WETH transfer
 
-- `_wad`: amount of WETH
+### `Transfer(address src, address dst, uint256 wad)`
 
-## Return Values:
+emmitted when a sender transfer WETH
 
-- true if tx succeeded
+### `Deposit(address dst, uint256 wad)`
 
-# Function `transfer(address _dst, uint256 _wad) → bool` {#WETH9-transfer-address-uint256-}
+emitted when a sender deposit ETH into this contract
 
-No description
+### `Withdrawal(address src, uint256 wad)`
 
-## Parameters:
-
-- `_dst`: destination address
-
-- `_wad`: amount to transfer
-
-## Return Values:
-
-- true if tx succeeded
-
-# Function `transferFrom(address _src, address _dst, uint256 _wad) → bool` {#WETH9-transferFrom-address-address-uint256-}
-
-No description
-
-## Parameters:
-
-- `_src`: source address
-
-- `_dst`: destination address
-
-- `_wad`: amount to transfer
-
-## Return Values:
-
-- true if tx succeeded
-
-# Event `Approval(address src, address guy, uint256 wad)` {#WETH9-Approval-address-address-uint256-}
-
-No description
-
-# Event `Transfer(address src, address dst, uint256 wad)` {#WETH9-Transfer-address-address-uint256-}
-
-No description
-
-# Event `Deposit(address dst, uint256 wad)` {#WETH9-Deposit-address-uint256-}
-
-No description
-
-# Event `Withdrawal(address src, uint256 wad)` {#WETH9-Withdrawal-address-uint256-}
-
-No description
+emmited when a sender withdraw ETH from this contract

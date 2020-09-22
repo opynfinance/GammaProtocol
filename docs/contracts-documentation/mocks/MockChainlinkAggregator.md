@@ -1,37 +1,19 @@
-# Functions:
+## `MockChainlinkAggregator`
 
-- [`getAnswer(uint256 _roundId)`](#MockChainlinkAggregator-getAnswer-uint256-)
+Chainlink oracle mock
 
-- [`getTimestamp(uint256 _roundId)`](#MockChainlinkAggregator-getTimestamp-uint256-)
+### `getAnswer(uint256 _roundId) → int256` (external)
 
-- [`latestAnswer()`](#MockChainlinkAggregator-latestAnswer--)
+### `getTimestamp(uint256 _roundId) → uint256` (external)
 
-- [`setRoundTimestamp(uint256 _roundId, uint256 _timestamp)`](#MockChainlinkAggregator-setRoundTimestamp-uint256-uint256-)
+### `latestAnswer() → int256` (external)
 
-- [`setRoundAnswer(uint256 _roundId, int256 _answer)`](#MockChainlinkAggregator-setRoundAnswer-uint256-int256-)
-
-- [`setLatestAnswer(int256 _answer)`](#MockChainlinkAggregator-setLatestAnswer-int256-)
-
-# Function `getAnswer(uint256 _roundId) → int256` {#MockChainlinkAggregator-getAnswer-uint256-}
-
-No description
-
-# Function `getTimestamp(uint256 _roundId) → uint256` {#MockChainlinkAggregator-getTimestamp-uint256-}
-
-No description
-
-# Function `latestAnswer() → int256` {#MockChainlinkAggregator-latestAnswer--}
-
-No description
-
-# Function `setRoundTimestamp(uint256 _roundId, uint256 _timestamp)` {#MockChainlinkAggregator-setRoundTimestamp-uint256-uint256-}
+### `setRoundTimestamp(uint256 _roundId, uint256 _timestamp)` (external)
 
 function to mock setting round timestamp
 
-# Function `setRoundAnswer(uint256 _roundId, int256 _answer)` {#MockChainlinkAggregator-setRoundAnswer-uint256-int256-}
+### `setRoundAnswer(uint256 _roundId, int256 _answer)` (external)
 
 function to mock setting round timestamp
 
-# Function `setLatestAnswer(int256 _answer)` {#MockChainlinkAggregator-setLatestAnswer-int256-}
-
-No description
+### `setLatestAnswer(int256 _answer)` (external)

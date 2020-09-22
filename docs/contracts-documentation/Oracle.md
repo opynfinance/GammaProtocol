@@ -1,233 +1,101 @@
-# Functions:
+## `Oracle`
 
-- [`getPrice(address _asset)`](#Oracle-getPrice-address-)
+The Oracle module provide the system with on-chain prices
 
-- [`getExpiryPrice(address _asset, uint256 _expiryTimestamp)`](#Oracle-getExpiryPrice-address-uint256-)
+### `getPrice(address _asset) → uint256` (external)
 
-- [`getPricer(address _asset)`](#Oracle-getPricer-address-)
+get the live price from oracle
 
-- [`getDisputer()`](#Oracle-getDisputer--)
+### `getExpiryPrice(address _asset, uint256 _expiryTimestamp) → uint256, bool` (external)
 
-- [`getPricerLockingPeriod(address _pricer)`](#Oracle-getPricerLockingPeriod-address-)
+get the asset price at specific expiry timestamp.
 
-- [`getPricerDisputePeriod(address _pricer)`](#Oracle-getPricerDisputePeriod-address-)
+### `getPricer(address _asset) → address` (external)
 
-- [`isLockingPeriodOver(address _asset, uint256 _expiryTimestamp)`](#Oracle-isLockingPeriodOver-address-uint256-)
+get asset pricer
 
-- [`isDisputePeriodOver(address _asset, uint256 _expiryTimestamp)`](#Oracle-isDisputePeriodOver-address-uint256-)
+### `getDisputer() → address` (external)
 
-- [`setAssetPricer(address _asset, address _pricer)`](#Oracle-setAssetPricer-address-address-)
+get disputer address
 
-- [`setLockingPeriod(address _pricer, uint256 _lockingPeriod)`](#Oracle-setLockingPeriod-address-uint256-)
+### `getPricerLockingPeriod(address _pricer) → uint256` (external)
 
-- [`setDisputePeriod(address _pricer, uint256 _disputePeriod)`](#Oracle-setDisputePeriod-address-uint256-)
-
-- [`setDisputer(address _disputer)`](#Oracle-setDisputer-address-)
-
-- [`disputeExpiryPrice(address _asset, uint256 _expiryTimestamp, uint256 _price)`](#Oracle-disputeExpiryPrice-address-uint256-uint256-)
-
-- [`setExpiryPrice(address _asset, uint256 _expiryTimestamp, uint256 _price)`](#Oracle-setExpiryPrice-address-uint256-uint256-)
-
-# Events:
-
-- [`DisputerUpdated(address newDisputer)`](#Oracle-DisputerUpdated-address-)
-
-- [`PricerUpdated(address asset, address pricer)`](#Oracle-PricerUpdated-address-address-)
-
-- [`PricerLockingPeriodUpdated(address pricer, uint256 lockingPeriod)`](#Oracle-PricerLockingPeriodUpdated-address-uint256-)
-
-- [`PricerDisputePeriodUpdated(address pricer, uint256 disputePeriod)`](#Oracle-PricerDisputePeriodUpdated-address-uint256-)
-
-- [`ExpiryPriceUpdated(address asset, uint256 expirtyTimestamp, uint256 price, uint256 onchainTimestamp)`](#Oracle-ExpiryPriceUpdated-address-uint256-uint256-uint256-)
-
-- [`ExpiryPriceDisputed(address asset, uint256 expiryTimestamp, uint256 disputedPrice, uint256 newPrice, uint256 disputeTimestamp)`](#Oracle-ExpiryPriceDisputed-address-uint256-uint256-uint256-uint256-)
-
-# Function `getPrice(address _asset) → uint256` {#Oracle-getPrice-address-}
-
-No description
-
-## Parameters:
-
-- `_asset`: the asset address
-
-## Return Values:
-
-- price scaled in 1e18, denominated in USD
-
-e.g. 173689000000000000000 => 175.689 USD
-
-# Function `getExpiryPrice(address _asset, uint256 _expiryTimestamp) → uint256, bool` {#Oracle-getExpiryPrice-address-uint256-}
-
-No description
-
-## Parameters:
-
-- `_asset`: the asset want to get price at.
-
-- `_expiryTimestamp`: expiry timestamp
-
-## Return Values:
-
-- price denominated in USD, scaled 10e18
-
-- isFinalized if the price is finalized or not.
-
-# Function `getPricer(address _asset) → address` {#Oracle-getPricer-address-}
-
-No description
-
-## Parameters:
-
-- `_asset`: get the pricer for a specific asset.
-
-## Return Values:
-
-- pricer address
-
-# Function `getDisputer() → address` {#Oracle-getDisputer--}
-
-No description
-
-## Return Values:
-
-- pricer address
-
-# Function `getPricerLockingPeriod(address _pricer) → uint256` {#Oracle-getPricerLockingPeriod-address-}
+get pricer locking period. A locking period is a period of time after expiry where no one can push price to oracle
 
 during locking period, price can not be submitted to this contract
 
-## Parameters:
+### `getPricerDisputePeriod(address _pricer) → uint256` (external)
 
-- `_pricer`: pricer address
-
-## Return Values:
-
-- locking period
-
-# Function `getPricerDisputePeriod(address _pricer) → uint256` {#Oracle-getPricerDisputePeriod-address-}
+get pricer dispute period
 
 during dispute period, the owner of this contract can dispute the submitted price and modify it.
 
 The dispute period start after submitting a price on-chain
 
-## Parameters:
+### `isLockingPeriodOver(address _asset, uint256 _expiryTimestamp) → bool` (public)
 
-- `_pricer`: oracle address
+check if locking period is over for setting the asset price for that timestamp
 
-## Return Values:
+### `isDisputePeriodOver(address _asset, uint256 _expiryTimestamp) → bool` (public)
 
-- dispute period
+check if dispute period is over
 
-# Function `isLockingPeriodOver(address _asset, uint256 _expiryTimestamp) → bool` {#Oracle-isLockingPeriodOver-address-uint256-}
+### `setAssetPricer(address _asset, address _pricer)` (external)
 
-No description
-
-## Parameters:
-
-- `_asset`: asset address
-
-- `_expiryTimestamp`: expiry timestamp
-
-## Return Values:
-
-- True if locking period is over, otherwise false
-
-# Function `isDisputePeriodOver(address _asset, uint256 _expiryTimestamp) → bool` {#Oracle-isDisputePeriodOver-address-uint256-}
-
-No description
-
-## Parameters:
-
-- `_asset`: assets to query
-
-- `_expiryTimestamp`: expiry timestamp of otoken
-
-## Return Values:
-
-- True if dispute period is over, otherwise false
-
-# Function `setAssetPricer(address _asset, address _pricer)` {#Oracle-setAssetPricer-address-address-}
+set pricer for an asset
 
 can only be called by owner
 
-## Parameters:
+### `setLockingPeriod(address _pricer, uint256 _lockingPeriod)` (external)
 
-- `_asset`: asset
-
-- `_pricer`: pricer address
-
-# Function `setLockingPeriod(address _pricer, uint256 _lockingPeriod)` {#Oracle-setLockingPeriod-address-uint256-}
+set pricer locking period
 
 this function can only be called by owner
 
-## Parameters:
+### `setDisputePeriod(address _pricer, uint256 _disputePeriod)` (external)
 
-- `_pricer`: pricer address
-
-- `_lockingPeriod`: locking period
-
-# Function `setDisputePeriod(address _pricer, uint256 _disputePeriod)` {#Oracle-setDisputePeriod-address-uint256-}
+set oracle dispute period
 
 can only be called by owner
 
-## Parameters:
+### `setDisputer(address _disputer)` (external)
 
-- `_pricer`: oracle address
-
-- `_disputePeriod`: dispute period
-
-# Function `setDisputer(address _disputer)` {#Oracle-setDisputer-address-}
+set the disputer role
 
 can only be called by owner
 
-## Parameters:
+### `disputeExpiryPrice(address _asset, uint256 _expiryTimestamp, uint256 _price)` (external)
 
-- `_disputer`: oracle address
-
-# Function `disputeExpiryPrice(address _asset, uint256 _expiryTimestamp, uint256 _price)` {#Oracle-disputeExpiryPrice-address-uint256-uint256-}
+dispute an asset price by owner during dispute period
 
 only owner can dispute a price during the dispute period, by setting a new one.
 
-## Parameters:
+### `setExpiryPrice(address _asset, uint256 _expiryTimestamp, uint256 _price)` (external)
 
-- `_asset`: asset address
-
-- `_expiryTimestamp`: expiry timestamp
-
-- `_price`: the correct price
-
-# Function `setExpiryPrice(address _asset, uint256 _expiryTimestamp, uint256 _price)` {#Oracle-setExpiryPrice-address-uint256-uint256-}
+submit expiry price to the oracle, can only be set from the pricer.
 
 asset price can only be set after locking period is over and before starting dispute period
 
-## Parameters:
+### `DisputerUpdated(address newDisputer)`
 
-- `_asset`: asset address
+emits an event when disputer is updated
 
-- `_expiryTimestamp`: expiry timestamp
+### `PricerUpdated(address asset, address pricer)`
 
-- `_price`: the asset price at expiry
+emits an event when an pricer updated for a specific asset
 
-# Event `DisputerUpdated(address newDisputer)` {#Oracle-DisputerUpdated-address-}
+### `PricerLockingPeriodUpdated(address pricer, uint256 lockingPeriod)`
 
-No description
+emits an event when a locking period updated for a specific oracle
 
-# Event `PricerUpdated(address asset, address pricer)` {#Oracle-PricerUpdated-address-address-}
+### `PricerDisputePeriodUpdated(address pricer, uint256 disputePeriod)`
 
-No description
+emits an event when a dispute period updated for a specific oracle
 
-# Event `PricerLockingPeriodUpdated(address pricer, uint256 lockingPeriod)` {#Oracle-PricerLockingPeriodUpdated-address-uint256-}
+### `ExpiryPriceUpdated(address asset, uint256 expirtyTimestamp, uint256 price, uint256 onchainTimestamp)`
 
-No description
+emits an event when price is updated for a specific asset
 
-# Event `PricerDisputePeriodUpdated(address pricer, uint256 disputePeriod)` {#Oracle-PricerDisputePeriodUpdated-address-uint256-}
+### `ExpiryPriceDisputed(address asset, uint256 expiryTimestamp, uint256 disputedPrice, uint256 newPrice, uint256 disputeTimestamp)`
 
-No description
-
-# Event `ExpiryPriceUpdated(address asset, uint256 expirtyTimestamp, uint256 price, uint256 onchainTimestamp)` {#Oracle-ExpiryPriceUpdated-address-uint256-uint256-uint256-}
-
-No description
-
-# Event `ExpiryPriceDisputed(address asset, uint256 expiryTimestamp, uint256 disputedPrice, uint256 newPrice, uint256 disputeTimestamp)` {#Oracle-ExpiryPriceDisputed-address-uint256-uint256-uint256-uint256-}
-
-No description
+emits an event when owner dispute a asset price during dispute period

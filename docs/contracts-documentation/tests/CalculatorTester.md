@@ -1,13 +1,5 @@
-# Functions:
+## `CalculatorTester`
 
-- [`constructor(address _addressBook)`](#CalculatorTester-constructor-address-)
+### `constructor(address _addressBook)` (public)
 
-- [`getExpiredCashValue(address _otoken)`](#CalculatorTester-getExpiredCashValue-address-)
-
-# Function `constructor(address _addressBook)` {#CalculatorTester-constructor-address-}
-
-No description
-
-# Function `getExpiredCashValue(address _otoken) → uint256` {#CalculatorTester-getExpiredCashValue-address-}
-
-No description
+### `getExpiredCashValue(address _otoken) → uint256` (external)

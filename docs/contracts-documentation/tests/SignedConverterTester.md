@@ -1,13 +1,7 @@
-# Functions:
+## `SignedConverterTester`
 
-- [`testFromInt(int256 a)`](#SignedConverterTester-testFromInt-int256-)
+SignedConverter contract tester
 
-- [`testFromUint(uint256 a)`](#SignedConverterTester-testFromUint-uint256-)
+### `testFromInt(int256 a) → uint256` (external)
 
-# Function `testFromInt(int256 a) → uint256` {#SignedConverterTester-testFromInt-int256-}
-
-No description
-
-# Function `testFromUint(uint256 a) → int256` {#SignedConverterTester-testFromUint-uint256-}
-
-No description
+### `testFromUint(uint256 a) → int256` (external)

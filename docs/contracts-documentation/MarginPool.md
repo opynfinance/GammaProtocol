@@ -1,127 +1,71 @@
-# Functions:
+## `MarginPool`
 
-- [`constructor(address _addressBook)`](#MarginPool-constructor-address-)
+contract that hold all protocol funds
 
-- [`transferToPool(address _asset, address _user, uint256 _amount)`](#MarginPool-transferToPool-address-address-uint256-)
+### `onlyController()`
 
-- [`transferToUser(address _asset, address payable _user, uint256 _amount)`](#MarginPool-transferToUser-address-address-payable-uint256-)
+check if the sender is the Controller module
 
-- [`getStoredBalance(address _asset)`](#MarginPool-getStoredBalance-address-)
+### `onlyFarmer()`
 
-- [`batchTransferToPool(address[] _asset, address[] _user, uint256[] _amount)`](#MarginPool-batchTransferToPool-address---address---uint256---)
+check if the sender is the farmer address
 
-- [`batchTransferToUser(address[] _asset, address payable[] _user, uint256[] _amount)`](#MarginPool-batchTransferToUser-address---address-payable---uint256---)
+### `constructor(address _addressBook)` (public)
 
-- [`farm(address _asset, address _receiver, uint256 _amount)`](#MarginPool-farm-address-address-uint256-)
+contructor
 
-- [`setFarmer(address _farmer)`](#MarginPool-setFarmer-address-)
+### `transferToPool(address _asset, address _user, uint256 _amount)` (public)
 
-# Events:
-
-- [`FarmerUpdated(address oldAddress, address newAddress)`](#MarginPool-FarmerUpdated-address-address-)
-
-- [`AssetFarmed(address asset, address receiver, uint256 _amount)`](#MarginPool-AssetFarmed-address-address-uint256-)
-
-# Function `constructor(address _addressBook)` {#MarginPool-constructor-address-}
-
-No description
-
-## Parameters:
-
-- `_addressBook`: adressbook module
-
-# Function `transferToPool(address _asset, address _user, uint256 _amount)` {#MarginPool-transferToPool-address-address-uint256-}
+transfers asset from user to pool
 
 all tokens are scaled to have 1e18 precision in contracts, but are scaled to native
 
 token decimals in Controller before being passed to MarginPool
 
-## Parameters:
+### `transferToUser(address _asset, address payable _user, uint256 _amount)` (public)
 
-- `_asset`: address of asset to transfer
-
-- `_user`: address of user to transfer assets from
-
-- `_amount`: amount of token to transfer from _user, scaled to 1e18 of precision
-
-# Function `transferToUser(address _asset, address payable _user, uint256 _amount)` {#MarginPool-transferToUser-address-address-payable-uint256-}
+transfers asset from pool to user
 
 all tokens are scaled to have 1e18 precision in contracts, but are scaled to native
 
 token decimals in Controller before being passed to MarginPool
 
-## Parameters:
+### `getStoredBalance(address _asset) → uint256` (external)
 
-- `_asset`: address of asset to transfer
+get asset stored balance
 
-- `_user`: address of user to transfer assets to
+### `batchTransferToPool(address[] _asset, address[] _user, uint256[] _amount)` (external)
 
-- `_amount`: amount of token to transfer to _user, scaled to 1e18 of precision
-
-# Function `getStoredBalance(address _asset) → uint256` {#MarginPool-getStoredBalance-address-}
-
-No description
-
-## Parameters:
-
-- `_asset`: asset address
-
-## Return Values:
-
-- asset balance
-
-# Function `batchTransferToPool(address[] _asset, address[] _user, uint256[] _amount)` {#MarginPool-batchTransferToPool-address---address---uint256---}
+transfers multiple assets from users to pool
 
 all tokens are scaled to have 1e18 precision in contracts, but are scaled to native
 
 token decimals in Controller before being passed to MarginPool
 
-## Parameters:
+### `batchTransferToUser(address[] _asset, address payable[] _user, uint256[] _amount)` (external)
 
-- `_asset`: addresses of assets to transfer
-
-- `_user`: addresses of users to transfer assets to
-
-- `_amount`: amount of each token to transfer to _user, scaled to 1e18 of precision
-
-# Function `batchTransferToUser(address[] _asset, address payable[] _user, uint256[] _amount)` {#MarginPool-batchTransferToUser-address---address-payable---uint256---}
+transfers multiple assets from pool to users
 
 all tokens are scaled to have 1e18 precision in contracts, but are scaled to native
 
 token decimals in Controller before being passed to MarginPool
 
-## Parameters:
+### `farm(address _asset, address _receiver, uint256 _amount)` (external)
 
-- `_asset`: addresses of assets to transfer
-
-- `_user`: addresses of users to transfer assets to
-
-- `_amount`: amount of each token to transfer to _user, scaled to 1e18 of precision
-
-# Function `farm(address _asset, address _receiver, uint256 _amount)` {#MarginPool-farm-address-address-uint256-}
+function to collect excess balance
 
 can only be called by farmer address
 
-## Parameters:
+### `setFarmer(address _farmer)` (external)
 
-- `_asset`: asset address
-
-- `_receiver`: receiver address
-
-- `_amount`: amount to harvest
-
-# Function `setFarmer(address _farmer)` {#MarginPool-setFarmer-address-}
+function to set farmer address
 
 can only be called by MarginPool owner
 
-## Parameters:
+### `FarmerUpdated(address oldAddress, address newAddress)`
 
-- `_farmer`: farmer address
+emit event after updating the farmer address
 
-# Event `FarmerUpdated(address oldAddress, address newAddress)` {#MarginPool-FarmerUpdated-address-address-}
+### `AssetFarmed(address asset, address receiver, uint256 _amount)`
 
-No description
-
-# Event `AssetFarmed(address asset, address receiver, uint256 _amount)` {#MarginPool-AssetFarmed-address-address-uint256-}
-
-No description
+emit event when an asset get harvested

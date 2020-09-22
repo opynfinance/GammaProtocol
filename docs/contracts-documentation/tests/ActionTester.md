@@ -1,97 +1,33 @@
-# Functions:
+## `ActionTester`
 
-- [`testParseDespositAction(struct Actions.ActionArgs _args)`](#ActionTester-testParseDespositAction-struct-Actions-ActionArgs-)
+### `testParseDespositAction(struct Actions.ActionArgs _args)` (external)
 
-- [`getDepositArgs()`](#ActionTester-getDepositArgs--)
+### `getDepositArgs() → struct Actions.DepositArgs` (external)
 
-- [`testParseWithdrawAction(struct Actions.ActionArgs _args)`](#ActionTester-testParseWithdrawAction-struct-Actions-ActionArgs-)
+### `testParseWithdrawAction(struct Actions.ActionArgs _args)` (external)
 
-- [`getWithdrawArgs()`](#ActionTester-getWithdrawArgs--)
+### `getWithdrawArgs() → struct Actions.WithdrawArgs` (external)
 
-- [`testParseOpenVaultAction(struct Actions.ActionArgs _args)`](#ActionTester-testParseOpenVaultAction-struct-Actions-ActionArgs-)
+### `testParseOpenVaultAction(struct Actions.ActionArgs _args)` (external)
 
-- [`getOpenVaultArgs()`](#ActionTester-getOpenVaultArgs--)
+### `getOpenVaultArgs() → struct Actions.OpenVaultArgs` (external)
 
-- [`testParseExerciseAction(struct Actions.ActionArgs _args)`](#ActionTester-testParseExerciseAction-struct-Actions-ActionArgs-)
+### `testParseExerciseAction(struct Actions.ActionArgs _args)` (external)
 
-- [`getExerciseArgs()`](#ActionTester-getExerciseArgs--)
+### `getExerciseArgs() → struct Actions.ExerciseArgs` (external)
 
-- [`testParseSettleVaultAction(struct Actions.ActionArgs _args)`](#ActionTester-testParseSettleVaultAction-struct-Actions-ActionArgs-)
+### `testParseSettleVaultAction(struct Actions.ActionArgs _args)` (external)
 
-- [`getSettleVaultArgs()`](#ActionTester-getSettleVaultArgs--)
+### `getSettleVaultArgs() → struct Actions.SettleVaultArgs` (external)
 
-- [`testParseMintAction(struct Actions.ActionArgs _args)`](#ActionTester-testParseMintAction-struct-Actions-ActionArgs-)
+### `testParseMintAction(struct Actions.ActionArgs _args)` (external)
 
-- [`getMintArgs()`](#ActionTester-getMintArgs--)
+### `getMintArgs() → struct Actions.MintArgs` (external)
 
-- [`testParseBurnAction(struct Actions.ActionArgs _args)`](#ActionTester-testParseBurnAction-struct-Actions-ActionArgs-)
+### `testParseBurnAction(struct Actions.ActionArgs _args)` (external)
 
-- [`getBurnArgs()`](#ActionTester-getBurnArgs--)
+### `getBurnArgs() → struct Actions.BurnArgs` (external)
 
-- [`testParseCallAction(struct Actions.ActionArgs _args)`](#ActionTester-testParseCallAction-struct-Actions-ActionArgs-)
+### `testParseCallAction(struct Actions.ActionArgs _args)` (external)
 
-- [`getCallArgs()`](#ActionTester-getCallArgs--)
-
-# Function `testParseDespositAction(struct Actions.ActionArgs _args)` {#ActionTester-testParseDespositAction-struct-Actions-ActionArgs-}
-
-No description
-
-# Function `getDepositArgs() → struct Actions.DepositArgs` {#ActionTester-getDepositArgs--}
-
-No description
-
-# Function `testParseWithdrawAction(struct Actions.ActionArgs _args)` {#ActionTester-testParseWithdrawAction-struct-Actions-ActionArgs-}
-
-No description
-
-# Function `getWithdrawArgs() → struct Actions.WithdrawArgs` {#ActionTester-getWithdrawArgs--}
-
-No description
-
-# Function `testParseOpenVaultAction(struct Actions.ActionArgs _args)` {#ActionTester-testParseOpenVaultAction-struct-Actions-ActionArgs-}
-
-No description
-
-# Function `getOpenVaultArgs() → struct Actions.OpenVaultArgs` {#ActionTester-getOpenVaultArgs--}
-
-No description
-
-# Function `testParseExerciseAction(struct Actions.ActionArgs _args)` {#ActionTester-testParseExerciseAction-struct-Actions-ActionArgs-}
-
-No description
-
-# Function `getExerciseArgs() → struct Actions.ExerciseArgs` {#ActionTester-getExerciseArgs--}
-
-No description
-
-# Function `testParseSettleVaultAction(struct Actions.ActionArgs _args)` {#ActionTester-testParseSettleVaultAction-struct-Actions-ActionArgs-}
-
-No description
-
-# Function `getSettleVaultArgs() → struct Actions.SettleVaultArgs` {#ActionTester-getSettleVaultArgs--}
-
-No description
-
-# Function `testParseMintAction(struct Actions.ActionArgs _args)` {#ActionTester-testParseMintAction-struct-Actions-ActionArgs-}
-
-No description
-
-# Function `getMintArgs() → struct Actions.MintArgs` {#ActionTester-getMintArgs--}
-
-No description
-
-# Function `testParseBurnAction(struct Actions.ActionArgs _args)` {#ActionTester-testParseBurnAction-struct-Actions-ActionArgs-}
-
-No description
-
-# Function `getBurnArgs() → struct Actions.BurnArgs` {#ActionTester-getBurnArgs--}
-
-No description
-
-# Function `testParseCallAction(struct Actions.ActionArgs _args)` {#ActionTester-testParseCallAction-struct-Actions-ActionArgs-}
-
-No description
-
-# Function `getCallArgs() → struct Actions.CallArgs` {#ActionTester-getCallArgs--}
-
-No description
+### `getCallArgs() → struct Actions.CallArgs` (external)

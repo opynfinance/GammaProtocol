@@ -1,47 +1,51 @@
+## `Otoken`
+
+Otoken is the ERC20 token for an option.
+
 The Otoken inherits ERC20Initializable because we need to use the init instead of constructor.
 
-# Functions:
+### `init(address _addressBook, address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiryTimestamp, bool _isPut)` (external)
 
-- [`init(address _addressBook, address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiryTimestamp, bool _isPut)`](#Otoken-init-address-address-address-address-uint256-uint256-bool-)
+initialize the otoken.
 
-- [`mintOtoken(address account, uint256 amount)`](#Otoken-mintOtoken-address-uint256-)
+### `mintOtoken(address account, uint256 amount)` (external)
 
-- [`burnOtoken(address account, uint256 amount)`](#Otoken-burnOtoken-address-uint256-)
-
-# Function `init(address _addressBook, address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiryTimestamp, bool _isPut)` {#Otoken-init-address-address-address-address-uint256-uint256-bool-}
-
-No description
-
-## Parameters:
-
-- `_underlyingAsset`: asset that the option references
-
-- `_strikeAsset`: asset that the strike price is denominated in
-
-- `_collateralAsset`: asset that is held as collateral against short/written options
-
-- `_strikePrice`: strike price with decimals = 18
-
-- `_expiryTimestamp`: time of the option represented by unix timestamp
-
-- `_isPut`: is this a put option, if not it is a call
-
-# Function `mintOtoken(address account, uint256 amount)` {#Otoken-mintOtoken-address-uint256-}
+Mint oToken for an account.
 
 this is a Controller only method. Access control is taken care of by _beforeTokenTransfer hook.
 
-## Parameters:
+### `burnOtoken(address account, uint256 amount)` (external)
 
-- `account`: the account to mint token to
-
-- `amount`: the amount to mint
-
-# Function `burnOtoken(address account, uint256 amount)` {#Otoken-burnOtoken-address-uint256-}
+Burn oToken from an account.
 
 this is a Controller only method. Access control is taken care of by _beforeTokenTransfer hook.
 
-## Parameters:
+### `_getNameAndSymbol() → string tokenName, string tokenSymbol` (internal)
 
-- `account`: the account to burn token from
+generate name and symbol for an option
 
-- `amount`: the amount to burn
+this function use named return variable to avoid stack-too-deep error
+
+### `_getTokenSymbol(address token) → string` (internal)
+
+get token symbol
+
+### `_uintTo2Chars(uint256 number) → string` (internal)
+
+Internal function to get the number with 2 characters.
+
+### `_getOptionType(bool _isPut) → string shortString, string longString` (internal)
+
+return string of option type
+
+### `_getMonth(uint256 _month) → string shortString, string longString` (internal)
+
+return string of month.
+
+### `_beforeTokenTransfer(address from, address to, uint256 amount)` (internal)
+
+this function overrides the _beforeTokenTransfer hook in ERC20Initializable.sol.
+
+If the operation is mint or burn, requires msg.sender to be the controller.
+
+The function signature is the same as _beforeTokenTransfer defined in ERC20Initializable.sol.

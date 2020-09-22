@@ -1,43 +1,15 @@
-# Functions:
+## `WhitelistInterface`
 
-- [`isWhitelistedProduct(address _underlying, address _strike, address _collateral, bool _isPut)`](#WhitelistInterface-isWhitelistedProduct-address-address-address-bool-)
+### `isWhitelistedProduct(address _underlying, address _strike, address _collateral, bool _isPut) → bool` (external)
 
-- [`isWhitelistedCollateral(address _collateral)`](#WhitelistInterface-isWhitelistedCollateral-address-)
+### `isWhitelistedCollateral(address _collateral) → bool` (external)
 
-- [`isWhitelistedOtoken(address _otoken)`](#WhitelistInterface-isWhitelistedOtoken-address-)
+### `isWhitelistedOtoken(address _otoken) → bool` (external)
 
-- [`whitelistProduct(address _underlying, address _strike, address _collateral, bool _isPut)`](#WhitelistInterface-whitelistProduct-address-address-address-bool-)
+### `whitelistProduct(address _underlying, address _strike, address _collateral, bool _isPut)` (external)
 
-- [`whitelistCollateral(address _collateral)`](#WhitelistInterface-whitelistCollateral-address-)
+### `whitelistCollateral(address _collateral)` (external)
 
-- [`whitelistOtoken(address _otoken)`](#WhitelistInterface-whitelistOtoken-address-)
+### `whitelistOtoken(address _otoken)` (external)
 
-- [`isWhitelistedCallee(address _callee)`](#WhitelistInterface-isWhitelistedCallee-address-)
-
-# Function `isWhitelistedProduct(address _underlying, address _strike, address _collateral, bool _isPut) → bool` {#WhitelistInterface-isWhitelistedProduct-address-address-address-bool-}
-
-No description
-
-# Function `isWhitelistedCollateral(address _collateral) → bool` {#WhitelistInterface-isWhitelistedCollateral-address-}
-
-No description
-
-# Function `isWhitelistedOtoken(address _otoken) → bool` {#WhitelistInterface-isWhitelistedOtoken-address-}
-
-No description
-
-# Function `whitelistProduct(address _underlying, address _strike, address _collateral, bool _isPut)` {#WhitelistInterface-whitelistProduct-address-address-address-bool-}
-
-No description
-
-# Function `whitelistCollateral(address _collateral)` {#WhitelistInterface-whitelistCollateral-address-}
-
-No description
-
-# Function `whitelistOtoken(address _otoken)` {#WhitelistInterface-whitelistOtoken-address-}
-
-No description
-
-# Function `isWhitelistedCallee(address _callee) → bool` {#WhitelistInterface-isWhitelistedCallee-address-}
-
-No description
+### `isWhitelistedCallee(address _callee) → bool` (external)

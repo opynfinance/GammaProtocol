@@ -1,295 +1,271 @@
-# Functions:
+## `Controller`
 
-- [`initialize(address _addressBook, address _owner)`](#Controller-initialize-address-address-)
+contract that controls the gamma protocol and interaction with all sub contracts
 
-- [`setSystemPaused(bool _paused)`](#Controller-setSystemPaused-bool-)
+### `notPaused()`
 
-- [`setEmergencyShutdown(bool _shutdown)`](#Controller-setEmergencyShutdown-bool-)
+modifier to check if the system is not paused
 
-- [`setTerminator(address _terminator)`](#Controller-setTerminator-address-)
+### `notShutdown()`
 
-- [`setPauser(address _pauser)`](#Controller-setPauser-address-)
+modifier to check if the system is not in an emergency shutdown state
 
-- [`setCallRestriction(bool _isRestricted)`](#Controller-setCallRestriction-bool-)
+### `onlyTerminator()`
 
-- [`setOperator(address _operator, bool _isOperator)`](#Controller-setOperator-address-bool-)
+modifier to check if sender is the terminator address
 
-- [`refreshConfiguration()`](#Controller-refreshConfiguration--)
+### `onlyPauser()`
 
-- [`operate(struct Actions.ActionArgs[] _actions)`](#Controller-operate-struct-Actions-ActionArgs---)
+modifier to check if the sender is the pauser address
 
-- [`isOperator(address _owner, address _operator)`](#Controller-isOperator-address-address-)
+### `onlyAuthorized(address _sender, address _accountOwner)`
 
-- [`getConfiguration()`](#Controller-getConfiguration--)
+modifier to check if the sender is an account owner or an approved account operator
 
-- [`getVaultBalances(address _owner, uint256 _vaultId)`](#Controller-getVaultBalances-address-uint256-)
+### `onlyWhitelistedCallee(address _callee)`
 
-- [`isPriceFinalized(address _otoken)`](#Controller-isPriceFinalized-address-)
+modifier to check if the called address is a whitelisted callee address
 
-- [`getAccountVaultCounter(address _accountOwner)`](#Controller-getAccountVaultCounter-address-)
+### `_isNotPaused()` (internal)
 
-- [`isExpired(address _otoken)`](#Controller-isExpired-address-)
+check if the system is not paused
 
-- [`getVault(address _owner, uint256 _vaultId)`](#Controller-getVault-address-uint256-)
+### `_isNotShutdown()` (internal)
 
-# Events:
+check if the system is not in an emergency shutdown state
 
-- [`AccountOperatorUpdated(address accountOwner, address operator, bool isSet)`](#Controller-AccountOperatorUpdated-address-address-bool-)
+### `_isAuthorized(address _sender, address _accountOwner)` (internal)
 
-- [`VaultOpened(address accountOwner, uint256 vaultId)`](#Controller-VaultOpened-address-uint256-)
+check if the sender is an authorized operator
 
-- [`LongOtokenDeposited(address otoken, address accountOwner, address from, uint256 vaultId, uint256 amount)`](#Controller-LongOtokenDeposited-address-address-address-uint256-uint256-)
+### `initialize(address _addressBook, address _owner)` (external)
 
-- [`LongOtokenWithdrawed(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 amount)`](#Controller-LongOtokenWithdrawed-address-address-address-uint256-uint256-)
+initalize the deployed contract
 
-- [`CollateralAssetDeposited(address asset, address accountOwner, address from, uint256 vaultId, uint256 amount)`](#Controller-CollateralAssetDeposited-address-address-address-uint256-uint256-)
+### `setSystemPaused(bool _paused)` (external)
 
-- [`CollateralAssetWithdrawed(address asset, address AccountOwner, address to, uint256 vaultId, uint256 amount)`](#Controller-CollateralAssetWithdrawed-address-address-address-uint256-uint256-)
-
-- [`ShortOtokenMinted(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 amount)`](#Controller-ShortOtokenMinted-address-address-address-uint256-uint256-)
-
-- [`ShortOtokenBurned(address otoken, address AccountOwner, address from, uint256 vaultId, uint256 amount)`](#Controller-ShortOtokenBurned-address-address-address-uint256-uint256-)
-
-- [`Exercise(address otoken, address exerciser, address receiver, address collateralAsset, uint256 otokenBurned, uint256 payout)`](#Controller-Exercise-address-address-address-address-uint256-uint256-)
-
-- [`VaultSettled(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 payout)`](#Controller-VaultSettled-address-address-address-uint256-uint256-)
-
-- [`CallExecuted(address from, address to, address vaultOwner, uint256 vaultId, bytes data)`](#Controller-CallExecuted-address-address-address-uint256-bytes-)
-
-- [`TerminatorUpdated(address oldTerminator, address newTerminator)`](#Controller-TerminatorUpdated-address-address-)
-
-- [`PauserUpdated(address oldPauser, address newPauser)`](#Controller-PauserUpdated-address-address-)
-
-- [`SystemPaused(bool isActive)`](#Controller-SystemPaused-bool-)
-
-- [`EmergencyShutdown(bool isActive)`](#Controller-EmergencyShutdown-bool-)
-
-- [`CallRestricted(bool isRestricted)`](#Controller-CallRestricted-bool-)
-
-# Function `initialize(address _addressBook, address _owner)` {#Controller-initialize-address-address-}
-
-No description
-
-## Parameters:
-
-- `_addressBook`: addressbook module
-
-- `_owner`: account owner address
-
-# Function `setSystemPaused(bool _paused)` {#Controller-setSystemPaused-bool-}
+allows the pauser to toggle the pause variable and pause or unpause the system
 
 can only be called by the pauser
 
-## Parameters:
+### `setEmergencyShutdown(bool _shutdown)` (external)
 
-- `_paused`: new boolean value to set systemPaused to
-
-# Function `setEmergencyShutdown(bool _shutdown)` {#Controller-setEmergencyShutdown-bool-}
+allows the terminator to toggle the emergency shutdown variable and put the system in an emergency shutdown state or return to a non-emergency shutdown state
 
 can only be called by the terminator
 
-## Parameters:
+### `setTerminator(address _terminator)` (external)
 
-- `_shutdown`: new boolean value to set systemShutdown to
-
-# Function `setTerminator(address _terminator)` {#Controller-setTerminator-address-}
+allows the owner to set the terminator address
 
 can only be called by the owner
 
-## Parameters:
+### `setPauser(address _pauser)` (external)
 
-- `_terminator`: new terminator address
-
-# Function `setPauser(address _pauser)` {#Controller-setPauser-address-}
+allows the owner to set the pauser address
 
 can only be called by the owner
 
-## Parameters:
+### `setCallRestriction(bool _isRestricted)` (external)
 
-- `_pauser`: new pauser address
-
-# Function `setCallRestriction(bool _isRestricted)` {#Controller-setCallRestriction-bool-}
+allows the owner to toggle the restriction on whitelisted call actions and only allow whitelisted call addresses or allow any arbitrary call addresses
 
 can only be called by the owner
 
-## Parameters:
+### `setOperator(address _operator, bool _isOperator)` (external)
 
-- `_isRestricted`: new call restriction
-
-# Function `setOperator(address _operator, bool _isOperator)` {#Controller-setOperator-address-bool-}
+allows a user to give or revoke privileges to an operator which can act on their behalf on their vaults
 
 can only be updated by the vault owner
 
-## Parameters:
-
-- `_operator`: operator that the sender wants to give privileges to or revoke them from
-
-- `_isOperator`: new boolean value that expresses if the sender is giving or revoking privileges for _operator
-
-# Function `refreshConfiguration()` {#Controller-refreshConfiguration--}
+### `refreshConfiguration()` (external)
 
 updates the configuration of the controller. can only be called by the owner
 
-# Function `operate(struct Actions.ActionArgs[] _actions)` {#Controller-operate-struct-Actions-ActionArgs---}
+### `operate(struct Actions.ActionArgs[] _actions)` (external)
+
+execute a number of actions on specific vaults
 
 can only be called when the system is not shutdown
 
-## Parameters:
+### `isOperator(address _owner, address _operator) → bool` (external)
 
-- `_actions`: array of actions arguments
+check if a specific address is an operator for an owner account
 
-# Function `isOperator(address _owner, address _operator) → bool` {#Controller-isOperator-address-address-}
+### `getConfiguration() → address, address, address, address` (external)
 
-No description
+returns the current controller configuration
 
-## Parameters:
+### `getVaultBalances(address _owner, uint256 _vaultId) → struct MarginAccount.Vault` (external)
 
-- `_owner`: account owner address
-
-- `_operator`: account operator address
-
-## Return Values:
-
-- true if the _operator is an approved operator for the _owner account
-
-# Function `getConfiguration() → address, address, address, address` {#Controller-getConfiguration--}
-
-No description
-
-## Return Values:
-
-- the address of the whitelist module
-
-- the address of the oracle module
-
-- the address of the calculator module
-
-- the address of the pool module
-
-# Function `getVaultBalances(address _owner, uint256 _vaultId) → struct MarginAccount.Vault` {#Controller-getVaultBalances-address-uint256-}
+before expiry or if there is no short oToken in a vault, return a the vault, if the short oToken has expired, adjust the vault collateral balances by the net option proceeds
 
 if vault has no short oToken or the issued oToken is not expired yet, return the vault, else call getExcessCollateral and return it as collateral amount inside Vault struct.
 
-## Parameters:
-
-- `_owner`: account owner of the vault
-
-- `_vaultId`: vaultId to return balances for
-
-## Return Values:
-
-- Vault struct with balances
-
-# Function `isPriceFinalized(address _otoken) → bool` {#Controller-isPriceFinalized-address-}
+### `isPriceFinalized(address _otoken) → bool` (public)
 
 return if an expired oToken contract’s settlement price has been finalized
 
-## Parameters:
+### `getAccountVaultCounter(address _accountOwner) → uint256` (external)
 
-- `_otoken`: address of the oToken
+get the number of current vaults for a specified account owner
 
-## Return Values:
+### `isExpired(address _otoken) → bool` (public)
 
-- true if the oToken has expired AND the oraclePrice at the expiry timestamp has been finalized, otherwise it returns false
+check if an oToken has expired
 
-# Function `getAccountVaultCounter(address _accountOwner) → uint256` {#Controller-getAccountVaultCounter-address-}
+### `getVault(address _owner, uint256 _vaultId) → struct MarginAccount.Vault` (public)
 
-No description
+return a specific vault
 
-## Parameters:
+### `_runActions(struct Actions.ActionArgs[] _actions) → bool, address, uint256` (internal)
 
-- `_accountOwner`: account owner address
+execute a variety of actions
 
-## Return Values:
+for each action in the action array, execute the corresponding action, only one vault can be modified for all actions except SettleVault, Exercise, and Call
 
-- number of vaults
+### `_verifyFinalState(address _owner, uint256 _vaultId)` (internal)
 
-# Function `isExpired(address _otoken) → bool` {#Controller-isExpired-address-}
+verify the vault final state after executing all actions
 
-No description
+### `_openVault(struct Actions.OpenVaultArgs _args)` (internal)
 
-## Parameters:
+open a new vault inside an account
 
-- `_otoken`: oToken address
+only the account owner or operator can open a vault, cannot be called when system is paused or shutdown
 
-## Return Values:
+### `_depositLong(struct Actions.DepositArgs _args)` (internal)
 
-- true if the otoken has expired, otherwise it returns false
+deposit a long oToken into a vault
 
-# Function `getVault(address _owner, uint256 _vaultId) → struct MarginAccount.Vault` {#Controller-getVault-address-uint256-}
+cannot be called when system is paused or shutdown
 
-No description
+### `_withdrawLong(struct Actions.WithdrawArgs _args)` (internal)
 
-## Parameters:
+withdraw a long oToken from a vault
 
-- `_owner`: account owner
+only the account owner or operator can withdraw a long oToken from a vault, cannot be called when system is paused or shutdown
 
-- `_vaultId`: vault id of vault to return
+### `_depositCollateral(struct Actions.DepositArgs _args)` (internal)
 
-## Return Values:
+deposit a collateral asset into a vault
 
-- Vault struct that corresponds to the _vaultId of _owner
+cannot be called when the system is paused or shutdown
 
-# Event `AccountOperatorUpdated(address accountOwner, address operator, bool isSet)` {#Controller-AccountOperatorUpdated-address-address-bool-}
+### `_withdrawCollateral(struct Actions.WithdrawArgs _args)` (internal)
 
-No description
+withdraw a collateral asset from a vault
 
-# Event `VaultOpened(address accountOwner, uint256 vaultId)` {#Controller-VaultOpened-address-uint256-}
+only the account owner or operator can withdraw a collateral from a vault, cannot be called when system is paused or shutdown
 
-No description
+### `_mintOtoken(struct Actions.MintArgs _args)` (internal)
 
-# Event `LongOtokenDeposited(address otoken, address accountOwner, address from, uint256 vaultId, uint256 amount)` {#Controller-LongOtokenDeposited-address-address-address-uint256-uint256-}
+mint short oTokens from a vault which creates an obligation recorded in a vault
 
-No description
+only the account owner or operator can mint short oTokens from a vault, cannot be called when system is paused or shutdown
 
-# Event `LongOtokenWithdrawed(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 amount)` {#Controller-LongOtokenWithdrawed-address-address-address-uint256-uint256-}
+### `_burnOtoken(struct Actions.BurnArgs _args)` (internal)
 
-No description
+burn oTokens to reduce or remove minted oToken obligation recorded in a vault
 
-# Event `CollateralAssetDeposited(address asset, address accountOwner, address from, uint256 vaultId, uint256 amount)` {#Controller-CollateralAssetDeposited-address-address-address-uint256-uint256-}
+only the account owner or operator can burn oTokens for a vault, cannot be called when system is paused or shutdown
 
-No description
+### `_exercise(struct Actions.ExerciseArgs _args)` (internal)
 
-# Event `CollateralAssetWithdrawed(address asset, address AccountOwner, address to, uint256 vaultId, uint256 amount)` {#Controller-CollateralAssetWithdrawed-address-address-address-uint256-uint256-}
+exercise an oToken after expiry, receiving the payout of the oToken in the collateral asset
 
-No description
+cannot be called when system is paused
 
-# Event `ShortOtokenMinted(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 amount)` {#Controller-ShortOtokenMinted-address-address-address-uint256-uint256-}
+### `_settleVault(struct Actions.SettleVaultArgs _args)` (internal)
 
-No description
+settle a vault after expiry, removing the remaining collateral in a vault after both long and short oToken payouts have been removed
 
-# Event `ShortOtokenBurned(address otoken, address AccountOwner, address from, uint256 vaultId, uint256 amount)` {#Controller-ShortOtokenBurned-address-address-address-uint256-uint256-}
+deletes a vault of vaultId after remaining collateral is removed, cannot be called when system is paused
 
-No description
+### `_call(struct Actions.CallArgs _args)` (internal)
 
-# Event `Exercise(address otoken, address exerciser, address receiver, address collateralAsset, uint256 otokenBurned, uint256 payout)` {#Controller-Exercise-address-address-address-address-uint256-uint256-}
+execute arbitrary calls
 
-No description
+cannot be called when system is paused or shutdown
 
-# Event `VaultSettled(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 payout)` {#Controller-VaultSettled-address-address-address-uint256-uint256-}
+### `_checkVaultId(address _accountOwner, uint256 _vaultId) → bool` (internal)
 
-No description
+check if a vault id is valid
 
-# Event `CallExecuted(address from, address to, address vaultOwner, uint256 vaultId, bytes data)` {#Controller-CallExecuted-address-address-address-uint256-bytes-}
+### `_isNotEmpty(address[] _array) → bool` (internal)
 
-No description
+### `_getPayout(address _otoken, uint256 _amount) → uint256` (internal)
 
-# Event `TerminatorUpdated(address oldTerminator, address newTerminator)` {#Controller-TerminatorUpdated-address-address-}
+get the oToken's payout after expiry, in the collateral asset
 
-No description
+### `_isCalleeWhitelisted(address _callee) → bool` (internal)
 
-# Event `PauserUpdated(address oldPauser, address newPauser)` {#Controller-PauserUpdated-address-address-}
+return if a callee address is whitelisted or not
 
-No description
+### `_refreshConfigInternal()` (internal)
 
-# Event `SystemPaused(bool isActive)` {#Controller-SystemPaused-bool-}
+updates the internal configuration of the controller
 
-No description
+### `AccountOperatorUpdated(address accountOwner, address operator, bool isSet)`
 
-# Event `EmergencyShutdown(bool isActive)` {#Controller-EmergencyShutdown-bool-}
+emits an event when an account operator is updated for a specific account owner
 
-No description
+### `VaultOpened(address accountOwner, uint256 vaultId)`
 
-# Event `CallRestricted(bool isRestricted)` {#Controller-CallRestricted-bool-}
+emits an event when a new vault is opened
 
-No description
+### `LongOtokenDeposited(address otoken, address accountOwner, address from, uint256 vaultId, uint256 amount)`
+
+emits an event when a long oToken is deposited into a vault
+
+### `LongOtokenWithdrawed(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 amount)`
+
+emits an event when a long oToken is withdrawn from a vault
+
+### `CollateralAssetDeposited(address asset, address accountOwner, address from, uint256 vaultId, uint256 amount)`
+
+emits an event when a collateral asset is deposited into a vault
+
+### `CollateralAssetWithdrawed(address asset, address AccountOwner, address to, uint256 vaultId, uint256 amount)`
+
+emits an event when a collateral asset is withdrawn from a vault
+
+### `ShortOtokenMinted(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 amount)`
+
+emits an event when a short oToken is minted from a vault
+
+### `ShortOtokenBurned(address otoken, address AccountOwner, address from, uint256 vaultId, uint256 amount)`
+
+emits an event when a short oToken is burned
+
+### `Exercise(address otoken, address exerciser, address receiver, address collateralAsset, uint256 otokenBurned, uint256 payout)`
+
+emits an event when an oToken is exercised
+
+### `VaultSettled(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 payout)`
+
+emits an event when a vault is settled
+
+### `CallExecuted(address from, address to, address vaultOwner, uint256 vaultId, bytes data)`
+
+emits an event when a call action is executed
+
+### `TerminatorUpdated(address oldTerminator, address newTerminator)`
+
+emits an event when the terminator address changes
+
+### `PauserUpdated(address oldPauser, address newPauser)`
+
+emits an event when the pauser address changes
+
+### `SystemPaused(bool isActive)`
+
+emits an event when the system paused status changes
+
+### `EmergencyShutdown(bool isActive)`
+
+emits an event when the system emergency shutdown status changes
+
+### `CallRestricted(bool isRestricted)`
+
+emits an event when the call action restriction changes

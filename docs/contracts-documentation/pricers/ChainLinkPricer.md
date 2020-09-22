@@ -1,37 +1,15 @@
-# Functions:
+## `ChainLinkPricer`
 
-- [`constructor(address _asset, address _aggregator, address _oracle)`](#ChainLinkPricer-constructor-address-address-address-)
+A Pricer contract for Chainlink for 1 asset
 
-- [`getPrice()`](#ChainLinkPricer-getPrice--)
+### `constructor(address _asset, address _aggregator, address _oracle)` (public)
 
-- [`setExpiryPriceToOralce(uint256 _expiryTimestamp, uint256 _roundId)`](#ChainLinkPricer-setExpiryPriceToOralce-uint256-uint256-)
+### `getPrice() → uint256` (external)
 
-# Function `constructor(address _asset, address _aggregator, address _oracle)` {#ChainLinkPricer-constructor-address-address-address-}
-
-No description
-
-## Parameters:
-
-- `_asset`: the asset type that this pricer help relay
-
-- `_aggregator`: the ChainLink aggregator contract for this asset
-
-- `_oracle`: the Opyn Oracle contract address.
-
-# Function `getPrice() → uint256` {#ChainLinkPricer-getPrice--}
+get live price for the asset.
 
 overides the getPrice function in OpynPricerInterface.
 
-## Return Values:
+### `setExpiryPriceToOralce(uint256 _expiryTimestamp, uint256 _roundId)` (external)
 
-- price of asset scaled by 1e18
-
-# Function `setExpiryPriceToOralce(uint256 _expiryTimestamp, uint256 _roundId)` {#ChainLinkPricer-setExpiryPriceToOralce-uint256-uint256-}
-
-No description
-
-## Parameters:
-
-- `_expiryTimestamp`: the expiry want to send
-
-- `_roundId`: the first roundId after expiry
+Set the expiry price to the oracle
