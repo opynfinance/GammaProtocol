@@ -1,0 +1,8 @@
+{
+    "RINKEBY": {
+        "MULTISIG": "0x8c8b4C5caEAf1A6FB8308a6336932B3e3419704C"
+    },
+    "MAINNET": {
+        "MULTISIG": ""
+    }
+}
