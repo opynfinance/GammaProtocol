@@ -47,7 +47,7 @@ contract ChainLinkPricer is OpynPricerInterface {
     function getPrice() external override view returns (uint256) {
         int256 answer = aggregator.latestAnswer();
         require(answer > 0, "ChainLinkPricer: price is lower than 0");
-        // Scale to 1e18 from 1e8
+        // Scale chainlink answer (1e8) to 1e18
         return uint256(answer).mul(BASE);
     }
 
