@@ -25,16 +25,16 @@ const maxSpot = 100000000000
 
 enum strikePriceRule {
   longLessThanShort,
-  shortLessThanLong,
-  shortEqualLong,
+  longMoreThanShort,
+  longEqualShort,
 }
 
 enum amountRule {
   longLessThanShort,
-  shortLessThanLong,
-  shortEqualLong,
-  shortNoLong,
-  longNoShort,
+  longMoreThanShort,
+  longEqualShort,
+  onlyShort,
+  onlyLong,
 }
 
 enum collateralRules {
@@ -45,9 +45,9 @@ enum collateralRules {
 
 enum spotPriceRules {
   spotHighest,
-  spotEqualToHigherStrike,
+  spotEqualHigherStrike,
   spotInBetweenStrikes,
-  spotEqualToLowerStrike,
+  spotEqualLowerStrike,
   spotLowest,
 }
 
@@ -108,7 +108,7 @@ function strikePriceGenerator(rule: strikePriceRule): StrikePrices {
 
   if (rule == strikePriceRule.longLessThanShort) {
     longStrike = Math.max(shortStrike - strikeWidth, minStrikePrice)
-  } else if (rule == strikePriceRule.shortLessThanLong) {
+  } else if (rule == strikePriceRule.longMoreThanShort) {
     longStrike = Math.min(shortStrike + strikeWidth, maxStrikePrice)
   } else {
     longStrike = shortStrike
@@ -131,11 +131,11 @@ function amountGenerator(rule: amountRule): Amounts {
 
   if (rule == amountRule.longLessThanShort) {
     longAmount = Math.max(shortAmount - strikeWidth, minAmount)
-  } else if (rule == amountRule.shortLessThanLong) {
+  } else if (rule == amountRule.longMoreThanShort) {
     longAmount = Math.min(shortAmount + strikeWidth, maxAmount)
-  } else if (rule == amountRule.shortNoLong) {
+  } else if (rule == amountRule.onlyShort) {
     longAmount = 0
-  } else if (rule == amountRule.longNoShort) {
+  } else if (rule == amountRule.onlyLong) {
     longAmount = shortAmount
     shortAmount = 0
   } else {
@@ -196,12 +196,12 @@ function putAfterExpiryTestCreator(
 
   if (rule == spotPriceRules.spotHighest) {
     spotPrice = Math.min(getRandomInt(maxSpot) + highStrike, maxSpot)
-  } else if (rule == spotPriceRules.spotEqualToHigherStrike) {
+  } else if (rule == spotPriceRules.spotEqualHigherStrike) {
     spotPrice = highStrike
   } else if (rule == spotPriceRules.spotInBetweenStrikes) {
     const spotPriceDifference = highStrike - lowStrike
     spotPrice = getRandomInt(spotPriceDifference) + lowStrike
-  } else if (rule == spotPriceRules.spotEqualToLowerStrike) {
+  } else if (rule == spotPriceRules.spotEqualLowerStrike) {
     spotPrice = lowStrike
   } else if (rule == spotPriceRules.spotLowest) {
     spotPrice = Math.max(getRandomInt(lowStrike), minSpot)

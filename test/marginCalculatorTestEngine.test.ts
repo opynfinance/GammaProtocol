@@ -5,7 +5,7 @@ import {
   MockOracleInstance,
   MockOtokenInstance,
 } from '../build/types/truffle-types'
-import {createVault, createScaledNumber} from './utils'
+import {createVault, createTokenAmount} from './utils'
 import {assert} from 'chai'
 import {testCaseGenerator, Tests, Test, testToString} from './testCaseGenerator'
 
@@ -29,6 +29,9 @@ contract('MarginCalculator Test Engine', () => {
   let dai: MockERC20Instance
   let weth: MockERC20Instance
 
+  const usdcDecimals = 18
+  const wethDecimals = 18
+
   before('set up contracts', async () => {
     const now = (await time.latest()).toNumber()
     expiry = now + time.duration.days(30).toNumber()
@@ -41,8 +44,8 @@ contract('MarginCalculator Test Engine', () => {
     await addressBook.setOracle(oracle.address)
     // setup usdc and weth
     // TODO: scaling
-    usdc = await MockERC20.new('USDC', 'USDC', 18)
-    weth = await MockERC20.new('WETH', 'WETH', 18)
+    usdc = await MockERC20.new('USDC', 'USDC', usdcDecimals)
+    weth = await MockERC20.new('WETH', 'WETH', wethDecimals)
   })
 
   describe('Excess Margin Test', () => {
@@ -76,7 +79,7 @@ contract('MarginCalculator Test Engine', () => {
           weth.address,
           usdc.address,
           usdc.address,
-          createScaledNumber(longStrike),
+          createTokenAmount(longStrike),
           expiry,
           true,
         )
@@ -86,23 +89,31 @@ contract('MarginCalculator Test Engine', () => {
           weth.address,
           usdc.address,
           usdc.address,
-          createScaledNumber(shortStrike),
+          createTokenAmount(shortStrike),
           expiry,
           true,
         )
+        // if the amount is zero, pass in an empty array
+        const vaultShortAmount = shortAmount > 0 ? createTokenAmount(shortAmount) : undefined
+        const vaultLongAmount = longAmount > 0 ? createTokenAmount(longAmount) : undefined
+        const vaultCollateralAmount = collateral > 0 ? createTokenAmount(collateral, usdcDecimals) : undefined
+        const shortAddress = shortAmount > 0 ? shortOption.address : undefined
+        const longAddress = longAmount > 0 ? longOption.address : undefined
+        const collateralAddress = collateral > 0 ? usdc.address : undefined
 
-        const vaultWithCollateral = createVault(
-          shortOption.address,
-          longOption.address,
-          usdc.address,
-          createScaledNumber(shortAmount),
-          createScaledNumber(longAmount),
-          createScaledNumber(collateral),
+        // create the vault
+        const vault = createVault(
+          shortAddress,
+          longAddress,
+          collateralAddress,
+          vaultShortAmount,
+          vaultLongAmount,
+          vaultCollateralAmount,
         )
-
-        const [netValue, isExcess] = await calculator.getExcessCollateral(vaultWithCollateral)
+        // Check that the test passes, only fail if it doesn't
+        const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
+        assert.equal(netValue.toString(), createTokenAmount(expectedNetValue), testToString(tests[i]))
         assert.equal(isExcess, expectedIsExcess, testToString(tests[i]))
-        assert.equal(netValue.toString(), createScaledNumber(expectedNetValue), testToString(tests[i]))
       }
     })
 
@@ -126,9 +137,9 @@ contract('MarginCalculator Test Engine', () => {
         const expectedIsExcess = tests[i].isExcess
 
         const spotPrice = tests[i].oraclePrice
-
-        await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createScaledNumber(spotPrice), true)
-        await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createScaledNumber(1), true)
+        // set the mock oracle price to have been finalized
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(spotPrice), true)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1), true)
 
         longOption = await MockOtoken.new()
         await longOption.init(
@@ -136,7 +147,7 @@ contract('MarginCalculator Test Engine', () => {
           weth.address,
           usdc.address,
           usdc.address,
-          createScaledNumber(longStrike),
+          createTokenAmount(longStrike),
           expiry,
           true,
         )
@@ -146,23 +157,31 @@ contract('MarginCalculator Test Engine', () => {
           weth.address,
           usdc.address,
           usdc.address,
-          createScaledNumber(shortStrike),
+          createTokenAmount(shortStrike),
           expiry,
           true,
         )
-
-        const vaultWithCollateral = createVault(
-          shortOption.address,
-          longOption.address,
-          usdc.address,
-          createScaledNumber(shortAmount),
-          createScaledNumber(longAmount),
-          createScaledNumber(collateral),
+        // if the amount is zero, pass in an empty array
+        const vaultShortAmount = shortAmount > 0 ? createTokenAmount(shortAmount) : undefined
+        const vaultLongAmount = longAmount > 0 ? createTokenAmount(longAmount) : undefined
+        const vaultCollateralAmount = collateral > 0 ? createTokenAmount(collateral, usdcDecimals) : undefined
+        const shortAddress = shortAmount > 0 ? shortOption.address : undefined
+        const longAddress = longAmount > 0 ? longOption.address : undefined
+        const collateralAddress = collateral > 0 ? usdc.address : undefined
+        // create the vault
+        const vault = createVault(
+          shortAddress,
+          longAddress,
+          collateralAddress,
+          vaultShortAmount,
+          vaultLongAmount,
+          vaultCollateralAmount,
         )
 
-        const [netValue, isExcess] = await calculator.getExcessCollateral(vaultWithCollateral)
+        // Check that the test passes, only fail if it doesn't
+        const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
+        assert.equal(netValue.toString(), createTokenAmount(expectedNetValue), testToString(tests[i]))
         assert.equal(isExcess, expectedIsExcess, testToString(tests[i]))
-        assert.equal(netValue.toString(), createScaledNumber(expectedNetValue), testToString(tests[i]))
       }
     })
   })
