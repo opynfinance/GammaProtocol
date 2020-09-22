@@ -2,18 +2,16 @@ Interface of Compound cToken
 
 # Functions:
 
-- [`exchangeRateStored()`]
+- `exchangeRateStored() (external)`
 
-- [`decimals()`]
+- `decimals() (external)`
 
-# Function `exchangeRateStored() → uint256`
+# Function `exchangeRateStored() → uint256` (external)
 
-No description
+Calculates the exchange rate from the underlying to the CToken
 
 ## Return Values:
 
 - Calculated exchange rate scaled by 1e18
 
-# Function `decimals() → uint256`
-
-No description
+# Function `decimals() → uint256` (external)

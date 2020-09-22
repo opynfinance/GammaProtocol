@@ -1,7 +1,5 @@
 # Functions:
 
-- [`setCompleted(uint256 completed)`]
+- `setCompleted(uint256 completed) (public)`
 
-# Function `setCompleted(uint256 completed)`
-
-No description
+# Function `setCompleted(uint256 completed)` (public)

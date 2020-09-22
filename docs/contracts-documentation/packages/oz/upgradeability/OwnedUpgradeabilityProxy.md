@@ -2,25 +2,27 @@ This contract combines an upgradeability proxy with basic authorization control 
 
 # Functions:
 
-- [`constructor()`]
+- `constructor() (public)`
 
-- [`proxyOwner()`]
+- `proxyOwner() (public)`
 
-- [`transferProxyOwnership(address _newOwner)`]
+- `setUpgradeabilityOwner(address _newProxyOwner) (internal)`
 
-- [`upgradeTo(address _implementation)`]
+- `transferProxyOwnership(address _newOwner) (public)`
 
-- [`upgradeToAndCall(address _implementation, bytes _data)`]
+- `upgradeTo(address _implementation) (public)`
+
+- `upgradeToAndCall(address _implementation, bytes _data) (public)`
 
 # Events:
 
 - [`ProxyOwnershipTransferred(address previousOwner, address newOwner)`]
 
-# Function `constructor()`
+# Function `constructor()` (public)
 
 the constructor sets the original owner of the contract to the sender account.
 
-# Function `proxyOwner() → address owner`
+# Function `proxyOwner() → address owner` (public)
 
 Tells the address of the owner
 
@@ -28,7 +30,15 @@ Tells the address of the owner
 
 - owner the address of the owner
 
-# Function `transferProxyOwnership(address _newOwner)`
+# Function `setUpgradeabilityOwner(address _newProxyOwner)` (internal)
+
+Sets the address of the owner
+
+## Parameters:
+
+- `_newProxyOwner`: address of new proxy owner
+
+# Function `transferProxyOwnership(address _newOwner)` (public)
 
 Allows the current owner to transfer control of the contract to a newOwner.
 
@@ -36,7 +46,7 @@ Allows the current owner to transfer control of the contract to a newOwner.
 
 - `_newOwner`: The address to transfer ownership to.
 
-# Function `upgradeTo(address _implementation)`
+# Function `upgradeTo(address _implementation)` (public)
 
 Allows the proxy owner to upgrade the current version of the proxy.
 
@@ -44,7 +54,7 @@ Allows the proxy owner to upgrade the current version of the proxy.
 
 - `_implementation`: representing the address of the new implementation to be set.
 
-# Function `upgradeToAndCall(address _implementation, bytes _data)`
+# Function `upgradeToAndCall(address _implementation, bytes _data)` (public)
 
 Allows the proxy owner to upgrade the current version of the proxy and call the new implementation
 

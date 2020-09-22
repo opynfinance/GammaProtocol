@@ -1,10 +1,10 @@
 # Functions:
 
-- [`initialize(address _addressBook, address _owner)`]
+- `initialize(address _addressBook, address _owner) (public)`
 
-- [`getV1Version()`]
+- `getV1Version() (external)`
 
-# Function `initialize(address _addressBook, address _owner)`
+# Function `initialize(address _addressBook, address _owner)` (public)
 
 this function is invoked by the proxy contract when this contract is added to the
 
@@ -14,6 +14,4 @@ AddressBook.
 
 - `_addressBook`: the address of the AddressBook*
 
-# Function `getV1Version() → uint256`
-
-No description
+# Function `getV1Version() → uint256` (external)

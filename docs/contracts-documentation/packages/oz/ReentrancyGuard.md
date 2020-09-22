@@ -21,3 +21,7 @@ to protect against it, check out our blog post
 https://blog.openzeppelin.com/reentrancy-after-istanbul/[Reentrancy After Istanbul].
 
 # Functions:
+
+- `constructor() (internal)`
+
+# Function `constructor()` (internal)

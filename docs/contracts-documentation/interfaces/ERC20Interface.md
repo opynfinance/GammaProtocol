@@ -2,19 +2,19 @@ Interface of the ERC20 standard as defined in the EIP.
 
 # Functions:
 
-- [`totalSupply()`]
+- `totalSupply() (external)`
 
-- [`balanceOf(address account)`]
+- `balanceOf(address account) (external)`
 
-- [`transfer(address recipient, uint256 amount)`]
+- `transfer(address recipient, uint256 amount) (external)`
 
-- [`allowance(address owner, address spender)`]
+- `allowance(address owner, address spender) (external)`
 
-- [`approve(address spender, uint256 amount)`]
+- `approve(address spender, uint256 amount) (external)`
 
-- [`transferFrom(address sender, address recipient, uint256 amount)`]
+- `transferFrom(address sender, address recipient, uint256 amount) (external)`
 
-- [`decimals()`]
+- `decimals() (external)`
 
 # Events:
 
@@ -22,15 +22,15 @@ Interface of the ERC20 standard as defined in the EIP.
 
 - [`Approval(address owner, address spender, uint256 value)`]
 
-# Function `totalSupply() → uint256`
+# Function `totalSupply() → uint256` (external)
 
 Returns the amount of tokens in existence.
 
-# Function `balanceOf(address account) → uint256`
+# Function `balanceOf(address account) → uint256` (external)
 
 Returns the amount of tokens owned by `account`.
 
-# Function `transfer(address recipient, uint256 amount) → bool`
+# Function `transfer(address recipient, uint256 amount) → bool` (external)
 
 Moves `amount` tokens from the caller's account to `recipient`.
 
@@ -38,7 +38,7 @@ Returns a boolean value indicating whether the operation succeeded.
 
 Emits a {Transfer} event.
 
-# Function `allowance(address owner, address spender) → uint256`
+# Function `allowance(address owner, address spender) → uint256` (external)
 
 Returns the remaining number of tokens that `spender` will be
 
@@ -48,7 +48,7 @@ zero by default.
 
 This value changes when {approve} or {transferFrom} are called.
 
-# Function `approve(address spender, uint256 amount) → bool`
+# Function `approve(address spender, uint256 amount) → bool` (external)
 
 Sets `amount` as the allowance of `spender` over the caller's tokens.
 
@@ -68,7 +68,7 @@ https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
 
 Emits an {Approval} event.
 
-# Function `transferFrom(address sender, address recipient, uint256 amount) → bool`
+# Function `transferFrom(address sender, address recipient, uint256 amount) → bool` (external)
 
 Moves `amount` tokens from `sender` to `recipient` using the
 
@@ -80,9 +80,7 @@ Returns a boolean value indicating whether the operation succeeded.
 
 Emits a {Transfer} event.
 
-# Function `decimals() → uint8`
-
-No description
+# Function `decimals() → uint8` (external)
 
 # Event `Transfer(address from, address to, uint256 value)`
 

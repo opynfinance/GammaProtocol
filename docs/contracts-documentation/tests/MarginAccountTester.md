@@ -1,43 +1,29 @@
 # Functions:
 
-- [`getVault(uint256 _vaultIndex)`]
+- `getVault(uint256 _vaultIndex) (external)`
 
-- [`testAddShort(uint256 _vaultIndex, address _shortOtoken, uint256 _amount, uint256 _index)`]
+- `testAddShort(uint256 _vaultIndex, address _shortOtoken, uint256 _amount, uint256 _index) (external)`
 
-- [`testRemoveShort(uint256 _vaultIndex, address _shortOtoken, uint256 _amount, uint256 _index)`]
+- `testRemoveShort(uint256 _vaultIndex, address _shortOtoken, uint256 _amount, uint256 _index) (external)`
 
-- [`testAddLong(uint256 _vaultIndex, address _longOtoken, uint256 _amount, uint256 _index)`]
+- `testAddLong(uint256 _vaultIndex, address _longOtoken, uint256 _amount, uint256 _index) (external)`
 
-- [`testRemoveLong(uint256 _vaultIndex, address _longOtoken, uint256 _amount, uint256 _index)`]
+- `testRemoveLong(uint256 _vaultIndex, address _longOtoken, uint256 _amount, uint256 _index) (external)`
 
-- [`testAddCollateral(uint256 _vaultIndex, address _collateralAsset, uint256 _amount, uint256 _index)`]
+- `testAddCollateral(uint256 _vaultIndex, address _collateralAsset, uint256 _amount, uint256 _index) (external)`
 
-- [`testRemoveCollateral(uint256 _vaultIndex, address _collateralAsset, uint256 _amount, uint256 _index)`]
+- `testRemoveCollateral(uint256 _vaultIndex, address _collateralAsset, uint256 _amount, uint256 _index) (external)`
 
-# Function `getVault(uint256 _vaultIndex) → struct MarginAccount.Vault`
+# Function `getVault(uint256 _vaultIndex) → struct MarginAccount.Vault` (external)
 
-No description
+# Function `testAddShort(uint256 _vaultIndex, address _shortOtoken, uint256 _amount, uint256 _index)` (external)
 
-# Function `testAddShort(uint256 _vaultIndex, address _shortOtoken, uint256 _amount, uint256 _index)`
+# Function `testRemoveShort(uint256 _vaultIndex, address _shortOtoken, uint256 _amount, uint256 _index)` (external)
 
-No description
+# Function `testAddLong(uint256 _vaultIndex, address _longOtoken, uint256 _amount, uint256 _index)` (external)
 
-# Function `testRemoveShort(uint256 _vaultIndex, address _shortOtoken, uint256 _amount, uint256 _index)`
+# Function `testRemoveLong(uint256 _vaultIndex, address _longOtoken, uint256 _amount, uint256 _index)` (external)
 
-No description
+# Function `testAddCollateral(uint256 _vaultIndex, address _collateralAsset, uint256 _amount, uint256 _index)` (external)
 
-# Function `testAddLong(uint256 _vaultIndex, address _longOtoken, uint256 _amount, uint256 _index)`
-
-No description
-
-# Function `testRemoveLong(uint256 _vaultIndex, address _longOtoken, uint256 _amount, uint256 _index)`
-
-No description
-
-# Function `testAddCollateral(uint256 _vaultIndex, address _collateralAsset, uint256 _amount, uint256 _index)`
-
-No description
-
-# Function `testRemoveCollateral(uint256 _vaultIndex, address _collateralAsset, uint256 _amount, uint256 _index)`
-
-No description
+# Function `testRemoveCollateral(uint256 _vaultIndex, address _collateralAsset, uint256 _amount, uint256 _index)` (external)

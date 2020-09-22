@@ -1,13 +1,9 @@
 # Functions:
 
-- [`constructor(address _addressBook)`]
+- `constructor(address _addressBook) (public)`
 
-- [`getExpiredCashValue(address _otoken)`]
+- `getExpiredCashValue(address _otoken) (external)`
 
-# Function `constructor(address _addressBook)`
+# Function `constructor(address _addressBook)` (public)
 
-No description
-
-# Function `getExpiredCashValue(address _otoken) → uint256`
-
-No description
+# Function `getExpiredCashValue(address _otoken) → uint256` (external)

@@ -1,14 +1,12 @@
 # Functions:
 
-- [`constructor(address _asset, address _aggregator, address _oracle)`]
+- `constructor(address _asset, address _aggregator, address _oracle) (public)`
 
-- [`getPrice()`]
+- `getPrice() (external)`
 
-- [`setExpiryPriceToOralce(uint256 _expiryTimestamp, uint256 _roundId)`]
+- `setExpiryPriceToOralce(uint256 _expiryTimestamp, uint256 _roundId) (external)`
 
-# Function `constructor(address _asset, address _aggregator, address _oracle)`
-
-No description
+# Function `constructor(address _asset, address _aggregator, address _oracle)` (public)
 
 ## Parameters:
 
@@ -18,7 +16,9 @@ No description
 
 - `_oracle`: the Opyn Oracle contract address.
 
-# Function `getPrice() → uint256`
+# Function `getPrice() → uint256` (external)
+
+get live price for the asset.
 
 overides the getPrice function in OpynPricerInterface.
 
@@ -26,9 +26,9 @@ overides the getPrice function in OpynPricerInterface.
 
 - price of asset scaled by 1e18
 
-# Function `setExpiryPriceToOralce(uint256 _expiryTimestamp, uint256 _roundId)`
+# Function `setExpiryPriceToOralce(uint256 _expiryTimestamp, uint256 _roundId)` (external)
 
-No description
+Set the expiry price to the oracle
 
 ## Parameters:
 

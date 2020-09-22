@@ -1,13 +1,9 @@
 # Functions:
 
-- [`testFromInt(int256 a)`]
+- `testFromInt(int256 a) (external)`
 
-- [`testFromUint(uint256 a)`]
+- `testFromUint(uint256 a) (external)`
 
-# Function `testFromInt(int256 a) → uint256`
+# Function `testFromInt(int256 a) → uint256` (external)
 
-No description
-
-# Function `testFromUint(uint256 a) → int256`
-
-No description
+# Function `testFromUint(uint256 a) → int256` (external)

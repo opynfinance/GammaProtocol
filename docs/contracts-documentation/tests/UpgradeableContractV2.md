@@ -1,7 +1,5 @@
 # Functions:
 
-- [`getV2Version()`]
+- `getV2Version() (external)`
 
-# Function `getV2Version() → uint256`
-
-No description
+# Function `getV2Version() → uint256` (external)

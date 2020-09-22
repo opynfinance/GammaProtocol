@@ -21,3 +21,11 @@ to protect against it, check out our blog post
 https://blog.openzeppelin.com/reentrancy-after-istanbul/[Reentrancy After Istanbul].
 
 # Functions:
+
+- `__ReentrancyGuard_init() (internal)`
+
+- `__ReentrancyGuard_init_unchained() (internal)`
+
+# Function `__ReentrancyGuard_init()` (internal)
+
+# Function `__ReentrancyGuard_init_unchained()` (internal)

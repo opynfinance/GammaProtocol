@@ -1,19 +1,13 @@
 # Functions:
 
-- [`constructor(string _name, string _symbol)`]
+- `constructor(string _name, string _symbol) (public)`
 
-- [`mint(address account, uint256 amount)`]
+- `mint(address account, uint256 amount) (public)`
 
-- [`setExchangeRate(uint256 _exchangeRateStored)`]
+- `setExchangeRate(uint256 _exchangeRateStored) (external)`
 
-# Function `constructor(string _name, string _symbol)`
+# Function `constructor(string _name, string _symbol)` (public)
 
-No description
+# Function `mint(address account, uint256 amount)` (public)
 
-# Function `mint(address account, uint256 amount)`
-
-No description
-
-# Function `setExchangeRate(uint256 _exchangeRateStored)`
-
-No description
+# Function `setExchangeRate(uint256 _exchangeRateStored)` (external)

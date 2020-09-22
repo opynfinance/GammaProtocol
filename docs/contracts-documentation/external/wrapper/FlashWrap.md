@@ -1,8 +1,8 @@
 # Functions:
 
-- [`constructor(address payable weth)`]
+- `constructor(address payable weth) (public)`
 
-- [`callFunction(address payable _sender, address _vaultOwner, uint256 _vaultId, bytes _data)`]
+- `callFunction(address payable _sender, address _vaultOwner, uint256 _vaultId, bytes _data) (external)`
 
 # Events:
 
@@ -10,18 +10,10 @@
 
 - [`UnwrappedETH(address to, uint256 amount)`]
 
-# Function `constructor(address payable weth)`
+# Function `constructor(address payable weth)` (public)
 
-No description
-
-# Function `callFunction(address payable _sender, address _vaultOwner, uint256 _vaultId, bytes _data)`
-
-No description
+# Function `callFunction(address payable _sender, address _vaultOwner, uint256 _vaultId, bytes _data)` (external)
 
 # Event `WrappedETH(address to, uint256 amount)`
 
-No description
-
 # Event `UnwrappedETH(address to, uint256 amount)`
-
-No description

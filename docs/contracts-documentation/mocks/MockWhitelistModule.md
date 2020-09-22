@@ -1,55 +1,37 @@
 # Functions:
 
-- [`whitelistProduct(address _underlying, address _strike, address _collateral, bool _isPut)`]
+- `whitelistProduct(address _underlying, address _strike, address _collateral, bool _isPut) (external)`
 
-- [`isWhitelistedProduct(address _underlying, address _strike, address _collateral, bool _isPut)`]
+- `isWhitelistedProduct(address _underlying, address _strike, address _collateral, bool _isPut) (external)`
 
-- [`whitelistOtoken(address _otoken)`]
+- `whitelistOtoken(address _otoken) (external)`
 
-- [`isWhitelistedOtoken(address _otoken)`]
+- `isWhitelistedOtoken(address _otoken) (external)`
 
-- [`isWhitelistedCollateral(address _collateral)`]
+- `isWhitelistedCollateral(address _collateral) (external)`
 
-- [`whitelistCollateral(address _collateral)`]
+- `whitelistCollateral(address _collateral) (external)`
 
-- [`isWhitelistedCallee(address _callee)`]
+- `isWhitelistedCallee(address _callee) (external)`
 
-- [`whitelisteCallee(address _callee)`]
+- `whitelisteCallee(address _callee) (external)`
 
-- [`blacklistCallee(address _callee)`]
+- `blacklistCallee(address _callee) (external)`
 
-# Function `whitelistProduct(address _underlying, address _strike, address _collateral, bool _isPut) → bytes32 id`
+# Function `whitelistProduct(address _underlying, address _strike, address _collateral, bool _isPut) → bytes32 id` (external)
 
-No description
+# Function `isWhitelistedProduct(address _underlying, address _strike, address _collateral, bool _isPut) → bool isValid` (external)
 
-# Function `isWhitelistedProduct(address _underlying, address _strike, address _collateral, bool _isPut) → bool isValid`
+# Function `whitelistOtoken(address _otoken)` (external)
 
-No description
+# Function `isWhitelistedOtoken(address _otoken) → bool` (external)
 
-# Function `whitelistOtoken(address _otoken)`
+# Function `isWhitelistedCollateral(address _collateral) → bool` (external)
 
-No description
+# Function `whitelistCollateral(address _collateral)` (external)
 
-# Function `isWhitelistedOtoken(address _otoken) → bool`
+# Function `isWhitelistedCallee(address _callee) → bool` (external)
 
-No description
+# Function `whitelisteCallee(address _callee)` (external)
 
-# Function `isWhitelistedCollateral(address _collateral) → bool`
-
-No description
-
-# Function `whitelistCollateral(address _collateral)`
-
-No description
-
-# Function `isWhitelistedCallee(address _callee) → bool`
-
-No description
-
-# Function `whitelisteCallee(address _callee)`
-
-No description
-
-# Function `blacklistCallee(address _callee)`
-
-No description
+# Function `blacklistCallee(address _callee)` (external)

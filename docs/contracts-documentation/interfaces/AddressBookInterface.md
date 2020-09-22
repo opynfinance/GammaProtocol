@@ -1,109 +1,73 @@
 # Functions:
 
-- [`getOtokenImpl()`]
+- `getOtokenImpl() (external)`
 
-- [`getOtokenFactory()`]
+- `getOtokenFactory() (external)`
 
-- [`getWhitelist()`]
+- `getWhitelist() (external)`
 
-- [`getController()`]
+- `getController() (external)`
 
-- [`getOracle()`]
+- `getOracle() (external)`
 
-- [`getMarginPool()`]
+- `getMarginPool() (external)`
 
-- [`getMarginCalculator()`]
+- `getMarginCalculator() (external)`
 
-- [`getLiquidationManager()`]
+- `getLiquidationManager() (external)`
 
-- [`getAddress(bytes32 _id)`]
+- `getAddress(bytes32 _id) (external)`
 
-- [`setOtokenImpl(address _otokenImpl)`]
+- `setOtokenImpl(address _otokenImpl) (external)`
 
-- [`setOtokenFactory(address _factory)`]
+- `setOtokenFactory(address _factory) (external)`
 
-- [`setOracleImpl(address _otokenImpl)`]
+- `setOracleImpl(address _otokenImpl) (external)`
 
-- [`setWhitelist(address _whitelist)`]
+- `setWhitelist(address _whitelist) (external)`
 
-- [`setController(address _controller)`]
+- `setController(address _controller) (external)`
 
-- [`setMarginPool(address _marginPool)`]
+- `setMarginPool(address _marginPool) (external)`
 
-- [`setMarginCalculator(address _calculator)`]
+- `setMarginCalculator(address _calculator) (external)`
 
-- [`setLiquidationManager(address _liquidationManager)`]
+- `setLiquidationManager(address _liquidationManager) (external)`
 
-- [`setAddress(bytes32 _id, address _newImpl)`]
+- `setAddress(bytes32 _id, address _newImpl) (external)`
 
-# Function `getOtokenImpl() → address`
+# Function `getOtokenImpl() → address` (external)
 
-No description
+# Function `getOtokenFactory() → address` (external)
 
-# Function `getOtokenFactory() → address`
+# Function `getWhitelist() → address` (external)
 
-No description
+# Function `getController() → address` (external)
 
-# Function `getWhitelist() → address`
+# Function `getOracle() → address` (external)
 
-No description
+# Function `getMarginPool() → address` (external)
 
-# Function `getController() → address`
+# Function `getMarginCalculator() → address` (external)
 
-No description
+# Function `getLiquidationManager() → address` (external)
 
-# Function `getOracle() → address`
+# Function `getAddress(bytes32 _id) → address` (external)
 
-No description
+# Function `setOtokenImpl(address _otokenImpl)` (external)
 
-# Function `getMarginPool() → address`
+# Function `setOtokenFactory(address _factory)` (external)
 
-No description
+# Function `setOracleImpl(address _otokenImpl)` (external)
 
-# Function `getMarginCalculator() → address`
+# Function `setWhitelist(address _whitelist)` (external)
 
-No description
+# Function `setController(address _controller)` (external)
 
-# Function `getLiquidationManager() → address`
+# Function `setMarginPool(address _marginPool)` (external)
 
-No description
+# Function `setMarginCalculator(address _calculator)` (external)
 
-# Function `getAddress(bytes32 _id) → address`
+# Function `setLiquidationManager(address _liquidationManager)` (external)
 
-No description
-
-# Function `setOtokenImpl(address _otokenImpl)`
-
-No description
-
-# Function `setOtokenFactory(address _factory)`
-
-No description
-
-# Function `setOracleImpl(address _otokenImpl)`
-
-No description
-
-# Function `setWhitelist(address _whitelist)`
-
-No description
-
-# Function `setController(address _controller)`
-
-No description
-
-# Function `setMarginPool(address _marginPool)`
-
-No description
-
-# Function `setMarginCalculator(address _calculator)`
-
-No description
-
-# Function `setLiquidationManager(address _liquidationManager)`
-
-No description
-
-# Function `setAddress(bytes32 _id, address _newImpl)`
-
-No description
+# Function `setAddress(bytes32 _id, address _newImpl)` (external)

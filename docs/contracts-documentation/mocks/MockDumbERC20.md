@@ -1,79 +1,53 @@
 # Functions:
 
-- [`constructor(string name_, string symbol_, uint8 decimals_)`]
+- `constructor(string name_, string symbol_, uint8 decimals_) (public)`
 
-- [`name()`]
+- `name() (public)`
 
-- [`symbol()`]
+- `symbol() (public)`
 
-- [`decimals()`]
+- `decimals() (public)`
 
-- [`totalSupply()`]
+- `totalSupply() (public)`
 
-- [`balanceOf(address account)`]
+- `balanceOf(address account) (public)`
 
-- [`transfer(address recipient, uint256 amount)`]
+- `transfer(address recipient, uint256 amount) (public)`
 
-- [`allowance(address owner, address spender)`]
+- `allowance(address owner, address spender) (public)`
 
-- [`approve(address spender, uint256 amount)`]
+- `approve(address spender, uint256 amount) (public)`
 
-- [`transferFrom(address sender, address recipient, uint256 amount)`]
+- `transferFrom(address sender, address recipient, uint256 amount) (public)`
 
-- [`mint(address recipient, uint256 amount)`]
+- `mint(address recipient, uint256 amount) (public)`
 
-- [`burn(address recipient, uint256 amount)`]
+- `burn(address recipient, uint256 amount) (public)`
 
-- [`setLocked(bool locked_)`]
+- `setLocked(bool locked_) (public)`
 
-# Function `constructor(string name_, string symbol_, uint8 decimals_)`
+# Function `constructor(string name_, string symbol_, uint8 decimals_)` (public)
 
-No description
+# Function `name() → string` (public)
 
-# Function `name() → string`
+# Function `symbol() → string` (public)
 
-No description
+# Function `decimals() → uint8` (public)
 
-# Function `symbol() → string`
+# Function `totalSupply() → uint256` (public)
 
-No description
+# Function `balanceOf(address account) → uint256` (public)
 
-# Function `decimals() → uint8`
+# Function `transfer(address recipient, uint256 amount) → bool` (public)
 
-No description
+# Function `allowance(address owner, address spender) → uint256` (public)
 
-# Function `totalSupply() → uint256`
+# Function `approve(address spender, uint256 amount) → bool` (public)
 
-No description
+# Function `transferFrom(address sender, address recipient, uint256 amount) → bool` (public)
 
-# Function `balanceOf(address account) → uint256`
+# Function `mint(address recipient, uint256 amount)` (public)
 
-No description
+# Function `burn(address recipient, uint256 amount)` (public)
 
-# Function `transfer(address recipient, uint256 amount) → bool`
-
-No description
-
-# Function `allowance(address owner, address spender) → uint256`
-
-No description
-
-# Function `approve(address spender, uint256 amount) → bool`
-
-No description
-
-# Function `transferFrom(address sender, address recipient, uint256 amount) → bool`
-
-No description
-
-# Function `mint(address recipient, uint256 amount)`
-
-No description
-
-# Function `burn(address recipient, uint256 amount)`
-
-No description
-
-# Function `setLocked(bool locked_)`
-
-No description
+# Function `setLocked(bool locked_)` (public)

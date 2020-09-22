@@ -1,30 +1,30 @@
 # Functions:
 
-- [`constructor(address _addressBook)`]
+- `constructor(address _addressBook) (public)`
 
-- [`isWhitelistedProduct(address _underlying, address _strike, address _collateral, bool _isPut)`]
+- `isWhitelistedProduct(address _underlying, address _strike, address _collateral, bool _isPut) (external)`
 
-- [`isWhitelistedCollateral(address _collateral)`]
+- `isWhitelistedCollateral(address _collateral) (external)`
 
-- [`isWhitelistedOtoken(address _otoken)`]
+- `isWhitelistedOtoken(address _otoken) (external)`
 
-- [`isWhitelistedCallee(address _callee)`]
+- `isWhitelistedCallee(address _callee) (external)`
 
-- [`whitelistProduct(address _underlying, address _strike, address _collateral, bool _isPut)`]
+- `whitelistProduct(address _underlying, address _strike, address _collateral, bool _isPut) (external)`
 
-- [`blacklistProduct(address _underlying, address _strike, address _collateral, bool _isPut)`]
+- `blacklistProduct(address _underlying, address _strike, address _collateral, bool _isPut) (external)`
 
-- [`whitelistCollateral(address _collateral)`]
+- `whitelistCollateral(address _collateral) (external)`
 
-- [`blacklistCollateral(address _collateral)`]
+- `blacklistCollateral(address _collateral) (external)`
 
-- [`whitelistOtoken(address _otokenAddress)`]
+- `whitelistOtoken(address _otokenAddress) (external)`
 
-- [`blacklistOtoken(address _otokenAddress)`]
+- `blacklistOtoken(address _otokenAddress) (external)`
 
-- [`whitelisteCallee(address _callee)`]
+- `whitelisteCallee(address _callee) (external)`
 
-- [`blacklistCallee(address _callee)`]
+- `blacklistCallee(address _callee) (external)`
 
 # Events:
 
@@ -44,7 +44,7 @@
 
 - [`CalleeBlacklisted(address _callee)`]
 
-# Function `constructor(address _addressBook)`
+# Function `constructor(address _addressBook)` (public)
 
 constructor
 
@@ -52,7 +52,9 @@ constructor
 
 - `_addressBook`: AddressBook module address
 
-# Function `isWhitelistedProduct(address _underlying, address _strike, address _collateral, bool _isPut) → bool`
+# Function `isWhitelistedProduct(address _underlying, address _strike, address _collateral, bool _isPut) → bool` (external)
+
+check if a product is whitelisted
 
 product = the hash of underlying, strike and collateral asset
 
@@ -68,9 +70,9 @@ product = the hash of underlying, strike and collateral asset
 
 - true if product is whitelisted
 
-# Function `isWhitelistedCollateral(address _collateral) → bool`
+# Function `isWhitelistedCollateral(address _collateral) → bool` (external)
 
-No description
+check if the collateral is whitelisted
 
 ## Parameters:
 
@@ -80,9 +82,9 @@ No description
 
 - true if the collateral is whitelisted
 
-# Function `isWhitelistedOtoken(address _otoken) → bool`
+# Function `isWhitelistedOtoken(address _otoken) → bool` (external)
 
-No description
+check if an otoken is whitelisted
 
 ## Parameters:
 
@@ -92,9 +94,9 @@ No description
 
 - true if otoken is whitelisted
 
-# Function `isWhitelistedCallee(address _callee) → bool`
+# Function `isWhitelistedCallee(address _callee) → bool` (external)
 
-No description
+check if a callee address is whitelisted for call acton
 
 ## Parameters:
 
@@ -104,7 +106,9 @@ No description
 
 - true if address is whitelisted
 
-# Function `whitelistProduct(address _underlying, address _strike, address _collateral, bool _isPut)`
+# Function `whitelistProduct(address _underlying, address _strike, address _collateral, bool _isPut)` (external)
+
+allow owner to whitelist product
 
 a product is the hash of the underlying, collateral and strike assets
 
@@ -120,7 +124,9 @@ can only be called from owner address
 
 - `_isPut`: is this a put option, if not it is a call
 
-# Function `blacklistProduct(address _underlying, address _strike, address _collateral, bool _isPut)`
+# Function `blacklistProduct(address _underlying, address _strike, address _collateral, bool _isPut)` (external)
+
+allow owner to blacklist product
 
 a product is the hash of the underlying, collateral and strike assets
 
@@ -136,7 +142,9 @@ can only be called from owner address
 
 - `_isPut`: is this a put option, if not it is a call
 
-# Function `whitelistCollateral(address _collateral)`
+# Function `whitelistCollateral(address _collateral)` (external)
+
+whitelist a collateral address, can only be called by owner
 
 function can only be called by owner
 
@@ -144,7 +152,9 @@ function can only be called by owner
 
 - `_collateral`: collateral asset address
 
-# Function `blacklistCollateral(address _collateral)`
+# Function `blacklistCollateral(address _collateral)` (external)
+
+whitelist a collateral address, can only be called by owner
 
 function can only be called by owner
 
@@ -152,7 +162,9 @@ function can only be called by owner
 
 - `_collateral`: collateral asset address
 
-# Function `whitelistOtoken(address _otokenAddress)`
+# Function `whitelistOtoken(address _otokenAddress)` (external)
+
+allow Otoken Factory to whitelist a new option
 
 can only be called from the Otoken Factory address
 
@@ -160,7 +172,9 @@ can only be called from the Otoken Factory address
 
 - `_otokenAddress`: otoken
 
-# Function `blacklistOtoken(address _otokenAddress)`
+# Function `blacklistOtoken(address _otokenAddress)` (external)
+
+allow owner to blacklist a new option
 
 can only be called from the owner's address
 
@@ -168,7 +182,9 @@ can only be called from the owner's address
 
 - `_otokenAddress`: otoken
 
-# Function `whitelisteCallee(address _callee)`
+# Function `whitelisteCallee(address _callee)` (external)
+
+allow Owner to whitelisted a callee address
 
 can only be called from the owner address
 
@@ -176,7 +192,9 @@ can only be called from the owner address
 
 - `_callee`: callee address
 
-# Function `blacklistCallee(address _callee)`
+# Function `blacklistCallee(address _callee)` (external)
+
+allow owner to blacklist a destination address for call action
 
 can only be called from the owner's address
 
@@ -186,32 +204,32 @@ can only be called from the owner's address
 
 # Event `ProductWhitelisted(bytes32 productHash, address underlying, address strike, address collateral, bool isPut)`
 
-No description
+emitted when owner whitelist a product
 
 # Event `ProductBlacklisted(bytes32 productHash, address underlying, address strike, address collateral, bool isPut)`
 
-No description
+emitted when owner blacklist a product
 
 # Event `CollateralWhitelisted(address collateral)`
 
-No description
+emits an event when a collateral address is whitelisted by the owner address
 
 # Event `CollateralBlacklisted(address collateral)`
 
-No description
+emits an event when a collateral address is blacklist by the owner address
 
 # Event `OtokenWhitelisted(address otoken)`
 
-No description
+emitted when Otoken Factory module whitelist an otoken
 
 # Event `OtokenBlacklisted(address otoken)`
 
-No description
+emitted when owner blacklist an otoken
 
 # Event `CalleeWhitelisted(address _callee)`
 
-No description
+emitted when owner whitelist a callee address
 
 # Event `CalleeBlacklisted(address _callee)`
 
-No description
+emitted when owner blacklist a callee address

@@ -2,19 +2,19 @@ A wrapper to use ETH as collateral
 
 # Functions:
 
-- [`receive()`]
+- `receive() (external)`
 
-- [`deposit()`]
+- `deposit() (public)`
 
-- [`withdraw(uint256 _wad)`]
+- `withdraw(uint256 _wad) (public)`
 
-- [`totalSupply()`]
+- `totalSupply() (public)`
 
-- [`approve(address _guy, uint256 _wad)`]
+- `approve(address _guy, uint256 _wad) (public)`
 
-- [`transfer(address _dst, uint256 _wad)`]
+- `transfer(address _dst, uint256 _wad) (public)`
 
-- [`transferFrom(address _src, address _dst, uint256 _wad)`]
+- `transferFrom(address _src, address _dst, uint256 _wad) (public)`
 
 # Events:
 
@@ -26,15 +26,19 @@ A wrapper to use ETH as collateral
 
 - [`Withdrawal(address src, uint256 wad)`]
 
-# Function `receive()`
+# Function `receive()` (external)
+
+fallback function that receive ETH
 
 will get called in a tx with
 
-# Function `deposit()`
+# Function `deposit()` (public)
 
-No description
+Wrap deposited ETH into WETH
 
-# Function `withdraw(uint256 _wad)`
+# Function `withdraw(uint256 _wad)` (public)
+
+withdraw ETH from contract
 
 Unwrap from WETH to ETH
 
@@ -42,17 +46,17 @@ Unwrap from WETH to ETH
 
 - `_wad`: amount WETH to unwrap and withdraw
 
-# Function `totalSupply() → uint256`
+# Function `totalSupply() → uint256` (public)
 
-No description
+get ETH total supply
 
 ## Return Values:
 
 - total supply
 
-# Function `approve(address _guy, uint256 _wad) → bool`
+# Function `approve(address _guy, uint256 _wad) → bool` (public)
 
-No description
+approve transfer
 
 ## Parameters:
 
@@ -64,9 +68,9 @@ No description
 
 - true if tx succeeded
 
-# Function `transfer(address _dst, uint256 _wad) → bool`
+# Function `transfer(address _dst, uint256 _wad) → bool` (public)
 
-No description
+transfer WETH
 
 ## Parameters:
 
@@ -78,9 +82,9 @@ No description
 
 - true if tx succeeded
 
-# Function `transferFrom(address _src, address _dst, uint256 _wad) → bool`
+# Function `transferFrom(address _src, address _dst, uint256 _wad) → bool` (public)
 
-No description
+transfer from address
 
 ## Parameters:
 
@@ -96,16 +100,16 @@ No description
 
 # Event `Approval(address src, address guy, uint256 wad)`
 
-No description
+emmitted when a sender approve WETH transfer
 
 # Event `Transfer(address src, address dst, uint256 wad)`
 
-No description
+emmitted when a sender transfer WETH
 
 # Event `Deposit(address dst, uint256 wad)`
 
-No description
+emitted when a sender deposit ETH into this contract
 
 # Event `Withdrawal(address src, uint256 wad)`
 
-No description
+emmited when a sender withdraw ETH from this contract

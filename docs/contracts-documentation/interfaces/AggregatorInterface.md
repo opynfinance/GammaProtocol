@@ -2,15 +2,15 @@ Interface of the Chainlink aggregator
 
 # Functions:
 
-- [`latestAnswer()`]
+- `latestAnswer() (external)`
 
-- [`latestTimestamp()`]
+- `latestTimestamp() (external)`
 
-- [`latestRound()`]
+- `latestRound() (external)`
 
-- [`getAnswer(uint256 roundId)`]
+- `getAnswer(uint256 roundId) (external)`
 
-- [`getTimestamp(uint256 roundId)`]
+- `getTimestamp(uint256 roundId) (external)`
 
 # Events:
 
@@ -18,30 +18,16 @@ Interface of the Chainlink aggregator
 
 - [`NewRound(uint256 roundId, address startedBy, uint256 startedAt)`]
 
-# Function `latestAnswer() → int256`
+# Function `latestAnswer() → int256` (external)
 
-No description
+# Function `latestTimestamp() → uint256` (external)
 
-# Function `latestTimestamp() → uint256`
+# Function `latestRound() → uint256` (external)
 
-No description
+# Function `getAnswer(uint256 roundId) → int256` (external)
 
-# Function `latestRound() → uint256`
-
-No description
-
-# Function `getAnswer(uint256 roundId) → int256`
-
-No description
-
-# Function `getTimestamp(uint256 roundId) → uint256`
-
-No description
+# Function `getTimestamp(uint256 roundId) → uint256` (external)
 
 # Event `AnswerUpdated(int256 current, uint256 roundId, uint256 timestamp)`
 
-No description
-
 # Event `NewRound(uint256 roundId, address startedBy, uint256 startedAt)`
-
-No description

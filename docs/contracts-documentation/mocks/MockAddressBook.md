@@ -1,85 +1,57 @@
 # Functions:
 
-- [`setOtokenImpl(address _newImpl)`]
+- `setOtokenImpl(address _newImpl) (external)`
 
-- [`setWhitelist(address _newImpl)`]
+- `setWhitelist(address _newImpl) (external)`
 
-- [`setOtokenFactory(address _otokenFactory)`]
+- `setOtokenFactory(address _otokenFactory) (external)`
 
-- [`setController(address _controller)`]
+- `setController(address _controller) (external)`
 
-- [`setOracle(address _oracleAddr)`]
+- `setOracle(address _oracleAddr) (external)`
 
-- [`setMarginCalculator(address _calculator)`]
+- `setMarginCalculator(address _calculator) (external)`
 
-- [`setMarginPool(address _pool)`]
+- `setMarginPool(address _pool) (external)`
 
-- [`getOtokenImpl()`]
+- `getOtokenImpl() (external)`
 
-- [`getWhitelist()`]
+- `getWhitelist() (external)`
 
-- [`getOtokenFactory()`]
+- `getOtokenFactory() (external)`
 
-- [`getOracle()`]
+- `getOracle() (external)`
 
-- [`getController()`]
+- `getController() (external)`
 
-- [`getMarginCalculator()`]
+- `getMarginCalculator() (external)`
 
-- [`getMarginPool()`]
+- `getMarginPool() (external)`
 
-# Function `setOtokenImpl(address _newImpl)`
+# Function `setOtokenImpl(address _newImpl)` (external)
 
-No description
+# Function `setWhitelist(address _newImpl)` (external)
 
-# Function `setWhitelist(address _newImpl)`
+# Function `setOtokenFactory(address _otokenFactory)` (external)
 
-No description
+# Function `setController(address _controller)` (external)
 
-# Function `setOtokenFactory(address _otokenFactory)`
+# Function `setOracle(address _oracleAddr)` (external)
 
-No description
+# Function `setMarginCalculator(address _calculator)` (external)
 
-# Function `setController(address _controller)`
+# Function `setMarginPool(address _pool)` (external)
 
-No description
+# Function `getOtokenImpl() → address` (external)
 
-# Function `setOracle(address _oracleAddr)`
+# Function `getWhitelist() → address` (external)
 
-No description
+# Function `getOtokenFactory() → address` (external)
 
-# Function `setMarginCalculator(address _calculator)`
+# Function `getOracle() → address` (external)
 
-No description
+# Function `getController() → address` (external)
 
-# Function `setMarginPool(address _pool)`
+# Function `getMarginCalculator() → address` (external)
 
-No description
-
-# Function `getOtokenImpl() → address`
-
-No description
-
-# Function `getWhitelist() → address`
-
-No description
-
-# Function `getOtokenFactory() → address`
-
-No description
-
-# Function `getOracle() → address`
-
-No description
-
-# Function `getController() → address`
-
-No description
-
-# Function `getMarginCalculator() → address`
-
-No description
-
-# Function `getMarginPool() → address`
-
-No description
+# Function `getMarginPool() → address` (external)

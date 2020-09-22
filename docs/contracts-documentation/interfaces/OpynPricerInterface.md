@@ -1,7 +1,5 @@
 # Functions:
 
-- [`getPrice()`]
+- `getPrice() (external)`
 
-# Function `getPrice() → uint256`
-
-No description
+# Function `getPrice() → uint256` (external)

@@ -16,21 +16,27 @@ the owner.
 
 # Functions:
 
-- [`owner()`]
+- `constructor() (internal)`
 
-- [`renounceOwnership()`]
+- `owner() (public)`
 
-- [`transferOwnership(address newOwner)`]
+- `renounceOwnership() (public)`
+
+- `transferOwnership(address newOwner) (public)`
 
 # Events:
 
 - [`OwnershipTransferred(address previousOwner, address newOwner)`]
 
-# Function `owner() → address`
+# Function `constructor()` (internal)
+
+Initializes the contract setting the deployer as the initial owner.
+
+# Function `owner() → address` (public)
 
 Returns the address of the current owner.
 
-# Function `renounceOwnership()`
+# Function `renounceOwnership()` (public)
 
 Leaves the contract without owner. It will not be possible to call
 
@@ -40,12 +46,10 @@ NOTE: Renouncing ownership will leave the contract without an owner,
 
 thereby removing any functionality that is only available to the owner.
 
-# Function `transferOwnership(address newOwner)`
+# Function `transferOwnership(address newOwner)` (public)
 
 Transfers ownership of the contract to a new account (`newOwner`).
 
 Can only be called by the current owner.
 
 # Event `OwnershipTransferred(address previousOwner, address newOwner)`
-
-No description

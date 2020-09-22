@@ -1,42 +1,42 @@
 # Functions:
 
-- [`getOtokenImpl()`]
+- `getOtokenImpl() (external)`
 
-- [`getOtokenFactory()`]
+- `getOtokenFactory() (external)`
 
-- [`getWhitelist()`]
+- `getWhitelist() (external)`
 
-- [`getController()`]
+- `getController() (external)`
 
-- [`getMarginPool()`]
+- `getMarginPool() (external)`
 
-- [`getMarginCalculator()`]
+- `getMarginCalculator() (external)`
 
-- [`getLiquidationManager()`]
+- `getLiquidationManager() (external)`
 
-- [`getOracle()`]
+- `getOracle() (external)`
 
-- [`setOtokenImpl(address _otokenImpl)`]
+- `setOtokenImpl(address _otokenImpl) (external)`
 
-- [`setOtokenFactory(address _otokenFactory)`]
+- `setOtokenFactory(address _otokenFactory) (external)`
 
-- [`setWhitelist(address _whitelist)`]
+- `setWhitelist(address _whitelist) (external)`
 
-- [`setController(address _controller)`]
+- `setController(address _controller) (external)`
 
-- [`setMarginPool(address _marginPool)`]
+- `setMarginPool(address _marginPool) (external)`
 
-- [`setMarginCalculator(address _marginCalculator)`]
+- `setMarginCalculator(address _marginCalculator) (external)`
 
-- [`setLiquidationManager(address _liquidationManager)`]
+- `setLiquidationManager(address _liquidationManager) (external)`
 
-- [`setOracle(address _oracle)`]
+- `setOracle(address _oracle) (external)`
 
-- [`getAddress(bytes32 _key)`]
+- `getAddress(bytes32 _key) (public)`
 
-- [`setAddress(bytes32 _key, address _address)`]
+- `setAddress(bytes32 _key, address _address) (public)`
 
-- [`updateImpl(bytes32 _id, address _newAddress)`]
+- `updateImpl(bytes32 _id, address _newAddress) (public)`
 
 # Events:
 
@@ -44,71 +44,73 @@
 
 - [`AddressAdded(bytes32 id, address add)`]
 
-# Function `getOtokenImpl() → address`
+# Function `getOtokenImpl() → address` (external)
 
-No description
+return otoken implementation address
 
 ## Return Values:
 
 - otoken implementation address
 
-# Function `getOtokenFactory() → address`
+# Function `getOtokenFactory() → address` (external)
 
-No description
+return otoken factory address
 
 ## Return Values:
 
 - otoken factory address
 
-# Function `getWhitelist() → address`
+# Function `getWhitelist() → address` (external)
 
-No description
+return whitelist address
 
 ## Return Values:
 
 - whitelist address
 
-# Function `getController() → address`
+# Function `getController() → address` (external)
 
-No description
+return controller address
 
 ## Return Values:
 
 - controller address
 
-# Function `getMarginPool() → address`
+# Function `getMarginPool() → address` (external)
 
-No description
+return pool address
 
 ## Return Values:
 
 - pool address
 
-# Function `getMarginCalculator() → address`
+# Function `getMarginCalculator() → address` (external)
 
-No description
+return margin calculator address
 
 ## Return Values:
 
 - margin calculator address
 
-# Function `getLiquidationManager() → address`
+# Function `getLiquidationManager() → address` (external)
 
-No description
+return liquidation manager address
 
 ## Return Values:
 
 - liquidation manager address
 
-# Function `getOracle() → address`
+# Function `getOracle() → address` (external)
 
-No description
+return oracle address
 
 ## Return Values:
 
 - oracle address
 
-# Function `setOtokenImpl(address _otokenImpl)`
+# Function `setOtokenImpl(address _otokenImpl)` (external)
+
+set otoken implementation address
 
 can only be called by addressbook owner
 
@@ -116,7 +118,9 @@ can only be called by addressbook owner
 
 - `_otokenImpl`: otoken implementation address
 
-# Function `setOtokenFactory(address _otokenFactory)`
+# Function `setOtokenFactory(address _otokenFactory)` (external)
+
+set otoken factory address
 
 can only be called by addressbook owner
 
@@ -124,7 +128,9 @@ can only be called by addressbook owner
 
 - `_otokenFactory`: otoken factory address
 
-# Function `setWhitelist(address _whitelist)`
+# Function `setWhitelist(address _whitelist)` (external)
+
+set whitelist address
 
 can only be called by addressbook owner
 
@@ -132,7 +138,9 @@ can only be called by addressbook owner
 
 - `_whitelist`: whitelist address
 
-# Function `setController(address _controller)`
+# Function `setController(address _controller)` (external)
+
+set controller address
 
 can only be called by addressbook owner
 
@@ -140,7 +148,9 @@ can only be called by addressbook owner
 
 - `_controller`: controller address
 
-# Function `setMarginPool(address _marginPool)`
+# Function `setMarginPool(address _marginPool)` (external)
+
+set pool address
 
 can only be called by addressbook owner
 
@@ -148,7 +158,9 @@ can only be called by addressbook owner
 
 - `_marginPool`: pool address
 
-# Function `setMarginCalculator(address _marginCalculator)`
+# Function `setMarginCalculator(address _marginCalculator)` (external)
+
+set margin calculator address
 
 can only be called by addressbook owner
 
@@ -156,7 +168,9 @@ can only be called by addressbook owner
 
 - `_marginCalculator`: margin calculator address
 
-# Function `setLiquidationManager(address _liquidationManager)`
+# Function `setLiquidationManager(address _liquidationManager)` (external)
+
+set liquidation manager address
 
 can only be called by addressbook owner
 
@@ -164,7 +178,9 @@ can only be called by addressbook owner
 
 - `_liquidationManager`: liquidation manager address
 
-# Function `setOracle(address _oracle)`
+# Function `setOracle(address _oracle)` (external)
+
+set oracle address
 
 can only be called by addressbook owner
 
@@ -172,15 +188,17 @@ can only be called by addressbook owner
 
 - `_oracle`: oracle address
 
-# Function `getAddress(bytes32 _key) → address`
+# Function `getAddress(bytes32 _key) → address` (public)
 
-No description
+return an address for specific key
 
 ## Parameters:
 
 - `_key`: key address
 
-# Function `setAddress(bytes32 _key, address _address)`
+# Function `setAddress(bytes32 _key, address _address)` (public)
+
+set a specific address for a specific key
 
 can only be called by addressbook owner
 
@@ -190,7 +208,7 @@ can only be called by addressbook owner
 
 - `_address`: address
 
-# Function `updateImpl(bytes32 _id, address _newAddress)`
+# Function `updateImpl(bytes32 _id, address _newAddress)` (public)
 
 internal function to update the implementation of a specific component of the protocol
 
@@ -202,8 +220,8 @@ internal function to update the implementation of a specific component of the pr
 
 # Event `ProxyCreated(bytes32 id, address proxy)`
 
-No description
+event emitted when a new proxy get created
 
 # Event `AddressAdded(bytes32 id, address add)`
 
-No description
+event emitted when a new address get added

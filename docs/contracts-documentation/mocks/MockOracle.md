@@ -2,98 +2,66 @@ The MockOracle contract let us easily manipulate the oracle state in testings.
 
 # Functions:
 
-- [`setRealTimePrice(address _asset, uint256 _price)`]
+- `setRealTimePrice(address _asset, uint256 _price) (external)`
 
-- [`getPrice(address _asset)`]
+- `getPrice(address _asset) (external)`
 
-- [`setExpiryPriceFinalizedAllPeiodOver(address _asset, uint256 _expiryTimestamp, uint256 _price, bool _isFinalized)`]
+- `setExpiryPriceFinalizedAllPeiodOver(address _asset, uint256 _expiryTimestamp, uint256 _price, bool _isFinalized) (external)`
 
-- [`setExpiryPrice(address _asset, uint256 _expiryTimestamp, uint256 _price)`]
+- `setExpiryPrice(address _asset, uint256 _expiryTimestamp, uint256 _price) (external)`
 
-- [`setIsFinalized(address _asset, uint256 _expiryTimestamp, bool _isFinalized)`]
+- `setIsFinalized(address _asset, uint256 _expiryTimestamp, bool _isFinalized) (external)`
 
-- [`getExpiryPrice(address _asset, uint256 _expiryTimestamp)`]
+- `getExpiryPrice(address _asset, uint256 _expiryTimestamp) (external)`
 
-- [`getPricer(address _asset)`]
+- `getPricer(address _asset) (external)`
 
-- [`getPricerLockingPeriod(address _pricer)`]
+- `getPricerLockingPeriod(address _pricer) (external)`
 
-- [`getPricerDisputePeriod(address _pricer)`]
+- `getPricerDisputePeriod(address _pricer) (external)`
 
-- [`isLockingPeriodOver(address _asset, uint256 _expiryTimestamp)`]
+- `isLockingPeriodOver(address _asset, uint256 _expiryTimestamp) (public)`
 
-- [`setIsLockingPeriodOver(address _asset, uint256 _expiryTimestamp, bool _result)`]
+- `setIsLockingPeriodOver(address _asset, uint256 _expiryTimestamp, bool _result) (external)`
 
-- [`isDisputePeriodOver(address _asset, uint256 _expiryTimestamp)`]
+- `isDisputePeriodOver(address _asset, uint256 _expiryTimestamp) (external)`
 
-- [`setIsDisputePeriodOver(address _asset, uint256 _expiryTimestamp, bool _result)`]
+- `setIsDisputePeriodOver(address _asset, uint256 _expiryTimestamp, bool _result) (external)`
 
-- [`setAssetPricer(address _asset, address _pricer)`]
+- `setAssetPricer(address _asset, address _pricer) (external)`
 
-- [`setLockingPeriod(address _pricer, uint256 _lockingPeriod)`]
+- `setLockingPeriod(address _pricer, uint256 _lockingPeriod) (external)`
 
-- [`setDisputePeriod(address _pricer, uint256 _disputePeriod)`]
+- `setDisputePeriod(address _pricer, uint256 _disputePeriod) (external)`
 
-# Function `setRealTimePrice(address _asset, uint256 _price)`
+# Function `setRealTimePrice(address _asset, uint256 _price)` (external)
 
-No description
+# Function `getPrice(address _asset) → uint256` (external)
 
-# Function `getPrice(address _asset) → uint256`
+# Function `setExpiryPriceFinalizedAllPeiodOver(address _asset, uint256 _expiryTimestamp, uint256 _price, bool _isFinalized)` (external)
 
-No description
+# Function `setExpiryPrice(address _asset, uint256 _expiryTimestamp, uint256 _price)` (external)
 
-# Function `setExpiryPriceFinalizedAllPeiodOver(address _asset, uint256 _expiryTimestamp, uint256 _price, bool _isFinalized)`
+# Function `setIsFinalized(address _asset, uint256 _expiryTimestamp, bool _isFinalized)` (external)
 
-No description
+# Function `getExpiryPrice(address _asset, uint256 _expiryTimestamp) → uint256, bool` (external)
 
-# Function `setExpiryPrice(address _asset, uint256 _expiryTimestamp, uint256 _price)`
+# Function `getPricer(address _asset) → address` (external)
 
-No description
+# Function `getPricerLockingPeriod(address _pricer) → uint256` (external)
 
-# Function `setIsFinalized(address _asset, uint256 _expiryTimestamp, bool _isFinalized)`
+# Function `getPricerDisputePeriod(address _pricer) → uint256` (external)
 
-No description
+# Function `isLockingPeriodOver(address _asset, uint256 _expiryTimestamp) → bool` (public)
 
-# Function `getExpiryPrice(address _asset, uint256 _expiryTimestamp) → uint256, bool`
+# Function `setIsLockingPeriodOver(address _asset, uint256 _expiryTimestamp, bool _result)` (external)
 
-No description
+# Function `isDisputePeriodOver(address _asset, uint256 _expiryTimestamp) → bool` (external)
 
-# Function `getPricer(address _asset) → address`
+# Function `setIsDisputePeriodOver(address _asset, uint256 _expiryTimestamp, bool _result)` (external)
 
-No description
+# Function `setAssetPricer(address _asset, address _pricer)` (external)
 
-# Function `getPricerLockingPeriod(address _pricer) → uint256`
+# Function `setLockingPeriod(address _pricer, uint256 _lockingPeriod)` (external)
 
-No description
-
-# Function `getPricerDisputePeriod(address _pricer) → uint256`
-
-No description
-
-# Function `isLockingPeriodOver(address _asset, uint256 _expiryTimestamp) → bool`
-
-No description
-
-# Function `setIsLockingPeriodOver(address _asset, uint256 _expiryTimestamp, bool _result)`
-
-No description
-
-# Function `isDisputePeriodOver(address _asset, uint256 _expiryTimestamp) → bool`
-
-No description
-
-# Function `setIsDisputePeriodOver(address _asset, uint256 _expiryTimestamp, bool _result)`
-
-No description
-
-# Function `setAssetPricer(address _asset, address _pricer)`
-
-No description
-
-# Function `setLockingPeriod(address _pricer, uint256 _lockingPeriod)`
-
-No description
-
-# Function `setDisputePeriod(address _pricer, uint256 _disputePeriod)`
-
-No description
+# Function `setDisputePeriod(address _pricer, uint256 _disputePeriod)` (external)

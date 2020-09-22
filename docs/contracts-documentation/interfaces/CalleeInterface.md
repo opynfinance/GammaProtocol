@@ -2,11 +2,11 @@ Contract interface that can be called from Controller as a call action.
 
 # Functions:
 
-- [`callFunction(address payable _sender, address _vaultOwner, uint256 _vaultId, bytes _data)`]
+- `callFunction(address payable _sender, address _vaultOwner, uint256 _vaultId, bytes _data) (external)`
 
-# Function `callFunction(address payable _sender, address _vaultOwner, uint256 _vaultId, bytes _data)`
+# Function `callFunction(address payable _sender, address _vaultOwner, uint256 _vaultId, bytes _data)` (external)
 
-No description
+Allows users to send this contract arbitrary data.
 
 ## Parameters:
 

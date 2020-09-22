@@ -1,37 +1,29 @@
 # Functions:
 
-- [`getAnswer(uint256 _roundId)`]
+- `getAnswer(uint256 _roundId) (external)`
 
-- [`getTimestamp(uint256 _roundId)`]
+- `getTimestamp(uint256 _roundId) (external)`
 
-- [`latestAnswer()`]
+- `latestAnswer() (external)`
 
-- [`setRoundTimestamp(uint256 _roundId, uint256 _timestamp)`]
+- `setRoundTimestamp(uint256 _roundId, uint256 _timestamp) (external)`
 
-- [`setRoundAnswer(uint256 _roundId, int256 _answer)`]
+- `setRoundAnswer(uint256 _roundId, int256 _answer) (external)`
 
-- [`setLatestAnswer(int256 _answer)`]
+- `setLatestAnswer(int256 _answer) (external)`
 
-# Function `getAnswer(uint256 _roundId) → int256`
+# Function `getAnswer(uint256 _roundId) → int256` (external)
 
-No description
+# Function `getTimestamp(uint256 _roundId) → uint256` (external)
 
-# Function `getTimestamp(uint256 _roundId) → uint256`
+# Function `latestAnswer() → int256` (external)
 
-No description
-
-# Function `latestAnswer() → int256`
-
-No description
-
-# Function `setRoundTimestamp(uint256 _roundId, uint256 _timestamp)`
+# Function `setRoundTimestamp(uint256 _roundId, uint256 _timestamp)` (external)
 
 function to mock setting round timestamp
 
-# Function `setRoundAnswer(uint256 _roundId, int256 _answer)`
+# Function `setRoundAnswer(uint256 _roundId, int256 _answer)` (external)
 
 function to mock setting round timestamp
 
-# Function `setLatestAnswer(int256 _answer)`
-
-No description
+# Function `setLatestAnswer(int256 _answer)` (external)

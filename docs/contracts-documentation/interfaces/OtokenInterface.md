@@ -1,55 +1,37 @@
 # Functions:
 
-- [`underlyingAsset()`]
+- `underlyingAsset() (external)`
 
-- [`strikeAsset()`]
+- `strikeAsset() (external)`
 
-- [`collateralAsset()`]
+- `collateralAsset() (external)`
 
-- [`strikePrice()`]
+- `strikePrice() (external)`
 
-- [`expiryTimestamp()`]
+- `expiryTimestamp() (external)`
 
-- [`isPut()`]
+- `isPut() (external)`
 
-- [`init(address _addressBook, address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut)`]
+- `init(address _addressBook, address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) (external)`
 
-- [`mintOtoken(address account, uint256 amount)`]
+- `mintOtoken(address account, uint256 amount) (external)`
 
-- [`burnOtoken(address account, uint256 amount)`]
+- `burnOtoken(address account, uint256 amount) (external)`
 
-# Function `underlyingAsset() → address`
+# Function `underlyingAsset() → address` (external)
 
-No description
+# Function `strikeAsset() → address` (external)
 
-# Function `strikeAsset() → address`
+# Function `collateralAsset() → address` (external)
 
-No description
+# Function `strikePrice() → uint256` (external)
 
-# Function `collateralAsset() → address`
+# Function `expiryTimestamp() → uint256` (external)
 
-No description
+# Function `isPut() → bool` (external)
 
-# Function `strikePrice() → uint256`
+# Function `init(address _addressBook, address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut)` (external)
 
-No description
+# Function `mintOtoken(address account, uint256 amount)` (external)
 
-# Function `expiryTimestamp() → uint256`
-
-No description
-
-# Function `isPut() → bool`
-
-No description
-
-# Function `init(address _addressBook, address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut)`
-
-No description
-
-# Function `mintOtoken(address account, uint256 amount)`
-
-No description
-
-# Function `burnOtoken(address account, uint256 amount)`
-
-No description
+# Function `burnOtoken(address account, uint256 amount)` (external)

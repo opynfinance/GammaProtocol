@@ -1,14 +1,14 @@
 # Functions:
 
-- [`constructor(address _cToken, address _underlying, address _underlyingPricer, address _oracle)`]
+- `constructor(address _cToken, address _underlying, address _underlyingPricer, address _oracle) (public)`
 
-- [`getPrice()`]
+- `getPrice() (external)`
 
-- [`setExpiryPriceToOralce(uint256 _expiryTimestamp)`]
+- `setExpiryPriceToOralce(uint256 _expiryTimestamp) (external)`
 
-# Function `constructor(address _cToken, address _underlying, address _underlyingPricer, address _oracle)`
+- `_underlyingPriceToCtokenPrice(uint256 _underlyingPrice) (internal)`
 
-No description
+# Function `constructor(address _cToken, address _underlying, address _underlyingPricer, address _oracle)` (public)
 
 ## Parameters:
 
@@ -20,7 +20,9 @@ No description
 
 - `_oracle`: the Opyn Oracle contract address.
 
-# Function `getPrice() → uint256`
+# Function `getPrice() → uint256` (external)
+
+get live price for the asset.
 
 overides the getPrice function in OpynPricerInterface.
 
@@ -28,10 +30,22 @@ overides the getPrice function in OpynPricerInterface.
 
 - price of 1e8 cToken worth in USD, scaled by 1e18.
 
-# Function `setExpiryPriceToOralce(uint256 _expiryTimestamp)`
+# Function `setExpiryPriceToOralce(uint256 _expiryTimestamp)` (external)
 
-No description
+Set the expiry price to the oracle
 
 ## Parameters:
 
 - `_expiryTimestamp`: the expiry want to send
+
+# Function `_underlyingPriceToCtokenPrice(uint256 _underlyingPrice) → uint256` (internal)
+
+convert underlying price to cToken price.
+
+## Parameters:
+
+- `_underlyingPrice`: price of 1 underlying token (1e6 USDC, 1e18 WETH) in USD, scled by 1e18
+
+## Return Values:
+
+- net worth of 1e8 cToken in USD, scaled by 1e18.
