@@ -12,7 +12,7 @@ import {
   PayableProxyControllerInstance,
 } from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
-import {createTokenAmount} from './utils'
+import {createTokenAmount, createScaledNumber} from './utils'
 
 const {expectRevert, time} = require('@openzeppelin/test-helpers')
 
@@ -46,6 +46,8 @@ enum ActionType {
 }
 
 contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => {
+  const usdcDecimals = 6
+
   // ERC20 mock
   let usdc: MockERC20Instance
   let weth: WETH9Instance
@@ -69,7 +71,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
     // addressbook deployment
     addressBook = await AddressBook.new()
     // ERC20 deployment
-    usdc = await MockERC20.new('USDC', 'USDC', 8)
+    usdc = await MockERC20.new('USDC', 'USDC', usdcDecimals)
     weth = await WETH9.new()
     // deploy Oracle module
     oracle = await MockOracle.new(addressBook.address, {from: owner})
@@ -107,7 +109,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
     payableProxyController = await PayableProxyController.new(controllerProxy.address, marginPool.address, weth.address)
 
     // make everyone rich
-    await usdc.mint(accountOwner1, createTokenAmount(10000, 6))
+    await usdc.mint(accountOwner1, createTokenAmount(10000, usdcDecimals))
   })
 
   describe('Wrap ETH and execute actions', () => {
@@ -321,7 +323,11 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
       })
 
       const vaultCounterAfter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-      assert.equal(vaultCounterAfter.minus(vaultCounterBefore).toString(), '1', 'vault counter after mismatch')
+      assert.equal(
+        vaultCounterAfter.minus(vaultCounterBefore).toString(),
+        '1',
+        'vault counter after execution mismatch',
+      )
     })
   })
 
@@ -330,6 +336,10 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
 
     before(async () => {
       const expiryTime = new BigNumber(60 * 60 * 24) // after 1 day
+      const expiry = new BigNumber(await time.latest()).plus(expiryTime)
+      const strikePrice = 200
+      const underlyingPriceAtExpiry = createScaledNumber(150)
+      const strikePriceAtExpiry = createScaledNumber(1)
 
       shortOtoken = await MockOtoken.new()
       // init otoken
@@ -338,8 +348,8 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
         weth.address,
         usdc.address,
         usdc.address,
-        new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
-        new BigNumber(await time.latest()).plus(expiryTime),
+        createScaledNumber(strikePrice),
+        expiry,
         true,
       )
       // whitelist short otoken to be used in the protocol
@@ -348,7 +358,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
       await whitelist.whitelistCollateral(usdc.address, {from: owner})
       // open new vault, mintnaked short, sell it to holder 1
       const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
-      const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e12)
+      const collateralToDeposit = createTokenAmount(strikePrice, 6)
       const amountToMint = new BigNumber(1e12)
       const actionArgs = [
         {
@@ -377,12 +387,12 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
           sender: accountOwner1,
           asset: usdc.address,
           vaultId: vaultCounter.toNumber(),
-          amount: collateralToDeposit.toString(),
+          amount: collateralToDeposit,
           index: '0',
           data: ZERO_ADDR,
         },
       ]
-      await usdc.approve(marginPool.address, collateralToDeposit.toString(), {from: accountOwner1})
+      await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
       await payableProxyController.operate(actionArgs, accountOwner1, {from: accountOwner1})
       // transfer minted short otoken to hodler`
       await shortOtoken.transfer(holder1, amountToMint.toString(), {from: accountOwner1})
@@ -391,19 +401,19 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
       await oracle.setExpiryPriceFinalizedAllPeiodOver(
         await shortOtoken.underlyingAsset(),
         new BigNumber(await shortOtoken.expiryTimestamp()),
-        new BigNumber(150).times(1e18),
+        underlyingPriceAtExpiry,
         true,
       )
       await oracle.setExpiryPriceFinalizedAllPeiodOver(
         await shortOtoken.strikeAsset(),
         new BigNumber(await shortOtoken.expiryTimestamp()),
-        new BigNumber(1).times(1e18),
+        strikePriceAtExpiry,
         true,
       )
     })
 
     it('should normally execute when owner address is equal to zero', async () => {
-      const amountToBurn = new BigNumber(1e12)
+      const amountToExercise = new BigNumber(1e12)
       const actionArgs = [
         {
           actionType: ActionType.Exercise,
@@ -411,14 +421,14 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
           sender: holder1,
           asset: shortOtoken.address,
           vaultId: '0',
-          amount: amountToBurn.toString(),
+          amount: amountToExercise.toString(),
           index: '0',
           data: ZERO_ADDR,
         },
       ]
       assert.equal(await controllerProxy.isExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
 
-      await shortOtoken.transfer(payableProxyController.address, amountToBurn.toString(), {from: holder1})
+      await shortOtoken.transfer(payableProxyController.address, amountToExercise.toString(), {from: holder1})
       await payableProxyController.operate(actionArgs, holder1, {from: holder1})
     })
   })
