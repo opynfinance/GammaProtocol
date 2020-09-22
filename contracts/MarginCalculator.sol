@@ -63,7 +63,8 @@ contract MarginCalculator {
     }
 
     /**
-     * @notice returns the amount of collateral that owner can take out from this vault.
+     * @notice notice returns the amount of collateral that owner can take out from this vault.
+     * @dev The return amount is denominated in the collateral asset for the otoken
      * @param _vault the theoretical vault that needs to be checked
      * @return excessCollateral the amount by which the margin is above or below the required amount.
      * @return isExcess True if there's excess margin in the vault. In this case, collateral can be taken out from the vault.
@@ -111,7 +112,7 @@ contract MarginCalculator {
     }
 
     /**
-     * @notice Return the cash value of an expired oToken, denomincated in strike asset.
+     * @notice Return the cash value of an expired oToken, denominated in strike asset.
      * @dev For call return = Max (0, ETH Price - oToken.strike)
      * @dev For put return Max(0, oToken.strike - ETH Price)
      * @param _otoken otoken address
@@ -126,13 +127,14 @@ contract MarginCalculator {
         uint256 strikePrice = otoken.strikePrice();
 
         // calculate the expiry convertion rate between strike and underlying
-        uint256 underlyingPriceInStrike = _convertAmountOnExpiryPrice(
+        FPI.FixedPointInt memory underlyingPriceInStrikeFP = _convertAmountOnExpiryPrice(
             FPI.fromUnscaledInt(1),
             otoken.underlyingAsset(),
             otoken.strikeAsset(),
             otoken.expiryTimestamp()
-        )
-            .toUint();
+        );
+
+        uint256 underlyingPriceInStrike = SignedConverter.intToUint(underlyingPriceInStrikeFP.value);
 
         if (otoken.isPut()) {
             return strikePrice > underlyingPriceInStrike ? strikePrice.sub(underlyingPriceInStrike) : 0;
