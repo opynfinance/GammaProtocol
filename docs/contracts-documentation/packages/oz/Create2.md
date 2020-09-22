@@ -1,4 +1,4 @@
-## `Create2`
+# `Create2`
 
 Helper to make usage of the `CREATE2` EVM opcode easier and safer.
 
@@ -12,7 +12,7 @@ See the https://eips.ethereum.org/EIPS/eip-1014#motivation[EIP] for more
 
 information.
 
-# Functions:
+## Functions:
 
 - `deploy(uint256 amount, bytes32 salt, bytes bytecode) (internal)`
 
@@ -20,7 +20,7 @@ information.
 
 - `computeAddress(bytes32 salt, bytes32 bytecodeHash, address deployer) (internal)`
 
-# Function `deploy(uint256 amount, bytes32 salt, bytes bytecode) → address` (internal)
+### Function `deploy(uint256 amount, bytes32 salt, bytes bytecode) → address` (internal)
 
 Deploys a contract using `CREATE2`. The address where the contract
 
@@ -40,13 +40,13 @@ Requirements:
 
 - if `amount` is non-zero, `bytecode` must have a `payable` constructor.
 
-# Function `computeAddress(bytes32 salt, bytes32 bytecodeHash) → address` (internal)
+### Function `computeAddress(bytes32 salt, bytes32 bytecodeHash) → address` (internal)
 
 Returns the address where a contract will be stored if deployed via {deploy}. Any change in the
 
 `bytecodeHash` or `salt` will result in a new destination address.
 
-# Function `computeAddress(bytes32 salt, bytes32 bytecodeHash, address deployer) → address` (internal)
+### Function `computeAddress(bytes32 salt, bytes32 bytecodeHash, address deployer) → address` (internal)
 
 Returns the address where a contract will be stored if deployed via {deploy} from a contract located at
 

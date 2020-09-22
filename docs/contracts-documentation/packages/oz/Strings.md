@@ -1,11 +1,11 @@
-## `Strings`
+# `Strings`
 
 String operations.
 
-# Functions:
+## Functions:
 
 - `toString(uint256 value) (internal)`
 
-# Function `toString(uint256 value) → string` (internal)
+### Function `toString(uint256 value) → string` (internal)
 
 Converts a `uint256` to its ASCII `string` representation.

@@ -1,4 +1,4 @@
-## `SafeMath`
+# `SafeMath`
 
 Wrappers over Solidity's arithmetic operations with added overflow
 
@@ -18,7 +18,7 @@ Using this library instead of the unchecked operations eliminates an entire
 
 class of bugs, so it's recommended to use it always.
 
-# Functions:
+## Functions:
 
 - `add(uint256 a, uint256 b) (internal)`
 
@@ -36,7 +36,7 @@ class of bugs, so it's recommended to use it always.
 
 - `mod(uint256 a, uint256 b, string errorMessage) (internal)`
 
-# Function `add(uint256 a, uint256 b) → uint256` (internal)
+### Function `add(uint256 a, uint256 b) → uint256` (internal)
 
 Returns the addition of two unsigned integers, reverting on
 
@@ -48,7 +48,7 @@ Requirements:
 
 - Addition cannot overflow.
 
-# Function `sub(uint256 a, uint256 b) → uint256` (internal)
+### Function `sub(uint256 a, uint256 b) → uint256` (internal)
 
 Returns the subtraction of two unsigned integers, reverting on
 
@@ -60,7 +60,7 @@ Requirements:
 
 - Subtraction cannot overflow.
 
-# Function `sub(uint256 a, uint256 b, string errorMessage) → uint256` (internal)
+### Function `sub(uint256 a, uint256 b, string errorMessage) → uint256` (internal)
 
 Returns the subtraction of two unsigned integers, reverting with custom message on
 
@@ -72,7 +72,7 @@ Requirements:
 
 - Subtraction cannot overflow.
 
-# Function `mul(uint256 a, uint256 b) → uint256` (internal)
+### Function `mul(uint256 a, uint256 b) → uint256` (internal)
 
 Returns the multiplication of two unsigned integers, reverting on
 
@@ -84,7 +84,7 @@ Requirements:
 
 - Multiplication cannot overflow.
 
-# Function `div(uint256 a, uint256 b) → uint256` (internal)
+### Function `div(uint256 a, uint256 b) → uint256` (internal)
 
 Returns the integer division of two unsigned integers. Reverts on
 
@@ -100,7 +100,7 @@ Requirements:
 
 - The divisor cannot be zero.
 
-# Function `div(uint256 a, uint256 b, string errorMessage) → uint256` (internal)
+### Function `div(uint256 a, uint256 b, string errorMessage) → uint256` (internal)
 
 Returns the integer division of two unsigned integers. Reverts with custom message on
 
@@ -116,7 +116,7 @@ Requirements:
 
 - The divisor cannot be zero.
 
-# Function `mod(uint256 a, uint256 b) → uint256` (internal)
+### Function `mod(uint256 a, uint256 b) → uint256` (internal)
 
 Returns the remainder of dividing two unsigned integers. (unsigned integer modulo),
 
@@ -132,7 +132,7 @@ Requirements:
 
 - The divisor cannot be zero.
 
-# Function `mod(uint256 a, uint256 b, string errorMessage) → uint256` (internal)
+### Function `mod(uint256 a, uint256 b, string errorMessage) → uint256` (internal)
 
 Returns the remainder of dividing two unsigned integers. (unsigned integer modulo),
 

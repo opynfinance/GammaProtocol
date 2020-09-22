@@ -1,4 +1,4 @@
-## `ReentrancyGuard`
+# `ReentrancyGuard`
 
 Contract module that helps prevent reentrant calls to a function.
 
@@ -22,15 +22,15 @@ to protect against it, check out our blog post
 
 https://blog.openzeppelin.com/reentrancy-after-istanbul/[Reentrancy After Istanbul].
 
-# Modifiers:
+## Modifiers:
 
 - `nonReentrant()`
 
-# Functions:
+## Functions:
 
 - `constructor() (internal)`
 
-# Modifier `nonReentrant()`
+### Modifier `nonReentrant()`
 
 Prevents a contract from calling itself, directly or indirectly.
 
@@ -42,4 +42,4 @@ by making the `nonReentrant` function external, and make it call a
 
 `private` function that does the actual work.
 
-# Function `constructor()` (internal)
+### Function `constructor()` (internal)

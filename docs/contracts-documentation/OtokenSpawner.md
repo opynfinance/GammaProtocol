@@ -1,4 +1,4 @@
-## `OtokenSpawner`
+# `OtokenSpawner`
 
 This contract spawns and initializes eip-1167 minimal proxies that
 
@@ -8,17 +8,17 @@ This contract was modified from Spawner.sol
 
 https://github.com/0age/Spawner/blob/master/contracts/Spawner.sol to fit into OtokenFactory
 
-# Functions:
+## Functions:
 
 - `_spawn(address logicContract, bytes initializationCalldata) (internal)`
 
 - `_computeAddress(address logicContract, bytes initializationCalldata) (internal)`
 
-# Function `_spawn(address logicContract, bytes initializationCalldata) → address` (internal)
+### Function `_spawn(address logicContract, bytes initializationCalldata) → address` (internal)
 
 Internal function for spawning an eip-1167 minimal proxy using `CREATE2`.
 
-## Parameters:
+#### Parameters:
 
 - `logicContract`: address The address of the logic contract.
 
@@ -28,11 +28,11 @@ the `DELEGATECALL` from the spawned contract to the logic contract during
 
 contract creation.
 
-## Return Values:
+#### Return Values:
 
 - spawnedContract The address of the newly-spawned contract.
 
-# Function `_computeAddress(address logicContract, bytes initializationCalldata) → address target` (internal)
+### Function `_computeAddress(address logicContract, bytes initializationCalldata) → address target` (internal)
 
 Internal view function for finding the address of the standard
 
@@ -40,7 +40,7 @@ eip-1167 minimal proxy created using `CREATE2` with a given logic contract
 
 and initialization calldata payload.
 
-## Parameters:
+#### Parameters:
 
 - `logicContract`: address The address of the logic contract.
 
@@ -50,7 +50,7 @@ the `DELEGATECALL` from the spawned contract to the logic contract during
 
 contract creation.
 
-## Return Values:
+#### Return Values:
 
 - target The address of the next spawned minimal proxy contract with the
 

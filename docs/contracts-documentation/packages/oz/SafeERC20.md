@@ -1,4 +1,4 @@
-## `SafeERC20`
+# `SafeERC20`
 
 Wrappers around ERC20 operations that throw on failure (when the token
 
@@ -12,7 +12,7 @@ To use this library you can add a `using SafeERC20 for ERC20Interface;` statemen
 
 which allows you to call the safe operations as `token.safeTransfer(...)`, etc.
 
-# Functions:
+## Functions:
 
 - `safeTransfer(contract ERC20Interface token, address to, uint256 value) (internal)`
 
@@ -24,11 +24,11 @@ which allows you to call the safe operations as `token.safeTransfer(...)`, etc.
 
 - `safeDecreaseAllowance(contract ERC20Interface token, address spender, uint256 value) (internal)`
 
-# Function `safeTransfer(contract ERC20Interface token, address to, uint256 value)` (internal)
+### Function `safeTransfer(contract ERC20Interface token, address to, uint256 value)` (internal)
 
-# Function `safeTransferFrom(contract ERC20Interface token, address from, address to, uint256 value)` (internal)
+### Function `safeTransferFrom(contract ERC20Interface token, address from, address to, uint256 value)` (internal)
 
-# Function `safeApprove(contract ERC20Interface token, address spender, uint256 value)` (internal)
+### Function `safeApprove(contract ERC20Interface token, address spender, uint256 value)` (internal)
 
 Deprecated. This function has issues similar to the ones found in
 
@@ -38,6 +38,6 @@ Whenever possible, use {safeIncreaseAllowance} and
 
 {safeDecreaseAllowance} instead.
 
-# Function `safeIncreaseAllowance(contract ERC20Interface token, address spender, uint256 value)` (internal)
+### Function `safeIncreaseAllowance(contract ERC20Interface token, address spender, uint256 value)` (internal)
 
-# Function `safeDecreaseAllowance(contract ERC20Interface token, address spender, uint256 value)` (internal)
+### Function `safeDecreaseAllowance(contract ERC20Interface token, address spender, uint256 value)` (internal)

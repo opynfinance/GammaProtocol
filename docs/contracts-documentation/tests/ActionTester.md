@@ -1,6 +1,6 @@
-## `ActionTester`
+# `ActionTester`
 
-# Functions:
+## Functions:
 
 - `testParseDespositAction(struct Actions.ActionArgs _args) (external)`
 
@@ -34,34 +34,34 @@
 
 - `getCallArgs() (external)`
 
-# Function `testParseDespositAction(struct Actions.ActionArgs _args)` (external)
+### Function `testParseDespositAction(struct Actions.ActionArgs _args)` (external)
 
-# Function `getDepositArgs() → struct Actions.DepositArgs` (external)
+### Function `getDepositArgs() → struct Actions.DepositArgs` (external)
 
-# Function `testParseWithdrawAction(struct Actions.ActionArgs _args)` (external)
+### Function `testParseWithdrawAction(struct Actions.ActionArgs _args)` (external)
 
-# Function `getWithdrawArgs() → struct Actions.WithdrawArgs` (external)
+### Function `getWithdrawArgs() → struct Actions.WithdrawArgs` (external)
 
-# Function `testParseOpenVaultAction(struct Actions.ActionArgs _args)` (external)
+### Function `testParseOpenVaultAction(struct Actions.ActionArgs _args)` (external)
 
-# Function `getOpenVaultArgs() → struct Actions.OpenVaultArgs` (external)
+### Function `getOpenVaultArgs() → struct Actions.OpenVaultArgs` (external)
 
-# Function `testParseExerciseAction(struct Actions.ActionArgs _args)` (external)
+### Function `testParseExerciseAction(struct Actions.ActionArgs _args)` (external)
 
-# Function `getExerciseArgs() → struct Actions.ExerciseArgs` (external)
+### Function `getExerciseArgs() → struct Actions.ExerciseArgs` (external)
 
-# Function `testParseSettleVaultAction(struct Actions.ActionArgs _args)` (external)
+### Function `testParseSettleVaultAction(struct Actions.ActionArgs _args)` (external)
 
-# Function `getSettleVaultArgs() → struct Actions.SettleVaultArgs` (external)
+### Function `getSettleVaultArgs() → struct Actions.SettleVaultArgs` (external)
 
-# Function `testParseMintAction(struct Actions.ActionArgs _args)` (external)
+### Function `testParseMintAction(struct Actions.ActionArgs _args)` (external)
 
-# Function `getMintArgs() → struct Actions.MintArgs` (external)
+### Function `getMintArgs() → struct Actions.MintArgs` (external)
 
-# Function `testParseBurnAction(struct Actions.ActionArgs _args)` (external)
+### Function `testParseBurnAction(struct Actions.ActionArgs _args)` (external)
 
-# Function `getBurnArgs() → struct Actions.BurnArgs` (external)
+### Function `getBurnArgs() → struct Actions.BurnArgs` (external)
 
-# Function `testParseCallAction(struct Actions.ActionArgs _args)` (external)
+### Function `testParseCallAction(struct Actions.ActionArgs _args)` (external)
 
-# Function `getCallArgs() → struct Actions.CallArgs` (external)
+### Function `getCallArgs() → struct Actions.CallArgs` (external)

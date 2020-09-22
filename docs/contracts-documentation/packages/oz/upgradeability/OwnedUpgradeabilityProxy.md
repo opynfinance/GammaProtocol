@@ -1,12 +1,12 @@
-## `OwnedUpgradeabilityProxy`
+# `OwnedUpgradeabilityProxy`
 
 This contract combines an upgradeability proxy with basic authorization control functionalities
 
-# Modifiers:
+## Modifiers:
 
 - `onlyProxyOwner()`
 
-# Functions:
+## Functions:
 
 - `constructor() (public)`
 
@@ -20,57 +20,57 @@ This contract combines an upgradeability proxy with basic authorization control 
 
 - `upgradeToAndCall(address _implementation, bytes _data) (public)`
 
-# Events:
+## Events:
 
 - `ProxyOwnershipTransferred(address previousOwner, address newOwner)`
 
-# Modifier `onlyProxyOwner()`
+### Modifier `onlyProxyOwner()`
 
 Throws if called by any account other than the owner.
 
-# Function `constructor()` (public)
+### Function `constructor()` (public)
 
 the constructor sets the original owner of the contract to the sender account.
 
-# Function `proxyOwner() → address owner` (public)
+### Function `proxyOwner() → address owner` (public)
 
 Tells the address of the owner
 
-## Return Values:
+#### Return Values:
 
 - owner the address of the owner
 
-# Function `setUpgradeabilityOwner(address _newProxyOwner)` (internal)
+### Function `setUpgradeabilityOwner(address _newProxyOwner)` (internal)
 
 Sets the address of the owner
 
-## Parameters:
+#### Parameters:
 
 - `_newProxyOwner`: address of new proxy owner
 
-# Function `transferProxyOwnership(address _newOwner)` (public)
+### Function `transferProxyOwnership(address _newOwner)` (public)
 
 Allows the current owner to transfer control of the contract to a newOwner.
 
-## Parameters:
+#### Parameters:
 
 - `_newOwner`: The address to transfer ownership to.
 
-# Function `upgradeTo(address _implementation)` (public)
+### Function `upgradeTo(address _implementation)` (public)
 
 Allows the proxy owner to upgrade the current version of the proxy.
 
-## Parameters:
+#### Parameters:
 
 - `_implementation`: representing the address of the new implementation to be set.
 
-# Function `upgradeToAndCall(address _implementation, bytes _data)` (public)
+### Function `upgradeToAndCall(address _implementation, bytes _data)` (public)
 
 Allows the proxy owner to upgrade the current version of the proxy and call the new implementation
 
 to initialize whatever is needed through a low level call.
 
-## Parameters:
+#### Parameters:
 
 - `_implementation`: representing the address of the new implementation to be set.
 
@@ -78,11 +78,11 @@ to initialize whatever is needed through a low level call.
 
 signature of the implementation to be called with the needed payload
 
-# Event `ProxyOwnershipTransferred(address previousOwner, address newOwner)`
+### Event `ProxyOwnershipTransferred(address previousOwner, address newOwner)`
 
 Event to show ownership has been transferred
 
-## Parameters:
+#### Parameters:
 
 - `previousOwner`: representing the address of the previous owner
 

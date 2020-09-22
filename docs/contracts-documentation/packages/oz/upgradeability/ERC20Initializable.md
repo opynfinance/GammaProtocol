@@ -1,4 +1,4 @@
-## `ERC20Initializable`
+# `ERC20Initializable`
 
 this contract was renamed from ERC20UpgradeSafe to ERC20Initializable
 
@@ -36,7 +36,7 @@ allowances. See {IERC20-approve}.
 
 Implementation of the {IERC20} interface.
 
-# Functions:
+## Functions:
 
 - `__ERC20_init(string name, string symbol) (internal)`
 
@@ -76,7 +76,7 @@ Implementation of the {IERC20} interface.
 
 - `_beforeTokenTransfer(address from, address to, uint256 amount) (internal)`
 
-# Function `__ERC20_init(string name, string symbol)` (internal)
+### Function `__ERC20_init(string name, string symbol)` (internal)
 
 Sets the values for {name} and {symbol}, initializes {decimals} with
 
@@ -88,19 +88,19 @@ All three of these values are immutable: they can only be set once during
 
 construction.
 
-# Function `__ERC20_init_unchained(string name, string symbol)` (internal)
+### Function `__ERC20_init_unchained(string name, string symbol)` (internal)
 
-# Function `name() → string` (public)
+### Function `name() → string` (public)
 
 Returns the name of the token.
 
-# Function `symbol() → string` (public)
+### Function `symbol() → string` (public)
 
 Returns the symbol of the token, usually a shorter version of the
 
 name.
 
-# Function `decimals() → uint8` (public)
+### Function `decimals() → uint8` (public)
 
 Returns the number of decimals used to get its user representation.
 
@@ -120,15 +120,15 @@ no way affects any of the arithmetic of the contract, including
 
 {IERC20-balanceOf} and {IERC20-transfer}.
 
-# Function `totalSupply() → uint256` (public)
+### Function `totalSupply() → uint256` (public)
 
 See {IERC20-totalSupply}.
 
-# Function `balanceOf(address account) → uint256` (public)
+### Function `balanceOf(address account) → uint256` (public)
 
 See {IERC20-balanceOf}.
 
-# Function `transfer(address recipient, uint256 amount) → bool` (public)
+### Function `transfer(address recipient, uint256 amount) → bool` (public)
 
 See {IERC20-transfer}.
 
@@ -138,11 +138,11 @@ Requirements:
 
 - the caller must have a balance of at least `amount`.
 
-# Function `allowance(address owner, address spender) → uint256` (public)
+### Function `allowance(address owner, address spender) → uint256` (public)
 
 See {IERC20-allowance}.
 
-# Function `approve(address spender, uint256 amount) → bool` (public)
+### Function `approve(address spender, uint256 amount) → bool` (public)
 
 See {IERC20-approve}.
 
@@ -150,7 +150,7 @@ Requirements:
 
 - `spender` cannot be the zero address.
 
-# Function `transferFrom(address sender, address recipient, uint256 amount) → bool` (public)
+### Function `transferFrom(address sender, address recipient, uint256 amount) → bool` (public)
 
 See {IERC20-transferFrom}.
 
@@ -168,7 +168,7 @@ Requirements:
 
 `amount`.
 
-# Function `increaseAllowance(address spender, uint256 addedValue) → bool` (public)
+### Function `increaseAllowance(address spender, uint256 addedValue) → bool` (public)
 
 Atomically increases the allowance granted to `spender` by the caller.
 
@@ -182,7 +182,7 @@ Requirements:
 
 - `spender` cannot be the zero address.
 
-# Function `decreaseAllowance(address spender, uint256 subtractedValue) → bool` (public)
+### Function `decreaseAllowance(address spender, uint256 subtractedValue) → bool` (public)
 
 Atomically decreases the allowance granted to `spender` by the caller.
 
@@ -200,7 +200,7 @@ Requirements:
 
 `subtractedValue`.
 
-# Function `_transfer(address sender, address recipient, uint256 amount)` (internal)
+### Function `_transfer(address sender, address recipient, uint256 amount)` (internal)
 
 Moves tokens `amount` from `sender` to `recipient`.
 
@@ -218,7 +218,7 @@ Requirements:
 
 - `sender` must have a balance of at least `amount`.
 
-# Function `_mint(address account, uint256 amount)` (internal)
+### Function `_mint(address account, uint256 amount)` (internal)
 
 Creates `amount` tokens and assigns them to `account`, increasing
 
@@ -230,7 +230,7 @@ Requirements
 
 - `to` cannot be the zero address.
 
-# Function `_burn(address account, uint256 amount)` (internal)
+### Function `_burn(address account, uint256 amount)` (internal)
 
 Destroys `amount` tokens from `account`, reducing the
 
@@ -244,7 +244,7 @@ Requirements
 
 - `account` must have at least `amount` tokens.
 
-# Function `_approve(address owner, address spender, uint256 amount)` (internal)
+### Function `_approve(address owner, address spender, uint256 amount)` (internal)
 
 Sets `amount` as the allowance of `spender` over the `owner`s tokens.
 
@@ -260,7 +260,7 @@ Requirements:
 
 - `spender` cannot be the zero address.
 
-# Function `_setupDecimals(uint8 decimals_)` (internal)
+### Function `_setupDecimals(uint8 decimals_)` (internal)
 
 Sets {decimals} to a value other than the default one of 18.
 
@@ -270,7 +270,7 @@ applications that interact with token contracts will not expect
 
 {decimals} to ever change, and may work incorrectly if it does.
 
-# Function `_beforeTokenTransfer(address from, address to, uint256 amount)` (internal)
+### Function `_beforeTokenTransfer(address from, address to, uint256 amount)` (internal)
 
 Hook that is called before any transfer of tokens. This includes
 

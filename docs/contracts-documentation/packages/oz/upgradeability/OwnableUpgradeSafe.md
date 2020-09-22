@@ -1,4 +1,4 @@
-## `OwnableUpgradeSafe`
+# `OwnableUpgradeSafe`
 
 Contract module which provides a basic access control mechanism, where
 
@@ -16,11 +16,11 @@ This module is used through inheritance. It will make available the modifier
 
 the owner.
 
-# Modifiers:
+## Modifiers:
 
 - `onlyOwner()`
 
-# Functions:
+## Functions:
 
 - `__Ownable_init(address _sender) (internal)`
 
@@ -32,25 +32,25 @@ the owner.
 
 - `transferOwnership(address newOwner) (public)`
 
-# Events:
+## Events:
 
 - `OwnershipTransferred(address previousOwner, address newOwner)`
 
-# Modifier `onlyOwner()`
+### Modifier `onlyOwner()`
 
 Throws if called by any account other than the owner.
 
-# Function `__Ownable_init(address _sender)` (internal)
+### Function `__Ownable_init(address _sender)` (internal)
 
 Initializes the contract setting the deployer as the initial owner.
 
-# Function `__Ownable_init_unchained(address _sender)` (internal)
+### Function `__Ownable_init_unchained(address _sender)` (internal)
 
-# Function `owner() → address` (public)
+### Function `owner() → address` (public)
 
 Returns the address of the current owner.
 
-# Function `renounceOwnership()` (public)
+### Function `renounceOwnership()` (public)
 
 Leaves the contract without owner. It will not be possible to call
 
@@ -60,10 +60,10 @@ NOTE: Renouncing ownership will leave the contract without an owner,
 
 thereby removing any functionality that is only available to the owner.
 
-# Function `transferOwnership(address newOwner)` (public)
+### Function `transferOwnership(address newOwner)` (public)
 
 Transfers ownership of the contract to a new account (`newOwner`).
 
 Can only be called by the current owner.
 
-# Event `OwnershipTransferred(address previousOwner, address newOwner)`
+### Event `OwnershipTransferred(address previousOwner, address newOwner)`

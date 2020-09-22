@@ -1,6 +1,6 @@
-## `MockAddressBook`
+# `MockAddressBook`
 
-# Functions:
+## Functions:
 
 - `setOtokenImpl(address _newImpl) (external)`
 
@@ -30,30 +30,30 @@
 
 - `getMarginPool() (external)`
 
-# Function `setOtokenImpl(address _newImpl)` (external)
+### Function `setOtokenImpl(address _newImpl)` (external)
 
-# Function `setWhitelist(address _newImpl)` (external)
+### Function `setWhitelist(address _newImpl)` (external)
 
-# Function `setOtokenFactory(address _otokenFactory)` (external)
+### Function `setOtokenFactory(address _otokenFactory)` (external)
 
-# Function `setController(address _controller)` (external)
+### Function `setController(address _controller)` (external)
 
-# Function `setOracle(address _oracleAddr)` (external)
+### Function `setOracle(address _oracleAddr)` (external)
 
-# Function `setMarginCalculator(address _calculator)` (external)
+### Function `setMarginCalculator(address _calculator)` (external)
 
-# Function `setMarginPool(address _pool)` (external)
+### Function `setMarginPool(address _pool)` (external)
 
-# Function `getOtokenImpl() → address` (external)
+### Function `getOtokenImpl() → address` (external)
 
-# Function `getWhitelist() → address` (external)
+### Function `getWhitelist() → address` (external)
 
-# Function `getOtokenFactory() → address` (external)
+### Function `getOtokenFactory() → address` (external)
 
-# Function `getOracle() → address` (external)
+### Function `getOracle() → address` (external)
 
-# Function `getController() → address` (external)
+### Function `getController() → address` (external)
 
-# Function `getMarginCalculator() → address` (external)
+### Function `getMarginCalculator() → address` (external)
 
-# Function `getMarginPool() → address` (external)
+### Function `getMarginPool() → address` (external)

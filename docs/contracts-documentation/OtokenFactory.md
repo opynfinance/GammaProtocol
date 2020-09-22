@@ -1,4 +1,4 @@
-## `OtokenFactory`
+# `OtokenFactory`
 
 SPDX-License-Identifier: UNLICENSED
 
@@ -8,7 +8,7 @@ Calculate contract address before each creation with CREATE2
 
 and deploy eip-1167 minimal proxies for otoken logic contract.
 
-# Functions:
+## Functions:
 
 - `constructor(address _addressBook) (public)`
 
@@ -22,19 +22,19 @@ and deploy eip-1167 minimal proxies for otoken logic contract.
 
 - `_getOptionId(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) (internal)`
 
-# Events:
+## Events:
 
 - `OtokenCreated(address tokenAddress, address creator, address underlying, address strike, address collateral, uint256 strikePrice, uint256 expiry, bool isPut)`
 
-# Function `constructor(address _addressBook)` (public)
+### Function `constructor(address _addressBook)` (public)
 
-# Function `createOtoken(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) → address` (external)
+### Function `createOtoken(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) → address` (external)
 
 create new otokens
 
 deploy an eip-1167 minimal proxy with CREATE2 and register it to the whitelist module.
 
-## Parameters:
+#### Parameters:
 
 - `_underlyingAsset`: asset that the option references
 
@@ -48,23 +48,23 @@ deploy an eip-1167 minimal proxy with CREATE2 and register it to the whitelist m
 
 - `_isPut`: is this a put option, if not it is a call
 
-## Return Values:
+#### Return Values:
 
 - newOtoken address of the newly created option
 
-# Function `getOtokensLength() → uint256` (external)
+### Function `getOtokensLength() → uint256` (external)
 
 Get the total otokens created by the factory.
 
-## Return Values:
+#### Return Values:
 
 - length of the otokens array.
 
-# Function `getOtoken(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) → address` (external)
+### Function `getOtoken(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) → address` (external)
 
 get the otoken address. If no token has been created with these parameters, will return address(0).
 
-## Parameters:
+#### Parameters:
 
 - `_underlyingAsset`: asset that the option references
 
@@ -78,17 +78,17 @@ get the otoken address. If no token has been created with these parameters, will
 
 - `_isPut`: is this a put option, if not it is a call
 
-## Return Values:
+#### Return Values:
 
 - otoken the address of target otoken.
 
-# Function `getTargetOtokenAddress(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) → address` (external)
+### Function `getTargetOtokenAddress(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) → address` (external)
 
 get the address at which a new otoken with these paramters will be deployed
 
 return the exact address that will be deployed at with _computeAddress
 
-## Parameters:
+#### Parameters:
 
 - `_underlyingAsset`: asset that the option references
 
@@ -102,15 +102,15 @@ return the exact address that will be deployed at with _computeAddress
 
 - `_isPut`: is this a put option, if not it is a call
 
-## Return Values:
+#### Return Values:
 
 - targetAddress the address this otoken will be deployed at.
 
-# Function `_getOptionId(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) → bytes32` (internal)
+### Function `_getOptionId(address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiry, bool _isPut) → bytes32` (internal)
 
 internal function to hash paramters and get option id. Each option has a unique id.
 
-## Parameters:
+#### Parameters:
 
 - `_underlyingAsset`: asset that the option references
 
@@ -124,10 +124,10 @@ internal function to hash paramters and get option id. Each option has a unique 
 
 - `_isPut`: is this a put option, if not it is a call
 
-## Return Values:
+#### Return Values:
 
 - id the id of an otoken
 
-# Event `OtokenCreated(address tokenAddress, address creator, address underlying, address strike, address collateral, uint256 strikePrice, uint256 expiry, bool isPut)`
+### Event `OtokenCreated(address tokenAddress, address creator, address underlying, address strike, address collateral, uint256 strikePrice, uint256 expiry, bool isPut)`
 
 emitted when factory create a new Option

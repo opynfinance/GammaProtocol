@@ -1,6 +1,6 @@
-## `FixedPointInt256`
+# `FixedPointInt256`
 
-# Functions:
+## Functions:
 
 - `fromUnscaledInt(int256 a) (internal)`
 
@@ -26,172 +26,172 @@
 
 - `isLessThanOrEqual(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) (internal)`
 
-# Function `fromUnscaledInt(int256 a) → struct FixedPointInt256.FixedPointInt` (internal)
+### Function `fromUnscaledInt(int256 a) → struct FixedPointInt256.FixedPointInt` (internal)
 
 Constructs an `FixedPointInt` from an unscaled int, e.g., `b=5` gets stored internally as `5**18`.
 
-## Parameters:
+#### Parameters:
 
 - `a`: int to convert into a FixedPoint.
 
-## Return Values:
+#### Return Values:
 
 - the converted FixedPoint.
 
-# Function `add(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → struct FixedPointInt256.FixedPointInt` (internal)
+### Function `add(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → struct FixedPointInt256.FixedPointInt` (internal)
 
 return the sum of two signed integer
 
-## Parameters:
+#### Parameters:
 
 - `a`: FixedPoint
 
 - `b`: FixedPoint
 
-## Return Values:
+#### Return Values:
 
 - sum of two signed integer
 
-# Function `sub(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → struct FixedPointInt256.FixedPointInt` (internal)
+### Function `sub(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → struct FixedPointInt256.FixedPointInt` (internal)
 
 return the difference of two signed integer
 
-## Parameters:
+#### Parameters:
 
 - `a`: FixedPoint
 
 - `b`: FixedPoint
 
-## Return Values:
+#### Return Values:
 
 - difference of two fixed point
 
-# Function `mul(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → struct FixedPointInt256.FixedPointInt` (internal)
+### Function `mul(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → struct FixedPointInt256.FixedPointInt` (internal)
 
 multiply two signed integer
 
 rounds to zero if a*b < SCALING_FACTOR / 2
 
-## Parameters:
+#### Parameters:
 
 - `a`: FixedPoint
 
 - `b`: FixedPoint
 
-## Return Values:
+#### Return Values:
 
 - mul of two fixed point
 
-# Function `div(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → struct FixedPointInt256.FixedPointInt` (internal)
+### Function `div(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → struct FixedPointInt256.FixedPointInt` (internal)
 
 divide two FixedPoint
 
 rounds to zero if a*b < SCALING_FACTOR / 2
 
-## Parameters:
+#### Parameters:
 
 - `a`: FixedPoint
 
 - `b`: FixedPoint
 
-## Return Values:
+#### Return Values:
 
 - div of two signed integer
 
-# Function `min(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → struct FixedPointInt256.FixedPointInt` (internal)
+### Function `min(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → struct FixedPointInt256.FixedPointInt` (internal)
 
 the minimum between a and b
 
-## Parameters:
+#### Parameters:
 
 - `a`: signed integer
 
 - `b`: signed integer
 
-## Return Values:
+#### Return Values:
 
 - min of two signed integer
 
-# Function `max(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → struct FixedPointInt256.FixedPointInt` (internal)
+### Function `max(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → struct FixedPointInt256.FixedPointInt` (internal)
 
 the maximum between a and b
 
-## Parameters:
+#### Parameters:
 
 - `a`: signed integer
 
 - `b`: signed integer
 
-## Return Values:
+#### Return Values:
 
 - max of two signed integer
 
-# Function `isEqual(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → bool` (internal)
+### Function `isEqual(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → bool` (internal)
 
 Whether `a` is equal to `b`.
 
-## Parameters:
+#### Parameters:
 
 - `a`: a signed integer
 
 - `b`: a signed integer
 
-## Return Values:
+#### Return Values:
 
 - True if equal, or False.
 
-# Function `isGreaterThan(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → bool` (internal)
+### Function `isGreaterThan(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → bool` (internal)
 
 Whether `a` is greater than `b`.
 
-## Parameters:
+#### Parameters:
 
 - `a`: a signed integer
 
 - `b`: a signed integer
 
-## Return Values:
+#### Return Values:
 
 - True if `a > b`, or False.
 
-# Function `isGreaterThanOrEqual(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → bool` (internal)
+### Function `isGreaterThanOrEqual(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → bool` (internal)
 
 Whether `a` is greater than or equal to `b`.
 
-## Parameters:
+#### Parameters:
 
 - `a`: a signed integer
 
 - `b`: a signed integer
 
-## Return Values:
+#### Return Values:
 
 - True if `a >= b`, or False.
 
-# Function `isLessThan(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → bool` (internal)
+### Function `isLessThan(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → bool` (internal)
 
 Whether `a` is less than `b`.
 
-## Parameters:
+#### Parameters:
 
 - `a`: a signed integer
 
 - `b`: a signed integer
 
-## Return Values:
+#### Return Values:
 
 - True if `a < b`, or False.
 
-# Function `isLessThanOrEqual(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → bool` (internal)
+### Function `isLessThanOrEqual(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) → bool` (internal)
 
 Whether `a` is less than or equal to `b`.
 
-## Parameters:
+#### Parameters:
 
 - `a`: a Fixed
 
 - `b`: a signed integer
 
-## Return Values:
+#### Return Values:
 
 - True if `a <= b`, or False.

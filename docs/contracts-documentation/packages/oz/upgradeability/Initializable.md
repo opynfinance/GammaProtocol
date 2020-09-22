@@ -1,4 +1,4 @@
-## `Initializable`
+# `Initializable`
 
 Helper contract to support initializer functions. To use it, replace
 
@@ -16,10 +16,10 @@ a parent initializer twice, or ensure that all initializers are idempotent,
 
 because this is not dealt with automatically as with constructors.
 
-# Modifiers:
+## Modifiers:
 
 - `initializer()`
 
-# Modifier `initializer()`
+### Modifier `initializer()`
 
 Modifier to use in the initializer function of a contract.

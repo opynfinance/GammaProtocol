@@ -1,8 +1,8 @@
-## `WETH9`
+# `WETH9`
 
 A wrapper to use ETH as collateral
 
-# Functions:
+## Functions:
 
 - `receive() (external)`
 
@@ -18,7 +18,7 @@ A wrapper to use ETH as collateral
 
 - `transferFrom(address _src, address _dst, uint256 _wad) (public)`
 
-# Events:
+## Events:
 
 - `Approval(address src, address guy, uint256 wad)`
 
@@ -28,67 +28,67 @@ A wrapper to use ETH as collateral
 
 - `Withdrawal(address src, uint256 wad)`
 
-# Function `receive()` (external)
+### Function `receive()` (external)
 
 fallback function that receive ETH
 
 will get called in a tx with
 
-# Function `deposit()` (public)
+### Function `deposit()` (public)
 
 Wrap deposited ETH into WETH
 
-# Function `withdraw(uint256 _wad)` (public)
+### Function `withdraw(uint256 _wad)` (public)
 
 withdraw ETH from contract
 
 Unwrap from WETH to ETH
 
-## Parameters:
+#### Parameters:
 
 - `_wad`: amount WETH to unwrap and withdraw
 
-# Function `totalSupply() → uint256` (public)
+### Function `totalSupply() → uint256` (public)
 
 get ETH total supply
 
-## Return Values:
+#### Return Values:
 
 - total supply
 
-# Function `approve(address _guy, uint256 _wad) → bool` (public)
+### Function `approve(address _guy, uint256 _wad) → bool` (public)
 
 approve transfer
 
-## Parameters:
+#### Parameters:
 
 - `_guy`: address to approve
 
 - `_wad`: amount of WETH
 
-## Return Values:
+#### Return Values:
 
 - true if tx succeeded
 
-# Function `transfer(address _dst, uint256 _wad) → bool` (public)
+### Function `transfer(address _dst, uint256 _wad) → bool` (public)
 
 transfer WETH
 
-## Parameters:
+#### Parameters:
 
 - `_dst`: destination address
 
 - `_wad`: amount to transfer
 
-## Return Values:
+#### Return Values:
 
 - true if tx succeeded
 
-# Function `transferFrom(address _src, address _dst, uint256 _wad) → bool` (public)
+### Function `transferFrom(address _src, address _dst, uint256 _wad) → bool` (public)
 
 transfer from address
 
-## Parameters:
+#### Parameters:
 
 - `_src`: source address
 
@@ -96,22 +96,22 @@ transfer from address
 
 - `_wad`: amount to transfer
 
-## Return Values:
+#### Return Values:
 
 - true if tx succeeded
 
-# Event `Approval(address src, address guy, uint256 wad)`
+### Event `Approval(address src, address guy, uint256 wad)`
 
 emmitted when a sender approve WETH transfer
 
-# Event `Transfer(address src, address dst, uint256 wad)`
+### Event `Transfer(address src, address dst, uint256 wad)`
 
 emmitted when a sender transfer WETH
 
-# Event `Deposit(address dst, uint256 wad)`
+### Event `Deposit(address dst, uint256 wad)`
 
 emitted when a sender deposit ETH into this contract
 
-# Event `Withdrawal(address src, uint256 wad)`
+### Event `Withdrawal(address src, uint256 wad)`
 
 emmited when a sender withdraw ETH from this contract

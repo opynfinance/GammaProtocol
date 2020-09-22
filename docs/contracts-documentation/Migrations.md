@@ -1,13 +1,13 @@
-## `Migrations`
+# `Migrations`
 
-# Modifiers:
+## Modifiers:
 
 - `restricted()`
 
-# Functions:
+## Functions:
 
 - `setCompleted(uint256 completed) (public)`
 
-# Modifier `restricted()`
+### Modifier `restricted()`
 
-# Function `setCompleted(uint256 completed)` (public)
+### Function `setCompleted(uint256 completed)` (public)

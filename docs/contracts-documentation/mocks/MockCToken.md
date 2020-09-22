@@ -1,6 +1,6 @@
-## `MockCToken`
+# `MockCToken`
 
-# Functions:
+## Functions:
 
 - `constructor(string _name, string _symbol) (public)`
 
@@ -8,8 +8,8 @@
 
 - `setExchangeRate(uint256 _exchangeRateStored) (external)`
 
-# Function `constructor(string _name, string _symbol)` (public)
+### Function `constructor(string _name, string _symbol)` (public)
 
-# Function `mint(address account, uint256 amount)` (public)
+### Function `mint(address account, uint256 amount)` (public)
 
-# Function `setExchangeRate(uint256 _exchangeRateStored)` (external)
+### Function `setExchangeRate(uint256 _exchangeRateStored)` (external)
