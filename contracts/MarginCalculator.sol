@@ -31,7 +31,7 @@ contract MarginCalculator {
     }
 
     /**
-     * @notice Return the net worth of an expired oToken, denomincated in collateral.
+     * @notice Return the net worth of an expired oToken, denominated in collateral.
      * @param _otoken otoken address
      * @return the exchange rate that shows how much collateral unit can be take out by 1 otoken unit, scaled by 1e18.
      * Or how much collateral can be taken out for 1 (1e18) otoken
@@ -179,7 +179,7 @@ contract MarginCalculator {
                     shortStrike,
                     longStrike
                 );
-                // convert amount to be denomincated in collateral
+                // convert amount to be denominated in collateral
                 return _convertAmountOnLivePrice(strikeNeeded, otoken.strikeAsset(), otoken.collateralAsset());
             } else {
                 FPI.FixedPointInt memory underlyingNeeded = _getCallSpreadMarginRequired(
@@ -188,7 +188,7 @@ contract MarginCalculator {
                     shortStrike,
                     longStrike
                 );
-                // convert amount to be denomincated in collateral
+                // convert amount to be denominated in collateral
                 return _convertAmountOnLivePrice(underlyingNeeded, otoken.underlyingAsset(), otoken.collateralAsset());
             }
         } else {
@@ -205,7 +205,7 @@ contract MarginCalculator {
                 shortCashValue,
                 longCashValue
             );
-            // convert amount to be denomincated in collateral
+            // convert amount to be denominated in collateral
             return
                 _convertAmountOnExpiryPrice(
                     valueInStrike,
