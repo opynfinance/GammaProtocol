@@ -130,6 +130,7 @@ contract('Naked Call Option expires Itm flow', ([accountOwner1, buyer]) => {
     // mint weth to user
     const account1OwnerWeth = createTokenAmount(2 * collateralAmount, wethDecimals)
 <<<<<<< HEAD
+<<<<<<< HEAD
     await weth.mint(accountOwner1, account1OwnerWeth)
 
     // have the user approve all the weth transfers
@@ -140,6 +141,12 @@ contract('Naked Call Option expires Itm flow', ([accountOwner1, buyer]) => {
     // have the user approve all the weth transfers
     weth.approve(marginPool.address, account1OwnerWeth, {from: accountOwner1})
 >>>>>>> add naked call tests
+=======
+    await weth.mint(accountOwner1, account1OwnerWeth)
+
+    // have the user approve all the weth transfers
+    await weth.approve(marginPool.address, account1OwnerWeth, {from: accountOwner1})
+>>>>>>> add awaits
 
     const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
     vaultCounter = vaultCounterBefore.toNumber() + 1
@@ -285,10 +292,14 @@ contract('Naked Call Option expires Itm flow', ([accountOwner1, buyer]) => {
     it('Buyer: exercise ITM call option after expiry', async () => {
       // owner sells their call option
 <<<<<<< HEAD
+<<<<<<< HEAD
       await ethCall.transfer(buyer, scaledOptionsAmount, {from: accountOwner1})
 =======
       ethCall.transfer(buyer, scaledOptionsAmount, {from: accountOwner1})
 >>>>>>> add naked call tests
+=======
+      await ethCall.transfer(buyer, scaledOptionsAmount, {from: accountOwner1})
+>>>>>>> add awaits
       // oracle orice increases
       const strikePriceChange = Math.max(expirySpotPrice - strikePrice, 0)
 

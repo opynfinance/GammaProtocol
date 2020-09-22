@@ -130,17 +130,10 @@ contract('Naked Call Option closed before expiry flow', ([accountOwner1, buyer])
     ethCall = await Otoken.at(ethCallAddress)
     // mint weth to user
     const account1OwnerWeth = createTokenAmount(2 * collateralAmount, wethDecimals)
-<<<<<<< HEAD
     await weth.mint(accountOwner1, account1OwnerWeth)
 
     // have the user approve all the weth transfers
     await weth.approve(marginPool.address, account1OwnerWeth, {from: accountOwner1})
-=======
-    weth.mint(accountOwner1, account1OwnerWeth)
-
-    // have the user approve all the weth transfers
-    weth.approve(marginPool.address, account1OwnerWeth, {from: accountOwner1})
->>>>>>> add naked call tests
 
     const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
     vaultCounter = vaultCounterBefore.toNumber() + 1
@@ -412,11 +405,7 @@ contract('Naked Call Option closed before expiry flow', ([accountOwner1, buyer])
       const buyerBalanceBeforeSell = new BigNumber(await ethCall.balanceOf(buyer))
 
       // owner sells their call option
-<<<<<<< HEAD
       await ethCall.transfer(buyer, scaledOptionsAmount, {from: accountOwner1})
-=======
-      ethCall.transfer(buyer, scaledOptionsAmount, {from: accountOwner1})
->>>>>>> add naked call tests
 
       const ownerOtokenBalanceAfterSell = new BigNumber(await ethCall.balanceOf(accountOwner1))
       const buyerBalanceAfterSell = new BigNumber(await ethCall.balanceOf(buyer))
@@ -428,11 +417,7 @@ contract('Naked Call Option closed before expiry flow', ([accountOwner1, buyer])
       assert.equal(buyerBalanceBeforeSell.plus(scaledOptionsAmount).toString(), buyerBalanceAfterSell.toString())
 
       // owner buys back their call option
-<<<<<<< HEAD
       await ethCall.transfer(accountOwner1, scaledOptionsAmount, {from: buyer})
-=======
-      ethCall.transfer(accountOwner1, scaledOptionsAmount, {from: buyer})
->>>>>>> add naked call tests
     })
 
     it('should be able to close out the short position', async () => {
