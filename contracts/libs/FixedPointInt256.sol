@@ -141,45 +141,4 @@ library FixedPointInt256 {
     function isLessThanOrEqual(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (bool) {
         return a.value <= b.value;
     }
-
-    /**
-     * @notice Constructs an `FixedPointInt` from an unscaled uint which has {_decimals} decimals
-     * Examples:
-     * (1)  USDC    decimals = 6
-     *      Input:  8000000 USDC  =>    Output: 8 * 1e18 (FixedPoint 8.0 USDC)
-     * (2)  cUSDC   decimals = 8
-     *      Input:  8000000 cUSDC =>    Output: 8 * 1e16 (FixedPoint 0.08 cUSDC)
-     * (3)  rUSD    decimals = 20 (random USD)
-     *      Input:  15            =>   Output:  0
-     * @param _a uint256 to convert into a FixedPoint.
-     * @param _decimals the origianl decimals the number has.
-     * @return the converted FixedPoint, with 18 decimals.
-     */
-    function scaleFrom(uint256 _a, uint256 _decimals) internal pure returns (FixedPointInt memory) {
-        if (_decimals == DECIMALS) return FixedPointInt(SignedConverter.uintToInt(_a));
-        if (_decimals > DECIMALS) {
-            uint256 exp = _decimals - DECIMALS;
-            return FixedPointInt(SignedConverter.uintToInt(_a.div(10**exp)));
-        } else {
-            uint256 exp = DECIMALS - _decimals;
-            return FixedPointInt(SignedConverter.uintToInt(_a.mul(10**exp)));
-        }
-    }
-
-    /**
-     * @notice Convert a FixedPointInt256 back to uint256 amount with {_decimals} decimals
-     * @param _a FixedPointInt to convert back to uint256.
-     * @param _decimals target number decimals
-     * @return the uint256 amount.
-     */
-    function unscaleTo(FixedPointInt memory _a, uint256 _decimals) internal pure returns (uint256) {
-        if (_decimals == DECIMALS) return SignedConverter.intToUint(_a.value);
-        if (_decimals > DECIMALS) {
-            uint256 exp = _decimals - DECIMALS;
-            return SignedConverter.intToUint(_a.value).mul(10**exp);
-        } else {
-            uint256 exp = DECIMALS - _decimals;
-            return SignedConverter.intToUint(_a.value).div(10**exp);
-        }
-    }
 }
