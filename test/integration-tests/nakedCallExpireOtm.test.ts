@@ -139,11 +139,11 @@ contract('Naked Call Option expires Otm flow', ([accountOwner1, buyer]) => {
     vaultCounter = vaultCounterBefore.toNumber() + 1
   })
 
-  describe('Integration test: Sell a naked put and close it after expires OTM', () => {
+  describe('Close a naked put after it expires OTM', () => {
     const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
     const scaledCollateralAmount = createTokenAmount(collateralAmount, wethDecimals)
     const expirySpotPrice = 200
-    it('Seller should be able to open a short call option', async () => {
+    before('Seller should be able to open a short call option', async () => {
       const actionArgs = [
         {
           actionType: ActionType.OpenVault,
