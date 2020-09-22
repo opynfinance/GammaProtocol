@@ -130,10 +130,10 @@ contract('Naked Put Option expires Itm flow', ([accountOwner1, buyer]) => {
 
     // mint usdc to user
     const accountOwner1Usdc = createTokenAmount(2 * collateralAmount, usdcDecimals)
-    usdc.mint(accountOwner1, accountOwner1Usdc)
+    await usdc.mint(accountOwner1, accountOwner1Usdc)
 
     // have the user approve all the usdc transfers
-    usdc.approve(marginPool.address, accountOwner1Usdc, {from: accountOwner1})
+    await usdc.approve(marginPool.address, accountOwner1Usdc, {from: accountOwner1})
 
     const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
     vaultCounter = vaultCounterBefore.toNumber() + 1
