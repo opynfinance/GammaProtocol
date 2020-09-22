@@ -229,12 +229,12 @@ contract Otoken is ERC20Initializable {
         if (from == address(0)) {
             require(
                 msg.sender == AddressBookInterface(addressBook).getController(),
-                "Otoken: Only Controller can mint Otokens."
+                "Otoken: Only Controller can mint Otokens"
             );
         } else if (to == address(0)) {
             require(
                 msg.sender == AddressBookInterface(addressBook).getController(),
-                "Otoken: Only Controller can burn Otokens."
+                "Otoken: Only Controller can burn Otokens"
             );
         }
     }

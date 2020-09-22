@@ -66,7 +66,7 @@ contract CompoundPricer is OpynPricerInterface {
      */
     function setExpiryPriceToOralce(uint256 _expiryTimestamp) external {
         (uint256 underlyingPriceExpiry, ) = oracle.getExpiryPrice(address(underlying), _expiryTimestamp);
-        require(underlyingPriceExpiry > 0, "CompoundPricer: underlying price not set yet.");
+        require(underlyingPriceExpiry > 0, "CompoundPricer: underlying price not set yet");
         uint256 cTokenPrice = _underlyingPriceToCtokenPrice(underlyingPriceExpiry);
         oracle.setExpiryPrice(address(cToken), _expiryTimestamp, cTokenPrice);
     }
