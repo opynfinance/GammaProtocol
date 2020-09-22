@@ -129,20 +129,35 @@ contract('Naked Call Option expires Itm flow', ([accountOwner1, buyer]) => {
     ethCall = await Otoken.at(ethCallAddress)
     // mint weth to user
     const account1OwnerWeth = createTokenAmount(2 * collateralAmount, wethDecimals)
+<<<<<<< HEAD
     await weth.mint(accountOwner1, account1OwnerWeth)
 
     // have the user approve all the weth transfers
     await weth.approve(marginPool.address, account1OwnerWeth, {from: accountOwner1})
+=======
+    weth.mint(accountOwner1, account1OwnerWeth)
+
+    // have the user approve all the weth transfers
+    weth.approve(marginPool.address, account1OwnerWeth, {from: accountOwner1})
+>>>>>>> add naked call tests
 
     const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
     vaultCounter = vaultCounterBefore.toNumber() + 1
   })
 
+<<<<<<< HEAD
   describe('Integration test: Close a naked call after it expires ITM', () => {
     const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
     const scaledCollateralAmount = createTokenAmount(collateralAmount, wethDecimals)
     const expirySpotPrice = 400
     before('Seller should be able to open a short call option', async () => {
+=======
+  describe('Integration test: Sell a naked call and close it after expires ITM', () => {
+    const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+    const scaledCollateralAmount = createTokenAmount(collateralAmount, wethDecimals)
+    const expirySpotPrice = 400
+    it('Seller should be able to open a short call option', async () => {
+>>>>>>> add naked call tests
       const actionArgs = [
         {
           actionType: ActionType.OpenVault,
@@ -269,7 +284,11 @@ contract('Naked Call Option expires Itm flow', ([accountOwner1, buyer]) => {
 
     it('Buyer: exercise ITM call option after expiry', async () => {
       // owner sells their call option
+<<<<<<< HEAD
       await ethCall.transfer(buyer, scaledOptionsAmount, {from: accountOwner1})
+=======
+      ethCall.transfer(buyer, scaledOptionsAmount, {from: accountOwner1})
+>>>>>>> add naked call tests
       // oracle orice increases
       const strikePriceChange = Math.max(expirySpotPrice - strikePrice, 0)
 
