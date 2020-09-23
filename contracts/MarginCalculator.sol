@@ -66,7 +66,7 @@ contract MarginCalculator {
     }
 
     /**
-     * @notice notice returns the amount of collateral that owner can take out from this vault.
+     * @notice returns the amount of collateral that owner can take out from this vault.
      * @dev The return amount is denominated in the collateral asset for the otoken
      * @param _vault the theoretical vault that needs to be checked
      * @return excessCollateral the amount by which the margin is above or below the required amount.
