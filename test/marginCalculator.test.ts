@@ -118,7 +118,7 @@ contract('MarginCalculator', () => {
     })
   })
 
-  describe('Get cash value tests', () => {
+  describe('Get cash value and payout rate', () => {
     let closeExpiry: number
     let put: MockOtokenInstance
     let call: MockOtokenInstance
@@ -136,11 +136,10 @@ contract('MarginCalculator', () => {
     })
 
     it('Should revert when entering address(0)', async () => {
-      await expectRevert(calculator.getExpiredCashValue(ZERO_ADDR), 'MarginCalculator: Invalid token address')
+      await expectRevert(calculator.getExpiredPayoutRate(ZERO_ADDR), 'MarginCalculator: Invalid token address')
     })
     it('Should revert if option is not expired yet.', async () => {
-      await expectRevert(calculator.getExpiredCashValue(put.address), 'MarginCalculator: Otoken not expired yet')
-      // let the otoken expire!
+      await expectRevert(calculator.getExpiredPayoutRate(put.address), 'MarginCalculator: Otoken not expired yet')
       await time.increaseTo(closeExpiry + 2)
     })
     it('Should return cash value for put as strike price - eth price when strike > eth price', async () => {
