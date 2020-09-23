@@ -524,8 +524,11 @@ contract('Short Put Spread Option closed before expiry flow', ([accountOwner1, n
           data: ZERO_ADDR,
         },
       ]
-      // TODO: Revert message to be updated
-      await expectRevert.unspecified(controllerProxy.operate(actionArgs, {from: accountOwner1}))
+
+      await expectRevert(
+        controllerProxy.operate(actionArgs, {from: accountOwner1}),
+        'Controller: invalid final vault state',
+      )
     })
 
     it('should be able to transfer long otokens to another address', async () => {
