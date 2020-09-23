@@ -20,8 +20,7 @@ import {MarginAccount} from "./libs/MarginAccount.sol";
  */
 contract MarginCalculator {
     using SafeMath for uint256;
-    using SignedConverter for uint256;
-    using SignedConverter for int256;
+    using FPI for uint256;
     using FPI for int256;
     using FPI for FPI.FixedPointInt;
 
@@ -409,7 +408,7 @@ contract MarginCalculator {
      * @return the converted FixedPoint, with 18 decimals.
      */
     function _uintToFixedPoint(uint256 _num, uint256 _decimals) internal pure returns (FPI.FixedPointInt memory) {
-        return (_num.uintToInt()).fromScaledInt(_decimals);
+        return _num.fromScaledUint(_decimals);
     }
 
     /**
@@ -419,6 +418,6 @@ contract MarginCalculator {
      * @return the uint256 amount.
      */
     function _fixedPointToUint(FPI.FixedPointInt memory _num, uint256 _decimals) internal pure returns (uint256) {
-        return (_num.toScaledInt(_decimals)).intToUint();
+        return _num.toScaledUint(_decimals);
     }
 }

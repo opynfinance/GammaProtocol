@@ -33,24 +33,22 @@ library FixedPointInt256 {
     }
 
     /**
-     * @notice Constructs an `FixedPointInt` from an int with with different scaling, e.g., `b=5**12` gets stored internally as `5**18`.
-     * @param _a int to convert into a FixedPoint.
-     * @param _decimals number of decimals that the int already scaled in
+     * @notice Constructs an `FixedPointInt` from an uint with with different scaling, e.g., `b=5**12` gets stored internally as `5**18`.
+     * @param _a uint to convert into a FixedPoint.
+     * @param _decimals number of decimals that the uint already scaled in
      * @return the converted FixedPoint.
      */
-    function fromScaledInt(int256 _a, uint256 _decimals) internal pure returns (FixedPointInt memory) {
+    function fromScaledUint(uint256 _a, uint256 _decimals) internal pure returns (FixedPointInt memory) {
         FixedPointInt memory fixedPoint;
 
         if (_decimals == BASE_DECIMALS) {
-            fixedPoint = FixedPointInt(_a);
+            fixedPoint = FixedPointInt(_a.uintToInt());
         } else if (_decimals > BASE_DECIMALS) {
             uint256 exp = _decimals.sub(BASE_DECIMALS);
-            int256 targetDecimals = (10**exp).uintToInt();
-            fixedPoint = FixedPointInt(_a.div(targetDecimals));
+            fixedPoint = FixedPointInt((_a.div(10**exp)).uintToInt());
         } else {
             uint256 exp = BASE_DECIMALS - _decimals;
-            int256 targetDecimals = (10**exp).uintToInt();
-            fixedPoint = FixedPointInt(_a.mul(targetDecimals));
+            fixedPoint = FixedPointInt((_a.mul(10**exp)).uintToInt());
         }
 
         return fixedPoint;
@@ -62,20 +60,20 @@ library FixedPointInt256 {
      * @param _decimals number of decimals that the int256 should be scaled to
      * @return the converted FixedPoint.
      */
-    function toScaledInt(FixedPointInt memory _a, uint256 _decimals) internal pure returns (int256) {
-        int256 scaledInt;
+    function toScaledUint(FixedPointInt memory _a, uint256 _decimals) internal pure returns (uint256) {
+        uint256 scaledUint;
 
         if (_decimals == BASE_DECIMALS) {
-            scaledInt = _a.value;
+            scaledUint = _a.value.intToUint();
         } else if (_decimals > BASE_DECIMALS) {
             uint256 exp = _decimals - BASE_DECIMALS;
-            int256 targetDecimals = (10**exp).uintToInt();
-            scaledInt = _a.value.mul(targetDecimals);
+            scaledUint = (_a.value).intToUint().mul(10**exp);
         } else {
             uint256 exp = BASE_DECIMALS - _decimals;
-            int256 targetDecimals = (10**exp).uintToInt();
-            scaledInt = _a.value.div(targetDecimals);
+            scaledUint = (_a.value).intToUint().div(10**exp);
         }
+
+        return scaledUint;
     }
 
     /**
