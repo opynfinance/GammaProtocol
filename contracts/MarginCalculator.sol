@@ -10,7 +10,6 @@ import {OracleInterface} from "./interfaces/OracleInterface.sol";
 import {ERC20Interface} from "./interfaces/ERC20Interface.sol";
 import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
 import {FixedPointInt256 as FPI} from "./libs/FixedPointInt256.sol";
-import {SignedConverter} from "./libs/SignedConverter.sol";
 import {MarginAccount} from "./libs/MarginAccount.sol";
 
 /**

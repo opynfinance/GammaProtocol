@@ -8,7 +8,9 @@ import "../libs/SignedConverter.sol";
 import "../packages/oz/SafeMath.sol";
 
 /**
- *
+ * @title FixedPointInt256
+ * @author Opyn
+ * @notice FixedPoint library
  */
 library FixedPointInt256 {
     using SignedSafeMath for int256;
