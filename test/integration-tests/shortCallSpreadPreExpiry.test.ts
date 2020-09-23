@@ -218,7 +218,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
       // accountOwner2 transfers their higher strike Call option to accountOwner1
       await higherStrikeCall.transfer(accountOwner1, scaledOptionsAmount, {from: accountOwner2})
     })
-    it('accountOwner1 should be able to open a short put spread', async () => {
+    it('accountOwner1 should be able to open a short call spread', async () => {
       // Keep track of balances before
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
@@ -536,7 +536,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
       const ownerShortOtokenBalanceBeforeSell = new BigNumber(await lowerStrikeCall.balanceOf(accountOwner1))
       const nakedBuyerBalanceBeforeSell = new BigNumber(await lowerStrikeCall.balanceOf(nakedBuyer))
 
-      // owner sells their put option
+      // accountOwner1 transfer some call option to nakedBuyer
       await lowerStrikeCall.transfer(nakedBuyer, scaledOptionsAmount, {from: accountOwner1})
 
       const ownerShortOtokenBalanceAfterSell = new BigNumber(await lowerStrikeCall.balanceOf(accountOwner1))
@@ -551,7 +551,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
         nakedBuyerBalanceAfterSell.toString(),
       )
 
-      // owner buys back their put option
+      // owner buys back their call option
       await lowerStrikeCall.transfer(accountOwner1, scaledOptionsAmount, {from: nakedBuyer})
     })
 
