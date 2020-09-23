@@ -549,7 +549,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
         nakedBuyerBalanceAfterSell.toString(),
       )
 
-      // owner buys back their put option
+      // owner buys back their call option
       await lowerStrikeCall.transfer(accountOwner1, scaledOptionsAmount, {from: nakedBuyer})
     })
 
