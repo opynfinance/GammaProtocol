@@ -2,11 +2,12 @@
  * SPDX-License-Identifier: UNLICENSED
  */
 pragma solidity =0.6.10;
-
 pragma experimental ABIEncoderV2;
 
 import {WETH9} from "../canonical-weth/WETH9.sol";
 import {ReentrancyGuard} from "../../packages/oz/ReentrancyGuard.sol";
+import {SafeERC20} from "../../packages/oz/SafeERC20.sol";
+import {ERC20Interface} from "../../interfaces/ERC20Interface.sol";
 import {Actions} from "../../libs/Actions.sol";
 import {Controller} from "../../Controller.sol";
 
@@ -18,6 +19,7 @@ import {Controller} from "../../Controller.sol";
 contract PayableProxyController is ReentrancyGuard {
     WETH9 public weth;
     Controller public controller;
+    using SafeERC20 for ERC20Interface;
 
     constructor(
         address _controller,
@@ -26,7 +28,7 @@ contract PayableProxyController is ReentrancyGuard {
     ) public {
         controller = Controller(_controller);
         weth = WETH9(_weth);
-        weth.approve(_marginPool, uint256(-1));
+        ERC20Interface(address(weth)).safeApprove(_marginPool, uint256(-1));
     }
 
     /**
