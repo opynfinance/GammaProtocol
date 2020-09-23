@@ -12,10 +12,12 @@ import "../packages/oz/SafeMath.sol";
  */
 library FixedPointInt256 {
     using SignedSafeMath for int256;
+    using SignedConverter for int256;
     using SafeMath for uint256;
+    using SignedConverter for uint256;
 
     int256 private constant SCALING_FACTOR = 1e18;
-    uint256 private constant DECIMALS = 18;
+    uint256 private constant BASE_DECIMALS = 18;
 
     struct FixedPointInt {
         int256 value;
@@ -28,6 +30,52 @@ library FixedPointInt256 {
      */
     function fromUnscaledInt(int256 a) internal pure returns (FixedPointInt memory) {
         return FixedPointInt(a.mul(SCALING_FACTOR));
+    }
+
+    /**
+     * @notice Constructs an `FixedPointInt` from an int with with different scaling, e.g., `b=5**12` gets stored internally as `5**18`.
+     * @param _a int to convert into a FixedPoint.
+     * @param _decimals number of decimals that the int already scaled in
+     * @return the converted FixedPoint.
+     */
+    function fromScaledInt(int256 _a, uint256 _decimals) internal pure returns (FixedPointInt memory) {
+        FixedPointInt memory fixedPoint;
+
+        if (_decimals == BASE_DECIMALS) {
+            fixedPoint = FixedPointInt(_a);
+        } else if (_decimals > BASE_DECIMALS) {
+            uint256 exp = _decimals.sub(BASE_DECIMALS);
+            int256 targetDecimals = (10**exp).uintToInt();
+            fixedPoint = FixedPointInt(_a.div(targetDecimals));
+        } else {
+            uint256 exp = BASE_DECIMALS - _decimals;
+            int256 targetDecimals = (10**exp).uintToInt();
+            fixedPoint = FixedPointInt(_a.mul(targetDecimals));
+        }
+
+        return fixedPoint;
+    }
+
+    /**
+     * @notice Convert a FixedPointInt number to an int256 with a specific decimals
+     * @param _a FixedPoint
+     * @param _decimals number of decimals that the int256 should be scaled to
+     * @return the converted FixedPoint.
+     */
+    function toScaledInt(FixedPointInt memory _a, uint256 _decimals) internal pure returns (int256) {
+        int256 scaledInt;
+
+        if (_decimals == BASE_DECIMALS) {
+            scaledInt = _a.value;
+        } else if (_decimals > BASE_DECIMALS) {
+            uint256 exp = _decimals - BASE_DECIMALS;
+            int256 targetDecimals = (10**exp).uintToInt();
+            scaledInt = _a.value.mul(targetDecimals);
+        } else {
+            uint256 exp = BASE_DECIMALS - _decimals;
+            int256 targetDecimals = (10**exp).uintToInt();
+            scaledInt = _a.value.div(targetDecimals);
+        }
     }
 
     /**

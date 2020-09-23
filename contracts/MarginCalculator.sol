@@ -20,6 +20,9 @@ import {MarginAccount} from "./libs/MarginAccount.sol";
  */
 contract MarginCalculator {
     using SafeMath for uint256;
+    using SignedConverter for uint256;
+    using SignedConverter for int256;
+    using FPI for int256;
     using FPI for FPI.FixedPointInt;
 
     address public addressBook;
@@ -406,14 +409,7 @@ contract MarginCalculator {
      * @return the converted FixedPoint, with 18 decimals.
      */
     function _uintToFixedPoint(uint256 _num, uint256 _decimals) internal pure returns (FPI.FixedPointInt memory) {
-        if (_decimals == BASE) return FPI.FixedPointInt(SignedConverter.uintToInt(_num));
-        if (_decimals > BASE) {
-            uint256 exp = _decimals - BASE;
-            return FPI.FixedPointInt(SignedConverter.uintToInt(_num.div(10**exp)));
-        } else {
-            uint256 exp = BASE - _decimals;
-            return FPI.FixedPointInt(SignedConverter.uintToInt(_num.mul(10**exp)));
-        }
+        return (_num.uintToInt()).fromScaledInt(_decimals);
     }
 
     /**
@@ -423,13 +419,6 @@ contract MarginCalculator {
      * @return the uint256 amount.
      */
     function _fixedPointToUint(FPI.FixedPointInt memory _num, uint256 _decimals) internal pure returns (uint256) {
-        if (_decimals == BASE) return SignedConverter.intToUint(_num.value);
-        if (_decimals > BASE) {
-            uint256 exp = _decimals - BASE;
-            return SignedConverter.intToUint(_num.value).mul(10**exp);
-        } else {
-            uint256 exp = BASE - _decimals;
-            return SignedConverter.intToUint(_num.value).div(10**exp);
-        }
+        return (_num.toScaledInt(_decimals)).intToUint();
     }
 }
