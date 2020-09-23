@@ -534,7 +534,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
       const ownerShortOtokenBalanceBeforeSell = new BigNumber(await lowerStrikeCall.balanceOf(accountOwner1))
       const nakedBuyerBalanceBeforeSell = new BigNumber(await lowerStrikeCall.balanceOf(nakedBuyer))
 
-      // owner sells their put option
+      // accountOwner1 transfer some call option to nakedBuyer
       await lowerStrikeCall.transfer(nakedBuyer, scaledOptionsAmount, {from: accountOwner1})
 
       const ownerShortOtokenBalanceAfterSell = new BigNumber(await lowerStrikeCall.balanceOf(accountOwner1))
