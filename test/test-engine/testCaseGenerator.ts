@@ -90,11 +90,11 @@ export interface Tests {
  */
 
 /**
- * Return a random integer from 0 to the max number passed in.
+ * Return a random integer from 1 to the max number passed in.
  * @param max
  */
 function getRandomInt(max: number) {
-  return Math.floor(Math.random() * Math.floor(max))
+  return Math.min(Math.floor(Math.random() * Math.floor(max)) + 1, max)
 }
 
 /**

@@ -4,8 +4,8 @@ import {
   MockAddressBookInstance,
   MockOracleInstance,
   MockOtokenInstance,
-} from '../build/types/truffle-types'
-import {createVault, createTokenAmount} from './utils'
+} from '../../build/types/truffle-types'
+import {createVault, createTokenAmount} from '../utils'
 import {assert} from 'chai'
 import {testCaseGenerator, Tests, Test, testToString} from './testCaseGenerator'
 
