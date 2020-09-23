@@ -160,7 +160,7 @@ contract('MarginCalculator Test Engine', () => {
       }
     })
 
-    it('test the various excess margin scenarios for puts after expiry', async () => {
+    xit('test the various excess margin scenarios for puts after expiry', async () => {
       const tests: Test[] = testPutsAfterExpiry
 
       if ((await time.latest()) < expiry) {
@@ -220,7 +220,7 @@ contract('MarginCalculator Test Engine', () => {
       }
     })
 
-    it('test the various excess margin scenarios for calls after expiry', async () => {
+    xit('test the various excess margin scenarios for calls after expiry', async () => {
       const tests: Test[] = testCallsAfterExpiry
 
       if ((await time.latest()) < expiry) {
