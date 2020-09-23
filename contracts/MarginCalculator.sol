@@ -10,7 +10,6 @@ import {OracleInterface} from "./interfaces/OracleInterface.sol";
 import {ERC20Interface} from "./interfaces/ERC20Interface.sol";
 import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
 import {FixedPointInt256 as FPI} from "./libs/FixedPointInt256.sol";
-import {SignedConverter} from "./libs/SignedConverter.sol";
 import {MarginAccount} from "./libs/MarginAccount.sol";
 
 /**
@@ -20,6 +19,8 @@ import {MarginAccount} from "./libs/MarginAccount.sol";
  */
 contract MarginCalculator {
     using SafeMath for uint256;
+    using FPI for uint256;
+    using FPI for int256;
     using FPI for FPI.FixedPointInt;
 
     address public addressBook;
@@ -406,14 +407,7 @@ contract MarginCalculator {
      * @return the converted FixedPoint, with 18 decimals.
      */
     function _uintToFixedPoint(uint256 _num, uint256 _decimals) internal pure returns (FPI.FixedPointInt memory) {
-        if (_decimals == BASE) return FPI.FixedPointInt(SignedConverter.uintToInt(_num));
-        if (_decimals > BASE) {
-            uint256 exp = _decimals - BASE;
-            return FPI.FixedPointInt(SignedConverter.uintToInt(_num.div(10**exp)));
-        } else {
-            uint256 exp = BASE - _decimals;
-            return FPI.FixedPointInt(SignedConverter.uintToInt(_num.mul(10**exp)));
-        }
+        return _num.fromScaledUint(_decimals);
     }
 
     /**
@@ -423,13 +417,6 @@ contract MarginCalculator {
      * @return the uint256 amount.
      */
     function _fixedPointToUint(FPI.FixedPointInt memory _num, uint256 _decimals) internal pure returns (uint256) {
-        if (_decimals == BASE) return SignedConverter.intToUint(_num.value);
-        if (_decimals > BASE) {
-            uint256 exp = _decimals - BASE;
-            return SignedConverter.intToUint(_num.value).mul(10**exp);
-        } else {
-            uint256 exp = BASE - _decimals;
-            return SignedConverter.intToUint(_num.value).div(10**exp);
-        }
+        return _num.toScaledUint(_decimals);
     }
 }
