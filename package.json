@@ -57,7 +57,7 @@
     "coverage": "truffle run coverage",
     "contract-size": "truffle run contract-size --checkMaxSize",
     "test:unit": "truffle test ./test/unit-tests/*.ts",
-    "testingEngine": "truffle test ./test/test-engine/*.ts"
+    "testingEngine": "truffle test ./test/test-engine/*.ts",
     "test:integration": "truffle test ./test/integration-tests/*.ts"
   },
   "husky": {
