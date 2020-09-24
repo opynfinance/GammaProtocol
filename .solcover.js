@@ -8,6 +8,7 @@ module.exports = {
     'Migrations.sol',
     'mocks/',
     'packages/',
-    'Controller.sol'
+    'Controller.sol',
+    'external/canonical-weth'
   ]
 }
