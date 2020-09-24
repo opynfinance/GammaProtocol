@@ -261,7 +261,7 @@ contract MarginCalculator {
     }
 
     /**
-     * @dev calculate cash value for an expired put spread vault.
+     * @dev calculate cash value for an expired vault.
      *
      * Formula: net = (short cash value * short amount) - ( long cash value * long Amount )
      *
