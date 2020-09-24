@@ -7,13 +7,19 @@ The oTokens created by Gamma are cash settled European option, means that holder
 
 ## Documentation
 
+Our docs site is [here](https://opyn.gitbook.io/opyn/). It contains tutorials, explainers, and smart contract documentation. If you'd like to view these docs on github instead, check out [the docs folder](/docs) in the docs repo:
+
+- [Smart contracts documentation](SUMMARY.md)
+- [UML diagrams](/docs/uml)
+- [Control flow diagrams](/docs/control-flow)
+
 ## Local Development Setup
 
 For local development it is recommended to use ganache to run a local development chain. Using the ganache simulator no full Ethereum node is required.
 
 As a pre-requisite, you need:
 
-- Node.js
+- Node.js (v10.18.0)
 - NPM
 
 Clone the project and install all dependencies:
@@ -100,7 +106,9 @@ $ npm run coverage
 
 The full report can be viewed by opening the `coverage/index.html` file in a browser.
 
-## Security
-Security is a top priority for us at Opyn. As an insurance platform, we care most about furthering the trust users have in DeFi. This code is still in development and has not been finalized, hence we anticipate there will be issues. We would love to learn about them while we are still in the development phases of the project! 
+## Security And Bug Bounty Program
 
-We care about building out a safe and secure DeFi. You can help us further this mission, by letting us know if you find a vulnerability by emailing security@opyn.co.
+The security of the Opyn protocol is our highest priority. Our team has created a protocol that we believe is safe and dependable, and has been audited by OpenZeppelin. All smart contract code is publicly verifiable and we have a bug bounty for undiscovered vulnerabilities. 
+We encourage our users to be mindful of risk and only use funds they can afford to lose. Options are complex instruments that when understood correctly can be powerful hedges. Smart contracts are still new and experimental technology. We want to remind our users to be optimistic about innovation while remaining cautious about where they put their money. 
+
+Please see [here](https://opyn.gitbook.io/opyn/security) for details on our security audit and bug bounty program.
