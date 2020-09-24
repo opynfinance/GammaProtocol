@@ -139,7 +139,7 @@ contract('Naked Call Option expires Otm flow', ([accountOwner1, buyer]) => {
     vaultCounter = vaultCounterBefore.toNumber() + 1
   })
 
-  describe('Close a naked put after it expires OTM', () => {
+  describe('Close a naked call after it expires OTM', () => {
     const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
     const scaledCollateralAmount = createTokenAmount(collateralAmount, wethDecimals)
     const expirySpotPrice = 200
