@@ -370,6 +370,23 @@ contract('MarginCalculator', () => {
       })
     })
 
+    describe('Should return invalid vault for edge cases', () => {
+      it('(1) Short: 1 unit of 250 put with 0 collateral => invalid vault', async () => {
+        const vault = createVault(eth250Put.address, undefined, usdc.address, 1, undefined, 0)
+        const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
+        assert.equal(isExcess, false)
+        assert.equal(netValue.toString(), '0')
+      })
+
+      it('(2) Short: 0 250 put, collateral: 0.000001 USDC => valid vault', async () => {
+        const collateralAmount = '1'
+        const vault = createVault(eth250Put.address, undefined, usdc.address, 1, undefined, collateralAmount)
+        const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
+        assert.equal(isExcess, true)
+        assert.equal(netValue.toString(), '0')
+      })
+    })
+
     describe('Put vault check before expiry', () => {
       const amountOne = scaleNum(1)
 
