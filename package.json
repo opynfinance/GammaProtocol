@@ -56,6 +56,7 @@
     "lint:tests:prettier:fix": "prettier --write \"test/**/*.ts\"",
     "test": "CI=true truffle test",
     "test:unit": "truffle test ./test/unit-tests/*.ts",
+    "test:integration": "truffle test ./test/integration-tests/*.ts",
     "coverage": "truffle run coverage",
     "contract-size": "truffle run contract-size --checkMaxSize",
     "generate:doc": "npm run generate:doc:control-flow & npm run generate:doc:uml",

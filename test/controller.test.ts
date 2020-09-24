@@ -526,29 +526,6 @@ contract(
           )
         })
 
-        it('should revert depositing long otoken from a sender different than arg.from', async () => {
-          const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          const longToDeposit = createTokenAmount(20)
-          const actionArgs = [
-            {
-              actionType: ActionType.DepositLongOption,
-              owner: accountOwner1,
-              sender: accountOwner1,
-              asset: longOtoken.address,
-              vaultId: vaultCounter.toNumber(),
-              amount: longToDeposit,
-              index: '0',
-              data: ZERO_ADDR,
-            },
-          ]
-
-          await longOtoken.approve(marginPool.address, longToDeposit, {from: accountOperator1})
-          await expectRevert(
-            controllerProxy.operate(actionArgs, {from: accountOperator1}),
-            'Controller: depositor address and msg.sender address mismatch',
-          )
-        })
-
         it('should revert depositing long otoken with amount equal to zero', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           const longToDeposit = createTokenAmount(20)
@@ -1149,31 +1126,6 @@ contract(
               .toString(),
             collateralToDeposit.toString(),
             'Long otoken amount deposited into vault mismatch',
-          )
-        })
-
-        it('should revert depositing a collateral asset from a msg.sender different than arg.from', async () => {
-          const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
-
-          const collateralToDeposit = createTokenAmount(10, usdcDecimals)
-          const actionArgs = [
-            {
-              actionType: ActionType.DepositCollateral,
-              owner: accountOwner1,
-              sender: random,
-              asset: usdc.address,
-              vaultId: vaultCounter.toNumber(),
-              amount: collateralToDeposit,
-              index: '0',
-              data: ZERO_ADDR,
-            },
-          ]
-
-          await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
-          await expectRevert(
-            controllerProxy.operate(actionArgs, {from: accountOwner1}),
-            'Controller: depositor address and msg.sender address mismatch',
           )
         })
 
@@ -2890,7 +2842,13 @@ contract(
           )
 
           await oracle.setExpiryPriceFinalizedAllPeiodOver(
-            usdc.address,
+            await firstOtoken.strikeAsset(),
+            new BigNumber(await firstOtoken.expiryTimestamp()),
+            new BigNumber(1).times(1e18),
+            true,
+          )
+          await oracle.setExpiryPriceFinalizedAllPeiodOver(
+            await secondOtoken.strikeAsset(),
             new BigNumber(await firstOtoken.expiryTimestamp()),
             new BigNumber(1).times(1e18),
             true,
