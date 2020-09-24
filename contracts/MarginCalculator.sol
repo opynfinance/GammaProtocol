@@ -60,7 +60,7 @@ contract MarginCalculator {
         // the exchangeRate was scaled by 1e18, if 1e18 otoken can take out 1 USDC, the exchangeRate is currently 1e18
         // we want to return: how much USDC unit can be take out by 1 (1e18 units) otoken
         uint256 collateralDecimals = uint256(ERC20Interface(collateral).decimals());
-        return exchangeRate.toScaledUint(collateralDecimals);
+        return exchangeRate.toScaledUint(collateralDecimals, true);
     }
 
     /**
@@ -102,7 +102,8 @@ contract MarginCalculator {
 
         address otoken = hasLong ? _vault.longOtokens[0] : _vault.shortOtokens[0];
         uint256 collateralDecimals = ERC20Interface(OtokenInterface(otoken).collateralAsset()).decimals();
-        uint256 excessCollateralExternal = excessCollateral.toScaledUint(collateralDecimals);
+        // if there's excess, truncate the tailing digits in excessCollateralExternal calculation
+        uint256 excessCollateralExternal = excessCollateral.toScaledUint(collateralDecimals, isExcess);
         return (excessCollateralExternal, isExcess);
     }
 

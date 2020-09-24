@@ -65,9 +65,14 @@ library FixedPointInt256 {
      * @notice Convert a FixedPointInt number to an uint256 with a specific decimals
      * @param _a FixedPoint
      * @param _decimals number of decimals that the uint256 should be scaled to
+     * @param _ignoreTailingDigits true if okay to truncated the tailing digits. (will underestimate the value with converting)
      * @return the converted FixedPoint.
      */
-    function toScaledUint(FixedPointInt memory _a, uint256 _decimals) internal pure returns (uint256) {
+    function toScaledUint(
+        FixedPointInt memory _a,
+        uint256 _decimals,
+        bool _ignoreTailingDigits
+    ) internal pure returns (uint256) {
         uint256 scaledUint;
 
         if (_decimals == BASE_DECIMALS) {
@@ -77,7 +82,12 @@ library FixedPointInt256 {
             scaledUint = (_a.value).intToUint().mul(10**exp);
         } else {
             uint256 exp = BASE_DECIMALS - _decimals;
-            scaledUint = (_a.value).intToUint().div(10**exp);
+            uint256 tailing;
+            if (!_ignoreTailingDigits) {
+                uint256 remainer = (_a.value).intToUint().mod(10**exp);
+                if (remainer > 0) tailing = 1;
+            }
+            scaledUint = (_a.value).intToUint().div(10**exp).add(tailing);
         }
 
         return scaledUint;
