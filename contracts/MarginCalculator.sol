@@ -75,7 +75,7 @@ contract MarginCalculator {
         // include all the checks for vault
         _checkIsValidVault(_vault);
 
-        bool hasCollateral = !_isEmptyAssetArray(_vault.collateralAssets);
+        bool hasCollateral = _isNotEmpty(_vault.collateralAssets);
 
         // collateral amount is always positive.
         FPI.FixedPointInt memory collateralAmount;
@@ -87,7 +87,9 @@ contract MarginCalculator {
         }
 
         // Vault contains no otokens: return collateral value.
-        if (_isEmptyAssetArray(_vault.shortOtokens) && _isEmptyAssetArray(_vault.longOtokens)) {
+        bool hasShort = _isNotEmpty(_vault.shortOtokens);
+        bool hasLong = _isNotEmpty(_vault.longOtokens);
+        if (!hasShort && !hasLong) {
             uint256 amount = hasCollateral ? _vault.collateralAmounts[0] : 0;
             return (amount, true);
         }
@@ -98,7 +100,7 @@ contract MarginCalculator {
 
         bool isExcess = excessCollateral.isGreaterThanOrEqual(ZERO);
 
-        address otoken = _isEmptyAssetArray(_vault.shortOtokens) ? _vault.longOtokens[0] : _vault.shortOtokens[0];
+        address otoken = hasLong ? _vault.longOtokens[0] : _vault.shortOtokens[0];
         uint256 collateralDecimals = ERC20Interface(OtokenInterface(otoken).collateralAsset()).decimals();
         uint256 excessCollateralExternal = excessCollateral.toScaledUint(collateralDecimals);
         return (excessCollateralExternal, isExcess);
@@ -140,28 +142,24 @@ contract MarginCalculator {
      */
     function _getMarginRequired(MarginAccount.Vault memory _vault) internal view returns (FPI.FixedPointInt memory) {
         // The vault passed must have either long otoken or short otoken in it.
-        bool hasLongInVault = !_isEmptyAssetArray(_vault.longOtokens);
-        bool hasShortInVault = !_isEmptyAssetArray(_vault.shortOtokens);
+        bool hasLong = _isNotEmpty(_vault.longOtokens);
+        bool hasShort = _isNotEmpty(_vault.shortOtokens);
 
-        // Don't have to scale the short token, because all otoken has decimals 18
-        FPI.FixedPointInt memory shortAmount = hasShortInVault
-            ? FPI.fromScaledUint(_vault.shortAmounts[0], BASE)
-            : ZERO;
+        FPI.FixedPointInt memory shortAmount = hasShort ? FPI.fromScaledUint(_vault.shortAmounts[0], BASE) : ZERO;
 
-        FPI.FixedPointInt memory longAmount = hasLongInVault ? FPI.fromScaledUint(_vault.longAmounts[0], BASE) : ZERO;
+        FPI.FixedPointInt memory longAmount = hasLong ? FPI.fromScaledUint(_vault.longAmounts[0], BASE) : ZERO;
 
-        OtokenInterface otoken = hasShortInVault
+        OtokenInterface otoken = hasShort
             ? OtokenInterface(_vault.shortOtokens[0])
             : OtokenInterface(_vault.longOtokens[0]);
         bool expired = now > otoken.expiryTimestamp();
         bool isPut = otoken.isPut();
 
-        // marginRequired is denominated collateral
         if (!expired) {
-            FPI.FixedPointInt memory shortStrike = hasShortInVault
+            FPI.FixedPointInt memory shortStrike = hasShort
                 ? FPI.fromScaledUint(OtokenInterface(_vault.shortOtokens[0]).strikePrice(), BASE)
                 : ZERO;
-            FPI.FixedPointInt memory longStrike = hasLongInVault
+            FPI.FixedPointInt memory longStrike = hasLong
                 ? FPI.fromScaledUint(OtokenInterface(_vault.longOtokens[0]).strikePrice(), BASE)
                 : ZERO;
 
@@ -185,12 +183,8 @@ contract MarginCalculator {
                 return _convertAmountOnLivePrice(underlyingNeeded, otoken.underlyingAsset(), otoken.collateralAsset());
             }
         } else {
-            FPI.FixedPointInt memory shortCashValue = hasShortInVault
-                ? _getExpiredCashValue(_vault.shortOtokens[0])
-                : ZERO;
-            FPI.FixedPointInt memory longCashValue = hasLongInVault
-                ? _getExpiredCashValue(_vault.longOtokens[0])
-                : ZERO;
+            FPI.FixedPointInt memory shortCashValue = hasShort ? _getExpiredCashValue(_vault.shortOtokens[0]) : ZERO;
+            FPI.FixedPointInt memory longCashValue = hasLong ? _getExpiredCashValue(_vault.longOtokens[0]) : ZERO;
 
             FPI.FixedPointInt memory valueInStrike = _getExpiredSpreadCashValue(
                 shortAmount,
@@ -210,8 +204,8 @@ contract MarginCalculator {
     }
 
     /**
-     * @dev calculate put spread margin requirement.
-     * @dev this value is used
+     * @dev returns the strike asset needed for a put spread with given short and long asset
+     *
      * marginRequired = max( (short amount * short strike) - (long strike * min (short amount, long amount)) , 0 )
      *
      * @return margin requirement denominated in strike asset.
@@ -226,7 +220,8 @@ contract MarginCalculator {
     }
 
     /**
-     * @dev calculate call spread marigin requirement.
+     * @dev returns the underlying asset needed for a call spread with given short and long asset
+     *
      *                           (long strike - short strike) * short amount
      * marginRequired =  max( ------------------------------------------------- , max ( short amount - long amount , 0) )
      *                                           long strike
@@ -310,11 +305,14 @@ contract MarginCalculator {
     }
 
     /**
-     * @dev if there is a short option in the vault, ensure that the long option series being used is a valid margin.
+     * @dev if there is a short option and a long option in the vault, ensure that the long option series being used is a valid margin.
      * @param _vault the vault to check.
      */
     function _isMarginableLong(MarginAccount.Vault memory _vault) internal view returns (bool) {
-        if (_isEmptyAssetArray(_vault.longOtokens) || _isEmptyAssetArray(_vault.shortOtokens)) return true;
+        bool hasLong = _isNotEmpty(_vault.longOtokens);
+        bool hasShort = _isNotEmpty(_vault.shortOtokens);
+        // if vault is missing long or short, return true.
+        if (!hasLong || !hasShort) return true;
 
         OtokenInterface long = OtokenInterface(_vault.longOtokens[0]);
         OtokenInterface short = OtokenInterface(_vault.shortOtokens[0]);
@@ -328,11 +326,14 @@ contract MarginCalculator {
     }
 
     /**
-     * @dev if there is a short option in the vault, ensure that the collateral asset being used is a valid margin.
+     * @dev if there is short option and collateral asset in the vault, ensure that the collateral asset being used is a valid margin.
      * @param _vault the vault to check.
      */
     function _isMarginableCollateral(MarginAccount.Vault memory _vault) internal view returns (bool) {
-        if (_isEmptyAssetArray(_vault.collateralAssets) || _isEmptyAssetArray(_vault.shortOtokens)) return true;
+        bool hasCollateral = _isNotEmpty(_vault.collateralAssets);
+        bool hasShort = _isNotEmpty(_vault.shortOtokens);
+        // if vault is missing collateral or short, return true.
+        if (!hasShort || !hasCollateral) return true;
 
         OtokenInterface short = OtokenInterface(_vault.shortOtokens[0]);
 
@@ -386,10 +387,10 @@ contract MarginCalculator {
     }
 
     /**
-     * @dev check if array is empty or only have address(0)
-     * @return isEmpty or not
+     * @dev check if asset array contain a token address.
+     * @return true if the array is not empty
      */
-    function _isEmptyAssetArray(address[] memory _assets) internal pure returns (bool) {
-        return _assets.length == 0 || _assets[0] == address(0);
+    function _isNotEmpty(address[] memory _assets) internal pure returns (bool) {
+        return _assets.length > 0 && _assets[0] != address(0);
     }
 }
