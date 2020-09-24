@@ -3,7 +3,7 @@ const INPUT_DIR    = "contracts";
 const CONFIG_DIR   = "docs";
 const OUTPUT_DIR   = "docs/contracts-documentation";
 const README_FILE  = "README.md";
-const SUMMARY_FILE = "docs/contracts-documentation/SUMMARY.md";
+const SUMMARY_FILE = "SUMMARY.md";
 const EXCLUDE_LIST = ["packages", "interfaces", "mocks", "tests"]
 
 const fs        = require("fs");

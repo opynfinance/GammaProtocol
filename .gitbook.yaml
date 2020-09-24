@@ -1,4 +1,4 @@
 root: ./
 structure:
   readme: README.md
-  summary: docs/contracts-documentation/SUMMARY.md
+  summary: SUMMARY.md
