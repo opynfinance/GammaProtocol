@@ -35,10 +35,15 @@ library FixedPointInt256 {
     }
 
     /**
-     * @notice Constructs an `FixedPointInt` from an uint with with different scaling, e.g., `b=5**12` gets stored internally as `5**18`.
-     * @param _a uint to convert into a FixedPoint.
-     * @param _decimals number of decimals that the uint already scaled in
-     * @return the converted FixedPoint.
+     * @notice Constructs an `FixedPointInt` from an scaled uint with {_decimals} decimals
+     * Examples:
+     * (1)  USDC    decimals = 6
+     *      Input:  5 * 1e6 USDC  =>    Output: 5 * 1e18 (FixedPoint 8.0 USDC)
+     * (2)  cUSDC   decimals = 8
+     *      Input:  5 * 1e6 cUSDC =>    Output: 5 * 1e16 (FixedPoint 0.08 cUSDC)
+     * @param _a uint256 to convert into a FixedPoint.
+     * @param _decimals the origianl decimals the number has.
+     * @return the converted FixedPoint, with 18 decimals.
      */
     function fromScaledUint(uint256 _a, uint256 _decimals) internal pure returns (FixedPointInt memory) {
         FixedPointInt memory fixedPoint;
@@ -57,9 +62,9 @@ library FixedPointInt256 {
     }
 
     /**
-     * @notice Convert a FixedPointInt number to an int256 with a specific decimals
+     * @notice Convert a FixedPointInt number to an uint256 with a specific decimals
      * @param _a FixedPoint
-     * @param _decimals number of decimals that the int256 should be scaled to
+     * @param _decimals number of decimals that the uint256 should be scaled to
      * @return the converted FixedPoint.
      */
     function toScaledUint(FixedPointInt memory _a, uint256 _decimals) internal pure returns (uint256) {
