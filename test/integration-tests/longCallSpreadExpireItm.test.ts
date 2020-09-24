@@ -288,8 +288,8 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
       const vaultStateBeforeSettlement = await calculator.getExcessCollateral(vaultBefore)
       // Todo: Fix following rounding problem
       assert.equal(
-        new BigNumber(vaultStateBeforeSettlement[0]).plus(1).toString(), // -3999999999999999999
-        createTokenAmount(collateralPayout, wethDecimals), //+4000000000000000000
+        new BigNumber(vaultStateBeforeSettlement[0]).plus(1).toString(), // 3999999999999999999
+        createTokenAmount(collateralPayout, wethDecimals), // 4000000000000000000
       )
       assert.equal(vaultStateBeforeSettlement[1], true)
 
@@ -364,7 +364,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
     it('nakedBuyer: exercise the higher strike ITM call option after expiry', async () => {
       // accountOwner1 transfers their higher strike call option to the nakedBuyer
       await higherStrikeCall.transfer(nakedBuyer, scaledOptionsAmount, {from: accountOwner1})
-      // oracle orice decreases
+      // oracle orice increases
       const strikePriceChange = Math.max(0, expirySpotPrice - higherStrike)
 
       // Keep track of balances before
@@ -422,7 +422,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
 
     it('accountOwner2: close an ITM short call position after expiry', async () => {
       const collateral = optionsAmount
-      // oracle orice decreases
+      // oracle orice increases
       const strikePriceChange = Math.max(0, expirySpotPrice - lowerStrike)
       const payoutAmount = Math.max(collateral - (optionsAmount * strikePriceChange) / expirySpotPrice, 0)
       const scaledCollateralAmount = createTokenAmount(payoutAmount, wethDecimals)
@@ -494,8 +494,6 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
         'Length of the collateral amounts array in the vault is incorrect',
       )
       assert.equal(vaultAfter.longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
-
-      console.log((await weth.balanceOf(marginPool.address)).toString())
     })
   })
 })
