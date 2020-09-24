@@ -383,10 +383,10 @@ contract('MarginCalculator', () => {
         const vault = createVault(eth250Put.address, undefined, usdc.address, 1, undefined, collateralAmount)
         const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
         assert.equal(isExcess, true)
-        assert.equal(netValue.toString(), '0')
+        assert.equal(netValue.toString(), '0') // excess = 0 because user can't take out that 1 USDC
       })
 
-      it('(3) Put with strike price = 1e-18 => invalid vault, need at least 1 UCDC unit', async () => {
+      it('(3) Short: 1 unit of Put with strike price = 1e-18 => invalid vault, need at least 1 UCDC unit', async () => {
         const dustPut = await MockOtoken.new()
         await dustPut.init(addressBook.address, weth.address, usdc.address, usdc.address, 1, expiry, true)
 
