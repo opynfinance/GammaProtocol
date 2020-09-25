@@ -38,8 +38,9 @@ enum ActionType {
   Call,
 }
 
-contract('Rollover Naked Put Option before expiry flow', ([accountOwner1, accountOperator1, buyer]) => {
-  let expiry: number
+contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, buyer]) => {
+  let expiry1: number
+  let expiry2: number
 
   let addressBook: AddressBookInstance
   let calculator: MarginCalculatorInstance
@@ -71,7 +72,7 @@ contract('Rollover Naked Put Option before expiry flow', ([accountOwner1, accoun
 
   before('set up contracts', async () => {
     let now = (await time.latest()).toNumber()
-    expiry = createValidExpiry(now, 30)
+    expiry1 = createValidExpiry(now, 30)
 
     // setup usdc and weth
     usdc = await MockERC20.new('USDC', 'USDC', usdcDecimals)
@@ -117,7 +118,7 @@ contract('Rollover Naked Put Option before expiry flow', ([accountOwner1, accoun
       usdc.address,
       usdc.address,
       createTokenAmount(strikePrice1, 18),
-      expiry,
+      expiry1,
       true,
     )
     const ethPut1Address = await otokenFactory.getOtoken(
@@ -125,21 +126,21 @@ contract('Rollover Naked Put Option before expiry flow', ([accountOwner1, accoun
       usdc.address,
       usdc.address,
       createTokenAmount(strikePrice1, 18),
-      expiry,
+      expiry1,
       true,
     )
 
     ethPut1 = await Otoken.at(ethPut1Address)
 
     now = (await time.latest()).toNumber()
-    expiry = createValidExpiry(now, 31)
+    expiry2 = createValidExpiry(now, 35)
 
     await otokenFactory.createOtoken(
       weth.address,
       usdc.address,
       usdc.address,
       createTokenAmount(strikePrice2, 18),
-      expiry,
+      expiry2,
       true,
     )
     const ethPut2Address = await otokenFactory.getOtoken(
@@ -147,7 +148,7 @@ contract('Rollover Naked Put Option before expiry flow', ([accountOwner1, accoun
       usdc.address,
       usdc.address,
       createTokenAmount(strikePrice2, 18),
-      expiry,
+      expiry2,
       true,
     )
 
@@ -396,6 +397,184 @@ contract('Rollover Naked Put Option before expiry flow', ([accountOwner1, accoun
       assert.equal(
         vaultAfter.collateralAmounts[0].toString(),
         scaledCollateralAmountInVault,
+        'Incorrect amount of collateral stored in the vault',
+      )
+    })
+  })
+
+  describe('Integration test: vault operator rolls over a naked short put after expiry', () => {
+    before(
+      'accountOperator1 opens a short put option on behalf of accountOwner1, taking usdc from accountOwner1',
+      async () => {
+        const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
+        vaultCounter = vaultCounterBefore.toNumber() + 1
+
+        const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+        const scaledCollateralAmount = createTokenAmount(collateralAmount1, usdcDecimals)
+
+        const actionArgs = [
+          {
+            actionType: ActionType.OpenVault,
+            owner: accountOwner1,
+            sender: accountOperator1,
+            asset: ZERO_ADDR,
+            vaultId: vaultCounter,
+            amount: '0',
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.MintShortOption,
+            owner: accountOwner1,
+            sender: accountOperator1,
+            asset: ethPut1.address,
+            vaultId: vaultCounter,
+            amount: scaledOptionsAmount,
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.DepositCollateral,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: usdc.address,
+            vaultId: vaultCounter,
+            amount: scaledCollateralAmount,
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        await controllerProxy.operate(actionArgs, {from: accountOperator1})
+      },
+    )
+
+    it('accountOperator1 should be able to rollover the expired short put position on behalf of accountOwner1 and withdraw excess collateral', async () => {
+      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+      const scaledExcessCollateralAmount = createTokenAmount(collateralAmount1 - collateralAmount2, usdcDecimals)
+      const scaledCollateralAmount2 = createTokenAmount(collateralAmount2, usdcDecimals)
+      const scaledCollateralAmount1 = createTokenAmount(collateralAmount1, usdcDecimals)
+
+      // Check that we start at a valid state
+      const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const vaultStateBeforeExpiry = await calculator.getExcessCollateral(vaultBefore)
+      assert.equal(vaultStateBeforeExpiry[0].toString(), '0')
+      assert.equal(vaultStateBeforeExpiry[1], true)
+
+      //set expiry
+      if ((await time.latest()) < expiry1) {
+        await time.increaseTo(expiry1 + 2)
+      }
+      const scaledETHPrice = createTokenAmount(300, 18)
+      const scaledUSDCPrice = createTokenAmount(1, 18)
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry1, scaledETHPrice, true)
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry1, scaledUSDCPrice, true)
+      // Keep track of balances before
+      const operatorUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(accountOperator1))
+      const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+      const operatorOtoken1BalanceBefore = new BigNumber(await ethPut1.balanceOf(accountOperator1))
+      const operatorOtoken2BalanceBefore = new BigNumber(await ethPut2.balanceOf(accountOperator1))
+      const oToken1SupplyBefore = new BigNumber(await ethPut1.totalSupply())
+      const oToken2SupplyBefore = new BigNumber(await ethPut2.totalSupply())
+
+      // check that excess collateral after expiry has changed
+      const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore)
+      assert.equal(vaultStateBefore[0].toString(), scaledCollateralAmount1)
+      assert.equal(vaultStateBefore[1], true)
+
+      const actionArgs = [
+        {
+          actionType: ActionType.SettleVault,
+          owner: accountOwner1,
+          sender: accountOperator1,
+          asset: usdc.address,
+          vaultId: vaultCounter,
+          amount: scaledExcessCollateralAmount,
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.MintShortOption,
+          owner: accountOwner1,
+          sender: accountOperator1,
+          asset: ethPut2.address,
+          vaultId: vaultCounter,
+          amount: scaledOptionsAmount,
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.DepositCollateral,
+          owner: accountOwner1,
+          sender: accountOperator1,
+          asset: usdc.address,
+          vaultId: vaultCounter,
+          amount: scaledCollateralAmount2,
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+
+      await usdc.approve(marginPool.address, scaledCollateralAmount2, {from: accountOperator1})
+      await controllerProxy.operate(actionArgs, {from: accountOperator1})
+
+      // keep track of balances after
+      const operatorUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(accountOperator1))
+      const marginPoolUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+
+      const operatorOtoken1BalanceAfter = new BigNumber(await ethPut1.balanceOf(accountOperator1))
+      const oToken1SupplyAfter = new BigNumber(await ethPut1.totalSupply())
+      const operatorOtoken2BalanceAfter = new BigNumber(await ethPut2.balanceOf(accountOperator1))
+      const oToken2SupplyAfter = new BigNumber(await ethPut2.totalSupply())
+
+      // check balances before and after changed as expected
+      assert.equal(
+        operatorUsdcBalanceBefore.plus(scaledExcessCollateralAmount).toString(),
+        operatorUsdcBalanceAfter.toString(),
+      )
+      assert.equal(
+        marginPoolUsdcBalanceBefore.minus(scaledExcessCollateralAmount).toString(),
+        marginPoolUsdcBalanceAfter.toString(),
+      )
+      assert.equal(operatorOtoken1BalanceBefore.toString(), operatorOtoken1BalanceAfter.toString())
+      assert.equal(oToken1SupplyBefore.toString(), oToken1SupplyAfter.toString())
+
+      assert.equal(
+        operatorOtoken2BalanceBefore.plus(scaledOptionsAmount).toString(),
+        operatorOtoken2BalanceAfter.toString(),
+      )
+      assert.equal(oToken2SupplyBefore.plus(scaledOptionsAmount).toString(), oToken2SupplyAfter.toString())
+
+      // Check that we end at a valid state
+      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
+      assert.equal(vaultStateAfter[0].toString(), '0')
+      assert.equal(vaultStateAfter[1], true)
+
+      // Check the vault balances stored in the contract
+      assert.equal(vaultAfter.shortOtokens.length, 1, 'Length of the short otoken array in the vault is incorrect')
+      assert.equal(vaultAfter.collateralAssets.length, 1, 'Length of the collateral array in the vault is incorrect')
+      assert.equal(vaultAfter.longOtokens.length, 0, 'Length of the long otoken array in the vault is incorrect')
+
+      assert.equal(vaultAfter.shortOtokens[0], ethPut2.address, 'Incorrect short otoken in the vault')
+      assert.equal(vaultAfter.collateralAssets[0], usdc.address, 'Incorrect collateral asset in the vault')
+
+      assert.equal(vaultAfter.shortAmounts.length, 1, 'Length of the short amounts array in the vault is incorrect')
+      assert.equal(
+        vaultAfter.collateralAmounts.length,
+        1,
+        'Length of the collateral amounts array in the vault is incorrect',
+      )
+      assert.equal(vaultAfter.longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
+
+      assert.equal(
+        vaultAfter.shortAmounts[0].toString(),
+        scaledOptionsAmount,
+        'Incorrect amount of short stored in the vault',
+      )
+      assert.equal(
+        vaultAfter.collateralAmounts[0].toString(),
+        scaledCollateralAmount2,
         'Incorrect amount of collateral stored in the vault',
       )
     })
