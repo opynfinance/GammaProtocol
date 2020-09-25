@@ -6,7 +6,6 @@ import {
   MockOtokenInstance,
 } from '../../build/types/truffle-types'
 import {createVault, createTokenAmount} from '../utils'
-import {assert} from 'chai'
 import {testCaseGenerator, Tests, Test, testToString} from './testCaseGenerator'
 import BigNumber from 'bignumber.js'
 
@@ -120,7 +119,7 @@ contract('MarginCalculator Test Engine', () => {
       }
     })
 
-    xit('test the various excess margin scenarios for calls before expiry', async () => {
+    it('test the various excess margin scenarios for calls before expiry', async () => {
       const tests: Test[] = testCallsBeforeExpiry
 
       for (let i = 0; i < tests.length; i++) {
@@ -166,8 +165,10 @@ contract('MarginCalculator Test Engine', () => {
         )
 
         const [netValue, isExcess] = await calculator.getExcessCollateral(vaultWithCollateral)
-        assert.equal(netValue.toString(), createTokenAmount(expectedNetValue), testToString(tests[i]))
         assert.equal(isExcess, expectedIsExcess, testToString(tests[i]))
+        // TODO: is this okay to do?
+        const difference = new BigNumber(netValue).minus(createTokenAmount(expectedNetValue)).abs()
+        assert.isAtMost(difference.toNumber(), 1, testToString(tests[i], netValue))
       }
     })
     it('test the various excess margin scenarios for puts after expiry', async () => {
