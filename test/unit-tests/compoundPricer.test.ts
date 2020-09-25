@@ -4,12 +4,12 @@ import {
   MockERC20Instance,
   MockCTokenInstance,
   CompoundPricerInstance,
-} from '../build/types/truffle-types'
+} from '../../build/types/truffle-types'
 
-import {underlyingPriceToCtokenPrice} from './utils'
+import {underlyingPriceToCtokenPrice} from '../utils'
 
 import BigNumber from 'bignumber.js'
-import {createScaledNumber} from './utils'
+import {createScaledNumber} from '../utils'
 const {expectRevert, time} = require('@openzeppelin/test-helpers')
 
 const MockPricer = artifacts.require('MockPricer.sol')

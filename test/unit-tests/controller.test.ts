@@ -9,9 +9,9 @@ import {
   ControllerInstance,
   AddressBookInstance,
   OwnedUpgradeabilityProxyInstance,
-} from '../build/types/truffle-types'
+} from '../../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
-import {createTokenAmount, createScaledNumber} from './utils'
+import {createTokenAmount, createScaledNumber} from '../utils'
 
 const {expectRevert, expectEvent, time} = require('@openzeppelin/test-helpers')
 

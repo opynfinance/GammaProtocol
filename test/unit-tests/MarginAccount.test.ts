@@ -3,7 +3,7 @@ import {
   MockERC20Instance,
   OtokenInstance,
   MockAddressBookInstance,
-} from '../build/types/truffle-types'
+} from '../../build/types/truffle-types'
 import {BigNumber} from 'bignumber.js'
 
 const {expectRevert} = require('@openzeppelin/test-helpers')

@@ -1,4 +1,4 @@
-import {USDCPricerInstance, MockOracleInstance, MockERC20Instance} from '../build/types/truffle-types'
+import {USDCPricerInstance, MockOracleInstance, MockERC20Instance} from '../../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
 const {time} = require('@openzeppelin/test-helpers')
