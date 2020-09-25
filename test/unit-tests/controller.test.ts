@@ -1677,7 +1677,7 @@ contract(
           )
         })
 
-        it('should revert minting short in invalid vault id', async () => {
+        it('should revert minting short with invalid vault id', async () => {
           const vaultCounter = new BigNumber('100')
 
           const amountToMint = createTokenAmount(1)
@@ -2133,7 +2133,7 @@ contract(
           )
         })
 
-        it('should revert minting short in invalid vault id', async () => {
+        it('should revert minting short with invalid vault id', async () => {
           const vaultCounter = new BigNumber('100')
 
           const shortOtokenToBurn = new BigNumber(await shortOtoken.balanceOf(accountOperator1))
