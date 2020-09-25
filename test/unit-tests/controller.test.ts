@@ -377,6 +377,27 @@ contract(
           )
         })
 
+        it('should revert depositing long with invalid vault id', async () => {
+          const vaultCounter = new BigNumber('100')
+
+          const longToDeposit = createTokenAmount(20)
+          const actionArgs = [
+            {
+              actionType: ActionType.MintShortOption,
+              owner: accountOwner1,
+              sender: accountOwner1,
+              asset: longOtoken.address,
+              vaultId: vaultCounter.toNumber(),
+              amount: longToDeposit,
+              index: '0',
+              data: ZERO_ADDR,
+            },
+          ]
+
+          await longOtoken.approve(marginPool.address, longToDeposit, {from: accountOwner1})
+          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'Controller: invalid vault id')
+        })
+
         it('should deposit long otoken into vault from account owner', async () => {
           // whitelist otoken
           await whitelist.whitelistOtoken(longOtoken.address)
@@ -750,6 +771,26 @@ contract(
             controllerProxy.operate(actionArgs, {from: accountOwner1}),
             'SafeMath: subtraction overflow',
           )
+        })
+
+        it('should revert withdrawing long with invalid vault id', async () => {
+          const vaultCounter = new BigNumber('100')
+
+          const longToWithdraw = createTokenAmount(10)
+          const actionArgs = [
+            {
+              actionType: ActionType.WithdrawLongOption,
+              owner: accountOwner1,
+              sender: accountOwner1,
+              asset: longOtoken.address,
+              vaultId: vaultCounter.toNumber(),
+              amount: longToWithdraw,
+              index: '0',
+              data: ZERO_ADDR,
+            },
+          ]
+
+          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'Controller: invalid vault id')
         })
 
         it('should withdraw long otoken to any random address where msg.sender is account owner', async () => {
@@ -1143,6 +1184,27 @@ contract(
             collateralToDeposit.toString(),
             'Long otoken amount deposited into vault mismatch',
           )
+        })
+
+        it('should revert depositing collateral asset with invalid vault id', async () => {
+          const vaultCounter = new BigNumber('100')
+
+          const collateralToDeposit = createTokenAmount(10, usdcDecimals)
+          const actionArgs = [
+            {
+              actionType: ActionType.MintShortOption,
+              owner: accountOwner1,
+              sender: accountOwner1,
+              asset: usdc.address,
+              vaultId: vaultCounter.toNumber(),
+              amount: collateralToDeposit,
+              index: '0',
+              data: ZERO_ADDR,
+            },
+          ]
+
+          await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
+          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'Controller: invalid vault id')
         })
 
         it('should revert depositing a collateral asset with amount equal to zero', async () => {
