@@ -118,13 +118,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         uint256 payout
     );
     /// @notice emits an event when a vault is settled
-    event VaultSettled(
-        address indexed otoken,
-        address indexed AccountOwner,
-        address indexed to,
-        uint256 vaultId,
-        uint256 payout
-    );
+    event VaultSettled(address indexed AccountOwner, address indexed to, uint256 vaultId, uint256 payout);
     /// @notice emits an event when a call action is executed
     event CallExecuted(
         address indexed from,
@@ -529,9 +523,12 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev cannot be called when system is paused or shutdown
      * @param _args DepositArgs structure
      */
-    function _depositLong(Actions.DepositArgs memory _args) internal notPaused {
+    function _depositLong(Actions.DepositArgs memory _args) internal notPaused onlyAuthorized(msg.sender, _args.owner) {
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
-        require(_args.from == msg.sender, "Controller: depositor address and msg.sender address mismatch");
+        require(
+            (_args.from == msg.sender) || (_args.from == _args.owner),
+            "Controller: cannot deposit long otoken from this address"
+        );
 
         require(
             whitelist.isWhitelistedOtoken(_args.asset),
@@ -577,9 +574,16 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev cannot be called when the system is paused or shutdown
      * @param _args DepositArgs structure
      */
-    function _depositCollateral(Actions.DepositArgs memory _args) internal notPaused {
+    function _depositCollateral(Actions.DepositArgs memory _args)
+        internal
+        notPaused
+        onlyAuthorized(msg.sender, _args.owner)
+    {
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
-        require(_args.from == msg.sender, "Controller: depositor address and msg.sender address mismatch");
+        require(
+            (_args.from == msg.sender) || (_args.from == _args.owner),
+            "Controller: cannot deposit collateral from this address"
+        );
 
         require(
             whitelist.isWhitelistedCollateral(_args.asset),
@@ -629,7 +633,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     function _mintOtoken(Actions.MintArgs memory _args) internal notPaused onlyAuthorized(msg.sender, _args.owner) {
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
-        require(_args.to == msg.sender, "Controller: minter address and msg.sender address mismatch");
 
         require(whitelist.isWhitelistedOtoken(_args.otoken), "Controller: otoken is not whitelisted to be minted");
 
@@ -651,7 +654,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     function _burnOtoken(Actions.BurnArgs memory _args) internal notPaused onlyAuthorized(msg.sender, _args.owner) {
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
-        require(_args.from == msg.sender, "Controller: burner address and msg.sender address mismatch");
+        require((_args.from == msg.sender) || (_args.from == _args.owner), "Controller: cannot burn from this address");
 
         OtokenInterface otoken = OtokenInterface(_args.otoken);
 
@@ -695,15 +698,14 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         MarginAccount.Vault memory vault = getVault(_args.owner, _args.vaultId);
 
-        require(_isNotEmpty(vault.shortOtokens), "Controller: can not settle a vault with no otoken minted");
+        require(_isNotEmpty(vault.shortOtokens) || _isNotEmpty(vault.longOtokens), "Can't settle vault with no otoken");
 
-        OtokenInterface shortOtoken = OtokenInterface(vault.shortOtokens[0]);
+        OtokenInterface otoken = _isNotEmpty(vault.shortOtokens)
+            ? OtokenInterface(vault.shortOtokens[0])
+            : OtokenInterface(vault.longOtokens[0]);
 
-        require(now > shortOtoken.expiryTimestamp(), "Controller: can not settle vault with un-expired otoken");
-        require(
-            isPriceFinalized(address(shortOtoken)),
-            "Controller: otoken underlying asset price is not finalized yet"
-        );
+        require(now > otoken.expiryTimestamp(), "Controller: can not settle vault with un-expired otoken");
+        require(isPriceFinalized(address(otoken)), "Controller: otoken underlying asset price is not finalized yet");
 
         (uint256 payout, ) = calculator.getExcessCollateral(vault);
 
@@ -715,9 +717,9 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         delete vaults[_args.owner][_args.vaultId];
 
-        pool.transferToUser(shortOtoken.collateralAsset(), _args.to, payout);
+        pool.transferToUser(otoken.collateralAsset(), _args.to, payout);
 
-        emit VaultSettled(address(shortOtoken), _args.owner, _args.to, _args.vaultId, payout);
+        emit VaultSettled(_args.owner, _args.to, _args.vaultId, payout);
     }
 
     /**

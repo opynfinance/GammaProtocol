@@ -32,7 +32,7 @@ contract Otoken is ERC20Initializable {
     uint256 public strikePrice;
 
     /// @notice time of the option represented by unix timestamp
-    uint256 public expiry;
+    uint256 public expiryTimestamp;
 
     /// @notice is this a put option, if not it is a call
     bool public isPut;
@@ -45,7 +45,7 @@ contract Otoken is ERC20Initializable {
      * @param _strikeAsset asset that the strike price is denominated in
      * @param _collateralAsset asset that is held as collateral against short/written options
      * @param _strikePrice strike price with decimals = 18
-     * @param _expiry time of the option represented by unix timestamp
+     * @param _expiryTimestamp time of the option represented by unix timestamp
      * @param _isPut is this a put option, if not it is a call
      */
     function init(
@@ -54,7 +54,7 @@ contract Otoken is ERC20Initializable {
         address _strikeAsset,
         address _collateralAsset,
         uint256 _strikePrice,
-        uint256 _expiry,
+        uint256 _expiryTimestamp,
         bool _isPut
     ) external initializer {
         addressBook = _addressBook;
@@ -62,7 +62,7 @@ contract Otoken is ERC20Initializable {
         strikeAsset = _strikeAsset;
         collateralAsset = _collateralAsset;
         strikePrice = _strikePrice;
-        expiry = _expiry;
+        expiryTimestamp = _expiryTimestamp;
         isPut = _isPut;
         (string memory tokenName, string memory tokenSymbol) = _getNameAndSymbol();
         __ERC20_init_unchained(tokenName, tokenSymbol);
@@ -100,7 +100,7 @@ contract Otoken is ERC20Initializable {
         string memory collateral = _getTokenSymbol(collateralAsset);
         uint256 displayedStrikePrice = strikePrice.div(STRIKE_PRICE_DIGITS);
         // convert expiry to readable string
-        (uint256 year, uint256 month, uint256 day) = BokkyPooBahsDateTimeLibrary.timestampToDate(expiry);
+        (uint256 year, uint256 month, uint256 day) = BokkyPooBahsDateTimeLibrary.timestampToDate(expiryTimestamp);
 
         // Get option type string
         (string memory typeSymbol, string memory typeFull) = _getOptionType(isPut);
@@ -229,12 +229,12 @@ contract Otoken is ERC20Initializable {
         if (from == address(0)) {
             require(
                 msg.sender == AddressBookInterface(addressBook).getController(),
-                "Otoken: Only Controller can mint Otokens."
+                "Otoken: Only Controller can mint Otokens"
             );
         } else if (to == address(0)) {
             require(
                 msg.sender == AddressBookInterface(addressBook).getController(),
-                "Otoken: Only Controller can burn Otokens."
+                "Otoken: Only Controller can burn Otokens"
             );
         }
     }

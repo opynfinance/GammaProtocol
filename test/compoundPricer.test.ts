@@ -5,6 +5,9 @@ import {
   MockCTokenInstance,
   CompoundPricerInstance,
 } from '../build/types/truffle-types'
+
+import {underlyingPriceToCtokenPrice} from './utils'
+
 import BigNumber from 'bignumber.js'
 import {createScaledNumber} from './utils'
 const {expectRevert, time} = require('@openzeppelin/test-helpers')
@@ -18,20 +21,6 @@ const CompoundPricer = artifacts.require('CompoundPricer.sol')
 
 // address(0)
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
-
-const underlyingPriceToCtokenPrice = async (
-  underlyingPrice: BigNumber,
-  exchangeRate: BigNumber,
-  underlying: MockERC20Instance,
-) => {
-  const underlyingDecimals = new BigNumber(await underlying.decimals())
-  const cTokenDecimals = new BigNumber(8)
-  return exchangeRate
-    .times(underlyingPrice)
-    .times(new BigNumber(10).exponentiatedBy(cTokenDecimals))
-    .div(new BigNumber(10).exponentiatedBy(underlyingDecimals.plus(new BigNumber(18))))
-    .integerValue()
-}
 
 contract('CompoundPricer', ([owner, random]) => {
   let oracle: MockOracleInstance
@@ -157,7 +146,7 @@ contract('CompoundPricer', ([owner, random]) => {
     })
 
     it("should revert if oracle don't have price of underlying yet", async () => {
-      await expectRevert(cethPricer.setExpiryPriceToOralce(expiry), 'CompoundPricer: underlying price not set yet.')
+      await expectRevert(cethPricer.setExpiryPriceToOralce(expiry), 'CompoundPricer: underlying price not set yet')
     })
 
     it('should set price successfully by arbitrary address', async () => {

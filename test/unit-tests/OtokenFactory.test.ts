@@ -7,6 +7,7 @@ import {
 } from '../../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 import {assert} from 'chai'
+import {createValidExpiry} from '../utils'
 const {expectEvent, expectRevert, time} = require('@openzeppelin/test-helpers')
 const OTokenFactory = artifacts.require('OtokenFactory.sol')
 const MockAddressBook = artifacts.require('MockAddressBook.sol')
@@ -26,9 +27,10 @@ contract('OTokenFactory', ([user1, user2]) => {
   const ethAddress = ZERO_ADDR
   const strikePrice = new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18))
   const isPut = true
-  const expiry = 1753776000 // 07/29/2025 @ 8:00am (UTC)
+  let expiry: number
 
   before('Deploy otoken logic and Factory contract', async () => {
+    expiry = createValidExpiry(Number(await time.latest()), 100)
     usdc = await MockERC20.new('USDC', 'USDC', 6)
     shitcoin = await MockERC20.new('Shit coin', 'STC', 18)
 
@@ -130,7 +132,7 @@ contract('OTokenFactory', ([user1, user2]) => {
           isPut,
           {from: user1},
         ),
-        "OtokenFactory: Can't create expired option.",
+        "OtokenFactory: Can't create expired option",
       )
     })
 
@@ -140,7 +142,7 @@ contract('OTokenFactory', ([user1, user2]) => {
         otokenFactory.createOtoken(ethAddress, usdc.address, usdc.address, strikePrice, randomTime.toString(), isPut, {
           from: user1,
         }),
-        'OtokenFactory: Option has to expire 08:00 UTC.',
+        'OtokenFactory: Option has to expire 08:00 UTC',
       )
     })
 
@@ -150,7 +152,7 @@ contract('OTokenFactory', ([user1, user2]) => {
         otokenFactory.createOtoken(ethAddress, usdc.address, usdc.address, strikePrice, tooFar, isPut, {
           from: user1,
         }),
-        "OtokenFactory: Can't create option with expiry > 2345/12/31.",
+        "OtokenFactory: Can't create option with expiry > 2345/12/31",
       )
     })
 

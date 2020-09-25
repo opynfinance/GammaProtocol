@@ -1,5 +1,5 @@
 import {
-  MockMarginCalculatorInstance,
+  MarginCalculatorInstance,
   MockOracleInstance,
   MockWhitelistModuleInstance,
   MarginPoolInstance,
@@ -11,11 +11,9 @@ import {
 } from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
-const {expectRevert, expectEvent, time} = require('@openzeppelin/test-helpers')
-
 const MockOracle = artifacts.require('MockOracle.sol')
 const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy.sol')
-const MockMarginCalculator = artifacts.require('MockMarginCalculator.sol')
+const MarginCalculator = artifacts.require('MarginCalculator.sol')
 const MockWhitelistModule = artifacts.require('MockWhitelistModule.sol')
 const AddressBook = artifacts.require('AddressBook.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
@@ -44,7 +42,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
   // Oracle module
   let oracle: MockOracleInstance
   // calculator module
-  let calculator: MockMarginCalculatorInstance
+  let calculator: MarginCalculatorInstance
   // margin pool module
   let marginPool: MarginPoolInstance
   // whitelist module mock
@@ -65,7 +63,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
     // deploy Oracle module
     oracle = await MockOracle.new(addressBook.address, {from: owner})
     // calculator deployment
-    calculator = await MockMarginCalculator.new(addressBook.address)
+    calculator = await MarginCalculator.new(addressBook.address)
     // margin pool deployment
     marginPool = await MarginPool.new(addressBook.address)
     // whitelist module

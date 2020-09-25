@@ -7,6 +7,7 @@ module.exports = {
   skipFiles: [
     'Migrations.sol',
     'mocks/',
-    'packages/'
+    'packages/',
+    'external/canonical-weth'
   ]
 }
