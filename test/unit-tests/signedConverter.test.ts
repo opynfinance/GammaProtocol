@@ -1,4 +1,4 @@
-import {SignedConverterTesterInstance} from '../build/types/truffle-types'
+import {SignedConverterTesterInstance} from '../../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
 const {expectRevert} = require('@openzeppelin/test-helpers')
