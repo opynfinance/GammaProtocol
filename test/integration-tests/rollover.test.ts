@@ -51,7 +51,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
   let otokenImplementation: OtokenInstance
   let otokenFactory: OtokenFactoryInstance
 
-  // oracle modulce mock
+  // oracle module mock
   let oracle: MockOracleInstance
 
   let usdc: MockERC20Instance
