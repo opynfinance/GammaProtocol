@@ -8,7 +8,7 @@ import {
   OwnedUpgradeabilityProxyInstance,
   WETH9Instance,
   FlashWrapInstance,
-} from '../build/types/truffle-types'
+} from '../../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
 const MockOracle = artifacts.require('MockOracle.sol')

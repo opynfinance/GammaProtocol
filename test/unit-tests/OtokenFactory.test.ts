@@ -156,6 +156,15 @@ contract('OTokenFactory', ([user1, user2]) => {
       )
     })
 
+    it('Should revert when creating a 0 strike put', async () => {
+      await expectRevert(
+        otokenFactory.createOtoken(ethAddress, usdc.address, usdc.address, new BigNumber(0), expiry, isPut, {
+          from: user1,
+        }),
+        "OtokenFactory: Can't create a $0 strike put option",
+      )
+    })
+
     it('Should create new contract at expected address', async () => {
       const targetAddress = await otokenFactory.getTargetOtokenAddress(
         ethAddress,

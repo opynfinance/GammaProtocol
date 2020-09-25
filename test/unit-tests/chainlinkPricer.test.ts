@@ -3,9 +3,9 @@ import {
   MockOracleInstance,
   MockChainlinkAggregatorInstance,
   MockERC20Instance,
-} from '../build/types/truffle-types'
+} from '../../build/types/truffle-types'
 
-import {changeAmountScaled, createTokenAmount} from './utils'
+import {changeAmountScaled, createTokenAmount} from '../utils'
 const {expectRevert, time} = require('@openzeppelin/test-helpers')
 
 const ChainlinkPricer = artifacts.require('ChainLinkPricer.sol')
