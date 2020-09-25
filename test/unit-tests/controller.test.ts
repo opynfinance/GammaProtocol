@@ -383,7 +383,7 @@ contract(
           const longToDeposit = createTokenAmount(20)
           const actionArgs = [
             {
-              actionType: ActionType.MintShortOption,
+              actionType: ActionType.DepositLongOption,
               owner: accountOwner1,
               sender: accountOwner1,
               asset: longOtoken.address,
@@ -1192,7 +1192,7 @@ contract(
           const collateralToDeposit = createTokenAmount(10, usdcDecimals)
           const actionArgs = [
             {
-              actionType: ActionType.MintShortOption,
+              actionType: ActionType.DepositCollateral,
               owner: accountOwner1,
               sender: accountOwner1,
               asset: usdc.address,
