@@ -1677,6 +1677,26 @@ contract(
           )
         })
 
+        it('should revert minting short in invalid vault id', async () => {
+          const vaultCounter = new BigNumber('100')
+
+          const amountToMint = createTokenAmount(1)
+          const actionArgs = [
+            {
+              actionType: ActionType.MintShortOption,
+              owner: accountOwner1,
+              sender: accountOwner1,
+              asset: shortOtoken.address,
+              vaultId: vaultCounter.toNumber(),
+              amount: amountToMint,
+              index: '0',
+              data: ZERO_ADDR,
+            },
+          ]
+
+          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'Controller: invalid vault id')
+        })
+
         it('mint naked short otoken from owner', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
@@ -2113,6 +2133,26 @@ contract(
           )
         })
 
+        it('should revert minting short in invalid vault id', async () => {
+          const vaultCounter = new BigNumber('100')
+
+          const shortOtokenToBurn = new BigNumber(await shortOtoken.balanceOf(accountOperator1))
+          const actionArgs = [
+            {
+              actionType: ActionType.BurnShortOption,
+              owner: accountOwner1,
+              sender: accountOperator1,
+              asset: shortOtoken.address,
+              vaultId: vaultCounter.toNumber(),
+              amount: shortOtokenToBurn.toString(),
+              index: '0',
+              data: ZERO_ADDR,
+            },
+          ]
+
+          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'Controller: invalid vault id')
+        })
+
         it('should burn short otoken when called from account operator', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
@@ -2250,7 +2290,7 @@ contract(
           )
         })
 
-        describe('Burn expired otoken', () => {
+        describe('Burn/Mint expired otoken', () => {
           let expiredShortOtoken: MockOtokenInstance
 
           before(async () => {
@@ -2327,7 +2367,7 @@ contract(
             )
           })
 
-          it('should revert burning an expired long otoken', async () => {
+          it('should revert burning an expired short otoken', async () => {
             // increment time after expiredLongOtoken expiry
             await time.increase(3601) // increase time with one hour in seconds
 
@@ -2355,6 +2395,42 @@ contract(
             await expectRevert(
               controllerProxy.operate(actionArgs, {from: accountOwner1}),
               'Controller: can not burn expired otoken',
+            )
+          })
+
+          it('should revert minting an expired short otoken', async () => {
+            const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
+            assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+            const collateralToDeposit = new BigNumber(await expiredShortOtoken.strikePrice()).dividedBy(1e12)
+            const amountToMint = createTokenAmount(1)
+            const actionArgs = [
+              {
+                actionType: ActionType.MintShortOption,
+                owner: accountOwner1,
+                sender: accountOwner1,
+                asset: expiredShortOtoken.address,
+                vaultId: vaultCounter.toNumber(),
+                amount: amountToMint,
+                index: '0',
+                data: ZERO_ADDR,
+              },
+              {
+                actionType: ActionType.DepositCollateral,
+                owner: accountOwner1,
+                sender: accountOwner1,
+                asset: usdc.address,
+                vaultId: vaultCounter.toNumber(),
+                amount: collateralToDeposit.toNumber(),
+                index: '0',
+                data: ZERO_ADDR,
+              },
+            ]
+
+            await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOperator1})
+            await expectRevert(
+              controllerProxy.operate(actionArgs, {from: accountOwner1}),
+              'Controller: can not mint expired otoken',
             )
           })
         })
