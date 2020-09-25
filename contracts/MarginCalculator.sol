@@ -79,17 +79,16 @@ contract MarginCalculator {
         bool hasShort = _isNotEmpty(_vault.shortOtokens);
         bool hasLong = _isNotEmpty(_vault.longOtokens);
 
-        // collateral amount is always positive.
+        // if the vault contains no otokens: return collateral value.
+        if (!hasShort && !hasLong) {
+            uint256 amount = hasCollateral ? _vault.collateralAmounts[0] : 0;
+            return (amount, true);
+        }
+
         FPI.FixedPointInt memory collateralAmount = ZERO;
         if (hasCollateral) {
             uint256 colllateralDecimals = ERC20Interface(_vault.collateralAssets[0]).decimals();
             collateralAmount = FPI.fromScaledUint(_vault.collateralAmounts[0], colllateralDecimals);
-        }
-
-        // Vault contains no otokens: return collateral value.
-        if (!hasShort && !hasLong) {
-            uint256 amount = hasCollateral ? _vault.collateralAmounts[0] : 0;
-            return (amount, true);
         }
 
         // get required margin, denominated in collateral
