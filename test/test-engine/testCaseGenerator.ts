@@ -6,6 +6,7 @@ import BigNumber from 'bignumber.js'
  */
 const maxStrikePrice = 5000
 const maxStrikeWidth = 5000
+
 const minStrikePrice = 1
 
 const maxAmount = 5000
@@ -73,8 +74,8 @@ export interface Test {
   longAmount: number
   shortStrike: number
   longStrike: number
-  collateral: number | BigNumber
-  netValue: number | BigNumber
+  collateral: BigNumber
+  netValue: BigNumber
   isExcess: boolean
   oraclePrice: number
 }
@@ -160,11 +161,15 @@ function amountGenerator(rule: amountRule): Amounts {
  * @param strikePrices The strike prices of the short and long option
  * @param amounts The amount of the short and the long option
  */
-function putMarginRequiredBeforeExpiry(strikePrices: StrikePrices, amounts: Amounts): number {
-  const netValue =
-    strikePrices.shortStrike * amounts.shortAmount -
-    strikePrices.longStrike * Math.min(amounts.shortAmount, amounts.longAmount)
-  return Math.max(0, netValue)
+function putMarginRequiredBeforeExpiry(strikePrices: StrikePrices, amounts: Amounts): BigNumber {
+  const shortStrike = new BigNumber(strikePrices.shortStrike)
+  const longStrike = new BigNumber(strikePrices.longStrike)
+  const shortAmount = new BigNumber(amounts.shortAmount)
+  const longAmount = new BigNumber(amounts.longAmount)
+
+  const netValue = shortStrike.times(shortAmount).minus(longStrike.times(BigNumber.min(shortAmount, longAmount)))
+
+  return BigNumber.max(0, netValue)
 }
 
 /**
@@ -172,11 +177,16 @@ function putMarginRequiredBeforeExpiry(strikePrices: StrikePrices, amounts: Amou
  * @param strikePrices The strike prices of the short and long option
  * @param amounts The amount of the short and the long option
  */
-function putMarginRequiredAfterExpiry(spotPrice: number, strikePrices: StrikePrices, amounts: Amounts): number {
-  const longCashValue = Math.max(0, strikePrices.longStrike - spotPrice) * amounts.longAmount
-  const shortCashValue = Math.max(0, strikePrices.shortStrike - spotPrice) * amounts.shortAmount
+function putMarginRequiredAfterExpiry(spotPrice: number, strikePrices: StrikePrices, amounts: Amounts): BigNumber {
+  const shortStrike = new BigNumber(strikePrices.shortStrike)
+  const longStrike = new BigNumber(strikePrices.longStrike)
+  const shortAmount = new BigNumber(amounts.shortAmount)
+  const longAmount = new BigNumber(amounts.longAmount)
 
-  return shortCashValue - longCashValue
+  const longCashValue = BigNumber.max(0, longStrike.minus(spotPrice)).times(longAmount)
+  const shortCashValue = BigNumber.max(0, shortStrike.minus(spotPrice)).times(shortAmount)
+
+  return shortCashValue.minus(longCashValue)
 }
 
 /**
@@ -210,48 +220,48 @@ function callMarginRequiredBeforeExpiry(strikePrices: StrikePrices, amounts: Amo
  * The following functions are where the math calculations on expected test case results happen
  */
 
-/**
- * Create a test for a vault with put options which have expired
- * @param rule The rule on what the spot price of the option is
- * @param strikePrices The strike prices of the short and long option in the vault
- * @param amounts The amount of the short and the long option in the vault
- * @param collateral The amount of collateral in the vault
- */
-function putAfterExpiryTestCreator(
-  rule: spotPriceRules,
-  strikePrices: StrikePrices,
-  amounts: Amounts,
-  collateral: number,
-): Test {
-  const highStrike = Math.max(strikePrices.shortStrike, strikePrices.longStrike)
-  const lowStrike = Math.min(strikePrices.shortStrike, strikePrices.longStrike)
-  let spotPrice = 0
+// /**
+//  * Create a test for a vault with put options which have expired
+//  * @param rule The rule on what the spot price of the option is
+//  * @param strikePrices The strike prices of the short and long option in the vault
+//  * @param amounts The amount of the short and the long option in the vault
+//  * @param collateral The amount of collateral in the vault
+//  */
+// function putAfterExpiryTestCreator(
+//   rule: spotPriceRules,
+//   strikePrices: StrikePrices,
+//   amounts: Amounts,
+//   collateral: number,
+// ): Test {
+//   const highStrike = Math.max(strikePrices.shortStrike, strikePrices.longStrike)
+//   const lowStrike = Math.min(strikePrices.shortStrike, strikePrices.longStrike)
+//   let spotPrice = 0
 
-  if (rule == spotPriceRules.spotHighest) {
-    spotPrice = Math.min(getRandomInt(maxSpot) + highStrike, maxSpot)
-  } else if (rule == spotPriceRules.spotEqualHigherStrike) {
-    spotPrice = highStrike
-  } else if (rule == spotPriceRules.spotInBetweenStrikes) {
-    const spotPriceDifference = highStrike - lowStrike
-    spotPrice = getRandomInt(spotPriceDifference) + lowStrike
-  } else if (rule == spotPriceRules.spotEqualLowerStrike) {
-    spotPrice = lowStrike
-  } else if (rule == spotPriceRules.spotLowest) {
-    spotPrice = Math.max(getRandomInt(lowStrike), minSpot)
-  }
-  const netValue = collateral - putMarginRequiredAfterExpiry(spotPrice, strikePrices, amounts)
+//   if (rule == spotPriceRules.spotHighest) {
+//     spotPrice = Math.min(getRandomInt(maxSpot) + highStrike, maxSpot)
+//   } else if (rule == spotPriceRules.spotEqualHigherStrike) {
+//     spotPrice = highStrike
+//   } else if (rule == spotPriceRules.spotInBetweenStrikes) {
+//     const spotPriceDifference = highStrike - lowStrike
+//     spotPrice = getRandomInt(spotPriceDifference) + lowStrike
+//   } else if (rule == spotPriceRules.spotEqualLowerStrike) {
+//     spotPrice = lowStrike
+//   } else if (rule == spotPriceRules.spotLowest) {
+//     spotPrice = Math.max(getRandomInt(lowStrike), minSpot)
+//   }
+//   const netValue = collateral - putMarginRequiredAfterExpiry(spotPrice, strikePrices, amounts)
 
-  return {
-    shortAmount: amounts.shortAmount,
-    longAmount: amounts.longAmount,
-    shortStrike: strikePrices.shortStrike,
-    longStrike: strikePrices.longStrike,
-    collateral: collateral,
-    netValue: netValue,
-    isExcess: true,
-    oraclePrice: spotPrice,
-  }
-}
+//   return {
+//     shortAmount: amounts.shortAmount,
+//     longAmount: amounts.longAmount,
+//     shortStrike: strikePrices.shortStrike,
+//     longStrike: strikePrices.longStrike,
+//     collateral: collateral,
+//     netValue: netValue,
+//     isExcess: true,
+//     oraclePrice: spotPrice,
+//   }
+// }
 
 /**
  * Create a test for a vault with put options which have not expired
@@ -264,15 +274,15 @@ function putBeforExpiryTestCreator(rule: collateralRules, strikePrices: StrikePr
   let collateral = marginRequired
 
   if (rule == collateralRules.insufficient) {
-    const amountToRemove = getRandomInt(collateral)
-    collateral = Math.max(minCollateral, collateral - amountToRemove)
+    const amountToRemove = getRandomInt(collateral.toNumber())
+    collateral = BigNumber.max(minCollateral, collateral.minus(amountToRemove))
   } else if (rule == collateralRules.excess) {
     const excess = getRandomInt(maxCollateral)
-    collateral = Math.min(maxCollateral, collateral + excess)
+    collateral = BigNumber.min(maxCollateral, collateral.plus(excess))
   }
 
-  const netValue = collateral - marginRequired
-  const isExcess = netValue >= 0
+  const netValue = collateral.minus(marginRequired)
+  const isExcess = netValue.gte(0)
 
   return {
     shortAmount: amounts.shortAmount,
@@ -280,7 +290,7 @@ function putBeforExpiryTestCreator(rule: collateralRules, strikePrices: StrikePr
     shortStrike: strikePrices.shortStrike,
     longStrike: strikePrices.longStrike,
     collateral: collateral,
-    netValue: Math.abs(netValue),
+    netValue: netValue.abs(),
     isExcess: isExcess,
     oraclePrice: 0,
   }
@@ -334,15 +344,15 @@ export function testCaseGenerator(): Tests {
       for (let k = 0; k < Object.keys(collateralRules).length / 2; k++) {
         const testStrikes = strikePriceGenerator(i)
         const testAmounts = amountGenerator(j)
-        let putTest = putBeforExpiryTestCreator(k, testStrikes, testAmounts)
+        const putTest = putBeforExpiryTestCreator(k, testStrikes, testAmounts)
         putTestsBeforeExpiry.push(putTest)
         const callTest = callBeforExpiryTestCreator(k, testStrikes, testAmounts)
         callTestsBeforeExpiry.push(callTest)
         if (collateralRules.exact == k) {
-          for (let l = 0; l < Object.keys(spotPriceRules).length / 2; l++) {
-            putTest = putAfterExpiryTestCreator(l, testStrikes, testAmounts, Number(putTest.collateral))
-            putTestsAfterExpiry.push(putTest)
-          }
+          // for (let l = 0; l < Object.keys(spotPriceRules).length / 2; l++) {
+          //   // putTest = putAfterExpiryTestCreator(l, testStrikes, testAmounts, Number(putTest.collateral))
+          //   // putTestsAfterExpiry.push(putTest)
+          // }
         }
       }
     }

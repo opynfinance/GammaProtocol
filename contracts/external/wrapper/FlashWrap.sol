@@ -7,6 +7,8 @@ pragma experimental ABIEncoderV2;
 
 import {CalleeInterface} from "../../interfaces/CalleeInterface.sol";
 import {WETH9} from "../canonical-weth/WETH9.sol";
+import {SafeERC20} from "../../packages/oz/SafeERC20.sol";
+import {ERC20Interface} from "../../interfaces/ERC20Interface.sol";
 
 /**
  * @author Opyn Team
@@ -14,6 +16,7 @@ import {WETH9} from "../canonical-weth/WETH9.sol";
  * @notice contract To wrap ETH
  */
 contract FlashWrap is CalleeInterface {
+    using SafeERC20 for ERC20Interface;
     WETH9 public WETH;
 
     constructor(address payable weth) public {
@@ -32,7 +35,7 @@ contract FlashWrap is CalleeInterface {
         uint256 amount = msg.value;
 
         WETH.deposit{value: amount}();
-        WETH.transfer(_sender, amount);
+        ERC20Interface(address(WETH)).safeTransfer(_sender, amount);
 
         emit WrappedETH(_sender, amount);
     }
