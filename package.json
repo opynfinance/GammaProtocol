@@ -57,6 +57,7 @@
     "test": "CI=true truffle test",
     "test:unit": "truffle test ./test/unit-tests/*.ts",
     "test:integration": "truffle test ./test/integration-tests/*.ts",
+    "test:testingEngine": "truffle test ./test/test-engine/*.ts",
     "coverage": "truffle run coverage",
     "contract-size": "truffle run contract-size --checkMaxSize",
     "generate:doc": "npm run generate:doc:control-flow & npm run generate:doc:uml",

@@ -77,6 +77,8 @@ contract OtokenFactory is OtokenSpawner {
             "OtokenFactory: Unsupported Product"
         );
 
+        require(!_isPut || _strikePrice > 0, "OtokenFactory: Can't create a $0 strike put option");
+
         address otokenImpl = AddressBookInterface(addressBook).getOtokenImpl();
 
         bytes memory initializationCalldata = abi.encodeWithSelector(
