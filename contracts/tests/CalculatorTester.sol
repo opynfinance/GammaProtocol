@@ -10,6 +10,6 @@ contract CalculatorTester is MarginCalculator {
     constructor(address _addressBook) public MarginCalculator(_addressBook) {}
 
     function getExpiredCashValue(address _otoken) external view returns (uint256) {
-        return _getExpiredCashValue(_otoken);
+        return uint256(_getExpiredCashValue(_otoken).value);
     }
 }

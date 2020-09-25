@@ -1,6 +1,6 @@
 import {
   CallTesterInstance,
-  MockMarginCalculatorInstance,
+  MarginCalculatorInstance,
   MockOtokenInstance,
   MockERC20Instance,
   MockOracleInstance,
@@ -53,7 +53,7 @@ contract(
     // Oracle module
     let oracle: MockOracleInstance
     // calculator module
-    let calculator: MockMarginCalculatorInstance
+    let calculator: MarginCalculatorInstance
     // margin pool module
     let marginPool: MarginPoolInstance
     // whitelist module mock
@@ -2706,7 +2706,7 @@ contract(
 
         await expectRevert(
           controllerProxy.operate(exerciseArgs, {from: holder1}),
-          'MarginCalculator: collateral price is not finalized',
+          'MarginCalculator: price at expiry not finalized yet.',
         )
       })
 
