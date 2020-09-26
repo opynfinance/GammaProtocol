@@ -378,6 +378,9 @@ contract(
         })
 
         it('should revert depositing long with invalid vault id', async () => {
+          // whitelist otoken
+          await whitelist.whitelistOtoken(longOtoken.address)
+
           const vaultCounter = new BigNumber('100')
 
           const longToDeposit = createTokenAmount(20)
@@ -398,10 +401,32 @@ contract(
           await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'Controller: invalid vault id')
         })
 
-        it('should deposit long otoken into vault from account owner', async () => {
-          // whitelist otoken
-          await whitelist.whitelistOtoken(longOtoken.address)
+        it('should revert depositing long from an address that is not the msg.sender nor the owner account address', async () => {
+          const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
 
+          const longToDeposit = createTokenAmount(20)
+          const actionArgs = [
+            {
+              actionType: ActionType.DepositLongOption,
+              owner: accountOwner1,
+              sender: random,
+              asset: longOtoken.address,
+              vaultId: vaultCounter.toNumber(),
+              amount: longToDeposit,
+              index: '0',
+              data: ZERO_ADDR,
+            },
+          ]
+
+          await longOtoken.approve(marginPool.address, longToDeposit, {from: random})
+          await longOtoken.approve(marginPool.address, longToDeposit, {from: accountOperator1})
+          await expectRevert(
+            controllerProxy.operate(actionArgs, {from: accountOperator1}),
+            'Controller: cannot deposit long otoken from this address',
+          )
+        })
+
+        it('should deposit long otoken into vault from account owner', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           const longToDeposit = createTokenAmount(20)
           const actionArgs = [
@@ -1205,6 +1230,31 @@ contract(
 
           await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
           await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'Controller: invalid vault id')
+        })
+
+        it('should revert depositing long from an address that is not the msg.sender nor the owner account address', async () => {
+          const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
+
+          const collateralToDeposit = createTokenAmount(10, usdcDecimals)
+          const actionArgs = [
+            {
+              actionType: ActionType.DepositCollateral,
+              owner: accountOwner1,
+              sender: random,
+              asset: usdc.address,
+              vaultId: vaultCounter.toNumber(),
+              amount: collateralToDeposit,
+              index: '0',
+              data: ZERO_ADDR,
+            },
+          ]
+
+          await usdc.approve(marginPool.address, collateralToDeposit, {from: random})
+          await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOperator1})
+          await expectRevert(
+            controllerProxy.operate(actionArgs, {from: accountOperator1}),
+            'Controller: cannot deposit collateral from this address',
+          )
         })
 
         it('should revert depositing a collateral asset with amount equal to zero', async () => {
@@ -2215,6 +2265,29 @@ contract(
           await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'Controller: invalid vault id')
         })
 
+        it('should revert depositing long from an address that is not the msg.sender nor the owner account address', async () => {
+          const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
+
+          const shortOtokenToBurn = new BigNumber(await shortOtoken.balanceOf(accountOperator1))
+          const actionArgs = [
+            {
+              actionType: ActionType.BurnShortOption,
+              owner: accountOwner1,
+              sender: random,
+              asset: shortOtoken.address,
+              vaultId: vaultCounter.toNumber(),
+              amount: shortOtokenToBurn.toString(),
+              index: '0',
+              data: ZERO_ADDR,
+            },
+          ]
+
+          await expectRevert(
+            controllerProxy.operate(actionArgs, {from: accountOperator1}),
+            'Controller: cannot burn from this address',
+          )
+        })
+
         it('should burn short otoken when called from account operator', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
@@ -2352,7 +2425,7 @@ contract(
           )
         })
 
-        describe('Burn/Mint expired otoken', () => {
+        describe('Expired otoken', () => {
           let expiredShortOtoken: MockOtokenInstance
 
           before(async () => {
@@ -2493,6 +2566,30 @@ contract(
             await expectRevert(
               controllerProxy.operate(actionArgs, {from: accountOwner1}),
               'Controller: can not mint expired otoken',
+            )
+          })
+
+          it('should revert withdraw collateral from a vault with an expired short otoken', async () => {
+            const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
+            assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+            const collateralToWithdraw = createTokenAmount(10, usdcDecimals)
+            const actionArgs = [
+              {
+                actionType: ActionType.WithdrawCollateral,
+                owner: accountOwner1,
+                sender: accountOwner1,
+                asset: usdc.address,
+                vaultId: vaultCounter.toNumber(),
+                amount: collateralToWithdraw,
+                index: '0',
+                data: ZERO_ADDR,
+              },
+            ]
+
+            await expectRevert(
+              controllerProxy.operate(actionArgs, {from: accountOwner1}),
+              'Controller: can not withdraw collateral from a vault with an expired short otoken',
             )
           })
         })
