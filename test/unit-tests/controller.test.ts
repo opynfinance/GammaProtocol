@@ -25,7 +25,7 @@ const MockWhitelistModule = artifacts.require('MockWhitelistModule.sol')
 const AddressBook = artifacts.require('AddressBook.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
-const MarginAccount = artifacts.require('MarginAccount.sol')
+const MarginVault = artifacts.require('MarginVault.sol')
 
 // address(0)
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
@@ -91,8 +91,8 @@ contract(
       // set whitelist module address
       await addressBook.setWhitelist(whitelist.address)
       // deploy Controller module
-      const lib = await MarginAccount.new()
-      await Controller.link('MarginAccount', lib.address)
+      const lib = await MarginVault.new()
+      await Controller.link('MarginVault', lib.address)
       controllerImplementation = await Controller.new()
 
       // set controller address in AddressBook
@@ -545,7 +545,7 @@ contract(
           await longOtoken.approve(marginPool.address, longToDeposit, {from: accountOwner1})
           await expectRevert(
             controllerProxy.operate(actionArgs, {from: accountOwner1}),
-            'MarginAccount: invalid long otoken amount',
+            'MarginVault: invalid long otoken amount',
           )
         })
 
@@ -683,7 +683,7 @@ contract(
 
           await expectRevert(
             controllerProxy.operate(actionArgs, {from: accountOwner1}),
-            'MarginAccount: long otoken address mismatch',
+            'MarginVault: long otoken address mismatch',
           )
         })
 
@@ -1150,7 +1150,7 @@ contract(
           await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
           await expectRevert(
             controllerProxy.operate(actionArgs, {from: accountOwner1}),
-            'MarginAccount: invalid collateral amount',
+            'MarginVault: invalid collateral amount',
           )
         })
 
@@ -1295,7 +1295,7 @@ contract(
 
           await expectRevert(
             controllerProxy.operate(actionArgs, {from: accountOwner1}),
-            'MarginAccount: collateral token address mismatch',
+            'MarginVault: collateral token address mismatch',
           )
         })
 
@@ -2036,7 +2036,7 @@ contract(
 
           await expectRevert(
             controllerProxy.operate(actionArgs, {from: accountOwner1}),
-            'MarginAccount: short otoken address mismatch',
+            'MarginVault: short otoken address mismatch',
           )
         })
 
@@ -2064,7 +2064,7 @@ contract(
 
           await expectRevert(
             controllerProxy.operate(actionArgs, {from: accountOperator1}),
-            'MarginAccount: short otoken address mismatch',
+            'MarginVault: short otoken address mismatch',
           )
 
           // transfer back

@@ -24,7 +24,7 @@ const AddressBook = artifacts.require('AddressBook.sol')
 const Whitelist = artifacts.require('Whitelist.sol')
 const Calculator = artifacts.require('MarginCalculator.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
-const MarginAccount = artifacts.require('MarginAccount.sol')
+const MarginVault = artifacts.require('MarginVault.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 
 // used for testing change of Otoken impl address in AddressBook
@@ -92,8 +92,8 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
     await addressBook.setOracle(oracle.address, {from: owner})
 
     // deploy the controller instance
-    const lib = await MarginAccount.new()
-    await Controller.link('MarginAccount', lib.address)
+    const lib = await MarginVault.new()
+    await Controller.link('MarginVault', lib.address)
     controller = await Controller.new()
     await controller.initialize(addressBook.address, owner)
 

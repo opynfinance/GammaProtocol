@@ -3,7 +3,7 @@
  */
 pragma solidity 0.6.10;
 
-import {MarginAccount} from "./MarginAccount.sol";
+import {MarginVault} from "./MarginVault.sol";
 
 /**
  *

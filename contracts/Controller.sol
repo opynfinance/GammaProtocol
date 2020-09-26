@@ -9,7 +9,7 @@ import {OwnableUpgradeSafe} from "./packages/oz/upgradeability/OwnableUpgradeSaf
 import {ReentrancyGuardUpgradeSafe} from "./packages/oz/upgradeability/ReentrancyGuardUpgradeSafe.sol";
 import {Initializable} from "./packages/oz/upgradeability/Initializable.sol";
 import {SafeMath} from "./packages/oz/SafeMath.sol";
-import {MarginAccount} from "./libs/MarginAccount.sol";
+import {MarginVault} from "./libs/MarginVault.sol";
 import {Actions} from "./libs/Actions.sol";
 import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
 import {OtokenInterface} from "./interfaces/OtokenInterface.sol";
@@ -25,7 +25,7 @@ import {CalleeInterface} from "./interfaces/CalleeInterface.sol";
  * @notice contract that controls the gamma protocol and interaction with all sub contracts
  */
 contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgradeSafe {
-    using MarginAccount for MarginAccount.Vault;
+    using MarginVault for MarginVault.Vault;
     using SafeMath for uint256;
 
     AddressBookInterface public addressbook;
@@ -52,7 +52,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /// @dev mapping between an owner address and the number of owner address vaults
     mapping(address => uint256) internal accountVaultCounter;
     /// @dev mapping between an owner address and a specific vault using a vault id
-    mapping(address => mapping(uint256 => MarginAccount.Vault)) internal vaults;
+    mapping(address => mapping(uint256 => MarginVault.Vault)) internal vaults;
     /// @dev mapping between an account owner and their approved or unapproved account operators
     mapping(address => mapping(address => bool)) internal operators;
 
@@ -368,8 +368,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _vaultId vaultId to return balances for
      * @return Vault struct with balances
      */
-    function getVaultBalances(address _owner, uint256 _vaultId) external view returns (MarginAccount.Vault memory) {
-        MarginAccount.Vault memory vault = getVault(_owner, _vaultId);
+    function getVaultBalances(address _owner, uint256 _vaultId) external view returns (MarginVault.Vault memory) {
+        MarginVault.Vault memory vault = getVault(_owner, _vaultId);
 
         // if there is no minted short oToken or the short oToken has not expired yet
         if ((vault.shortOtokens.length == 0) || (!isExpired(vault.shortOtokens[0]))) return vault;
@@ -420,7 +420,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _vaultId vault id of vault to return
      * @return Vault struct that corresponds to the _vaultId of _owner
      */
-    function getVault(address _owner, uint256 _vaultId) public view returns (MarginAccount.Vault memory) {
+    function getVault(address _owner, uint256 _vaultId) public view returns (MarginVault.Vault memory) {
         return vaults[_owner][_vaultId];
     }
 
@@ -495,7 +495,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _vaultId vault id of the final vault
      */
     function _verifyFinalState(address _owner, uint256 _vaultId) internal view {
-        MarginAccount.Vault memory _vault = getVault(_owner, _vaultId);
+        MarginVault.Vault memory _vault = getVault(_owner, _vaultId);
         (, bool isValidVault) = calculator.getExcessCollateral(_vault);
 
         require(isValidVault, "Controller: invalid final vault state");
@@ -608,7 +608,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     {
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
 
-        MarginAccount.Vault memory vault = getVault(_args.owner, _args.vaultId);
+        MarginVault.Vault memory vault = getVault(_args.owner, _args.vaultId);
         if (_isNotEmpty(vault.shortOtokens)) {
             OtokenInterface otoken = OtokenInterface(vault.shortOtokens[0]);
 
@@ -695,7 +695,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     function _settleVault(Actions.SettleVaultArgs memory _args) internal onlyAuthorized(msg.sender, _args.owner) {
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
 
-        MarginAccount.Vault memory vault = getVault(_args.owner, _args.vaultId);
+        MarginVault.Vault memory vault = getVault(_args.owner, _args.vaultId);
 
         require(_isNotEmpty(vault.shortOtokens) || _isNotEmpty(vault.longOtokens), "Can't settle vault with no otoken");
 

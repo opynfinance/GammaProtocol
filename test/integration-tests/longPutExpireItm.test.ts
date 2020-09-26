@@ -21,7 +21,7 @@ const MarginCalculator = artifacts.require('MarginCalculator.sol')
 const Whitelist = artifacts.require('Whitelist.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
-const MarginAccount = artifacts.require('MarginAccount.sol')
+const MarginVault = artifacts.require('MarginVault.sol')
 const OTokenFactory = artifacts.require('OtokenFactory.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
@@ -84,10 +84,10 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
     calculator = await MarginCalculator.new(addressBook.address)
     // setup margin pool
     marginPool = await MarginPool.new(addressBook.address)
-    // setup margin account
-    const lib = await MarginAccount.new()
+    // setup margin vault
+    const lib = await MarginVault.new()
     // setup controllerProxy module
-    await Controller.link('MarginAccount', lib.address)
+    await Controller.link('MarginVault', lib.address)
     controllerImplementation = await Controller.new(addressBook.address)
     // setup mock Oracle module
     oracle = await MockOracle.new(addressBook.address)
@@ -508,7 +508,7 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
       ]
       await expectRevert(
         controllerProxy.operate(actionArgs, {from: accountOwner1}),
-        'MarginAccount: collateral token address mismatch',
+        'MarginVault: collateral token address mismatch',
       )
     })
 

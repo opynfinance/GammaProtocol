@@ -290,7 +290,7 @@ returns the current controller configuration
 
 - the address of the pool module
 
-### Function `getVaultBalances(address _owner, uint256 _vaultId) → struct MarginAccount.Vault external`
+### Function `getVaultBalances(address _owner, uint256 _vaultId) → struct MarginVault.Vault external`
 
 before expiry or if there is no short oToken in a vault, return a the vault, if the short oToken has expired, adjust the vault collateral balances by the net option proceeds
 
@@ -342,7 +342,7 @@ check if an oToken has expired
 
 - true if the otoken has expired, otherwise it returns false
 
-### Function `getVault(address _owner, uint256 _vaultId) → struct MarginAccount.Vault public`
+### Function `getVault(address _owner, uint256 _vaultId) → struct MarginVault.Vault public`
 
 return a specific vault
 

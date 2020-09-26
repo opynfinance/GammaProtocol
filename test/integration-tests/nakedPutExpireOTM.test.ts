@@ -21,7 +21,7 @@ const MarginCalculator = artifacts.require('MarginCalculator.sol')
 const Whitelist = artifacts.require('Whitelist.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
-const MarginAccount = artifacts.require('MarginAccount.sol')
+const MarginVault = artifacts.require('MarginVault.sol')
 const OTokenFactory = artifacts.require('OtokenFactory.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
@@ -80,10 +80,10 @@ contract('Naked Put Option expires Otm flow', ([accountOwner1, buyer]) => {
     calculator = await MarginCalculator.new(addressBook.address)
     // setup margin pool
     marginPool = await MarginPool.new(addressBook.address)
-    // setup margin account
-    const lib = await MarginAccount.new()
+    // setup margin vault
+    const lib = await MarginVault.new()
     // setup controller module
-    await Controller.link('MarginAccount', lib.address)
+    await Controller.link('MarginVault', lib.address)
     controllerImplementation = await Controller.new(addressBook.address)
     // setup mock Oracle module
     oracle = await MockOracle.new(addressBook.address)
