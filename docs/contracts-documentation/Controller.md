@@ -46,7 +46,7 @@ contract that controls the gamma protocol and interaction with all sub contracts
 
 - `getConfiguration() (external)`
 
-- `getVaultBalances(address _owner, uint256 _vaultId) (external)`
+- `getProceed(address _owner, uint256 _vaultId) (external)`
 
 - `isSettlementAllowed(address _otoken) (public)`
 
@@ -290,7 +290,7 @@ returns the current controller configuration
 
 - the address of the pool module
 
-### Function `getVaultBalances(address _owner, uint256 _vaultId) → struct MarginVault.Vault external`
+### Function `getProceed(address _owner, uint256 _vaultId) → struct MarginVault.Vault external`
 
 before expiry or if there is no short oToken in a vault, return a the vault, if the short oToken has expired, adjust the vault collateral balances by the net option proceeds
 

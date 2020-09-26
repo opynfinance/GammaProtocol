@@ -160,7 +160,7 @@ contract(
       // will be improved in later PR
       it('should get vault balance', async () => {
         const vaultId = new BigNumber(0)
-        await controllerProxy.getVaultBalances(accountOwner1, vaultId)
+        await controllerProxy.getProceed(accountOwner1, vaultId)
       })
     })
 

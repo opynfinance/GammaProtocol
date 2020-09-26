@@ -64,7 +64,7 @@
 <text text-anchor="start" x="8" y="-512.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;initialize(_addressBook: address, _owner: address)</text>
 <text text-anchor="start" x="8" y="-495.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;isOperator(_owner: address, _operator: address): bool</text>
 <text text-anchor="start" x="8" y="-479.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getConfiguration(): (address, address, address, address)</text>
-<text text-anchor="start" x="8" y="-462.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getVaultBalances(_owner: address, _vaultId: uint256): MarginVault.Vault</text>
+<text text-anchor="start" x="8" y="-462.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getProceed(_owner: address, _vaultId: uint256): MarginVault.Vault</text>
 <text text-anchor="start" x="8" y="-445.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getAccountVaultCounter(_accountOwner: address): uint256</text>
 <text text-anchor="start" x="8" y="-428.7" font-family="Times,serif" font-size="14.00" fill="#000000">Public:</text>
 <text text-anchor="start" x="8" y="-411.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; PauserUpdated(oldPauser: address, newPauser: address)</text>

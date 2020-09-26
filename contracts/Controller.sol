@@ -362,21 +362,19 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
-     * @notice before expiry or if there is no short oToken in a vault, return a the vault, if the short oToken has expired, adjust the vault collateral balances by the net option proceeds
-     * @dev if vault has no short oToken or the issued oToken is not expired yet, return the vault, else call getExcessCollateral and return it as collateral amount inside Vault struct.
+     * @notice return the proceed amount of a vault
      * @param _owner account owner of the vault
      * @param _vaultId vaultId to return balances for
-     * @return Vault struct with balances
+     * @return amount of collateral that can be taken out
      */
-    function getVaultBalances(address _owner, uint256 _vaultId) external view returns (MarginVault.Vault memory) {
+    function getProceed(address _owner, uint256 _vaultId) external view returns (uint256) {
         MarginVault.Vault memory vault = getVault(_owner, _vaultId);
 
         // if there is no minted short oToken or the short oToken has not expired yet
-        if ((vault.shortOtokens.length == 0) || (!isExpired(vault.shortOtokens[0]))) return vault;
+        if ((vault.shortOtokens.length == 0) || (!isExpired(vault.shortOtokens[0]))) return 0;
 
         (uint256 netValue, ) = calculator.getExcessCollateral(vault);
-        vault.collateralAmounts[0] = netValue;
-        return vault;
+        return netValue;
     }
 
     /**
