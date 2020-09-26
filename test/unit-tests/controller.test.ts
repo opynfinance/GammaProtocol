@@ -2469,7 +2469,7 @@ contract(
 
         await expectRevert(
           controllerProxy.operate(actionArgs, {from: holder1}),
-          'Controller: otoken underlying asset price is not finalized yet',
+          'Controller: asset prices not finalized yet',
         )
       })
 
@@ -2706,7 +2706,7 @@ contract(
 
         await expectRevert(
           controllerProxy.operate(exerciseArgs, {from: holder1}),
-          'MarginCalculator: price at expiry not finalized yet.',
+          'Controller: asset prices not finalized yet',
         )
       })
 
@@ -3068,7 +3068,7 @@ contract(
 
         await expectRevert(
           controllerProxy.operate(actionArgs, {from: accountOwner1}),
-          'Controller: otoken underlying asset price is not finalized yet',
+          'Controller: asset prices not finalized yet',
         )
       })
 
@@ -3434,7 +3434,7 @@ contract(
 
         const expectedResutl = false
         assert.equal(
-          await controllerProxy.isPriceFinalized(expiredOtoken.address),
+          await controllerProxy.isSettlementAllowed(expiredOtoken.address),
           expectedResutl,
           'Price is not finalized because dispute period is not over yet',
         )
@@ -3454,13 +3454,14 @@ contract(
           true,
         )
 
-        // Mock oracle: dispute period over, set price to 200.
+        // Mock oracle: dispute periodd over, set price to 200.
         const priceMock = new BigNumber('200')
         await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, priceMock, true)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1, 18), true)
 
         const expectedResutl = true
         assert.equal(
-          await controllerProxy.isPriceFinalized(expiredOtoken.address),
+          await controllerProxy.isSettlementAllowed(expiredOtoken.address),
           expectedResutl,
           'Price is not finalized',
         )

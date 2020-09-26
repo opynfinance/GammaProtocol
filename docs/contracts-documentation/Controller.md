@@ -48,7 +48,7 @@ contract that controls the gamma protocol and interaction with all sub contracts
 
 - `getVaultBalances(address _owner, uint256 _vaultId) (external)`
 
-- `isPriceFinalized(address _otoken) (public)`
+- `isSettlementAllowed(address _otoken) (public)`
 
 - `getAccountVaultCounter(address _accountOwner) (external)`
 
@@ -306,7 +306,7 @@ if vault has no short oToken or the issued oToken is not expired yet, return the
 
 - Vault struct with balances
 
-### Function `isPriceFinalized(address _otoken) → bool public`
+### Function `isSettlementAllowed(address _otoken) → bool public`
 
 return if an expired oToken contract’s settlement price has been finalized
 

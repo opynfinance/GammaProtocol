@@ -384,14 +384,20 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _otoken address of the oToken
      * @return true if the oToken has expired AND the oraclePrice at the expiry timestamp has been finalized, otherwise it returns false
      */
-    function isPriceFinalized(address _otoken) public view returns (bool) {
+    function isSettlementAllowed(address _otoken) public view returns (bool) {
         OtokenInterface otoken = OtokenInterface(_otoken);
 
         address underlying = otoken.underlyingAsset();
+        address strike = otoken.strikeAsset();
+        address collateral = otoken.collateralAsset();
+
         uint256 expiry = otoken.expiryTimestamp();
 
-        bool isFinalized = oracle.isDisputePeriodOver(underlying, expiry);
-        return isFinalized;
+        bool isUnderlyingFinalized = oracle.isDisputePeriodOver(underlying, expiry);
+        bool isStrikeFinalized = oracle.isDisputePeriodOver(strike, expiry);
+        bool isCollateralFinalized = oracle.isDisputePeriodOver(collateral, expiry);
+
+        return isUnderlyingFinalized && isStrikeFinalized && isCollateralFinalized;
     }
 
     /**
@@ -676,7 +682,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         require(now > otoken.expiryTimestamp(), "Controller: can not exercise un-expired otoken");
 
-        require(isPriceFinalized(_args.otoken), "Controller: otoken underlying asset price is not finalized yet");
+        require(isSettlementAllowed(_args.otoken), "Controller: asset prices not finalized yet");
 
         uint256 payout = _getPayout(_args.otoken, _args.amount);
 
@@ -704,7 +710,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             : OtokenInterface(vault.longOtokens[0]);
 
         require(now > otoken.expiryTimestamp(), "Controller: can not settle vault with un-expired otoken");
-        require(isPriceFinalized(address(otoken)), "Controller: otoken underlying asset price is not finalized yet");
+        require(isSettlementAllowed(address(otoken)), "Controller: asset prices not finalized yet");
 
         (uint256 payout, ) = calculator.getExcessCollateral(vault);
 
