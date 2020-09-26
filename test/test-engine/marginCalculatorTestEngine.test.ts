@@ -52,12 +52,14 @@ contract('MarginCalculator Test Engine', () => {
     let testPutsBeforeExpiry: Test[]
     let testPutsAfterExpiry: Test[]
     let testCallsBeforeExpiry: Test[]
+    let testCallsAfterExpiry: Test[]
 
     before('generate all the tests', () => {
       const tests: Tests = testCaseGenerator()
       testPutsBeforeExpiry = tests.beforeExpiryPuts
       testPutsAfterExpiry = tests.afterExpiryPuts
       testCallsBeforeExpiry = tests.beforeExpiryCalls
+      testCallsAfterExpiry = tests.afterExpiryCalls
     })
 
     it('test the various excess margin scenarios for puts before expiry', async () => {
@@ -161,13 +163,13 @@ contract('MarginCalculator Test Engine', () => {
           weth.address,
           createTokenAmount(shortAmount),
           createTokenAmount(longAmount),
-          createTokenAmount(collateral),
+          createTokenAmount(collateral, wethDecimals),
         )
 
         const [netValue, isExcess] = await calculator.getExcessCollateral(vaultWithCollateral)
         assert.equal(isExcess, expectedIsExcess, testToString(tests[i]))
         // TODO: is this okay to do?
-        const difference = new BigNumber(netValue).minus(createTokenAmount(expectedNetValue)).abs()
+        const difference = new BigNumber(netValue).minus(createTokenAmount(expectedNetValue, wethDecimals)).abs()
         assert.isAtMost(difference.toNumber(), 1, testToString(tests[i], netValue))
       }
     })
@@ -236,6 +238,79 @@ contract('MarginCalculator Test Engine', () => {
         const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
         assert.equal(netValue.toString(), createTokenAmount(expectedNetValue, usdcDecimals), testToString(tests[i]))
         assert.equal(isExcess, expectedIsExcess, testToString(tests[i]))
+      }
+    })
+
+    it('test the various excess margin scenarios for calls after expiry', async () => {
+      const tests: Test[] = testCallsAfterExpiry
+
+      if ((await time.latest()) < expiry) {
+        await time.increaseTo(expiry + 2)
+      }
+
+      for (let i = 0; i < tests.length; i++) {
+        const longStrike = tests[i].longStrike
+        const shortStrike = tests[i].shortStrike
+
+        const longAmount = tests[i].longAmount
+        const shortAmount = tests[i].shortAmount
+
+        const collateral = tests[i].collateral
+
+        const expectedNetValue = tests[i].netValue
+        const expectedIsExcess = tests[i].isExcess
+
+        const spotPrice = tests[i].oraclePrice
+        // set the mock oracle price to have been finalized
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(spotPrice), true)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1), true)
+
+        longOption = await MockOtoken.new()
+        await longOption.init(
+          addressBook.address,
+          weth.address,
+          usdc.address,
+          weth.address,
+          createTokenAmount(longStrike),
+          expiry,
+          false,
+        )
+        shortOption = await MockOtoken.new()
+        await shortOption.init(
+          addressBook.address,
+          weth.address,
+          usdc.address,
+          weth.address,
+          createTokenAmount(shortStrike),
+          expiry,
+          false,
+        )
+        // if the amount is zero, pass in an empty array
+        const vaultShortAmount = shortAmount > 0 ? createTokenAmount(shortAmount) : undefined
+        const vaultLongAmount = longAmount > 0 ? createTokenAmount(longAmount) : undefined
+        const vaultCollateralAmount = collateral.gt(0) ? createTokenAmount(collateral, wethDecimals) : undefined
+        const shortAddress = shortAmount > 0 ? shortOption.address : undefined
+        const longAddress = longAmount > 0 ? longOption.address : undefined
+        const collateralAddress = collateral.gt(0) ? weth.address : undefined
+        // create the vault
+        const vault = createVault(
+          shortAddress,
+          longAddress,
+          collateralAddress,
+          vaultShortAmount,
+          vaultLongAmount,
+          vaultCollateralAmount,
+        )
+
+        // Check that the test passes, only fail if it doesn't
+        const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
+        // TODO: is this okay to do?
+        const difference = new BigNumber(netValue).minus(createTokenAmount(expectedNetValue, wethDecimals)).abs()
+        assert.isAtMost(difference.toNumber(), 1, testToString(tests[i], netValue))
+        // Todo: is this okay?
+        if (netValue.gt(1)) {
+          assert.equal(isExcess, expectedIsExcess, testToString(tests[i]))
+        }
       }
     })
   })

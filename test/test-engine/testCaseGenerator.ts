@@ -84,6 +84,7 @@ export interface Tests {
   beforeExpiryPuts: Test[]
   afterExpiryPuts: Test[]
   beforeExpiryCalls: Test[]
+  afterExpiryCalls: Test[]
 }
 
 export interface Result {
@@ -207,18 +208,74 @@ function callMarginRequiredBeforeExpiry(strikePrices: StrikePrices, amounts: Amo
       .dividedBy(longStrike),
     BigNumber.max(shortAmount.minus(longAmount), 0),
   )
-
-  // const netValue = Math.max(
-  //   ((strikePrices.longStrike - strikePrices.shortStrike) * amounts.shortAmount) / strikePrices.longStrike,
-  //   Math.max(amounts.shortAmount - amounts.longAmount, 0),
-  // )
   return netValue
+}
+
+/**
+ * Calculate the expected call margin required after expiry for a given vault
+ * @param strikePrices The strike prices of the short and long option
+ * @param amounts The amount of the short and the long option
+ */
+function callMarginRequiredAfterExpiry(spotPrice: number, strikePrices: StrikePrices, amounts: Amounts): BigNumber {
+  const shortStrike = new BigNumber(strikePrices.shortStrike)
+  const longStrike = new BigNumber(strikePrices.longStrike)
+  const shortAmount = new BigNumber(amounts.shortAmount)
+  const longAmount = new BigNumber(amounts.longAmount)
+  const bnSpotPrice = new BigNumber(spotPrice)
+
+  const longCashValue = BigNumber.max(0, bnSpotPrice.minus(longStrike)).times(longAmount)
+  const shortCashValue = BigNumber.max(0, bnSpotPrice.minus(shortStrike)).times(shortAmount)
+
+  return shortCashValue.minus(longCashValue).div(bnSpotPrice)
 }
 
 /**
  * TEST CASE GENERATORS
  * The following functions are where the math calculations on expected test case results happen
  */
+
+/**
+ * Create a test for a vault with call options which have expired
+ * @param rule The rule on what the spot price of the option is
+ * @param strikePrices The strike prices of the short and long option in the vault
+ * @param amounts The amount of the short and the long option in the vault
+ * @param collateral The amount of collateral in the vault
+ */
+function callAfterExpiryTestCreator(
+  rule: spotPriceRules,
+  strikePrices: StrikePrices,
+  amounts: Amounts,
+  collateral: BigNumber,
+): Test {
+  const highStrike = Math.max(strikePrices.shortStrike, strikePrices.longStrike)
+  const lowStrike = Math.min(strikePrices.shortStrike, strikePrices.longStrike)
+  let spotPrice = 0
+
+  if (rule == spotPriceRules.spotHighest) {
+    spotPrice = Math.min(getRandomInt(maxSpot) + highStrike, maxSpot)
+  } else if (rule == spotPriceRules.spotEqualHigherStrike) {
+    spotPrice = highStrike
+  } else if (rule == spotPriceRules.spotInBetweenStrikes) {
+    const spotPriceDifference = highStrike - lowStrike
+    spotPrice = getRandomInt(spotPriceDifference) + lowStrike
+  } else if (rule == spotPriceRules.spotEqualLowerStrike) {
+    spotPrice = lowStrike
+  } else if (rule == spotPriceRules.spotLowest) {
+    spotPrice = Math.max(getRandomInt(lowStrike), minSpot)
+  }
+  const netValue = collateral.minus(callMarginRequiredAfterExpiry(spotPrice, strikePrices, amounts))
+
+  return {
+    shortAmount: amounts.shortAmount,
+    longAmount: amounts.longAmount,
+    shortStrike: strikePrices.shortStrike,
+    longStrike: strikePrices.longStrike,
+    collateral: collateral,
+    netValue: netValue,
+    isExcess: true,
+    oraclePrice: spotPrice,
+  }
+}
 
 /**
  * Create a test for a vault with put options which have expired
@@ -338,6 +395,7 @@ export function testCaseGenerator(): Tests {
   const putTestsBeforeExpiry: Test[] = []
   const putTestsAfterExpiry: Test[] = []
   const callTestsBeforeExpiry: Test[] = []
+  const callTestsAfterExpiry: Test[] = []
 
   for (let i = 0; i < Object.keys(strikePriceRule).length / 2; i++) {
     for (let j = 0; j < Object.keys(amountRule).length / 2; j++) {
@@ -346,12 +404,15 @@ export function testCaseGenerator(): Tests {
         const testAmounts = amountGenerator(j)
         let putTest = putBeforExpiryTestCreator(k, testStrikes, testAmounts)
         putTestsBeforeExpiry.push(putTest)
-        const callTest = callBeforExpiryTestCreator(k, testStrikes, testAmounts)
+        let callTest = callBeforExpiryTestCreator(k, testStrikes, testAmounts)
         callTestsBeforeExpiry.push(callTest)
+        // create put and call after expiry tests assuming vault is exactly collateralized.
         if (collateralRules.exact == k) {
           for (let l = 0; l < Object.keys(spotPriceRules).length / 2; l++) {
             putTest = putAfterExpiryTestCreator(l, testStrikes, testAmounts, putTest.collateral)
             putTestsAfterExpiry.push(putTest)
+            callTest = callAfterExpiryTestCreator(l, testStrikes, testAmounts, callTest.collateral)
+            callTestsAfterExpiry.push(callTest)
           }
         }
       }
@@ -362,6 +423,7 @@ export function testCaseGenerator(): Tests {
     beforeExpiryPuts: putTestsBeforeExpiry,
     afterExpiryPuts: putTestsAfterExpiry,
     beforeExpiryCalls: callTestsBeforeExpiry,
+    afterExpiryCalls: callTestsAfterExpiry,
   }
 }
 
