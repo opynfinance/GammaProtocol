@@ -11,7 +11,7 @@ workflows:
           requires:
             - checkout_and_install
       - build:
-        requires:
+          requires:
             - checkout_and_install
       - size-check:
           requires:
@@ -20,15 +20,15 @@ workflows:
           requires:
             - build
       - integration-test:
-        requires:
+          requires:
             - build
       - coverage:
           context: COVERALLS_REPO_TOKEN
           requires:
             - build
       - gas-report:
-        context: COVERALLS_REPO_TOKEN
-        requires:
+          context: COVERALLS_REPO_TOKEN
+          requires:
             - unit-test
 
 jobs:
