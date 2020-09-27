@@ -7,26 +7,29 @@ workflows:
   build-test-report:
     jobs:
       - checkout_and_install
-      - build:
-          requires:
-            - checkout_and_install
       - lint:
           requires:
             - checkout_and_install
+      - build:
+        requires:
+          - checkout_and_install
       - size-check:
           requires:
             - build
-      - test:
+      - unit-test:
           requires:
             - build
-      - gas-report:
-          context: COVERALLS_REPO_TOKEN
-          requires:
-            - test
+      - integration-test:
+        requires:
+          - build
       - coverage:
           context: COVERALLS_REPO_TOKEN
           requires:
             - build
+      - gas-report:
+        context: COVERALLS_REPO_TOKEN
+        requires:
+          - unit-test
 
 jobs:
 
@@ -93,21 +96,38 @@ jobs:
       - restore_cache:
           key: gamma-contracts-build-{{ .Environment.CIRCLE_SHA1 }}
       - run:
-          name: Check Contract Size
+          name: Check Contracts Size
           command: npm run contract-size
 
-  test:
+  unit-test:
     working_directory: ~/gammaprotocol
     docker:
       - image: circleci/node:10.18.0
       - image: trufflesuite/ganache-cli:v6.10.1
-        command: ganache-cli -d --port 8545 --defaultBalanceEther 500 --allowUnlimitedContractSize
+        command: ganache-cli -d --port 8545 --defaultBalanceEther 500
     steps:
       - restore_cache:
           key: gamma-contracts-build-{{ .Environment.CIRCLE_SHA1 }}
       - run:
-          name: Test Contracts 
-          command: npm run test
+          name: Contracts Unit Tests 
+          command: npm run ci:test:unit
+      - save_cache:
+          key: gas-{{ .Environment.CIRCLE_SHA1 }}
+          paths:
+            - ~/gammaprotocol/gasReporterOutput.json
+
+  integration-test:
+    working_directory: ~/gammaprotocol
+    docker:
+      - image: circleci/node:10.18.0
+      - image: trufflesuite/ganache-cli:v6.10.1
+        command: ganache-cli -d --port 8545 --defaultBalanceEther 500
+    steps:
+      - restore_cache:
+          key: gamma-contracts-build-{{ .Environment.CIRCLE_SHA1 }}
+      - run:
+          name: Contracts Integration Tests 
+          command: npm run ci:test:integration
       - save_cache:
           key: gas-{{ .Environment.CIRCLE_SHA1 }}
           paths:
