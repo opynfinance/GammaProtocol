@@ -1,6 +1,7 @@
 import {FixedPointInt256TesterInstance} from '../../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
-
+import {createTokenAmount} from '../utils'
+const {expectRevert} = require('@openzeppelin/test-helpers')
 const FixedPointInt256Tester = artifacts.require('FixedPointInt256Tester.sol')
 
 contract('FixedPointInt256 lib', () => {
@@ -44,6 +45,42 @@ contract('FixedPointInt256 lib', () => {
       const b = await lib.testFromUnscaledInt(new BigNumber(5))
 
       assert.equal((await lib.testMul(a, b)).toString(), '0', 'multiplication result mismatch')
+    })
+
+    it('Should discard numbers < 1e-18', async () => {
+      // 1e-18 * 2e-18 = 2 * 1e-36, should be discarded
+      const a = {value: 1}
+      const b = {value: 2}
+      assert.equal((await lib.testMul(a, b)).toString(), '0', 'multiplication result mismatch')
+
+      // 1e-18 * 2*e-1 = 2 * 1e-19, should be discarded
+      const c = {value: 1}
+      const d = {value: createTokenAmount(2, 17)}
+      assert.equal((await lib.testMul(c, d)).toString(), '0', 'multiplication result mismatch')
+
+      // 1e-9 * 2e-9 = 2 * 2e-18, should not be discarded
+      const e = {value: createTokenAmount(1, 9)}
+      const f = {value: createTokenAmount(2, 9)}
+      assert.equal((await lib.testMul(e, f)).toString(), '2', 'multiplication result mismatch')
+    })
+
+    it('Should return 1e40 for 1e20 * 1e20', async () => {
+      // max int: 2^255 = 5.7896045e+76
+      const a = await lib.testFromUnscaledInt(createTokenAmount(1, 20))
+      const expectedResult = await lib.testFromUnscaledInt(createTokenAmount(1, 40))
+      assert.equal(
+        (await lib.testMul(a, a)).toString(),
+        expectedResult.value.toString(),
+        'multiplication result mismatch',
+      )
+    })
+
+    it('Should return overflow error when number is too big', async () => {
+      // max int: 2^255 = 5.7896045e+76
+      const b = {value: createTokenAmount(2, 38)}
+      const c = {value: createTokenAmount(3, 38)}
+      // this should overflow because 6e+76 > Max Int
+      await expectRevert(lib.testMul(b, c), 'SignedSafeMath: multiplication overflow')
     })
   })
 
