@@ -41,7 +41,7 @@ enum ActionType {
   DepositCollateral,
   WithdrawCollateral,
   SettleVault,
-  Exercise,
+  Redeem,
   Call,
 }
 
@@ -413,22 +413,22 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
     })
 
     it('should normally execute when owner address is equal to zero', async () => {
-      const amountToExercise = new BigNumber(1e12)
+      const amountToRedeem = new BigNumber(1e12)
       const actionArgs = [
         {
-          actionType: ActionType.Exercise,
+          actionType: ActionType.Redeem,
           owner: ZERO_ADDR,
           sender: holder1,
           asset: shortOtoken.address,
           vaultId: '0',
-          amount: amountToExercise.toString(),
+          amount: amountToRedeem.toString(),
           index: '0',
           data: ZERO_ADDR,
         },
       ]
       assert.equal(await controllerProxy.isExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
 
-      await shortOtoken.transfer(payableProxyController.address, amountToExercise.toString(), {from: holder1})
+      await shortOtoken.transfer(payableProxyController.address, amountToRedeem.toString(), {from: holder1})
       await payableProxyController.operate(actionArgs, holder1, {from: holder1})
     })
   })

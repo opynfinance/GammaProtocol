@@ -34,7 +34,7 @@ enum ActionType {
   DepositCollateral,
   WithdrawCollateral,
   SettleVault,
-  Exercise,
+  Redeem,
   Call,
 }
 
@@ -360,7 +360,7 @@ contract('Short Call Spread Option expires Otm flow', ([accountOwner1, nakedBuye
       assert.equal(vaultAfter.longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
     })
 
-    it('nakedBuyer: exercise OTM call option after expiry', async () => {
+    it('nakedBuyer: redeem OTM call option after expiry', async () => {
       // accountOwner1 transfers their lower strike call option to the nakedBuyer
       await lowerStrikeCall.transfer(nakedBuyer, scaledOptionsAmount, {from: accountOwner1})
 
@@ -372,7 +372,7 @@ contract('Short Call Spread Option expires Otm flow', ([accountOwner1, nakedBuye
 
       const actionArgs = [
         {
-          actionType: ActionType.Exercise,
+          actionType: ActionType.Redeem,
           owner: nakedBuyer,
           sender: nakedBuyer,
           asset: lowerStrikeCall.address,

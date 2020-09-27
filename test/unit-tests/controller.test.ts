@@ -39,7 +39,7 @@ enum ActionType {
   DepositCollateral,
   WithdrawCollateral,
   SettleVault,
-  Exercise,
+  Redeem,
   Call,
 }
 
@@ -2343,7 +2343,7 @@ contract(
       })
     })
 
-    describe('Exercise', () => {
+    describe('Redeem', () => {
       let shortOtoken: MockOtokenInstance
 
       before(async () => {
@@ -2408,7 +2408,7 @@ contract(
         const shortAmountToBurn = new BigNumber('1')
         const actionArgs = [
           {
-            actionType: ActionType.Exercise,
+            actionType: ActionType.Redeem,
             owner: ZERO_ADDR,
             sender: holder1,
             asset: shortOtoken.address,
@@ -2423,7 +2423,7 @@ contract(
 
         await expectRevert(
           controllerProxy.operate(actionArgs, {from: holder1}),
-          'Controller: can not exercise un-expired otoken',
+          'Controller: can not redeem un-expired otoken',
         )
       })
 
@@ -2454,7 +2454,7 @@ contract(
         const shortAmountToBurn = new BigNumber('1')
         const actionArgs = [
           {
-            actionType: ActionType.Exercise,
+            actionType: ActionType.Redeem,
             owner: ZERO_ADDR,
             sender: holder1,
             asset: shortOtoken.address,
@@ -2484,7 +2484,7 @@ contract(
         const shortAmountToBurn = new BigNumber(1e12)
         const actionArgs = [
           {
-            actionType: ActionType.Exercise,
+            actionType: ActionType.Redeem,
             owner: ZERO_ADDR,
             sender: ZERO_ADDR,
             asset: shortOtoken.address,
@@ -2499,15 +2499,15 @@ contract(
 
         await expectRevert(
           controllerProxy.operate(actionArgs, {from: holder1}),
-          'Actions: cannot exercise to an invalid account',
+          'Actions: cannot redeem to an invalid account',
         )
       })
 
-      it('should exercise after expiry + price is finalized', async () => {
+      it('should redeem after expiry + price is finalized', async () => {
         const shortAmountToBurn = new BigNumber(1e12)
         const actionArgs = [
           {
-            actionType: ActionType.Exercise,
+            actionType: ActionType.Redeem,
             owner: ZERO_ADDR,
             sender: holder1,
             asset: shortOtoken.address,
@@ -2547,7 +2547,7 @@ contract(
         )
       })
 
-      it('should exercise call option correctly', async () => {
+      it('should redeem call option correctly', async () => {
         const expiry = new BigNumber(await time.latest()).plus(new BigNumber(60 * 60)).toNumber()
         const call: MockOtokenInstance = await MockOtoken.new()
         await call.init(
@@ -2605,9 +2605,9 @@ contract(
         await time.increaseTo(expiry + 10)
         await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(400, 18), true)
         await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1, 18), true)
-        const exerciseArgs = [
+        const redeemArgs = [
           {
-            actionType: ActionType.Exercise,
+            actionType: ActionType.Redeem,
             owner: ZERO_ADDR,
             sender: holder1,
             asset: call.address,
@@ -2621,12 +2621,12 @@ contract(
         const expectedPayout = createTokenAmount(0.5, 18)
 
         const userBalanceBefore = new BigNumber(await weth.balanceOf(holder1))
-        await controllerProxy.operate(exerciseArgs, {from: holder1})
+        await controllerProxy.operate(redeemArgs, {from: holder1})
         const userBalanceAfter = new BigNumber(await weth.balanceOf(holder1))
         assert.equal(userBalanceAfter.minus(userBalanceBefore).toString(), expectedPayout)
       })
 
-      it('should revert exercise option if collateral is different from underlying, and collateral price is not finalized', async () => {
+      it('should revert redeem option if collateral is different from underlying, and collateral price is not finalized', async () => {
         const expiry = new BigNumber(await time.latest()).plus(new BigNumber(60 * 60)).toNumber()
 
         await whitelist.whitelistCollateral(weth2.address)
@@ -2691,9 +2691,9 @@ contract(
         await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(400, 18), true)
         await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1, 18), true)
 
-        const exerciseArgs = [
+        const redeemArgs = [
           {
-            actionType: ActionType.Exercise,
+            actionType: ActionType.Redeem,
             owner: ZERO_ADDR,
             sender: holder1,
             asset: call.address,
@@ -2705,12 +2705,12 @@ contract(
         ]
 
         await expectRevert(
-          controllerProxy.operate(exerciseArgs, {from: holder1}),
+          controllerProxy.operate(redeemArgs, {from: holder1}),
           'Controller: asset prices not finalized yet',
         )
       })
 
-      describe('Exercise multiple Otokens', () => {
+      describe('Redeem multiple Otokens', () => {
         let firstOtoken: MockOtokenInstance
         let secondOtoken: MockOtokenInstance
 
@@ -2824,7 +2824,7 @@ contract(
           await secondOtoken.transfer(holder1, amountToMint, {from: accountOwner1})
         })
 
-        it('should exercise multiple Otokens in one transaction', async () => {
+        it('should redeem multiple Otokens in one transaction', async () => {
           // past time after expiry
           await time.increase(60 * 61 * 24)
           // set price in Oracle Mock, 150$ at expiry, expire ITM
@@ -2854,25 +2854,25 @@ contract(
             true,
           )
 
-          const amountToExercise = new BigNumber(1e12)
+          const amountToRedeem = new BigNumber(1e12)
           const actionArgs = [
             {
-              actionType: ActionType.Exercise,
+              actionType: ActionType.Redeem,
               owner: ZERO_ADDR,
               sender: holder1,
               asset: firstOtoken.address,
               vaultId: '0',
-              amount: amountToExercise.toNumber(),
+              amount: amountToRedeem.toNumber(),
               index: '0',
               data: ZERO_ADDR,
             },
             {
-              actionType: ActionType.Exercise,
+              actionType: ActionType.Redeem,
               owner: ZERO_ADDR,
               sender: holder1,
               asset: secondOtoken.address,
               vaultId: '0',
-              amount: amountToExercise.toNumber(),
+              amount: amountToRedeem.toNumber(),
               index: '0',
               data: ZERO_ADDR,
             },
@@ -3829,19 +3829,19 @@ contract(
         )
       })
 
-      it('should exercise when system is paused', async () => {
-        const amountToExercise = createTokenAmount(1, 18)
+      it('should redeem when system is paused', async () => {
+        const amountToRedeem = createTokenAmount(1, 18)
         // transfer to holder
-        await shortOtoken.transfer(holder1, amountToExercise, {from: accountOwner1})
+        await shortOtoken.transfer(holder1, amountToRedeem, {from: accountOwner1})
 
         const actionArgs = [
           {
-            actionType: ActionType.Exercise,
+            actionType: ActionType.Redeem,
             owner: ZERO_ADDR,
             sender: holder1,
             asset: shortOtoken.address,
             vaultId: '0',
-            amount: amountToExercise,
+            amount: amountToRedeem,
             index: '0',
             data: ZERO_ADDR,
           },
@@ -3871,7 +3871,7 @@ contract(
         )
         assert.equal(
           senderShortBalanceBefore.minus(senderShortBalanceAfter).toString(),
-          amountToExercise.toString(),
+          amountToRedeem.toString(),
           ' Burned short otoken amount mismatch',
         )
       })
@@ -4139,14 +4139,14 @@ contract(
         )
       })
 
-      it('should revert exercise when system is in emergency shutdown state', async () => {
+      it('should revert redeem when system is in emergency shutdown state', async () => {
         const shortAmountToBurn = new BigNumber('1')
         // transfer to holder
         await shortOtoken.transfer(holder1, shortAmountToBurn, {from: accountOwner1})
 
         const actionArgs = [
           {
-            actionType: ActionType.Exercise,
+            actionType: ActionType.Redeem,
             owner: ZERO_ADDR,
             sender: holder1,
             asset: shortOtoken.address,

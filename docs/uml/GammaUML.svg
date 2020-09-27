@@ -690,7 +690,7 @@
 <text text-anchor="start" x="2712.6503" y="-848.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_withdrawCollateral(_args: Actions.WithdrawArgs)</text>
 <text text-anchor="start" x="2712.6503" y="-831.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_isNotShutdown()</text>
 <text text-anchor="start" x="2712.6503" y="-815.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_burnOtoken(_args: Actions.BurnArgs)</text>
-<text text-anchor="start" x="2712.6503" y="-798.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_exercise(_args: Actions.ExerciseArgs)</text>
+<text text-anchor="start" x="2712.6503" y="-798.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_redeem(_args: Actions.RedeemArgs)</text>
 <text text-anchor="start" x="2712.6503" y="-781.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_settleVault(_args: Actions.SettleVaultArgs)</text>
 <text text-anchor="start" x="2712.6503" y="-764.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_call(_args: Actions.CallArgs)</text>
 <text text-anchor="start" x="2712.6503" y="-747.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_checkVaultId(_accountOwner: address, _vaultId: uint256): bool</text>
@@ -721,7 +721,7 @@
 <text text-anchor="start" x="2712.6503" y="-327.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; CollateralAssetWithdrawed(asset: address, AccountOwner: address, to: address, vaultId: uint256, amount: uint256)</text>
 <text text-anchor="start" x="2712.6503" y="-311.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; ShortOtokenMinted(otoken: address, AccountOwner: address, to: address, vaultId: uint256, amount: uint256)</text>
 <text text-anchor="start" x="2712.6503" y="-294.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; ShortOtokenBurned(otoken: address, AccountOwner: address, from: address, vaultId: uint256, amount: uint256)</text>
-<text text-anchor="start" x="2712.6503" y="-277.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; Exercise(otoken: address, exerciser: address, receiver: address, collateralAsset: address, otokenBurned: uint256, payout: uint256)</text>
+<text text-anchor="start" x="2712.6503" y="-277.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; Redeem(otoken: address, redeemr: address, receiver: address, collateralAsset: address, otokenBurned: uint256, payout: uint256)</text>
 <text text-anchor="start" x="2712.6503" y="-260.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; VaultSettled(otoken: address, AccountOwner: address, to: address, vaultId: uint256, payout: uint256)</text>
 <text text-anchor="start" x="2712.6503" y="-243.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; CallExecuted(from: address, to: address, vaultOwner: address, vaultId: uint256, data: bytes)</text>
 <text text-anchor="start" x="2712.6503" y="-227.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; TerminatorUpdated(oldTerminator: address, newTerminator: address)</text>
@@ -864,7 +864,7 @@
 <text text-anchor="start" x="13329.3313" y="-1632.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_parseBurnArgs(_args: ActionArgs): BurnArgs</text>
 <text text-anchor="start" x="13329.3313" y="-1615.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_parseDepositArgs(_args: ActionArgs): DepositArgs</text>
 <text text-anchor="start" x="13329.3313" y="-1598.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_parseWithdrawArgs(_args: ActionArgs): WithdrawArgs</text>
-<text text-anchor="start" x="13329.3313" y="-1581.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_parseExerciseArgs(_args: ActionArgs): ExerciseArgs</text>
+<text text-anchor="start" x="13329.3313" y="-1581.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_parseRedeemArgs(_args: ActionArgs): RedeemArgs</text>
 <text text-anchor="start" x="13329.3313" y="-1564.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_parseSettleVaultArgs(_args: ActionArgs): SettleVaultArgs</text>
 <text text-anchor="start" x="13329.3313" y="-1548.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_parseCallArgs(_args: ActionArgs): CallArgs</text>
 </g>
@@ -1331,7 +1331,7 @@
 <title>21struct5</title>
 <polygon fill="#f2f2f2" stroke="#000000" points="12391.4446,-609.3 12391.4446,-709.3 12501.8844,-709.3 12501.8844,-609.3 12391.4446,-609.3"/>
 <text text-anchor="middle" x="12446.6645" y="-692.7" font-family="Times,serif" font-size="14.00" fill="#000000">&lt;&lt;struct&gt;&gt;</text>
-<text text-anchor="middle" x="12446.6645" y="-675.9" font-family="Times,serif" font-size="14.00" fill="#000000">ExerciseArgs</text>
+<text text-anchor="middle" x="12446.6645" y="-675.9" font-family="Times,serif" font-size="14.00" fill="#000000">RedeemArgs</text>
 <polyline fill="none" stroke="#000000" points="12391.4446,-667.7 12501.8844,-667.7 "/>
 <text text-anchor="start" x="12399.4446" y="-651.1" font-family="Times,serif" font-size="14.00" fill="#000000">receiver: address</text>
 <text text-anchor="start" x="12399.4446" y="-634.3" font-family="Times,serif" font-size="14.00" fill="#000000">otoken: address</text>
@@ -1414,7 +1414,7 @@
 <text text-anchor="start" x="12919.4555" y="-625.9" font-family="Times,serif" font-size="14.00" fill="#000000">DepositCollateral</text>
 <text text-anchor="start" x="12919.4555" y="-609.1" font-family="Times,serif" font-size="14.00" fill="#000000">WithdrawCollateral</text>
 <text text-anchor="start" x="12919.4555" y="-592.3" font-family="Times,serif" font-size="14.00" fill="#000000">SettleVault</text>
-<text text-anchor="start" x="12919.4555" y="-575.5" font-family="Times,serif" font-size="14.00" fill="#000000">Exercise</text>
+<text text-anchor="start" x="12919.4555" y="-575.5" font-family="Times,serif" font-size="14.00" fill="#000000">Redeem</text>
 <text text-anchor="start" x="12919.4555" y="-558.7" font-family="Times,serif" font-size="14.00" fill="#000000">Call</text>
 </g>
 <!-- 21enum0&#45;&gt;21 -->
@@ -2132,7 +2132,7 @@
 <text text-anchor="start" x="13077.5452" y="-806.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;withdrawArgs: Actions.WithdrawArgs</text>
 <text text-anchor="start" x="13077.5452" y="-789.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;mintArgs: Actions.MintArgs</text>
 <text text-anchor="start" x="13077.5452" y="-772.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;burnArgs: Actions.BurnArgs</text>
-<text text-anchor="start" x="13077.5452" y="-755.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;exerciseArgs: Actions.ExerciseArgs</text>
+<text text-anchor="start" x="13077.5452" y="-755.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;redeemArgs: Actions.RedeemArgs</text>
 <text text-anchor="start" x="13077.5452" y="-739.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;settleVaultArgs: Actions.SettleVaultArgs</text>
 <text text-anchor="start" x="13077.5452" y="-722.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;callArgs: Actions.CallArgs</text>
 <polyline fill="none" stroke="#000000" points="13069.5452,-714.1 13409.7838,-714.1 "/>
@@ -2143,8 +2143,8 @@
 <text text-anchor="start" x="13077.5452" y="-630.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getWithdrawArgs(): Actions.WithdrawArgs</text>
 <text text-anchor="start" x="13077.5452" y="-613.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;testParseOpenVaultAction(_args: Actions.ActionArgs)</text>
 <text text-anchor="start" x="13077.5452" y="-596.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getOpenVaultArgs(): Actions.OpenVaultArgs</text>
-<text text-anchor="start" x="13077.5452" y="-579.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;testParseExerciseAction(_args: Actions.ActionArgs)</text>
-<text text-anchor="start" x="13077.5452" y="-563.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getExerciseArgs(): Actions.ExerciseArgs</text>
+<text text-anchor="start" x="13077.5452" y="-579.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;testParseRedeemAction(_args: Actions.ActionArgs)</text>
+<text text-anchor="start" x="13077.5452" y="-563.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getRedeemArgs(): Actions.RedeemArgs</text>
 <text text-anchor="start" x="13077.5452" y="-546.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getDepositArgs(): Actions.DepositArgs</text>
 <text text-anchor="start" x="13077.5452" y="-529.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getSettleVaultArgs(): Actions.SettleVaultArgs</text>
 <text text-anchor="start" x="13077.5452" y="-512.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;testParseMintAction(_args: Actions.ActionArgs)</text>

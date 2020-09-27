@@ -34,7 +34,7 @@ enum ActionType {
   DepositCollateral,
   WithdrawCollateral,
   SettleVault,
-  Exercise,
+  Redeem,
   Call,
 }
 
@@ -258,7 +258,7 @@ contract('Naked Call Option expires Otm flow', ([accountOwner1, buyer]) => {
       assert.equal(vaultAfter.longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
     })
 
-    it('Buyer: exercise OTM call option after expiry', async () => {
+    it('Buyer: redeem OTM call option after expiry', async () => {
       // owner sells their call option
       await ethCall.transfer(buyer, scaledOptionsAmount, {from: accountOwner1})
 
@@ -270,7 +270,7 @@ contract('Naked Call Option expires Otm flow', ([accountOwner1, buyer]) => {
 
       const actionArgs = [
         {
-          actionType: ActionType.Exercise,
+          actionType: ActionType.Redeem,
           owner: buyer,
           sender: buyer,
           asset: ethCall.address,

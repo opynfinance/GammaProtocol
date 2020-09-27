@@ -19,7 +19,7 @@ library Actions {
         DepositCollateral,
         WithdrawCollateral,
         SettleVault,
-        Exercise,
+        Redeem,
         Call
     }
 
@@ -98,12 +98,12 @@ library Actions {
         uint256 amount;
     }
 
-    struct ExerciseArgs {
+    struct RedeemArgs {
         // The address to which we pay out the cash difference if the option is ITM.
         address receiver;
-        // The otoken that is to be exercised
+        // The otoken that is to be redeemd
         address otoken;
-        // The amount of otokens that is to be exercised
+        // The amount of otokens that is to be redeemd
         uint256 amount;
     }
 
@@ -246,15 +246,15 @@ library Actions {
     }
 
     /**
-     * @notice Parses the passed in action argmuents to get the argmuents for an exercise action
+     * @notice Parses the passed in action argmuents to get the argmuents for an redeem action
      * @param _args The general action arguments structure
-     * @return The arguments for a exercise action
+     * @return The arguments for a redeem action
      */
-    function _parseExerciseArgs(ActionArgs memory _args) internal pure returns (ExerciseArgs memory) {
-        require(_args.actionType == ActionType.Exercise, "Actions: can only parse arguments for exercise actions");
-        require(_args.sender != address(0), "Actions: cannot exercise to an invalid account");
+    function _parseRedeemArgs(ActionArgs memory _args) internal pure returns (RedeemArgs memory) {
+        require(_args.actionType == ActionType.Redeem, "Actions: can only parse arguments for redeem actions");
+        require(_args.sender != address(0), "Actions: cannot redeem to an invalid account");
 
-        return ExerciseArgs({receiver: _args.sender, otoken: _args.asset, amount: _args.amount});
+        return RedeemArgs({receiver: _args.sender, otoken: _args.asset, amount: _args.amount});
     }
 
     /**

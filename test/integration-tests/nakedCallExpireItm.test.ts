@@ -34,7 +34,7 @@ enum ActionType {
   DepositCollateral,
   WithdrawCollateral,
   SettleVault,
-  Exercise,
+  Redeem,
   Call,
 }
 
@@ -267,7 +267,7 @@ contract('Naked Call Option expires Itm flow', ([accountOwner1, buyer]) => {
       assert.equal(vaultAfter.longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
     })
 
-    it('Buyer: exercise ITM call option after expiry', async () => {
+    it('Buyer: redeem ITM call option after expiry', async () => {
       // owner sells their call option
       await ethCall.transfer(buyer, scaledOptionsAmount, {from: accountOwner1})
       // oracle orice increases
@@ -281,7 +281,7 @@ contract('Naked Call Option expires Itm flow', ([accountOwner1, buyer]) => {
 
       const actionArgs = [
         {
-          actionType: ActionType.Exercise,
+          actionType: ActionType.Redeem,
           owner: buyer,
           sender: buyer,
           asset: ethCall.address,

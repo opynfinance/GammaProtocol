@@ -74,7 +74,7 @@ contract that controls the gamma protocol and interaction with all sub contracts
 
 - `_burnOtoken(struct Actions.BurnArgs _args) (internal)`
 
-- `_exercise(struct Actions.ExerciseArgs _args) (internal)`
+- `_redeem(struct Actions.RedeemArgs _args) (internal)`
 
 - `_settleVault(struct Actions.SettleVaultArgs _args) (internal)`
 
@@ -108,7 +108,7 @@ contract that controls the gamma protocol and interaction with all sub contracts
 
 - `ShortOtokenBurned(address otoken, address AccountOwner, address from, uint256 vaultId, uint256 amount)`
 
-- `Exercise(address otoken, address exerciser, address receiver, address collateralAsset, uint256 otokenBurned, uint256 payout)`
+- `Redeem(address otoken, address redeemr, address receiver, address collateralAsset, uint256 otokenBurned, uint256 payout)`
 
 - `VaultSettled(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 payout)`
 
@@ -360,7 +360,7 @@ return a specific vault
 
 execute a variety of actions
 
-for each action in the action array, execute the corresponding action, only one vault can be modified for all actions except SettleVault, Exercise, and Call
+for each action in the action array, execute the corresponding action, only one vault can be modified for all actions except SettleVault, Redeem, and Call
 
 #### Parameters:
 
@@ -454,15 +454,15 @@ only the account owner or operator can burn oTokens for a vault, cannot be calle
 
 - `_args`: MintArgs structure
 
-### Function `_exercise(struct Actions.ExerciseArgs _args) internal`
+### Function `_redeem(struct Actions.RedeemArgs _args) internal`
 
-exercise an oToken after expiry, receiving the payout of the oToken in the collateral asset
+redeem an oToken after expiry, receiving the payout of the oToken in the collateral asset
 
 cannot be called when system is paused
 
 #### Parameters:
 
-- `_args`: ExerciseArgs structure
+- `_args`: RedeemArgs structure
 
 ### Function `_settleVault(struct Actions.SettleVaultArgs _args) internal`
 
@@ -562,9 +562,9 @@ emits an event when a short oToken is minted from a vault
 
 emits an event when a short oToken is burned
 
-### Event `Exercise(address otoken, address exerciser, address receiver, address collateralAsset, uint256 otokenBurned, uint256 payout)`
+### Event `Redeem(address otoken, address redeemr, address receiver, address collateralAsset, uint256 otokenBurned, uint256 payout)`
 
-emits an event when an oToken is exercised
+emits an event when an oToken is redeemd
 
 ### Event `VaultSettled(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 payout)`
 

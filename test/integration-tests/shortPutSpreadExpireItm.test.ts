@@ -34,7 +34,7 @@ enum ActionType {
   DepositCollateral,
   WithdrawCollateral,
   SettleVault,
-  Exercise,
+  Redeem,
   Call,
 }
 
@@ -362,7 +362,7 @@ contract('Short Put Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
       assert.equal(vaultAfter.longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
     })
 
-    it('nakedBuyer: exercise ITM put option after expiry', async () => {
+    it('nakedBuyer: redeem ITM put option after expiry', async () => {
       // accountOwner1 transfers their higher strike put option to the nakedBuyer
       await higherStrikePut.transfer(nakedBuyer, scaledOptionsAmount, {from: accountOwner1})
       // oracle orice decreases
@@ -376,7 +376,7 @@ contract('Short Put Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
 
       const actionArgs = [
         {
-          actionType: ActionType.Exercise,
+          actionType: ActionType.Redeem,
           owner: nakedBuyer,
           sender: nakedBuyer,
           asset: higherStrikePut.address,

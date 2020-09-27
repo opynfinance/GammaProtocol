@@ -44,7 +44,7 @@
 <text text-anchor="start" x="8" y="-848.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_withdrawCollateral(_args: Actions.WithdrawArgs)</text>
 <text text-anchor="start" x="8" y="-831.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_isNotShutdown()</text>
 <text text-anchor="start" x="8" y="-815.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_burnOtoken(_args: Actions.BurnArgs)</text>
-<text text-anchor="start" x="8" y="-798.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_exercise(_args: Actions.ExerciseArgs)</text>
+<text text-anchor="start" x="8" y="-798.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_redeem(_args: Actions.RedeemArgs)</text>
 <text text-anchor="start" x="8" y="-781.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_settleVault(_args: Actions.SettleVaultArgs)</text>
 <text text-anchor="start" x="8" y="-764.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_call(_args: Actions.CallArgs)</text>
 <text text-anchor="start" x="8" y="-747.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_checkVaultId(_accountOwner: address, _vaultId: uint256): bool</text>
@@ -75,7 +75,7 @@
 <text text-anchor="start" x="8" y="-327.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; CollateralAssetWithdrawed(asset: address, AccountOwner: address, to: address, vaultId: uint256, amount: uint256)</text>
 <text text-anchor="start" x="8" y="-311.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; ShortOtokenMinted(otoken: address, AccountOwner: address, to: address, vaultId: uint256, amount: uint256)</text>
 <text text-anchor="start" x="8" y="-294.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; ShortOtokenBurned(otoken: address, AccountOwner: address, from: address, vaultId: uint256, amount: uint256)</text>
-<text text-anchor="start" x="8" y="-277.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; Exercise(otoken: address, exerciser: address, receiver: address, collateralAsset: address, otokenBurned: uint256, payout: uint256)</text>
+<text text-anchor="start" x="8" y="-277.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; Redeem(otoken: address, redeemr: address, receiver: address, collateralAsset: address, otokenBurned: uint256, payout: uint256)</text>
 <text text-anchor="start" x="8" y="-260.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; VaultSettled(otoken: address, AccountOwner: address, to: address, vaultId: uint256, payout: uint256)</text>
 <text text-anchor="start" x="8" y="-243.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; CallExecuted(from: address, to: address, vaultOwner: address, vaultId: uint256, data: bytes)</text>
 <text text-anchor="start" x="8" y="-227.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; TerminatorUpdated(oldTerminator: address, newTerminator: address)</text>

@@ -40,7 +40,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /// @notice address that has permission to execute an emergency shutdown
     address public terminator;
 
-    /// @notice if true, all system functionality is paused other than exercise and settle vault
+    /// @notice if true, all system functionality is paused other than redeem and settle vault
     bool public systemPaused;
 
     /// @notice if true, all system functionality is paused
@@ -108,10 +108,10 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         uint256 vaultId,
         uint256 amount
     );
-    /// @notice emits an event when an oToken is exercised
-    event Exercise(
+    /// @notice emits an event when an oToken is redeemd
+    event Redeem(
         address indexed otoken,
-        address indexed exerciser,
+        address indexed redeemr,
         address indexed receiver,
         address collateralAsset,
         uint256 otokenBurned,
@@ -430,7 +430,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
     /**
      * @notice execute a variety of actions
-     * @dev for each action in the action array, execute the corresponding action, only one vault can be modified for all actions except SettleVault, Exercise, and Call
+     * @dev for each action in the action array, execute the corresponding action, only one vault can be modified for all actions except SettleVault, Redeem, and Call
      * @param _actions array of type Actions.ActionArgs[], which expresses which actions the user wants to execute
      * @return vaultUpdated, indicates if a vault has changed
      * @return owner, the vault owner if a vault has changed
@@ -454,7 +454,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
             if (
                 (actionType != Actions.ActionType.SettleVault) &&
-                (actionType != Actions.ActionType.Exercise) &&
+                (actionType != Actions.ActionType.Redeem) &&
                 (actionType != Actions.ActionType.Call)
             ) {
                 // check if this action is manipulating the same vault as all other actions, other than SettleVault
@@ -481,8 +481,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
                 _mintOtoken(Actions._parseMintArgs(action));
             } else if (actionType == Actions.ActionType.BurnShortOption) {
                 _burnOtoken(Actions._parseBurnArgs(action));
-            } else if (actionType == Actions.ActionType.Exercise) {
-                _exercise(Actions._parseExerciseArgs(action));
+            } else if (actionType == Actions.ActionType.Redeem) {
+                _redeem(Actions._parseRedeemArgs(action));
             } else if (actionType == Actions.ActionType.SettleVault) {
                 _settleVault(Actions._parseSettleVaultArgs(action));
             } else if (actionType == Actions.ActionType.Call) {
@@ -671,14 +671,14 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
-     * @notice exercise an oToken after expiry, receiving the payout of the oToken in the collateral asset
+     * @notice redeem an oToken after expiry, receiving the payout of the oToken in the collateral asset
      * @dev cannot be called when system is paused
-     * @param _args ExerciseArgs structure
+     * @param _args RedeemArgs structure
      */
-    function _exercise(Actions.ExerciseArgs memory _args) internal {
+    function _redeem(Actions.RedeemArgs memory _args) internal {
         OtokenInterface otoken = OtokenInterface(_args.otoken);
 
-        require(now > otoken.expiryTimestamp(), "Controller: can not exercise un-expired otoken");
+        require(now > otoken.expiryTimestamp(), "Controller: can not redeem un-expired otoken");
 
         require(isSettlementAllowed(_args.otoken), "Controller: asset prices not finalized yet");
 
@@ -688,7 +688,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         pool.transferToUser(otoken.collateralAsset(), _args.receiver, payout);
 
-        emit Exercise(_args.otoken, msg.sender, _args.receiver, otoken.collateralAsset(), _args.amount, payout);
+        emit Redeem(_args.otoken, msg.sender, _args.receiver, otoken.collateralAsset(), _args.amount, payout);
     }
 
     /**
