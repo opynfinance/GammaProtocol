@@ -407,7 +407,7 @@ contract('Naked Put Option closed before expiry flow', ([admin, accountOwner1, r
       assert.equal(vaultStateBefore[0].toString(), '0')
       assert.equal(vaultStateBefore[1], true)
 
-      // Set the oracle price
+      // Make the option expired
       if ((await time.latest()) < expiry) {
         await time.increaseTo(expiry + lockingPeriod + 10)
       }
