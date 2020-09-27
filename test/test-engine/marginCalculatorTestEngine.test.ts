@@ -9,13 +9,12 @@ import {createVault, createTokenAmount} from '../utils'
 import {assert} from 'chai'
 import {testCaseGenerator, Tests, Test, testToString} from './testCaseGenerator'
 
-const {expectRevert, time} = require('@openzeppelin/test-helpers')
+const {time} = require('@openzeppelin/test-helpers')
 const MockAddressBook = artifacts.require('MockAddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const MockOtoken = artifacts.require('MockOtoken.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
 const MarginCalculator = artifacts.require('MarginCalculator.sol')
-const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
 contract('MarginCalculator Test Engine', () => {
   let expiry: number
@@ -26,7 +25,6 @@ contract('MarginCalculator Test Engine', () => {
   let longOption: MockOtokenInstance
   let shortOption: MockOtokenInstance
   let usdc: MockERC20Instance
-  let dai: MockERC20Instance
   let weth: MockERC20Instance
 
   const usdcDecimals = 6
@@ -43,7 +41,6 @@ contract('MarginCalculator Test Engine', () => {
     oracle = await MockOracle.new()
     await addressBook.setOracle(oracle.address)
     // setup usdc and weth
-    // TODO: scaling
     usdc = await MockERC20.new('USDC', 'USDC', usdcDecimals)
     weth = await MockERC20.new('WETH', 'WETH', wethDecimals)
   })
