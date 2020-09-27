@@ -12,7 +12,7 @@ import {
 import {createTokenAmount, createValidExpiry} from '../utils'
 import BigNumber from 'bignumber.js'
 
-const {expectRevert, time} = require('@openzeppelin/test-helpers')
+const {time} = require('@openzeppelin/test-helpers')
 const AddressBook = artifacts.require('AddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const Otoken = artifacts.require('Otoken.sol')
@@ -38,7 +38,7 @@ enum ActionType {
   Call,
 }
 
-contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, buyer, accountOwner2]) => {
+contract('Long Put Spread Option closed ITM flow', ([accountOwner1, accountOwner2]) => {
   let expiry: number
 
   let addressBook: AddressBookInstance
@@ -431,27 +431,21 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
 
       // Check the vault balances stored in the contract
       assert.equal(vaultAfter.shortOtokens.length, 1, 'Length of the short otoken array in the vault is incorrect')
-      assert.equal(vaultAfter.collateralAssets.length, 1, 'Length of the collateral array in the vault is incorrect')
+      assert.equal(vaultAfter.collateralAssets.length, 0, 'Length of the collateral array in the vault is incorrect')
       assert.equal(vaultAfter.longOtokens.length, 1, 'Length of the long otoken array in the vault is incorrect')
 
       assert.equal(vaultAfter.shortOtokens[0], ZERO_ADDR, 'Incorrect short otoken in the vault')
-      assert.equal(vaultAfter.collateralAssets[0], ZERO_ADDR, 'Incorrect collateral asset in the vault')
       assert.equal(vaultAfter.longOtokens[0], ZERO_ADDR, 'Incorrect long otoken in the vault')
 
       assert.equal(vaultAfter.shortAmounts.length, 1, 'Length of the short amounts array in the vault is incorrect')
       assert.equal(
         vaultAfter.collateralAmounts.length,
-        1,
+        0,
         'Length of the collateral amounts array in the vault is incorrect',
       )
       assert.equal(vaultAfter.longAmounts.length, 1, 'Length of the long amounts array in the vault is incorrect')
 
       assert.equal(vaultAfter.shortAmounts[0].toString(), '0', 'Incorrect amount of short stored in the vault')
-      assert.equal(
-        vaultAfter.collateralAmounts[0].toString(),
-        '0',
-        'Incorrect amount of collateral stored in the vault',
-      )
       assert.equal(vaultAfter.longAmounts[0].toString(), '0', 'Incorrect amount of long stored in the vault')
     })
 
