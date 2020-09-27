@@ -9,6 +9,8 @@ import {
   MarginPoolInstance,
   OtokenFactoryInstance,
   MockPricerInstance,
+  MockCTokenInstance,
+  CompoundPricerInstance,
 } from '../../build/types/truffle-types'
 import {createTokenAmount, createValidExpiry} from '../utils'
 import BigNumber from 'bignumber.js'
@@ -25,6 +27,8 @@ const Controller = artifacts.require('Controller.sol')
 const MarginAccount = artifacts.require('MarginAccount.sol')
 const OTokenFactory = artifacts.require('OtokenFactory.sol')
 const MockPricer = artifacts.require('MockPricer.sol')
+const MockCToken = artifacts.require('MockCToken.sol')
+const CompoundPricer = artifacts.require('CompoundPricer.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
 enum ActionType {
@@ -217,20 +221,20 @@ contract('Naked Put Option closed before expiry flow', ([admin, accountOwner1, r
 
   describe('Integration Test: Compound yield farming', async () => {
     let cusdcEthPut: OtokenInstance
-    let cusdc: MockERC20Instance
+    let cusdc: MockCTokenInstance
     let comp: MockERC20Instance
     const cusdcDecimals = 8
     const compDecimals = 18
     let wethPricer: MockPricerInstance
     let usdcPricer: MockPricerInstance
-    let cusdcPricer: MockPricerInstance
+    let cusdcPricer: CompoundPricerInstance
     const lockingPeriod = time.duration.minutes(15).toNumber()
     const disputePeriod = time.duration.minutes(15).toNumber()
     let cusdcCollateralAmount: BigNumber
     const compRewards = createTokenAmount(10, compDecimals)
     const ethPriceAtExpiry = 200
     before('deploy an ETH put option with cUSDC as collateral', async () => {
-      cusdc = await MockERC20.new('cUSDC', 'cUSDC', cusdcDecimals)
+      cusdc = await MockCToken.new('cUSDC', 'cUSDC')
       comp = await MockERC20.new('COMP', 'COMP', compDecimals)
       // whitelist cusdc
       await whitelist.whitelistCollateral(cusdc.address)
@@ -246,7 +250,7 @@ contract('Naked Put Option closed before expiry flow', ([admin, accountOwner1, r
       await oracle.setAssetPricer(usdc.address, usdcPricer.address)
       await oracle.setLockingPeriod(usdcPricer.address, lockingPeriod)
       await oracle.setDisputePeriod(usdcPricer.address, disputePeriod)
-      cusdcPricer = await MockPricer.new(cusdc.address, oracle.address)
+      cusdcPricer = await CompoundPricer.new(cusdc.address, usdc.address, usdcPricer.address, oracle.address)
       await oracle.setAssetPricer(cusdc.address, cusdcPricer.address)
 
       await otokenFactory.createOtoken(
@@ -270,10 +274,10 @@ contract('Naked Put Option closed before expiry flow', ([admin, accountOwner1, r
 
       // Set the initial prices
       const cusdcPrice = 0.02
-      const scaledCusdcPrice = createTokenAmount(cusdcPrice, 18) // 1 cToken = 0.02 USD
+      const scaledCusdcPrice = createTokenAmount(cusdcPrice, 16) // 1 cToken = 0.02 USD
       const usdPrice = createTokenAmount(1, 18)
       await usdcPricer.setPrice(usdPrice)
-      await cusdcPricer.setPrice(scaledCusdcPrice)
+      await cusdc.setExchangeRate(scaledCusdcPrice)
 
       cusdcCollateralAmount = new BigNumber(usdcCollateralAmount).div(cusdcPrice)
       const scaledCollateralAmount = createTokenAmount(cusdcCollateralAmount.toNumber(), cusdcDecimals)
@@ -411,11 +415,11 @@ contract('Naked Put Option closed before expiry flow', ([admin, accountOwner1, r
       const scaledETHPrice = createTokenAmount(ethPriceAtExpiry, 18)
       const scaledUSDCPrice = createTokenAmount(1, 18)
       const cusdcPrice = 0.025
-      const scaledCusdcPrice = createTokenAmount(cusdcPrice, 18) // 1 cToken = 0.02 USD
-
+      const scaledCusdcPrice = createTokenAmount(cusdcPrice, 16) // 1 cToken = 0.025 USD
+      await cusdc.setExchangeRate(scaledCusdcPrice)
       await usdcPricer.setExpiryPriceToOralce(expiry, scaledUSDCPrice)
       await wethPricer.setExpiryPriceToOralce(expiry, scaledETHPrice)
-      await cusdcPricer.setExpiryPriceToOralce(expiry, scaledCusdcPrice)
+      await cusdcPricer.setExpiryPriceToOralce(expiry)
 
       await time.increase(disputePeriod + 10)
 
