@@ -41,6 +41,7 @@ enum ActionType {
   SettleVault,
   Exercise,
   Call,
+  InvalidAction,
 }
 
 contract(
@@ -4457,6 +4458,30 @@ contract(
         assert.equal(_calculator, calculator.address, 'Calculator address mismatch after refresh')
         assert.equal(_pool, marginPool.address, 'Oracle address mismatch after refresh')
         assert.equal(_whitelist, whitelist.address, 'Oracle address mismatch after refresh')
+      })
+    })
+
+    describe('Execute an invalid action', () => {
+      it('Should execute transaction with no state updates', async () => {
+        const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
+        assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+        const collateralToDeposit = createTokenAmount(10, usdcDecimals)
+        const actionArgs = [
+          {
+            actionType: ActionType.InvalidAction,
+            owner: accountOwner1,
+            sender: accountOwner1,
+            asset: usdc.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToDeposit,
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
+        await expectRevert.unspecified(controllerProxy.operate(actionArgs, {from: accountOwner1}))
       })
     })
   },
