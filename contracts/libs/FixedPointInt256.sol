@@ -18,8 +18,8 @@ library FixedPointInt256 {
     using SafeMath for uint256;
     using SignedConverter for uint256;
 
-    int256 private constant SCALING_FACTOR = 1e18;
-    uint256 private constant BASE_DECIMALS = 18;
+    int256 private constant SCALING_FACTOR = 1e20;
+    uint256 private constant BASE_DECIMALS = 20;
 
     struct FixedPointInt {
         int256 value;
@@ -121,7 +121,9 @@ library FixedPointInt256 {
      * @return mul of two fixed point
      */
     function mul(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (FixedPointInt memory) {
-        return FixedPointInt((a.value.mul(b.value)).add(SCALING_FACTOR / 2) / SCALING_FACTOR);
+        int256 value = (a.value.mul(b.value)).add(SCALING_FACTOR / 2) / SCALING_FACTOR;
+        if (value < 0) value = value.sub(1);
+        return FixedPointInt(value);
     }
 
     /**

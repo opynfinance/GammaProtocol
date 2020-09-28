@@ -12,62 +12,86 @@ contract('FixedPointInt256 lib', () => {
   })
 
   describe('Test Addition', () => {
-    it('Should return 7e18 for 5e18 + 2e18', async () => {
+    it('Should return 7e20 for 5e20 + 2e20', async () => {
       const a = await lib.testFromUnscaledInt(new BigNumber(5))
       const b = await lib.testFromUnscaledInt(new BigNumber(2))
-      const expectedResult = new BigNumber(7).multipliedBy(1e18)
+      const expectedResult = new BigNumber(7).multipliedBy(1e20)
 
       assert.equal((await lib.testAdd(a, b)).toString(), expectedResult.toString(), 'adding result mismatch')
     })
   })
 
   describe('Test subtraction', () => {
-    it('Should return 2e18 for 7e18 - 5e18', async () => {
+    it('Should return 2e20 for 7e20 - 5e20', async () => {
       const a = await lib.testFromUnscaledInt(new BigNumber(7))
       const b = await lib.testFromUnscaledInt(new BigNumber(5))
-      const expectedResult = new BigNumber(2).multipliedBy(1e18)
+      const expectedResult = new BigNumber(2).multipliedBy(1e20)
 
       assert.equal((await lib.testSub(a, b)).toString(), expectedResult.toString(), 'subtraction result mismatch')
     })
   })
 
   describe('Test mul', () => {
-    it('Should return 10e18 for 2e18 * 5e18', async () => {
+    it('Should return 10e20 for 2e20 * 5e20', async () => {
       const a = await lib.testFromUnscaledInt(new BigNumber(2))
       const b = await lib.testFromUnscaledInt(new BigNumber(5))
-      const expectedResult = new BigNumber(10).multipliedBy(1e18)
+      const expectedResult = new BigNumber(10).multipliedBy(1e20)
 
       assert.equal((await lib.testMul(a, b)).toString(), expectedResult.toString(), 'multiplication result mismatch')
     })
 
-    it('Should return 0 for 0 * 5e18', async () => {
+    it('Should return 10 for -2 * -5', async () => {
+      const a = await lib.testFromUnscaledInt(new BigNumber(-2))
+      const b = await lib.testFromUnscaledInt(new BigNumber(-5))
+      const expectedResult = new BigNumber(10).multipliedBy(1e20)
+
+      assert.equal((await lib.testMul(a, b)).toString(), expectedResult.toString(), 'multiplication result mismatch')
+    })
+
+    it('Should return 10 for -2 * 5', async () => {
+      const a = await lib.testFromUnscaledInt(new BigNumber(-2))
+      const b = await lib.testFromUnscaledInt(new BigNumber(5))
+      const expectedResult = new BigNumber(-10).multipliedBy(1e20)
+
+      assert.equal((await lib.testMul(a, b)).toString(), expectedResult.toString(), 'multiplication result mismatch')
+    })
+
+    it('Should return 10 for 2 * -5', async () => {
+      const a = await lib.testFromUnscaledInt(new BigNumber(2))
+      const b = await lib.testFromUnscaledInt(new BigNumber(-5))
+      const expectedResult = new BigNumber(-10).multipliedBy(1e20)
+
+      assert.equal((await lib.testMul(a, b)).toString(), expectedResult.toString(), 'multiplication result mismatch')
+    })
+
+    it('Should return 0 for 0 * 5e20', async () => {
       const a = await lib.testFromUnscaledInt(new BigNumber(0))
       const b = await lib.testFromUnscaledInt(new BigNumber(5))
 
       assert.equal((await lib.testMul(a, b)).toString(), '0', 'multiplication result mismatch')
     })
 
-    it('Should discard numbers < 1e-18', async () => {
-      // 1e-18 * 2e-18 = 2 * 1e-36, should be discarded
+    it('Should discard numbers < 1e-20', async () => {
+      // 1e-20 * 2e-20 = 2 * 1e-36, should be discarded
       const a = {value: 1}
       const b = {value: 2}
       assert.equal((await lib.testMul(a, b)).toString(), '0', 'multiplication result mismatch')
 
-      // 1e-18 * 2*e-1 = 2 * 1e-19, should be discarded
+      // 1e-20 * 2*e-1 = 2 * 1e-19, should be discarded
       const c = {value: 1}
-      const d = {value: createTokenAmount(2, 17)}
+      const d = {value: createTokenAmount(2, 19)}
       assert.equal((await lib.testMul(c, d)).toString(), '0', 'multiplication result mismatch')
 
-      // 1e-9 * 2e-9 = 2 * 2e-18, should not be discarded
-      const e = {value: createTokenAmount(1, 9)}
-      const f = {value: createTokenAmount(2, 9)}
+      // 1e-9 * 2e-9 = 2 * 2e-20, should not be discarded
+      const e = {value: createTokenAmount(1, 10)}
+      const f = {value: createTokenAmount(2, 10)}
       assert.equal((await lib.testMul(e, f)).toString(), '2', 'multiplication result mismatch')
     })
 
-    it('Should return 1e40 for 1e20 * 1e20', async () => {
+    it('Should return 1e36 for 1e18 * 1e18', async () => {
       // max int: 2^255 = 5.7896045e+76
-      const a = await lib.testFromUnscaledInt(createTokenAmount(1, 20))
-      const expectedResult = await lib.testFromUnscaledInt(createTokenAmount(1, 40))
+      const a = await lib.testFromUnscaledInt(createTokenAmount(1, 18))
+      const expectedResult = await lib.testFromUnscaledInt(createTokenAmount(1, 36))
       assert.equal(
         (await lib.testMul(a, a)).toString(),
         expectedResult.value.toString(),
@@ -85,38 +109,38 @@ contract('FixedPointInt256 lib', () => {
   })
 
   describe('Test div', () => {
-    it('Should return 2e18 for 10e18 divided by 5e18', async () => {
+    it('Should return 2e20 for 10e20 divided by 5e20', async () => {
       const a = await lib.testFromUnscaledInt(new BigNumber(10))
       const b = await lib.testFromUnscaledInt(new BigNumber(5))
-      const expectedResult = new BigNumber(2).multipliedBy(1e18)
+      const expectedResult = new BigNumber(2).multipliedBy(1e20)
 
       assert.equal((await lib.testDiv(a, b)).toString(), expectedResult.toString(), 'division result mismatch')
     })
   })
 
   describe('Test min', () => {
-    it('Should return 3e18 between 3e18 and 5e18', async () => {
+    it('Should return 3e20 between 3e20 and 5e20', async () => {
       const a = await lib.testFromUnscaledInt(new BigNumber(3))
       const b = await lib.testFromUnscaledInt(new BigNumber(5))
-      const expectedResult = new BigNumber(3).multipliedBy(1e18)
+      const expectedResult = new BigNumber(3).multipliedBy(1e20)
 
       assert.equal((await lib.testMin(a, b)).toString(), expectedResult.toString(), 'minimum result mismatch')
     })
 
-    it('Should return -2e18 between -2e18 and 2e18', async () => {
+    it('Should return -2e20 between -2e20 and 2e20', async () => {
       const a = await lib.testFromUnscaledInt(new BigNumber(-2))
       const b = await lib.testFromUnscaledInt(new BigNumber(-2))
-      const expectedResult = new BigNumber(-2).multipliedBy(1e18)
+      const expectedResult = new BigNumber(-2).multipliedBy(1e20)
 
       assert.equal((await lib.testMin(a, b)).toString(), expectedResult.toString(), 'minimum result mismatch')
     })
   })
 
   describe('Test max', () => {
-    it('Should return 3e18 between 3e18 and 1e18', async () => {
+    it('Should return 3e20 between 3e20 and 1e20', async () => {
       const a = await lib.testFromUnscaledInt(new BigNumber(3))
       const b = await lib.testFromUnscaledInt(new BigNumber(1))
-      const expectedResult = new BigNumber(3).multipliedBy(1e18)
+      const expectedResult = new BigNumber(3).multipliedBy(1e20)
 
       assert.equal((await lib.testMax(a, b)).toString(), expectedResult.toString(), 'maximum result mismatch')
     })
