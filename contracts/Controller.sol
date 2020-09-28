@@ -230,6 +230,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     function initialize(address _addressBook, address _owner) external initializer {
         require(_addressBook != address(0), "Controller: invalid addressbook address");
+        require(_owner != address(0), "Controller: invalid owner address");
 
         __Context_init_unchained();
         __Ownable_init_unchained(_owner);
@@ -536,7 +537,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         OtokenInterface otoken = OtokenInterface(_args.asset);
 
-        require(now <= otoken.expiryTimestamp(), "Controller: otoken used as collateral is already expired");
+        require(now < otoken.expiryTimestamp(), "Controller: otoken used as collateral is already expired");
 
         vaults[_args.owner][_args.vaultId].addLong(address(otoken), _args.amount, _args.index);
 
@@ -559,7 +560,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         OtokenInterface otoken = OtokenInterface(_args.asset);
 
-        require(now <= otoken.expiryTimestamp(), "Controller: can not withdraw an expired otoken");
+        require(now < otoken.expiryTimestamp(), "Controller: can not withdraw an expired otoken");
 
         vaults[_args.owner][_args.vaultId].removeLong(address(otoken), _args.amount, _args.index);
 
@@ -613,7 +614,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             OtokenInterface otoken = OtokenInterface(vault.shortOtokens[0]);
 
             require(
-                now <= otoken.expiryTimestamp(),
+                now < otoken.expiryTimestamp(),
                 "Controller: can not withdraw collateral from a vault with an expired short otoken"
             );
         }
@@ -637,7 +638,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         OtokenInterface otoken = OtokenInterface(_args.otoken);
 
-        require(now <= otoken.expiryTimestamp(), "Controller: can not mint expired otoken");
+        require(now < otoken.expiryTimestamp(), "Controller: can not mint expired otoken");
 
         vaults[_args.owner][_args.vaultId].addShort(_args.otoken, _args.amount, _args.index);
 
@@ -657,7 +658,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         OtokenInterface otoken = OtokenInterface(_args.otoken);
 
-        require(now <= otoken.expiryTimestamp(), "Controller: can not burn expired otoken");
+        require(now < otoken.expiryTimestamp(), "Controller: can not burn expired otoken");
 
         vaults[_args.owner][_args.vaultId].removeShort(_args.otoken, _args.amount, _args.index);
 
