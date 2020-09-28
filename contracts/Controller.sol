@@ -482,7 +482,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
                 _exercise(Actions._parseExerciseArgs(action));
             } else if (actionType == Actions.ActionType.SettleVault) {
                 _settleVault(Actions._parseSettleVaultArgs(action));
-            } else if (actionType == Actions.ActionType.Call) {
+            } else {
+                // actionType == Actions.ActionType.Call
                 _call(Actions._parseCallArgs(action));
             }
         }
