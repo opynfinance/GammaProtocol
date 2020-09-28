@@ -50,7 +50,7 @@ contract('MarginCalculator', () => {
   const daiDecimals = 8
   const wethDecimals = 18
   const ctokenDecimals = 8
-  const rtokenDecimals = 20
+  const rtokenDecimals = 22
 
   before('set up contracts', async () => {
     const now = (await time.latest()).toNumber()
@@ -694,8 +694,8 @@ contract('MarginCalculator', () => {
       })
 
       it('(4) Short: 1 unit 300 put, collateral: 35001 rUSDC => excess: 5001', async () => {
-        const collateralAmount = 35001 // 350.01e-18
-        const expectOutPut = 5001
+        const collateralAmount = 3500001 // 350.01e-18
+        const expectOutPut = 500000
         const vault = createVault(put.address, undefined, rusd.address, 1, undefined, collateralAmount)
         const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
         assert.equal(isExcess, true)
