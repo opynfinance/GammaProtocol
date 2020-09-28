@@ -18,8 +18,8 @@ library FixedPointInt256 {
     using SafeMath for uint256;
     using SignedConverter for uint256;
 
-    int256 private constant SCALING_FACTOR = 1e20;
-    uint256 private constant BASE_DECIMALS = 20;
+    int256 private constant SCALING_FACTOR = 1e18;
+    uint256 private constant BASE_DECIMALS = 18;
 
     struct FixedPointInt {
         int256 value;
