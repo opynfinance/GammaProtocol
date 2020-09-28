@@ -29,6 +29,14 @@ contract('FixedPointInt256 lib', () => {
 
       assert.equal((await lib.testSub(a, b)).toString(), expectedResult.toString(), 'subtraction result mismatch')
     })
+
+    it('Should return -2e20 for 5e20 - 7e20', async () => {
+      const a = await lib.testFromUnscaledInt(new BigNumber(7))
+      const b = await lib.testFromUnscaledInt(new BigNumber(5))
+      const expectedResult = new BigNumber(-2).multipliedBy(1e20)
+
+      assert.equal((await lib.testSub(b, a)).toString(), expectedResult.toString(), 'subtraction result mismatch')
+    })
   })
 
   describe('Test mul', () => {
@@ -113,6 +121,22 @@ contract('FixedPointInt256 lib', () => {
       const a = await lib.testFromUnscaledInt(new BigNumber(10))
       const b = await lib.testFromUnscaledInt(new BigNumber(5))
       const expectedResult = new BigNumber(2).multipliedBy(1e20)
+
+      assert.equal((await lib.testDiv(a, b)).toString(), expectedResult.toString(), 'division result mismatch')
+    })
+
+    it('Should return -2e20 for -10e20 divided by 5e20', async () => {
+      const a = await lib.testFromUnscaledInt(new BigNumber(-10))
+      const b = await lib.testFromUnscaledInt(new BigNumber(5))
+      const expectedResult = new BigNumber(-2).multipliedBy(1e20)
+
+      assert.equal((await lib.testDiv(a, b)).toString(), expectedResult.toString(), 'division result mismatch')
+    })
+
+    it('Should return -2e20 for 10e20 divided by -5e20', async () => {
+      const a = await lib.testFromUnscaledInt(new BigNumber(10))
+      const b = await lib.testFromUnscaledInt(new BigNumber(-5))
+      const expectedResult = new BigNumber(-2).multipliedBy(1e20)
 
       assert.equal((await lib.testDiv(a, b)).toString(), expectedResult.toString(), 'division result mismatch')
     })

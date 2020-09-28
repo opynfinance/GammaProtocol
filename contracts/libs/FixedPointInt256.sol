@@ -134,7 +134,9 @@ library FixedPointInt256 {
      * @return div of two signed integer
      */
     function div(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (FixedPointInt memory) {
-        return FixedPointInt((a.value.mul(SCALING_FACTOR)).add(b.value / 2) / b.value);
+        int256 value = (a.value.mul(SCALING_FACTOR)).add(b.value / 2) / b.value;
+        if (value < 0) value = value.sub(1);
+        return FixedPointInt(value);
     }
 
     /**
