@@ -288,8 +288,8 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
       const vaultStateBeforeSettlement = await calculator.getExcessCollateral(vaultBefore)
 
       assert.equal(
-        new BigNumber(vaultStateBeforeSettlement[0]).toString(), // 3999999999999999999
-        createTokenAmount(collateralPayout, wethDecimals), // 4000000000000000000
+        new BigNumber(vaultStateBeforeSettlement[0]).toString(),
+        createTokenAmount(collateralPayout, wethDecimals),
       )
       assert.equal(vaultStateBeforeSettlement[1], true)
 
