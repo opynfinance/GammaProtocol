@@ -3845,26 +3845,6 @@ contract(
       })
     })
 
-    describe('Invalid Action ID', () => {
-      it('should revert an operation if actionType is invalid', async () => {
-        // the tx will revert because `memory action = _actions[i]`
-        // will revert while getting _actions[10]
-        const actionArgs = [
-          {
-            actionType: ActionType.Call + 1,
-            owner: ZERO_ADDR,
-            sender: ZERO_ADDR,
-            asset: ZERO_ADDR,
-            vaultId: '0',
-            amount: '0',
-            index: '0',
-            data: ZERO_ADDR,
-          },
-        ]
-        await expectRevert.unspecified(controllerProxy.operate(actionArgs, {from: accountOwner1}))
-      })
-    })
-
     describe('Pause mechanism', () => {
       let shortOtoken: MockOtokenInstance
 
