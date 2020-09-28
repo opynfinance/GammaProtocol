@@ -111,7 +111,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /// @notice emits an event when an oToken is redeemd
     event Redeem(
         address indexed otoken,
-        address indexed redeemr,
+        address indexed redeemer,
         address indexed receiver,
         address collateralAsset,
         uint256 otokenBurned,

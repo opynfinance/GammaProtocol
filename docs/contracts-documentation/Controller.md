@@ -108,7 +108,7 @@ contract that controls the gamma protocol and interaction with all sub contracts
 
 - `ShortOtokenBurned(address otoken, address AccountOwner, address from, uint256 vaultId, uint256 amount)`
 
-- `Redeem(address otoken, address redeemr, address receiver, address collateralAsset, uint256 otokenBurned, uint256 payout)`
+- `Redeem(address otoken, address redeemer, address receiver, address collateralAsset, uint256 otokenBurned, uint256 payout)`
 
 - `VaultSettled(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 payout)`
 
@@ -562,7 +562,7 @@ emits an event when a short oToken is minted from a vault
 
 emits an event when a short oToken is burned
 
-### Event `Redeem(address otoken, address redeemr, address receiver, address collateralAsset, uint256 otokenBurned, uint256 payout)`
+### Event `Redeem(address otoken, address redeemer, address receiver, address collateralAsset, uint256 otokenBurned, uint256 payout)`
 
 emits an event when an oToken is redeemd
 
