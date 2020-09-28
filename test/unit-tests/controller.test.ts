@@ -2013,6 +2013,95 @@ contract(
             )
           })
         })
+
+        describe('Mint negligible amount', () => {
+          let oneDollarPut: MockOtokenInstance
+          let oneCentPut: MockOtokenInstance
+          before('create options with small strike price', async () => {
+            oneDollarPut = await MockOtoken.new()
+            oneCentPut = await MockOtoken.new()
+            // init otoken
+            await oneDollarPut.init(
+              addressBook.address,
+              weth.address,
+              usdc.address,
+              usdc.address,
+              createTokenAmount(1, 18),
+              new BigNumber(await time.latest()).plus(86400),
+              true,
+            )
+            await oneCentPut.init(
+              addressBook.address,
+              weth.address,
+              usdc.address,
+              usdc.address,
+              createTokenAmount(0.1, 18),
+              new BigNumber(await time.latest()).plus(86400),
+              true,
+            )
+            await whitelist.whitelistOtoken(oneDollarPut.address)
+            await whitelist.whitelistOtoken(oneCentPut.address)
+          })
+          it('should revert if trying to mint 1 wei of oToken with strikePrice = 1 USD without putting collateral', async () => {
+            const vaultId = (await controllerProxy.getAccountVaultCounter(accountOwner2)).toNumber() + 1
+            const actionArgs = [
+              {
+                actionType: ActionType.OpenVault,
+                owner: accountOwner2,
+                sender: accountOwner2,
+                asset: ZERO_ADDR,
+                vaultId: vaultId,
+                amount: '0',
+                index: '0',
+                data: ZERO_ADDR,
+              },
+              {
+                actionType: ActionType.MintShortOption,
+                owner: accountOwner2,
+                sender: accountOwner2,
+                asset: oneDollarPut.address,
+                vaultId: vaultId,
+                amount: '1',
+                index: '0',
+                data: ZERO_ADDR,
+              },
+            ]
+            await expectRevert(
+              controllerProxy.operate(actionArgs, {from: accountOwner2}),
+              'Controller: invalid final vault state.',
+            )
+          })
+
+          it('should allow minting 1 wei of oToken with strikePrice = 0.1 USD without putting collateral', async () => {
+            const vaultId = (await controllerProxy.getAccountVaultCounter(accountOwner2)).toNumber() + 1
+            const actionArgs = [
+              {
+                actionType: ActionType.OpenVault,
+                owner: accountOwner2,
+                sender: accountOwner2,
+                asset: ZERO_ADDR,
+                vaultId: vaultId,
+                amount: '0',
+                index: '0',
+                data: ZERO_ADDR,
+              },
+              {
+                actionType: ActionType.MintShortOption,
+                owner: accountOwner2,
+                sender: accountOwner2,
+                asset: oneCentPut.address,
+                vaultId: vaultId,
+                amount: '1',
+                index: '0',
+                data: ZERO_ADDR,
+              },
+            ]
+            const balanceBefore = await oneCentPut.balanceOf(accountOwner2)
+            await controllerProxy.operate(actionArgs, {from: accountOwner2})
+            const balanceAfter = await oneCentPut.balanceOf(accountOwner2)
+            assert.equal(balanceAfter.toNumber(), balanceBefore.toNumber() + 1)
+          })
+        })
       })
 
       describe('Burn short otoken', () => {
