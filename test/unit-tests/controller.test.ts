@@ -2030,7 +2030,6 @@ contract(
           await controllerProxy.operate(firstActionArgs, {from: accountOwner1})
 
           const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
-          const vaultBalances = await controllerProxy.getVaultBalances(accountOwner1, vaultCounter)
           const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
           const withdrawerBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
 
@@ -2039,7 +2038,6 @@ contract(
 
           assert.equal(netValue.toString(), excessCollateralToDeposit.toString(), 'Position net value mistmatch')
           assert.equal(isExcess, true, 'Position collateral excess mismatch')
-          assert.equal(vaultBefore.collateralAmounts[0].toString(), vaultBalances.collateralAmounts[0].toString())
 
           const secondActionArgs = [
             {
@@ -3347,9 +3345,9 @@ contract(
         const payout = createTokenAmount(150, usdcDecimals)
         const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
         const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
-        const vaultBalances = await controllerProxy.getVaultBalances(accountOwner1, vaultCounter)
+        const proceed = await controllerProxy.getProceed(accountOwner1, vaultCounter)
 
-        assert.equal(payout, vaultBalances.collateralAmounts[0].toString())
+        assert.equal(payout, proceed.toString())
 
         await controllerProxy.operate(actionArgs, {from: accountOwner1})
 
