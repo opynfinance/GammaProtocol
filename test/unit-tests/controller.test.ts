@@ -2035,7 +2035,7 @@ contract(
               weth.address,
               usdc.address,
               usdc.address,
-              createTokenAmount(0.1, 18),
+              createTokenAmount(0.000001, 18),
               new BigNumber(await time.latest()).plus(86400),
               true,
             )
@@ -2072,7 +2072,7 @@ contract(
             )
           })
 
-          it('should allow minting 1 wei of oToken with strikePrice = 0.1 USD without putting collateral', async () => {
+          it('should allow minting 1 wei of oToken with strikePrice = 0.0001 USD without putting collateral', async () => {
             const vaultId = (await controllerProxy.getAccountVaultCounter(accountOwner2)).toNumber() + 1
             const actionArgs = [
               {

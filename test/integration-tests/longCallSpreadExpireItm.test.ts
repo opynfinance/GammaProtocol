@@ -286,9 +286,9 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
 
       // Check that after expiry, the vault excess balance has updated as expected
       const vaultStateBeforeSettlement = await calculator.getExcessCollateral(vaultBefore)
-      // Todo: Fix following rounding problem
+
       assert.equal(
-        new BigNumber(vaultStateBeforeSettlement[0]).plus(1).toString(), // 3999999999999999999
+        new BigNumber(vaultStateBeforeSettlement[0]).toString(), // 3999999999999999999
         createTokenAmount(collateralPayout, wethDecimals), // 4000000000000000000
       )
       assert.equal(vaultStateBeforeSettlement[1], true)
@@ -318,20 +318,13 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
       const longOtokenSupplyAfter = new BigNumber(await lowerStrikeCall.totalSupply())
 
       // check balances before and after changed as expected
-      // Todo: Fix following rounding problem
       assert.equal(
-        ownerWethBalanceBefore
-          .plus(createTokenAmount(collateralPayout, wethDecimals))
-          .minus(1)
-          .toString(),
+        ownerWethBalanceBefore.plus(createTokenAmount(collateralPayout, wethDecimals)).toString(),
         ownerWethBalanceAfter.toString(),
         'weth balance mismatch',
       )
       assert.equal(
-        marginPoolWethBalanceBefore
-          .minus(createTokenAmount(collateralPayout, wethDecimals))
-          .plus(1)
-          .toString(),
+        marginPoolWethBalanceBefore.minus(createTokenAmount(collateralPayout, wethDecimals)).toString(),
         marginPoolWethBalanceAfter.toString(),
         'pool weth balance mismatch',
       )
