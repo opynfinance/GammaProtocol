@@ -185,7 +185,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner2,
-            sender: accountOwner2,
+            secondAddress: accountOwner2,
             asset: ZERO_ADDR,
             vaultId: vaultCounter2,
             amount: '0',
@@ -195,7 +195,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
           {
             actionType: ActionType.MintShortOption,
             owner: accountOwner2,
-            sender: accountOwner2,
+            secondAddress: accountOwner2,
             asset: lowerStrikeCall.address,
             vaultId: vaultCounter2,
             amount: scaledOptionsAmount,
@@ -205,7 +205,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
           {
             actionType: ActionType.DepositCollateral,
             owner: accountOwner2,
-            sender: accountOwner2,
+            secondAddress: accountOwner2,
             asset: weth.address,
             vaultId: vaultCounter2,
             amount: scaledCollateralAmount,
@@ -223,7 +223,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: vaultCounter1,
             amount: '0',
@@ -233,7 +233,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
           {
             actionType: ActionType.MintShortOption,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: higherStrikeCall.address,
             vaultId: vaultCounter1,
             amount: scaledOptionsAmount,
@@ -243,7 +243,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
           {
             actionType: ActionType.DepositLongOption,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: lowerStrikeCall.address,
             vaultId: vaultCounter1,
             amount: scaledOptionsAmount,
@@ -297,7 +297,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
         {
           actionType: ActionType.SettleVault,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: ZERO_ADDR,
           vaultId: vaultCounter1,
           amount: '0',
@@ -377,7 +377,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
         {
           actionType: ActionType.Redeem,
           owner: nakedBuyer,
-          sender: nakedBuyer,
+          secondAddress: nakedBuyer,
           asset: higherStrikeCall.address,
           vaultId: '0',
           amount: scaledOptionsAmount,
@@ -445,7 +445,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
         {
           actionType: ActionType.SettleVault,
           owner: accountOwner2,
-          sender: accountOwner2,
+          secondAddress: accountOwner2,
           asset: ZERO_ADDR,
           vaultId: vaultCounter2,
           amount: '0',

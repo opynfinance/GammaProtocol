@@ -182,7 +182,7 @@ contract('Long Call Spread Option closed before expiry flow', ([accountOwner1, n
         {
           actionType: ActionType.OpenVault,
           owner: accountOwner2,
-          sender: accountOwner2,
+          secondAddress: accountOwner2,
           asset: ZERO_ADDR,
           vaultId: vaultCounter2,
           amount: '0',
@@ -192,7 +192,7 @@ contract('Long Call Spread Option closed before expiry flow', ([accountOwner1, n
         {
           actionType: ActionType.MintShortOption,
           owner: accountOwner2,
-          sender: accountOwner2,
+          secondAddress: accountOwner2,
           asset: lowerStrikeCall.address,
           vaultId: vaultCounter2,
           amount: scaledOptionsAmount,
@@ -202,7 +202,7 @@ contract('Long Call Spread Option closed before expiry flow', ([accountOwner1, n
         {
           actionType: ActionType.DepositCollateral,
           owner: accountOwner2,
-          sender: accountOwner2,
+          secondAddress: accountOwner2,
           asset: weth.address,
           vaultId: vaultCounter2,
           amount: scaledCollateralAmount,
@@ -253,7 +253,7 @@ contract('Long Call Spread Option closed before expiry flow', ([accountOwner1, n
         {
           actionType: ActionType.OpenVault,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: ZERO_ADDR,
           vaultId: vaultCounter1,
           amount: '0',
@@ -263,7 +263,7 @@ contract('Long Call Spread Option closed before expiry flow', ([accountOwner1, n
         {
           actionType: ActionType.MintShortOption,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: higherStrikeCall.address,
           vaultId: vaultCounter1,
           amount: scaledOptionsAmount,
@@ -273,7 +273,7 @@ contract('Long Call Spread Option closed before expiry flow', ([accountOwner1, n
         {
           actionType: ActionType.DepositLongOption,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: lowerStrikeCall.address,
           vaultId: vaultCounter1,
           amount: scaledOptionsAmount,
@@ -374,7 +374,7 @@ contract('Long Call Spread Option closed before expiry flow', ([accountOwner1, n
         {
           actionType: ActionType.BurnShortOption,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: higherStrikeCall.address,
           vaultId: vaultCounter1,
           amount: scaledOptionsAmount,
@@ -384,7 +384,7 @@ contract('Long Call Spread Option closed before expiry flow', ([accountOwner1, n
         {
           actionType: ActionType.WithdrawLongOption,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: lowerStrikeCall.address,
           vaultId: vaultCounter1,
           amount: scaledOptionsAmount,
@@ -476,7 +476,7 @@ contract('Long Call Spread Option closed before expiry flow', ([accountOwner1, n
         {
           actionType: ActionType.BurnShortOption,
           owner: accountOwner2,
-          sender: accountOwner2,
+          secondAddress: accountOwner2,
           asset: lowerStrikeCall.address,
           vaultId: vaultCounter2,
           amount: scaledOptionsAmount,
@@ -486,7 +486,7 @@ contract('Long Call Spread Option closed before expiry flow', ([accountOwner1, n
         {
           actionType: ActionType.WithdrawCollateral,
           owner: accountOwner2,
-          sender: accountOwner2,
+          secondAddress: accountOwner2,
           asset: weth.address,
           vaultId: vaultCounter2,
           amount: scaledCollateralAmount,

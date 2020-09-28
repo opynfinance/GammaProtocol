@@ -187,7 +187,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: random,
+            secondAddress: random,
             asset: ZERO_ADDR,
             vaultId: '1',
             amount: '0',
@@ -206,7 +206,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: '0',
             amount: '0',
@@ -225,7 +225,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: '1',
             amount: '0',
@@ -235,7 +235,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: '2',
             amount: '0',
@@ -256,7 +256,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: '1',
             amount: '0',
@@ -266,7 +266,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner2,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: '1',
             amount: '0',
@@ -289,7 +289,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: vaultCounterBefore.toNumber() + 1,
             amount: '0',
@@ -317,7 +317,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOperator1,
+            secondAddress: accountOperator1,
             asset: ZERO_ADDR,
             vaultId: vaultCounterBefore.toNumber() + 1,
             amount: '0',
@@ -362,7 +362,7 @@ contract(
             {
               actionType: ActionType.DepositLongOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToDeposit,
@@ -389,7 +389,7 @@ contract(
             {
               actionType: ActionType.DepositLongOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToDeposit,
@@ -410,7 +410,7 @@ contract(
             {
               actionType: ActionType.DepositLongOption,
               owner: accountOwner1,
-              sender: random,
+              secondAddress: random,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToDeposit,
@@ -434,7 +434,7 @@ contract(
             {
               actionType: ActionType.DepositLongOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToDeposit,
@@ -488,7 +488,7 @@ contract(
             {
               actionType: ActionType.DepositLongOption,
               owner: accountOwner1,
-              sender: accountOperator1,
+              secondAddress: accountOperator1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToDeposit,
@@ -537,7 +537,7 @@ contract(
             {
               actionType: ActionType.DepositLongOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToDeposit.toString(),
@@ -547,7 +547,7 @@ contract(
             {
               actionType: ActionType.DepositLongOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToDeposit.toString(),
@@ -596,7 +596,7 @@ contract(
             {
               actionType: ActionType.DepositLongOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: '0',
@@ -636,7 +636,7 @@ contract(
             {
               actionType: ActionType.DepositLongOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: expiredLongOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToDeposit,
@@ -675,7 +675,7 @@ contract(
             {
               actionType: ActionType.DepositLongOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: secondLongOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToDeposit,
@@ -698,7 +698,7 @@ contract(
             {
               actionType: ActionType.OpenVault,
               owner: accountOwner1,
-              sender: random,
+              secondAddress: random,
               asset: ZERO_ADDR,
               vaultId: '1',
               amount: '0',
@@ -708,7 +708,7 @@ contract(
             {
               actionType: ActionType.DepositLongOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: longOtoken.address,
               vaultId: 1,
               amount: longToDeposit,
@@ -735,7 +735,7 @@ contract(
             {
               actionType: ActionType.WithdrawLongOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToWithdraw.toString(),
@@ -759,7 +759,7 @@ contract(
             {
               actionType: ActionType.WithdrawLongOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToWithdraw,
@@ -784,7 +784,7 @@ contract(
             {
               actionType: ActionType.WithdrawLongOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToWithdraw.toString(),
@@ -807,7 +807,7 @@ contract(
             {
               actionType: ActionType.WithdrawLongOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToWithdraw,
@@ -828,7 +828,7 @@ contract(
             {
               actionType: ActionType.WithdrawLongOption,
               owner: accountOwner1,
-              sender: random,
+              secondAddress: random,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToWithdraw,
@@ -879,7 +879,7 @@ contract(
             {
               actionType: ActionType.WithdrawLongOption,
               owner: accountOwner1,
-              sender: random,
+              secondAddress: random,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToWithdraw,
@@ -924,7 +924,7 @@ contract(
             {
               actionType: ActionType.WithdrawLongOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToWithdraw.toString(),
@@ -934,7 +934,7 @@ contract(
             {
               actionType: ActionType.WithdrawLongOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToWithdraw.toString(),
@@ -981,7 +981,7 @@ contract(
             {
               actionType: ActionType.WithdrawLongOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToWithdraw.toString(),
@@ -1044,7 +1044,7 @@ contract(
               {
                 actionType: ActionType.DepositLongOption,
                 owner: accountOwner1,
-                sender: accountOwner1,
+                secondAddress: accountOwner1,
                 asset: expiredLongOtoken.address,
                 vaultId: vaultId.toNumber(),
                 amount: longToDeposit,
@@ -1079,7 +1079,7 @@ contract(
               {
                 actionType: ActionType.WithdrawLongOption,
                 owner: accountOwner1,
-                sender: accountOwner1,
+                secondAddress: accountOwner1,
                 asset: expiredLongOtoken.address,
                 vaultId: vaultId.toNumber(),
                 amount: longToWithdraw.toString(),
@@ -1116,7 +1116,7 @@ contract(
             {
               actionType: ActionType.DepositCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToDeposit,
@@ -1167,7 +1167,7 @@ contract(
             {
               actionType: ActionType.DepositCollateral,
               owner: accountOwner1,
-              sender: accountOperator1,
+              secondAddress: accountOperator1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToDeposit,
@@ -1220,7 +1220,7 @@ contract(
             {
               actionType: ActionType.DepositCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToDeposit,
@@ -1241,7 +1241,7 @@ contract(
             {
               actionType: ActionType.DepositCollateral,
               owner: accountOwner1,
-              sender: random,
+              secondAddress: random,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToDeposit,
@@ -1267,7 +1267,7 @@ contract(
             {
               actionType: ActionType.DepositCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToDeposit,
@@ -1290,7 +1290,7 @@ contract(
             {
               actionType: ActionType.DepositCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToDeposit.toString(),
@@ -1300,7 +1300,7 @@ contract(
             {
               actionType: ActionType.DepositCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToDeposit.toString(),
@@ -1358,7 +1358,7 @@ contract(
               {
                 actionType: ActionType.DepositCollateral,
                 owner: accountOwner1,
-                sender: accountOwner1,
+                secondAddress: accountOwner1,
                 asset: trx.address,
                 vaultId: vaultCounter.toNumber(),
                 amount: collateralDeposit,
@@ -1386,7 +1386,7 @@ contract(
             {
               actionType: ActionType.DepositCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: weth.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToDeposit,
@@ -1413,7 +1413,7 @@ contract(
             {
               actionType: ActionType.WithdrawCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToWithdraw,
@@ -1437,7 +1437,7 @@ contract(
             {
               actionType: ActionType.WithdrawCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: '1350',
               amount: collateralToWithdraw,
@@ -1459,7 +1459,7 @@ contract(
             {
               actionType: ActionType.WithdrawCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToWithdraw.toNumber(),
@@ -1483,7 +1483,7 @@ contract(
             {
               actionType: ActionType.WithdrawCollateral,
               owner: accountOwner1,
-              sender: random,
+              secondAddress: random,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToWithdraw,
@@ -1536,7 +1536,7 @@ contract(
             {
               actionType: ActionType.WithdrawCollateral,
               owner: accountOwner1,
-              sender: random,
+              secondAddress: random,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToWithdraw,
@@ -1583,7 +1583,7 @@ contract(
             {
               actionType: ActionType.WithdrawCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToWithdraw.toString(),
@@ -1593,7 +1593,7 @@ contract(
             {
               actionType: ActionType.WithdrawCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToWithdraw.toString(),
@@ -1642,7 +1642,7 @@ contract(
             {
               actionType: ActionType.WithdrawCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToWithdraw.toNumber(),
@@ -1736,7 +1736,7 @@ contract(
             {
               actionType: ActionType.MintShortOption,
               owner: accountOwner1,
-              sender: random,
+              secondAddress: random,
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: amountToMint,
@@ -1761,7 +1761,7 @@ contract(
             {
               actionType: ActionType.MintShortOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: amountToMint,
@@ -1771,7 +1771,7 @@ contract(
             {
               actionType: ActionType.DepositCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: weth.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToDeposit.toString(),
@@ -1798,7 +1798,7 @@ contract(
             {
               actionType: ActionType.MintShortOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: amountToMint,
@@ -1820,7 +1820,7 @@ contract(
             {
               actionType: ActionType.MintShortOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: amountToMint,
@@ -1830,7 +1830,7 @@ contract(
             {
               actionType: ActionType.DepositCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToDeposit.toNumber(),
@@ -1903,7 +1903,7 @@ contract(
             {
               actionType: ActionType.MintShortOption,
               owner: accountOwner1,
-              sender: accountOperator1,
+              secondAddress: accountOperator1,
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: amountToMint,
@@ -1913,7 +1913,7 @@ contract(
             {
               actionType: ActionType.DepositCollateral,
               owner: accountOwner1,
-              sender: accountOperator1,
+              secondAddress: accountOperator1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToDeposit.toNumber(),
@@ -1993,7 +1993,7 @@ contract(
             {
               actionType: ActionType.WithdrawCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToWithdraw.toNumber(),
@@ -2018,7 +2018,7 @@ contract(
             {
               actionType: ActionType.DepositCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: excessCollateralToDeposit,
@@ -2045,7 +2045,7 @@ contract(
             {
               actionType: ActionType.WithdrawCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: excessCollateralToDeposit,
@@ -2092,7 +2092,7 @@ contract(
             {
               actionType: ActionType.MintShortOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: amountToMint.toNumber(),
@@ -2128,7 +2128,7 @@ contract(
               {
                 actionType: ActionType.OpenVault,
                 owner: accountOperator1,
-                sender: accountOperator1,
+                secondAddress: accountOperator1,
                 asset: ZERO_ADDR,
                 vaultId: '1',
                 amount: '0',
@@ -2138,7 +2138,7 @@ contract(
               {
                 actionType: ActionType.MintShortOption,
                 owner: accountOperator1,
-                sender: accountOperator1,
+                secondAddress: accountOperator1,
                 asset: notWhitelistedShortOtoken.address,
                 vaultId: '1',
                 amount: amountToMint.toNumber(),
@@ -2148,7 +2148,7 @@ contract(
               {
                 actionType: ActionType.DepositCollateral,
                 owner: accountOperator1,
-                sender: accountOperator1,
+                secondAddress: accountOperator1,
                 asset: usdc.address,
                 vaultId: '1',
                 amount: collateralToDeposit.toNumber(),
@@ -2176,7 +2176,7 @@ contract(
             {
               actionType: ActionType.BurnShortOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: shortOtokenToBurn.toString(),
@@ -2204,7 +2204,7 @@ contract(
             {
               actionType: ActionType.BurnShortOption,
               owner: accountOwner1,
-              sender: accountOperator1,
+              secondAddress: accountOperator1,
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: shortOtokenToBurn.toString(),
@@ -2231,7 +2231,7 @@ contract(
             {
               actionType: ActionType.BurnShortOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: shortOtokenToBurn.toString(),
@@ -2254,7 +2254,7 @@ contract(
             {
               actionType: ActionType.BurnShortOption,
               owner: accountOwner1,
-              sender: accountOperator1,
+              secondAddress: accountOperator1,
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: shortOtokenToBurn.toString(),
@@ -2274,7 +2274,7 @@ contract(
             {
               actionType: ActionType.BurnShortOption,
               owner: accountOwner1,
-              sender: random,
+              secondAddress: random,
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: shortOtokenToBurn.toString(),
@@ -2300,7 +2300,7 @@ contract(
             {
               actionType: ActionType.BurnShortOption,
               owner: accountOwner1,
-              sender: accountOperator1,
+              secondAddress: accountOperator1,
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: shortOtokenToBurn.toString(),
@@ -2348,7 +2348,7 @@ contract(
             {
               actionType: ActionType.BurnShortOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: shortOtokenToBurn.toString(),
@@ -2385,7 +2385,7 @@ contract(
             {
               actionType: ActionType.OpenVault,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: ZERO_ADDR,
               vaultId: vaultCounter.toNumber(),
               amount: '0',
@@ -2395,7 +2395,7 @@ contract(
             {
               actionType: ActionType.MintShortOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: amountToMint,
@@ -2405,7 +2405,7 @@ contract(
             {
               actionType: ActionType.BurnShortOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: amountToMint,
@@ -2453,7 +2453,7 @@ contract(
               {
                 actionType: ActionType.OpenVault,
                 owner: accountOwner1,
-                sender: accountOwner1,
+                secondAddress: accountOwner1,
                 asset: ZERO_ADDR,
                 vaultId: vaultCounterBefore.toNumber() + 1,
                 amount: '0',
@@ -2463,7 +2463,7 @@ contract(
               {
                 actionType: ActionType.MintShortOption,
                 owner: accountOwner1,
-                sender: accountOwner1,
+                secondAddress: accountOwner1,
                 asset: expiredShortOtoken.address,
                 vaultId: vaultCounterBefore.toNumber() + 1,
                 amount: amountToMint.toNumber(),
@@ -2473,7 +2473,7 @@ contract(
               {
                 actionType: ActionType.DepositCollateral,
                 owner: accountOwner1,
-                sender: accountOwner1,
+                secondAddress: accountOwner1,
                 asset: usdc.address,
                 vaultId: vaultCounterBefore.toNumber() + 1,
                 amount: collateralToDeposit.toNumber(),
@@ -2513,7 +2513,7 @@ contract(
               {
                 actionType: ActionType.BurnShortOption,
                 owner: accountOwner1,
-                sender: accountOwner1,
+                secondAddress: accountOwner1,
                 asset: expiredShortOtoken.address,
                 vaultId: vaultId.toNumber(),
                 amount: shortAmountToBurn.toNumber(),
@@ -2544,7 +2544,7 @@ contract(
               {
                 actionType: ActionType.MintShortOption,
                 owner: accountOwner1,
-                sender: accountOwner1,
+                secondAddress: accountOwner1,
                 asset: expiredShortOtoken.address,
                 vaultId: vaultCounter.toNumber(),
                 amount: amountToMint,
@@ -2554,7 +2554,7 @@ contract(
               {
                 actionType: ActionType.DepositCollateral,
                 owner: accountOwner1,
-                sender: accountOwner1,
+                secondAddress: accountOwner1,
                 asset: usdc.address,
                 vaultId: vaultCounter.toNumber(),
                 amount: collateralToDeposit.toNumber(),
@@ -2579,7 +2579,7 @@ contract(
               {
                 actionType: ActionType.WithdrawCollateral,
                 owner: accountOwner1,
-                sender: accountOwner1,
+                secondAddress: accountOwner1,
                 asset: usdc.address,
                 vaultId: vaultCounter.toNumber(),
                 amount: collateralToWithdraw,
@@ -2624,7 +2624,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: vaultCounter.toNumber(),
             amount: '0',
@@ -2634,7 +2634,7 @@ contract(
           {
             actionType: ActionType.MintShortOption,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: amountToMint.toNumber(),
@@ -2644,7 +2644,7 @@ contract(
           {
             actionType: ActionType.DepositCollateral,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: usdc.address,
             vaultId: vaultCounter.toNumber(),
             amount: collateralToDeposit.toNumber(),
@@ -2664,7 +2664,7 @@ contract(
           {
             actionType: ActionType.Redeem,
             owner: ZERO_ADDR,
-            sender: holder1,
+            secondAddress: holder1,
             asset: shortOtoken.address,
             vaultId: '0',
             amount: shortAmountToBurn.toNumber(),
@@ -2710,7 +2710,7 @@ contract(
           {
             actionType: ActionType.Redeem,
             owner: ZERO_ADDR,
-            sender: holder1,
+            secondAddress: holder1,
             asset: shortOtoken.address,
             vaultId: '0',
             amount: shortAmountToBurn.toNumber(),
@@ -2740,7 +2740,7 @@ contract(
           {
             actionType: ActionType.Redeem,
             owner: ZERO_ADDR,
-            sender: ZERO_ADDR,
+            secondAddress: ZERO_ADDR,
             asset: shortOtoken.address,
             vaultId: '0',
             amount: shortAmountToBurn.toNumber(),
@@ -2763,7 +2763,7 @@ contract(
           {
             actionType: ActionType.Redeem,
             owner: ZERO_ADDR,
-            sender: holder1,
+            secondAddress: holder1,
             asset: shortOtoken.address,
             vaultId: '0',
             amount: shortAmountToBurn.toNumber(),
@@ -2824,7 +2824,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: vaultCounter.toNumber(),
             amount: '0',
@@ -2834,7 +2834,7 @@ contract(
           {
             actionType: ActionType.DepositCollateral,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: weth.address,
             vaultId: vaultCounter.toNumber(),
             amount: amountCollateral,
@@ -2844,7 +2844,7 @@ contract(
           {
             actionType: ActionType.MintShortOption,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: call.address,
             vaultId: vaultCounter.toNumber(),
             amount: amountOtoken,
@@ -2863,7 +2863,7 @@ contract(
           {
             actionType: ActionType.Redeem,
             owner: ZERO_ADDR,
-            sender: holder1,
+            secondAddress: holder1,
             asset: call.address,
             vaultId: '0',
             amount: amountOtoken,
@@ -2909,7 +2909,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: vaultCounter.toNumber(),
             amount: '0',
@@ -2919,7 +2919,7 @@ contract(
           {
             actionType: ActionType.MintShortOption,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: call.address,
             vaultId: vaultCounter.toNumber(),
             amount: amountOtoken,
@@ -2929,7 +2929,7 @@ contract(
           {
             actionType: ActionType.DepositCollateral,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: weth2.address,
             vaultId: vaultCounter.toNumber(),
             amount: amountCollateral,
@@ -2949,7 +2949,7 @@ contract(
           {
             actionType: ActionType.Redeem,
             owner: ZERO_ADDR,
-            sender: holder1,
+            secondAddress: holder1,
             asset: call.address,
             vaultId: '0',
             amount: amountOtoken,
@@ -3007,7 +3007,7 @@ contract(
             {
               actionType: ActionType.OpenVault,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: ZERO_ADDR,
               vaultId: vaultCounter.toNumber(),
               amount: '0',
@@ -3017,7 +3017,7 @@ contract(
             {
               actionType: ActionType.MintShortOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: firstOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: amountToMint.toNumber(),
@@ -3027,7 +3027,7 @@ contract(
             {
               actionType: ActionType.DepositCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: firstCollateralToDeposit.toNumber(),
@@ -3043,7 +3043,7 @@ contract(
             {
               actionType: ActionType.OpenVault,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: ZERO_ADDR,
               vaultId: vaultCounter.toNumber(),
               amount: '0',
@@ -3053,7 +3053,7 @@ contract(
             {
               actionType: ActionType.MintShortOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: secondOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: amountToMint.toNumber(),
@@ -3063,7 +3063,7 @@ contract(
             {
               actionType: ActionType.DepositCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: secondCollateralToDeposit.toNumber(),
@@ -3113,7 +3113,7 @@ contract(
             {
               actionType: ActionType.Redeem,
               owner: ZERO_ADDR,
-              sender: holder1,
+              secondAddress: holder1,
               asset: firstOtoken.address,
               vaultId: '0',
               amount: amountToRedeem.toNumber(),
@@ -3123,7 +3123,7 @@ contract(
             {
               actionType: ActionType.Redeem,
               owner: ZERO_ADDR,
-              sender: holder1,
+              secondAddress: holder1,
               asset: secondOtoken.address,
               vaultId: '0',
               amount: amountToRedeem.toNumber(),
@@ -3185,7 +3185,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: vaultCounter.toNumber(),
             amount: '0',
@@ -3195,7 +3195,7 @@ contract(
           {
             actionType: ActionType.DepositCollateral,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: usdc.address,
             vaultId: vaultCounter.toNumber(),
             amount: collateralToDespoit.toNumber(),
@@ -3213,7 +3213,7 @@ contract(
           {
             actionType: ActionType.SettleVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: '0',
@@ -3237,7 +3237,7 @@ contract(
           {
             actionType: ActionType.MintShortOption,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: amountToMint.toString(),
@@ -3253,7 +3253,7 @@ contract(
           {
             actionType: ActionType.SettleVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: '0',
@@ -3274,7 +3274,7 @@ contract(
           {
             actionType: ActionType.SettleVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounter.plus(10000).toNumber(),
             amount: '0',
@@ -3309,7 +3309,7 @@ contract(
           {
             actionType: ActionType.SettleVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: '0',
@@ -3335,7 +3335,7 @@ contract(
           {
             actionType: ActionType.SettleVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: '0',
@@ -3393,7 +3393,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: vaultCounter.toNumber(),
             amount: '0',
@@ -3403,7 +3403,7 @@ contract(
           {
             actionType: ActionType.MintShortOption,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: longOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: longAmount,
@@ -3413,7 +3413,7 @@ contract(
           {
             actionType: ActionType.DepositCollateral,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: usdc.address,
             vaultId: vaultCounter.toNumber(),
             amount: collateralAmount,
@@ -3429,7 +3429,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: vaultCounter.toNumber() + 1,
             amount: '0',
@@ -3439,7 +3439,7 @@ contract(
           {
             actionType: ActionType.DepositLongOption,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: longOtoken.address,
             vaultId: vaultCounter.toNumber() + 1,
             amount: longAmount,
@@ -3465,7 +3465,7 @@ contract(
           {
             actionType: ActionType.SettleVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: vaultCounter.toNumber() + 1,
             amount: '0',
@@ -3519,7 +3519,7 @@ contract(
             {
               actionType: ActionType.OpenVault,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: ZERO_ADDR,
               vaultId: vaultCounter.toNumber(),
               amount: '0',
@@ -3529,7 +3529,7 @@ contract(
             {
               actionType: ActionType.MintShortOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: firstShortOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: amountToMint.toString(),
@@ -3539,7 +3539,7 @@ contract(
             {
               actionType: ActionType.DepositCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToDespoit,
@@ -3571,7 +3571,7 @@ contract(
             {
               actionType: ActionType.OpenVault,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: ZERO_ADDR,
               vaultId: vaultCounter.toNumber(),
               amount: '0',
@@ -3581,7 +3581,7 @@ contract(
             {
               actionType: ActionType.MintShortOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: secondShortOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: amountToMint.toString(),
@@ -3591,7 +3591,7 @@ contract(
             {
               actionType: ActionType.DepositCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToDespoit,
@@ -3616,7 +3616,7 @@ contract(
             {
               actionType: ActionType.SettleVault,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: secondShortOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: '0',
@@ -3626,7 +3626,7 @@ contract(
             {
               actionType: ActionType.SettleVault,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: firstShortOtoken.address,
               vaultId: vaultCounter.minus(1).toNumber(),
               amount: '0',
@@ -3771,7 +3771,7 @@ contract(
           {
             actionType: ActionType.Call,
             owner: ZERO_ADDR,
-            sender: callTester.address,
+            secondAddress: callTester.address,
             asset: ZERO_ADDR,
             vaultId: '0',
             amount: '0',
@@ -3804,7 +3804,7 @@ contract(
           {
             actionType: ActionType.Call,
             owner: ZERO_ADDR,
-            sender: callTester.address,
+            secondAddress: callTester.address,
             asset: ZERO_ADDR,
             vaultId: '0',
             amount: '0',
@@ -3827,7 +3827,7 @@ contract(
           {
             actionType: ActionType.Call,
             owner: ZERO_ADDR,
-            sender: callTester.address,
+            secondAddress: callTester.address,
             asset: ZERO_ADDR,
             vaultId: '0',
             amount: '0',
@@ -3873,7 +3873,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: vaultCounterBefore.toNumber() + 1,
             amount: '0',
@@ -3883,7 +3883,7 @@ contract(
           {
             actionType: ActionType.MintShortOption,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounterBefore.toNumber() + 1,
             amount: amountToMint,
@@ -3893,7 +3893,7 @@ contract(
           {
             actionType: ActionType.DepositCollateral,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: usdc.address,
             vaultId: vaultCounterBefore.toNumber() + 1,
             amount: collateralToDeposit,
@@ -3955,7 +3955,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: vaultCounter.toNumber() + 1,
             amount: '0',
@@ -3973,7 +3973,7 @@ contract(
           {
             actionType: ActionType.DepositCollateral,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: usdc.address,
             vaultId: vaultCounter.toNumber() + 1,
             amount: collateralToDeposit.toNumber(),
@@ -3992,7 +3992,7 @@ contract(
           {
             actionType: ActionType.MintShortOption,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: '1',
@@ -4002,7 +4002,7 @@ contract(
           {
             actionType: ActionType.DepositCollateral,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: usdc.address,
             vaultId: vaultCounter.toNumber(),
             amount: collateralToDeposit.toNumber(),
@@ -4021,7 +4021,7 @@ contract(
           {
             actionType: ActionType.WithdrawCollateral,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: usdc.address,
             vaultId: vaultCounter.toNumber(),
             amount: collateralToWithdraw.toNumber(),
@@ -4038,7 +4038,7 @@ contract(
           {
             actionType: ActionType.BurnShortOption,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: '1',
@@ -4063,7 +4063,7 @@ contract(
           {
             actionType: ActionType.SettleVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: '0',
@@ -4102,7 +4102,7 @@ contract(
           {
             actionType: ActionType.Redeem,
             owner: ZERO_ADDR,
-            sender: holder1,
+            secondAddress: holder1,
             asset: shortOtoken.address,
             vaultId: '0',
             amount: amountToRedeem,
@@ -4171,7 +4171,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: vaultCounterBefore.toNumber() + 1,
             amount: '0',
@@ -4181,7 +4181,7 @@ contract(
           {
             actionType: ActionType.MintShortOption,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounterBefore.toNumber() + 1,
             amount: amountToMint,
@@ -4191,7 +4191,7 @@ contract(
           {
             actionType: ActionType.DepositCollateral,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: usdc.address,
             vaultId: vaultCounterBefore.toNumber() + 1,
             amount: collateralToDeposit,
@@ -4259,7 +4259,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: vaultCounter.toNumber() + 1,
             amount: '0',
@@ -4280,7 +4280,7 @@ contract(
           {
             actionType: ActionType.DepositCollateral,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: usdc.address,
             vaultId: vaultCounter.toNumber() + 1,
             amount: collateralToDeposit.toNumber(),
@@ -4302,7 +4302,7 @@ contract(
           {
             actionType: ActionType.MintShortOption,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: '1',
@@ -4312,7 +4312,7 @@ contract(
           {
             actionType: ActionType.DepositCollateral,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: usdc.address,
             vaultId: vaultCounter.toNumber(),
             amount: collateralToDeposit.toNumber(),
@@ -4334,7 +4334,7 @@ contract(
           {
             actionType: ActionType.WithdrawCollateral,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: usdc.address,
             vaultId: vaultCounter.toNumber(),
             amount: collateralToWithdraw.toNumber(),
@@ -4354,7 +4354,7 @@ contract(
           {
             actionType: ActionType.BurnShortOption,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: '1',
@@ -4395,7 +4395,7 @@ contract(
           {
             actionType: ActionType.SettleVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: '0',
@@ -4419,7 +4419,7 @@ contract(
           {
             actionType: ActionType.Redeem,
             owner: ZERO_ADDR,
-            sender: holder1,
+            secondAddress: holder1,
             asset: shortOtoken.address,
             vaultId: '0',
             amount: shortAmountToBurn.toNumber(),
@@ -4472,7 +4472,7 @@ contract(
           {
             actionType: ActionType.InvalidAction,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: usdc.address,
             vaultId: vaultCounter.toNumber(),
             amount: collateralToDeposit,

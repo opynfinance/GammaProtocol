@@ -30,7 +30,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
       const data = {
         actionType: ActionType.OpenVault,
         owner: owner,
-        sender: owner,
+        secondAddress: owner,
         asset: ZERO_ADDR,
         vaultId: '0',
         amount: '10',
@@ -47,7 +47,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
       const data = {
         actionType: ActionType.DepositCollateral,
         owner: ZERO_ADDR,
-        sender: owner,
+        secondAddress: owner,
         asset: ZERO_ADDR,
         vaultId: '0',
         amount: '10',
@@ -68,7 +68,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
       const data = {
         actionType: actionType,
         owner: owner,
-        sender: random,
+        secondAddress: random,
         asset: asset,
         vaultId: vaultId,
         amount: amount,
@@ -97,7 +97,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
       const data = {
         actionType: actionType,
         owner: random,
-        sender: owner,
+        secondAddress: owner,
         asset: asset,
         vaultId: vaultId,
         amount: amount,
@@ -122,7 +122,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
       const data = {
         actionType: ActionType.DepositCollateral,
         owner: owner,
-        sender: owner,
+        secondAddress: owner,
         asset: ZERO_ADDR,
         vaultId: '0',
         amount: '10',
@@ -146,7 +146,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
       const data = {
         actionType: actionType,
         owner: ZERO_ADDR,
-        sender: owner,
+        secondAddress: owner,
         asset: asset,
         vaultId: vaultId,
         amount: amount,
@@ -170,7 +170,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
       const data = {
         actionType: actionType,
         owner: owner,
-        sender: random,
+        secondAddress: random,
         asset: asset,
         vaultId: vaultId,
         amount: amount,
@@ -190,7 +190,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
       const data = {
         actionType: ActionType.OpenVault,
         owner: owner,
-        sender: owner,
+        secondAddress: owner,
         asset: ZERO_ADDR,
         vaultId: '0',
         amount: '10',
@@ -215,7 +215,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
       const data = {
         actionType: actionType,
         owner: owner,
-        sender: random,
+        secondAddress: random,
         asset: asset,
         vaultId: vaultId,
         amount: amount,
@@ -244,7 +244,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
       const data = {
         actionType: actionType,
         owner: owner,
-        sender: owner,
+        secondAddress: owner,
         asset: asset,
         vaultId: vaultId,
         amount: amount,
@@ -268,7 +268,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
       const data = {
         actionType: actionType,
         owner: ZERO_ADDR,
-        sender: owner,
+        secondAddress: owner,
         asset: asset,
         vaultId: vaultId,
         amount: amount,
@@ -292,7 +292,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
       const data = {
         actionType: actionType,
         owner: owner,
-        sender: random,
+        secondAddress: random,
         asset: asset,
         vaultId: vaultId,
         amount: amount,
@@ -321,7 +321,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
       const data = {
         actionType: actionType,
         owner: owner,
-        sender: owner,
+        secondAddress: owner,
         asset: asset,
         vaultId: vaultId,
         amount: amount,
@@ -345,7 +345,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
       const data = {
         actionType: actionType,
         owner: owner,
-        sender: ZERO_ADDR,
+        secondAddress: ZERO_ADDR,
         asset: asset,
         vaultId: vaultId,
         amount: amount,
@@ -366,7 +366,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
       const data = {
         actionType: actionType,
         owner: ZERO_ADDR,
-        sender: owner,
+        secondAddress: owner,
         asset: asset,
         vaultId: vaultId,
         amount: amount,
@@ -387,7 +387,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
       const data = {
         actionType: actionType,
         owner: owner,
-        sender: random,
+        secondAddress: random,
         asset: asset,
         vaultId: vaultId,
         amount: amount,
@@ -416,7 +416,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
       const data = {
         actionType: actionType,
         owner: random,
-        sender: owner,
+        secondAddress: owner,
         asset: asset,
         vaultId: vaultId,
         amount: amount,
@@ -441,7 +441,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
       const data = {
         actionType: ActionType.OpenVault,
         owner: ZERO_ADDR,
-        sender: owner,
+        secondAddress: owner,
         asset: ZERO_ADDR,
         vaultId: '0',
         amount: '10',
@@ -462,7 +462,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
       const data = {
         actionType: actionType,
         owner: ZERO_ADDR,
-        sender: owner,
+        secondAddress: owner,
         asset: asset,
         vaultId: vaultId,
         amount: amount,
@@ -483,7 +483,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
       const data = {
         actionType: actionType,
         owner: owner,
-        sender: random,
+        secondAddress: random,
         asset: asset,
         vaultId: vaultId,
         amount: amount,
@@ -512,7 +512,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
       const data = {
         actionType: actionType,
         owner: random,
-        sender: owner,
+        secondAddress: owner,
         asset: asset,
         vaultId: vaultId,
         amount: amount,
@@ -544,7 +544,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
       const data = {
         actionType: actionType,
         owner: owner,
-        sender: owner,
+        secondAddress: owner,
         asset: asset,
         vaultId: vaultId,
         amount: amount,
@@ -565,7 +565,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
       const data = {
         actionType: actionType,
         owner: ZERO_ADDR,
-        sender: owner,
+        secondAddress: owner,
         asset: asset,
         vaultId: vaultId,
         amount: amount,
@@ -586,7 +586,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
       const data = {
         actionType: actionType,
         owner: owner,
-        sender: random,
+        secondAddress: random,
         asset: asset,
         vaultId: vaultId,
         amount: amount,
@@ -615,7 +615,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
       const data = {
         actionType: actionType,
         owner: random,
-        sender: owner,
+        secondAddress: owner,
         asset: asset,
         vaultId: vaultId,
         amount: amount,
@@ -640,7 +640,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
       const data = {
         actionType: ActionType.OpenVault,
         owner: owner,
-        sender: owner,
+        secondAddress: owner,
         data: random,
         asset: ZERO_ADDR,
         vaultId: 0,
@@ -654,7 +654,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
       const data = {
         actionType: ActionType.Call,
         owner: ZERO_ADDR,
-        sender: ZERO_ADDR,
+        secondAddress: ZERO_ADDR,
         data: ZERO_ADDR,
         asset: ZERO_ADDR,
         vaultId: 0,
@@ -668,7 +668,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
       const data = {
         actionType: ActionType.Call,
         owner: random,
-        sender: random2,
+        secondAddress: random2,
         data: random3,
         asset: ZERO_ADDR,
         vaultId: 0,

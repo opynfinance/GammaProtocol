@@ -106,7 +106,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         {
           actionType: ActionType.Call,
           owner: ZERO_ADDR,
-          sender: flashWrap.address,
+          secondAddress: flashWrap.address,
           asset: ZERO_ADDR,
           vaultId: '0',
           amount: amountToWrap.toString(),

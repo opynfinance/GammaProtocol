@@ -154,7 +154,7 @@ contract('Naked Put Option closed before expiry flow', ([admin, accountOwner1, r
         {
           actionType: ActionType.OpenVault,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: ZERO_ADDR,
           vaultId: vaultCounter,
           amount: '0',
@@ -164,7 +164,7 @@ contract('Naked Put Option closed before expiry flow', ([admin, accountOwner1, r
         {
           actionType: ActionType.MintShortOption,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: ethPut.address,
           vaultId: vaultCounter,
           amount: scaledOptionsAmount,
@@ -174,7 +174,7 @@ contract('Naked Put Option closed before expiry flow', ([admin, accountOwner1, r
         {
           actionType: ActionType.DepositCollateral,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: usdc.address,
           vaultId: vaultCounter,
           amount: scaledCollateralAmount,
@@ -309,7 +309,7 @@ contract('Naked Put Option closed before expiry flow', ([admin, accountOwner1, r
         {
           actionType: ActionType.OpenVault,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: ZERO_ADDR,
           vaultId: vaultCounter,
           amount: '0',
@@ -319,7 +319,7 @@ contract('Naked Put Option closed before expiry flow', ([admin, accountOwner1, r
         {
           actionType: ActionType.MintShortOption,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: cusdcEthPut.address,
           vaultId: vaultCounter,
           amount: scaledOptionsAmount,
@@ -329,7 +329,7 @@ contract('Naked Put Option closed before expiry flow', ([admin, accountOwner1, r
         {
           actionType: ActionType.DepositCollateral,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: cusdc.address,
           vaultId: vaultCounter,
           amount: scaledCollateralAmount,
@@ -437,7 +437,7 @@ contract('Naked Put Option closed before expiry flow', ([admin, accountOwner1, r
         {
           actionType: ActionType.SettleVault,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: ZERO_ADDR,
           vaultId: vaultCounter,
           amount: '0',
@@ -498,7 +498,7 @@ contract('Naked Put Option closed before expiry flow', ([admin, accountOwner1, r
         {
           actionType: ActionType.Exercise,
           owner: buyer,
-          sender: buyer,
+          secondAddress: buyer,
           asset: cusdcEthPut.address,
           vaultId: '0',
           amount: scaledOptionsAmount,

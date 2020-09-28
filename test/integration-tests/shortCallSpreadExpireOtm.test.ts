@@ -187,7 +187,7 @@ contract('Short Call Spread Option expires Otm flow', ([accountOwner1, nakedBuye
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner2,
-            sender: accountOwner2,
+            secondAddress: accountOwner2,
             asset: ZERO_ADDR,
             vaultId: vaultCounter2,
             amount: '0',
@@ -197,7 +197,7 @@ contract('Short Call Spread Option expires Otm flow', ([accountOwner1, nakedBuye
           {
             actionType: ActionType.MintShortOption,
             owner: accountOwner2,
-            sender: accountOwner2,
+            secondAddress: accountOwner2,
             asset: higherStrikeCall.address,
             vaultId: vaultCounter2,
             amount: scaledOptionsAmount,
@@ -207,7 +207,7 @@ contract('Short Call Spread Option expires Otm flow', ([accountOwner1, nakedBuye
           {
             actionType: ActionType.DepositCollateral,
             owner: accountOwner2,
-            sender: accountOwner2,
+            secondAddress: accountOwner2,
             asset: weth.address,
             vaultId: vaultCounter2,
             amount: scaledCollateralToMintLong,
@@ -225,7 +225,7 @@ contract('Short Call Spread Option expires Otm flow', ([accountOwner1, nakedBuye
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: vaultCounter1,
             amount: '0',
@@ -235,7 +235,7 @@ contract('Short Call Spread Option expires Otm flow', ([accountOwner1, nakedBuye
           {
             actionType: ActionType.MintShortOption,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: lowerStrikeCall.address,
             vaultId: vaultCounter1,
             amount: scaledOptionsAmount,
@@ -245,7 +245,7 @@ contract('Short Call Spread Option expires Otm flow', ([accountOwner1, nakedBuye
           {
             actionType: ActionType.DepositCollateral,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: weth.address,
             vaultId: vaultCounter1,
             amount: scaledCollateralToMintShort,
@@ -255,7 +255,7 @@ contract('Short Call Spread Option expires Otm flow', ([accountOwner1, nakedBuye
           {
             actionType: ActionType.DepositLongOption,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: higherStrikeCall.address,
             vaultId: vaultCounter1,
             amount: scaledOptionsAmount,
@@ -303,7 +303,7 @@ contract('Short Call Spread Option expires Otm flow', ([accountOwner1, nakedBuye
         {
           actionType: ActionType.SettleVault,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: ZERO_ADDR,
           vaultId: vaultCounter1,
           amount: '0',
@@ -374,7 +374,7 @@ contract('Short Call Spread Option expires Otm flow', ([accountOwner1, nakedBuye
         {
           actionType: ActionType.Redeem,
           owner: nakedBuyer,
-          sender: nakedBuyer,
+          secondAddress: nakedBuyer,
           asset: lowerStrikeCall.address,
           vaultId: '0',
           amount: scaledOptionsAmount,
@@ -425,7 +425,7 @@ contract('Short Call Spread Option expires Otm flow', ([accountOwner1, nakedBuye
         {
           actionType: ActionType.SettleVault,
           owner: accountOwner2,
-          sender: accountOwner2,
+          secondAddress: accountOwner2,
           asset: ZERO_ADDR,
           vaultId: vaultCounter2,
           amount: '0',

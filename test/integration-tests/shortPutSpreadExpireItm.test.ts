@@ -186,7 +186,7 @@ contract('Short Put Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner2,
-            sender: accountOwner2,
+            secondAddress: accountOwner2,
             asset: ZERO_ADDR,
             vaultId: vaultCounter2,
             amount: '0',
@@ -196,7 +196,7 @@ contract('Short Put Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
           {
             actionType: ActionType.MintShortOption,
             owner: accountOwner2,
-            sender: accountOwner2,
+            secondAddress: accountOwner2,
             asset: lowerStrikePut.address,
             vaultId: vaultCounter2,
             amount: scaledOptionsAmount,
@@ -206,7 +206,7 @@ contract('Short Put Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
           {
             actionType: ActionType.DepositCollateral,
             owner: accountOwner2,
-            sender: accountOwner2,
+            secondAddress: accountOwner2,
             asset: usdc.address,
             vaultId: vaultCounter2,
             amount: scaledCollateralToMintLong,
@@ -224,7 +224,7 @@ contract('Short Put Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: vaultCounter1,
             amount: '0',
@@ -234,7 +234,7 @@ contract('Short Put Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
           {
             actionType: ActionType.MintShortOption,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: higherStrikePut.address,
             vaultId: vaultCounter1,
             amount: scaledOptionsAmount,
@@ -244,7 +244,7 @@ contract('Short Put Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
           {
             actionType: ActionType.DepositCollateral,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: usdc.address,
             vaultId: vaultCounter1,
             amount: scaledCollateralToMintShort,
@@ -254,7 +254,7 @@ contract('Short Put Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
           {
             actionType: ActionType.DepositLongOption,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: lowerStrikePut.address,
             vaultId: vaultCounter1,
             amount: scaledOptionsAmount,
@@ -305,7 +305,7 @@ contract('Short Put Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
         {
           actionType: ActionType.SettleVault,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: ZERO_ADDR,
           vaultId: vaultCounter1,
           amount: '0',
@@ -378,7 +378,7 @@ contract('Short Put Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
         {
           actionType: ActionType.Redeem,
           owner: nakedBuyer,
-          sender: nakedBuyer,
+          secondAddress: nakedBuyer,
           asset: higherStrikePut.address,
           vaultId: '0',
           amount: scaledOptionsAmount,
@@ -429,7 +429,7 @@ contract('Short Put Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
         {
           actionType: ActionType.SettleVault,
           owner: accountOwner2,
-          sender: accountOwner2,
+          secondAddress: accountOwner2,
           asset: ZERO_ADDR,
           vaultId: vaultCounter2,
           amount: '0',

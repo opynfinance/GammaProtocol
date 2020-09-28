@@ -29,7 +29,7 @@ library Actions {
         // The address of the account owner
         address owner;
         // The address which we move assets from or to (depending on the action type)
-        address sender;
+        address secondAddress;
         // The asset that is to be transfered
         address asset;
         // The index of the vault that is to be modified (if any)
@@ -171,7 +171,7 @@ library Actions {
             MintArgs({
                 owner: _args.owner,
                 vaultId: _args.vaultId,
-                to: _args.sender,
+                to: _args.secondAddress,
                 otoken: _args.asset,
                 index: _args.index,
                 amount: _args.amount
@@ -191,7 +191,7 @@ library Actions {
             BurnArgs({
                 owner: _args.owner,
                 vaultId: _args.vaultId,
-                from: _args.sender,
+                from: _args.secondAddress,
                 otoken: _args.asset,
                 index: _args.index,
                 amount: _args.amount
@@ -214,7 +214,7 @@ library Actions {
             DepositArgs({
                 owner: _args.owner,
                 vaultId: _args.vaultId,
-                from: _args.sender,
+                from: _args.secondAddress,
                 asset: _args.asset,
                 index: _args.index,
                 amount: _args.amount
@@ -232,13 +232,13 @@ library Actions {
             "Actions: can only parse arguments for withdraw actions"
         );
         require(_args.owner != address(0), "Actions: cannot withdraw from an invalid account");
-        require(_args.sender != address(0), "Actions: cannot withdraw to an invalid account");
+        require(_args.secondAddress != address(0), "Actions: cannot withdraw to an invalid account");
 
         return
             WithdrawArgs({
                 owner: _args.owner,
                 vaultId: _args.vaultId,
-                to: _args.sender,
+                to: _args.secondAddress,
                 asset: _args.asset,
                 index: _args.index,
                 amount: _args.amount
@@ -252,9 +252,9 @@ library Actions {
      */
     function _parseRedeemArgs(ActionArgs memory _args) internal pure returns (RedeemArgs memory) {
         require(_args.actionType == ActionType.Redeem, "Actions: can only parse arguments for redeem actions");
-        require(_args.sender != address(0), "Actions: cannot redeem to an invalid account");
+        require(_args.secondAddress != address(0), "Actions: cannot redeem to an invalid account");
 
-        return RedeemArgs({receiver: _args.sender, otoken: _args.asset, amount: _args.amount});
+        return RedeemArgs({receiver: _args.secondAddress, otoken: _args.asset, amount: _args.amount});
     }
 
     /**
@@ -269,7 +269,7 @@ library Actions {
         );
         require(_args.owner != address(0), "Actions: cannot settle vault for an invalid account");
 
-        return SettleVaultArgs({owner: _args.owner, vaultId: _args.vaultId, to: _args.sender});
+        return SettleVaultArgs({owner: _args.owner, vaultId: _args.vaultId, to: _args.secondAddress});
     }
 
     /**
@@ -279,12 +279,12 @@ library Actions {
      */
     function _parseCallArgs(ActionArgs memory _args) internal pure returns (CallArgs memory) {
         require(_args.actionType == ActionType.Call, "Actions: can only parse arguments for call actions");
-        require(_args.sender != address(0), "Actions: target address cannot be address(0)");
+        require(_args.secondAddress != address(0), "Actions: target address cannot be address(0)");
 
         return
             CallArgs({
                 owner: _args.owner,
-                callee: _args.sender,
+                callee: _args.secondAddress,
                 vaultId: _args.vaultId,
                 msgValue: _args.amount,
                 data: _args.data

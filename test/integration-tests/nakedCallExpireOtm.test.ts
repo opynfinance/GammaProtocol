@@ -148,7 +148,7 @@ contract('Naked Call Option expires Otm flow', ([accountOwner1, buyer]) => {
         {
           actionType: ActionType.OpenVault,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: ZERO_ADDR,
           vaultId: vaultCounter,
           amount: '0',
@@ -158,7 +158,7 @@ contract('Naked Call Option expires Otm flow', ([accountOwner1, buyer]) => {
         {
           actionType: ActionType.MintShortOption,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: ethCall.address,
           vaultId: vaultCounter,
           amount: scaledOptionsAmount,
@@ -168,7 +168,7 @@ contract('Naked Call Option expires Otm flow', ([accountOwner1, buyer]) => {
         {
           actionType: ActionType.DepositCollateral,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: weth.address,
           vaultId: vaultCounter,
           amount: scaledCollateralAmount,
@@ -211,7 +211,7 @@ contract('Naked Call Option expires Otm flow', ([accountOwner1, buyer]) => {
         {
           actionType: ActionType.SettleVault,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: ZERO_ADDR,
           vaultId: vaultCounter,
           amount: '0',
@@ -272,7 +272,7 @@ contract('Naked Call Option expires Otm flow', ([accountOwner1, buyer]) => {
         {
           actionType: ActionType.Redeem,
           owner: buyer,
-          sender: buyer,
+          secondAddress: buyer,
           asset: ethCall.address,
           vaultId: '0',
           amount: scaledOptionsAmount,

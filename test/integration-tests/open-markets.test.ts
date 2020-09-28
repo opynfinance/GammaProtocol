@@ -236,7 +236,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
         {
           actionType: ActionType.OpenVault,
           owner: user1,
-          sender: user1,
+          secondAddress: user1,
           asset: ZERO_ADDR,
           vaultId: vaultCounter,
           amount: '0',
@@ -246,7 +246,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
         {
           actionType: ActionType.MintShortOption,
           owner: user1,
-          sender: user1,
+          secondAddress: user1,
           asset: otoken1.address,
           vaultId: vaultCounter,
           amount: amountToMint,
@@ -256,7 +256,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
         {
           actionType: ActionType.DepositCollateral,
           owner: user1,
-          sender: user1,
+          secondAddress: user1,
           asset: usdc.address,
           vaultId: vaultCounter,
           amount: amountCollateral,
@@ -286,7 +286,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
         {
           actionType: ActionType.BurnShortOption,
           owner: user1,
-          sender: user1,
+          secondAddress: user1,
           asset: otoken1.address,
           vaultId: vaultCounter,
           amount: amountToMint,
@@ -296,7 +296,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
         {
           actionType: ActionType.WithdrawCollateral,
           owner: user1,
-          sender: user1,
+          secondAddress: user1,
           asset: usdc.address,
           vaultId: vaultCounter,
           amount: amountCollateral,
@@ -328,7 +328,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
         {
           actionType: ActionType.MintShortOption,
           owner: user1,
-          sender: user1,
+          secondAddress: user1,
           asset: otoken1.address,
           vaultId: vaultCounter,
           amount: amountToMint,
@@ -338,7 +338,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
         {
           actionType: ActionType.DepositCollateral,
           owner: user1,
-          sender: user1,
+          secondAddress: user1,
           asset: usdc.address,
           vaultId: vaultCounter,
           amount: amountCollateral,
