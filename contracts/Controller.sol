@@ -765,7 +765,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     function _getPayout(address _otoken, uint256 _amount) internal view returns (uint256) {
         uint256 rate = calculator.getExpiredPayoutRate(_otoken);
-        return rate.mul(_amount).div(1e18);
+        return rate.mul(_amount).div(1e8);
     }
 
     /**
