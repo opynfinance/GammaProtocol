@@ -115,7 +115,6 @@ library FixedPointInt256 {
 
     /**
      * @notice multiply two signed integer
-     * @dev rounds to zero if a*b < SCALING_FACTOR / 2
      * @param a FixedPoint
      * @param b FixedPoint
      * @return mul of two fixed point
@@ -126,7 +125,6 @@ library FixedPointInt256 {
 
     /**
      * @notice divide two FixedPoint
-     * @dev rounds to zero if a*b < SCALING_FACTOR / 2
      * @param a FixedPoint
      * @param b FixedPoint
      * @return div of two signed integer
