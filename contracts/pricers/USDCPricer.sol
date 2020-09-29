@@ -22,7 +22,7 @@ contract USDCPricer is OpynPricerInterface {
     /**
      * @notice get live price for USDC, always return 1
      * @dev overides the getPrice function in OpynPricerInterface.
-     * @return price of 1e8 cToken worth in USD, scaled by 1e18.
+     * @return price of 1e8 cToken worth in USD, scaled by 1e8.
      */
     function getPrice() external override view returns (uint256) {
         return PRICE;
