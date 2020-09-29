@@ -246,8 +246,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _paused new boolean value to set systemPaused to
      */
     function setSystemPaused(bool _paused) external onlyPauser {
-        require(systemPaused != _paused, "Controller: cannot change pause status");
-
         systemPaused = _paused;
 
         emit SystemPaused(systemPaused);
@@ -259,8 +257,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _shutdown new boolean value to set systemShutdown to
      */
     function setEmergencyShutdown(bool _shutdown) external onlyTerminator {
-        require(systemShutdown != _shutdown, "Controller: cannot change shutdown status");
-
         systemShutdown = _shutdown;
 
         emit EmergencyShutdown(systemShutdown);
