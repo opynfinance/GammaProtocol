@@ -139,7 +139,7 @@ library FixedPointInt256 {
         if (a.value.div(b.value) > 0) {
             return FixedPointInt((a.value.mul(SCALING_FACTOR)).add(b.value / 2) / b.value);
         } else {
-            return FixedPointInt((a.value.mul(SCALING_FACTOR)).sub(b.value / 2) / b.value);
+            return FixedPointInt((a.value.mul(SCALING_FACTOR)) / b.value);
         }
     }
 
