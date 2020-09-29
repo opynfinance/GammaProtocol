@@ -5,7 +5,7 @@ import {
   MockERC20Instance,
 } from '../../build/types/truffle-types'
 
-import {changeAmountScaled, createTokenAmount} from '../utils'
+import {createTokenAmount} from '../utils'
 const {expectRevert, time} = require('@openzeppelin/test-helpers')
 
 const ChainlinkPricer = artifacts.require('ChainLinkPricer.sol')
@@ -57,7 +57,7 @@ contract('ChainlinkPricer', ([owner, random]) => {
     before('mock data in weth aggregator', async () => {
       await wethAggregator.setLatestAnswer(ethPrice)
     })
-    it('should return the price in 1e18', async () => {
+    it('should return the price in 1e8', async () => {
       const price = await pricer.getPrice()
       const expectedResult = createTokenAmount(300, 8)
       assert.equal(price.toString(), expectedResult.toString())
