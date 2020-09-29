@@ -2197,7 +2197,7 @@ contract(
               {
                 actionType: ActionType.OpenVault,
                 owner: accountOwner2,
-                sender: accountOwner2,
+                secondAddress: accountOwner2,
                 asset: ZERO_ADDR,
                 vaultId: vaultId,
                 amount: '0',
@@ -2207,7 +2207,7 @@ contract(
               {
                 actionType: ActionType.MintShortOption,
                 owner: accountOwner2,
-                sender: accountOwner2,
+                secondAddress: accountOwner2,
                 asset: oneDollarPut.address,
                 vaultId: vaultId,
                 amount: '1',
@@ -2227,7 +2227,7 @@ contract(
               {
                 actionType: ActionType.OpenVault,
                 owner: accountOwner2,
-                sender: accountOwner2,
+                secondAddress: accountOwner2,
                 asset: ZERO_ADDR,
                 vaultId: vaultId,
                 amount: '0',
@@ -2237,7 +2237,7 @@ contract(
               {
                 actionType: ActionType.MintShortOption,
                 owner: accountOwner2,
-                sender: accountOwner2,
+                secondAddress: accountOwner2,
                 asset: oneCentPut.address,
                 vaultId: vaultId,
                 amount: '1',
