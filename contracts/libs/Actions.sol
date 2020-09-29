@@ -9,7 +9,7 @@ import {MarginVault} from "./MarginVault.sol";
  *
  */
 library Actions {
-    // Possible actions that can be performed
+    // possible actions that can be performed
     enum ActionType {
         OpenVault,
         MintShortOption,
@@ -24,132 +24,131 @@ library Actions {
     }
 
     struct ActionArgs {
-        // The type of action that is being performed on the system
+        // type of action that is being performed on the system
         ActionType actionType;
-        // The address of the account owner
+        // address of the account owner
         address owner;
-        // The address which we move assets from or to (depending on the action type)
+        // address which we move assets from or to (depending on the action type)
         address secondAddress;
-        // The asset that is to be transfered
+        // asset that is to be transfered
         address asset;
-        // The index of the vault that is to be modified (if any)
+        // index of the vault that is to be modified (if any)
         uint256 vaultId;
-        // The amount of asset that is to be transfered
+        // amount of asset that is to be transfered
         uint256 amount;
-        // Each vault can hold multiple short / long / collateral assets. In this version, we are restricting the scope to only 1 of each.
-        // In future versions this would be the index of the short / long / collateral asset that needs to be modified.
+        // each vault can hold multiple short / long / collateral assets but we are restricting the scope to only 1 of each in this version
+        // in future versions this would be the index of the short / long / collateral asset that needs to be modified
         uint256 index;
-        // Any other data that needs to be passed in for arbitrary function calls
+        // any other data that needs to be passed in for arbitrary function calls
         bytes data;
     }
 
     struct MintArgs {
-        // The address of the account owner
+        // address of the account owner
         address owner;
-        // The index of the vault from which the asset will be minted
+        // index of the vault from which the asset will be minted
         uint256 vaultId;
-        // The address to which we transfer the minted otokens
+        // address to which we transfer the minted oTokens
         address to;
-        // The otoken that is to be minted
+        // oToken that is to be minted
         address otoken;
-        // Each vault can hold multiple short / long / collateral assets. In this version, we are restricting the scope to only 1 of each.
-        // In future versions this would be the index of the short / long / collateral asset that needs to be modified.
+        // each vault can hold multiple short / long / collateral assets but we are restricting the scope to only 1 of each in this version
+        // in future versions this would be the index of the short / long / collateral asset that needs to be modified
         uint256 index;
-        // The amount of otokens that is to be minted
+        // amount of oTokens that is to be minted
         uint256 amount;
     }
 
     struct BurnArgs {
-        // The address of the account owner
+        // address of the account owner
         address owner;
-        // The index of the vault from which the otoken will be burned
+        // index of the vault from which the oToken will be burned
         uint256 vaultId;
-        // The address from which we transfer the otokens
+        // address from which we transfer the oTokens
         address from;
-        // The otoken that is to be burned
+        // oToken that is to be burned
         address otoken;
-        // Each vault can hold multiple short / long / collateral assets. In this version, we are restricting the scope to only 1 of each.
-        // In future versions this would be the index of the short / long / collateral asset that needs to be modified.
+        // each vault can hold multiple short / long / collateral assets but we are restricting the scope to only 1 of each in this version
+        // in future versions this would be the index of the short / long / collateral asset that needs to be modified
         uint256 index;
-        // The amount of otokens that is to be burned
+        // amount of oTokens that is to be burned
         uint256 amount;
     }
 
     struct OpenVaultArgs {
-        // address of the account that the vault belong to
+        // address of the account owner
         address owner;
-        // vault id
+        // vault id to create
         uint256 vaultId;
     }
 
     struct DepositArgs {
-        // The address of the account owner
+        // address of the account owner
         address owner;
-        // The index of the vault to which the asset will be added
+        // index of the vault to which the asset will be added
         uint256 vaultId;
-        // The address from which we transfer the asset
+        // address from which we transfer the asset
         address from;
-        // The asset that is to be deposited
+        // asset that is to be deposited
         address asset;
-        // Each vault can hold multiple short / long / collateral assets. In this version, we are restricting the scope to only 1 of each.
-        // In future versions this would be the index of the short / long / collateral asset that needs to be modified.
+        // each vault can hold multiple short / long / collateral assets but we are restricting the scope to only 1 of each in this version
+        // in future versions this would be the index of the short / long / collateral asset that needs to be modified
         uint256 index;
-        // The amount of asset that is to be transfered
+        // amount of asset that is to be deposited
         uint256 amount;
     }
 
     struct RedeemArgs {
-        // The address to which we pay out the cash difference if the option is ITM.
+        // address to which we pay out the oToken proceeds
         address receiver;
-        // The otoken that is to be redeemd
+        // oToken that is to be redeemed
         address otoken;
-        // The amount of otokens that is to be redeemd
+        // amount of oTokens that is to be redeemed
         uint256 amount;
     }
 
     struct WithdrawArgs {
-        //The address of the account owner
+        // address of the account owner
         address owner;
-        // The index of the vault from which the asset will be withdrawn
+        // index of the vault from which the asset will be withdrawn
         uint256 vaultId;
-        // The address to which we transfer the asset
+        // address to which we transfer the asset
         address to;
-        // The asset that is to be withdrawn
+        // asset that is to be withdrawn
         address asset;
-        // Each vault can hold multiple short / long / collateral assets.
-        // In this version, we are restricting the scope to only 1 of each.
-        // In future versions this would be the index of the short / long / collateral asset that needs to be modified.
+        // each vault can hold multiple short / long / collateral assets but we are restricting the scope to only 1 of each in this version
+        // in future versions this would be the index of the short / long / collateral asset that needs to be modified
         uint256 index;
-        // The amount of asset that is to be transfered
+        // amount of asset that is to be withdrawn
         uint256 amount;
     }
 
     struct SettleVaultArgs {
-        // The address of the account owner
+        // address of the account owner
         address owner;
-        // The index of the vault to which is to be settled
+        // index of the vault to which is to be settled
         uint256 vaultId;
-        // The address to which we transfer the remaining collateral
+        // address to which we transfer the remaining collateral
         address to;
     }
 
     struct CallArgs {
-        // The address of the account owner
+        // address of the account owner
         address owner;
-        // The address of the callee contract
+        // address of the callee contract
         address callee;
         // vault id
         uint256 vaultId;
         // tx msg.value
         uint256 msgValue;
-        // The data field for external calls
+        // data field for external calls
         bytes data;
     }
 
     /**
-     * @notice Parses the passed in action argmuents to get the argmuents for an open vault action
-     * @param _args The general action arguments structure
-     * @return The arguments for a open vault action
+     * @notice parses the passed in action argmuents to get the argmuents for an open vault action
+     * @param _args general action arguments structure
+     * @return arguments for a open vault action
      */
     function _parseOpenVaultArgs(ActionArgs memory _args) internal pure returns (OpenVaultArgs memory) {
         require(_args.actionType == ActionType.OpenVault, "Actions: can only parse arguments for open vault actions");
@@ -159,9 +158,9 @@ library Actions {
     }
 
     /**
-     * @notice Parses the passed in action argmuents to get the argmuents for a mint action
-     * @param _args The general action arguments structure
-     * @return The arguments for a mint action
+     * @notice parses the passed in action argmuents to get the argmuents for a mint action
+     * @param _args general action arguments structure
+     * @return arguments for a mint action
      */
     function _parseMintArgs(ActionArgs memory _args) internal pure returns (MintArgs memory) {
         require(_args.actionType == ActionType.MintShortOption, "Actions: can only parse arguments for mint actions");
@@ -179,9 +178,9 @@ library Actions {
     }
 
     /**
-     * @notice Parses the passed in action argmuents to get the argmuents for a burn action
-     * @param _args The general action arguments structure
-     * @return The arguments for a burn action
+     * @notice parses the passed in action argmuents to get the argmuents for a burn action
+     * @param _args general action arguments structure
+     * @return arguments for a burn action
      */
     function _parseBurnArgs(ActionArgs memory _args) internal pure returns (BurnArgs memory) {
         require(_args.actionType == ActionType.BurnShortOption, "Actions: can only parse arguments for burn actions");
@@ -199,9 +198,9 @@ library Actions {
     }
 
     /**
-     * @notice Parses the passed in action argmuents to get the argmuents for a deposit action
-     * @param _args The general action arguments structure
-     * @return The arguments for a deposit action
+     * @notice parses the passed in action argmuents to get the argmuents for a deposit action
+     * @param _args general action arguments structure
+     * @return arguments for a deposit action
      */
     function _parseDepositArgs(ActionArgs memory _args) internal pure returns (DepositArgs memory) {
         require(
@@ -222,9 +221,9 @@ library Actions {
     }
 
     /**
-     * @notice Parses the passed in action argmuents to get the argmuents for a withdraw action
-     * @param _args The general action arguments structure
-     * @return The arguments for a withdraw action
+     * @notice parses the passed in action argmuents to get the argmuents for a withdraw action
+     * @param _args general action arguments structure
+     * @return arguments for a withdraw action
      */
     function _parseWithdrawArgs(ActionArgs memory _args) internal pure returns (WithdrawArgs memory) {
         require(
@@ -246,9 +245,9 @@ library Actions {
     }
 
     /**
-     * @notice Parses the passed in action argmuents to get the argmuents for an redeem action
-     * @param _args The general action arguments structure
-     * @return The arguments for a redeem action
+     * @notice parses the passed in action argmuents to get the argmuents for an redeem action
+     * @param _args general action arguments structure
+     * @return arguments for a redeem action
      */
     function _parseRedeemArgs(ActionArgs memory _args) internal pure returns (RedeemArgs memory) {
         require(_args.actionType == ActionType.Redeem, "Actions: can only parse arguments for redeem actions");
@@ -258,9 +257,9 @@ library Actions {
     }
 
     /**
-     * @notice Parses the passed in action argmuents to get the argmuents for a settle vault action
-     * @param _args The general action arguments structure
-     * @return The arguments for a settle vault action
+     * @notice parses the passed in action argmuents to get the argmuents for a settle vault action
+     * @param _args general action arguments structure
+     * @return arguments for a settle vault action
      */
     function _parseSettleVaultArgs(ActionArgs memory _args) internal pure returns (SettleVaultArgs memory) {
         require(
@@ -273,9 +272,9 @@ library Actions {
     }
 
     /**
-     * @notice Parses the passed in action argmuents to get the argmuents for a call action
-     * @param _args The general action arguments structure
-     * @return The arguments for a call action
+     * @notice parses the passed in action argmuents to get the argmuents for a call action
+     * @param _args general action arguments structure
+     * @return arguments for a call action
      */
     function _parseCallArgs(ActionArgs memory _args) internal pure returns (CallArgs memory) {
         require(_args.actionType == ActionType.Call, "Actions: can only parse arguments for call actions");
