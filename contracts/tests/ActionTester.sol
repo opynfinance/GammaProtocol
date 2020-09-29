@@ -11,7 +11,7 @@ contract ActionTester {
     Actions.WithdrawArgs private withdrawArgs;
     Actions.MintArgs private mintArgs;
     Actions.BurnArgs private burnArgs;
-    Actions.ExerciseArgs private exerciseArgs;
+    Actions.RedeemArgs private redeemArgs;
     Actions.SettleVaultArgs private settleVaultArgs;
     Actions.CallArgs private callArgs;
 
@@ -39,12 +39,12 @@ contract ActionTester {
         return openVaultArgs;
     }
 
-    function testParseExerciseAction(Actions.ActionArgs memory _args) external {
-        exerciseArgs = Actions._parseExerciseArgs(_args);
+    function testParseRedeemAction(Actions.ActionArgs memory _args) external {
+        redeemArgs = Actions._parseRedeemArgs(_args);
     }
 
-    function getExerciseArgs() external view returns (Actions.ExerciseArgs memory) {
-        return exerciseArgs;
+    function getRedeemArgs() external view returns (Actions.RedeemArgs memory) {
+        return redeemArgs;
     }
 
     function testParseSettleVaultAction(Actions.ActionArgs memory _args) external {

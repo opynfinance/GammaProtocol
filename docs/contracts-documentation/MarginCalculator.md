@@ -8,11 +8,11 @@ Calculator module that check if a given vault is valid.
 
 - `getExpiredPayoutRate(address _otoken) (external)`
 
-- `getExcessCollateral(struct MarginAccount.Vault _vault) (public)`
+- `getExcessCollateral(struct MarginVault.Vault _vault) (public)`
 
 - `_getExpiredCashValue(address _otoken) (internal)`
 
-- `_getMarginRequired(struct MarginAccount.Vault _vault) (internal)`
+- `_getMarginRequired(struct MarginVault.Vault _vault) (internal)`
 
 - `_getPutSpreadMarginRequired(struct FixedPointInt256.FixedPointInt _shortAmount, struct FixedPointInt256.FixedPointInt _longAmount, struct FixedPointInt256.FixedPointInt _shortStrike, struct FixedPointInt256.FixedPointInt _longStrike) (internal)`
 
@@ -22,11 +22,11 @@ Calculator module that check if a given vault is valid.
 
 - `_getExpiredCallSpreadCashValue(struct FixedPointInt256.FixedPointInt _shortAmount, struct FixedPointInt256.FixedPointInt _longAmount, struct FixedPointInt256.FixedPointInt _shortCashValue, struct FixedPointInt256.FixedPointInt _longCashValue, struct FixedPointInt256.FixedPointInt _underlyingPriceInt) (internal)`
 
-- `_checkIsValidSpread(struct MarginAccount.Vault _vault) (internal)`
+- `_checkIsValidSpread(struct MarginVault.Vault _vault) (internal)`
 
-- `_isMarginableLong(struct MarginAccount.Vault _vault) (internal)`
+- `_isMarginableLong(struct MarginVault.Vault _vault) (internal)`
 
-- `_isMarginableCollateral(struct MarginAccount.Vault _vault) (internal)`
+- `_isMarginableCollateral(struct MarginVault.Vault _vault) (internal)`
 
 - `_getAssetPrice(address _asset, uint256 _expiry) (internal)`
 
@@ -54,7 +54,7 @@ Return the net worth of an expired oToken in collateral.
 
 - the exchange rate that shows how much collateral unit can be take out by 1 otoken unit, scaled by 1e18
 
-### Function `getExcessCollateral(struct MarginAccount.Vault _vault) → uint256, bool public`
+### Function `getExcessCollateral(struct MarginVault.Vault _vault) → uint256, bool public`
 
 returns the net value of a vault in the valid collateral asset for that vault i.e. USDC for puts/ ETH for calls
 
@@ -84,7 +84,7 @@ For put return Max(0, oToken.strike - ETH Price)
 
 - the cash value of an expired otoken, denominated in strike asset. scaled by 1e18
 
-### Function `_getMarginRequired(struct MarginAccount.Vault _vault) → struct FixedPointInt256.FixedPointInt internal`
+### Function `_getMarginRequired(struct MarginVault.Vault _vault) → struct FixedPointInt256.FixedPointInt internal`
 
 Calculate the amount of collateral needed for a spread vault.
 
@@ -150,7 +150,7 @@ Underlying price
 
 - cash value denominated in underlying asset.
 
-### Function `_checkIsValidSpread(struct MarginAccount.Vault _vault) internal`
+### Function `_checkIsValidSpread(struct MarginVault.Vault _vault) internal`
 
 ensure that the vault contains
 
@@ -164,7 +164,7 @@ c) at most 1 series of option used as the short option.
 
 - `_vault`: the vault to check.
 
-### Function `_isMarginableLong(struct MarginAccount.Vault _vault) → bool internal`
+### Function `_isMarginableLong(struct MarginVault.Vault _vault) → bool internal`
 
 if there is a short option in the vault, ensure that the long option series being used is a valid margin.
 
@@ -172,7 +172,7 @@ if there is a short option in the vault, ensure that the long option series bein
 
 - `_vault`: the vault to check.
 
-### Function `_isMarginableCollateral(struct MarginAccount.Vault _vault) → bool internal`
+### Function `_isMarginableCollateral(struct MarginVault.Vault _vault) → bool internal`
 
 if there is a short option in the vault, ensure that the collateral asset being used is a valid margin.
 

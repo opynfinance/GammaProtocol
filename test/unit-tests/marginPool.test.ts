@@ -443,7 +443,7 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
 
       await expectRevert(
         marginPool.farm(usdc.address, farmer, amountToFarm, {from: farmer}),
-        'MarginPool: amount exceed limit',
+        'MarginPool: amount to farm exceeds limit',
       )
     })
 

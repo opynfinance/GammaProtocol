@@ -21,7 +21,7 @@ const MarginCalculator = artifacts.require('MarginCalculator.sol')
 const Whitelist = artifacts.require('Whitelist.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
-const MarginAccount = artifacts.require('MarginAccount.sol')
+const MarginVault = artifacts.require('MarginVault.sol')
 const OTokenFactory = artifacts.require('OtokenFactory.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
@@ -34,7 +34,7 @@ enum ActionType {
   DepositCollateral,
   WithdrawCollateral,
   SettleVault,
-  Exercise,
+  Redeem,
   Call,
 }
 
@@ -80,10 +80,10 @@ contract('Naked Call Option expires Otm flow', ([accountOwner1, buyer]) => {
     calculator = await MarginCalculator.new(addressBook.address)
     // setup margin pool
     marginPool = await MarginPool.new(addressBook.address)
-    // setup margin account
-    const lib = await MarginAccount.new()
+    // setup margin vault
+    const lib = await MarginVault.new()
     // setup controllerProxy module
-    await Controller.link('MarginAccount', lib.address)
+    await Controller.link('MarginVault', lib.address)
     controllerImplementation = await Controller.new(addressBook.address)
     // setup mock Oracle module
     oracle = await MockOracle.new(addressBook.address)
@@ -148,7 +148,7 @@ contract('Naked Call Option expires Otm flow', ([accountOwner1, buyer]) => {
         {
           actionType: ActionType.OpenVault,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: ZERO_ADDR,
           vaultId: vaultCounter,
           amount: '0',
@@ -158,7 +158,7 @@ contract('Naked Call Option expires Otm flow', ([accountOwner1, buyer]) => {
         {
           actionType: ActionType.MintShortOption,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: ethCall.address,
           vaultId: vaultCounter,
           amount: scaledOptionsAmount,
@@ -168,7 +168,7 @@ contract('Naked Call Option expires Otm flow', ([accountOwner1, buyer]) => {
         {
           actionType: ActionType.DepositCollateral,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: weth.address,
           vaultId: vaultCounter,
           amount: scaledCollateralAmount,
@@ -211,7 +211,7 @@ contract('Naked Call Option expires Otm flow', ([accountOwner1, buyer]) => {
         {
           actionType: ActionType.SettleVault,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: ZERO_ADDR,
           vaultId: vaultCounter,
           amount: '0',
@@ -258,7 +258,7 @@ contract('Naked Call Option expires Otm flow', ([accountOwner1, buyer]) => {
       assert.equal(vaultAfter.longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
     })
 
-    it('Buyer: exercise OTM call option after expiry', async () => {
+    it('Buyer: redeem OTM call option after expiry', async () => {
       // owner sells their call option
       await ethCall.transfer(buyer, scaledOptionsAmount, {from: accountOwner1})
 
@@ -270,9 +270,9 @@ contract('Naked Call Option expires Otm flow', ([accountOwner1, buyer]) => {
 
       const actionArgs = [
         {
-          actionType: ActionType.Exercise,
+          actionType: ActionType.Redeem,
           owner: buyer,
-          sender: buyer,
+          secondAddress: buyer,
           asset: ethCall.address,
           vaultId: '0',
           amount: scaledOptionsAmount,

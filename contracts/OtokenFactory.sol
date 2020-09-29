@@ -8,28 +8,28 @@ import {WhitelistInterface} from "./interfaces/WhitelistInterface.sol";
 
 /**
  * SPDX-License-Identifier: UNLICENSED
- * @title A factory for opyn tokens
+ * @title A factory to create Opyn oTokens
  * @author Opyn Team
- * @notice Create new otokens and keep track of all created tokens.
+ * @notice Create new oTokens and keep track of all created tokens
  * @dev Calculate contract address before each creation with CREATE2
- * and deploy eip-1167 minimal proxies for otoken logic contract.
+ * and deploy eip-1167 minimal proxies for oToken logic contract
  */
 contract OtokenFactory is OtokenSpawner {
     using SafeMath for uint256;
-    /// @notice The Opyn AddressBook contract that records addresses of whitelist module and otoken impl address. */
+    /// @notice Opyn AddressBook contract that records the address of the Whitelist module and the Otoken impl address. */
     address public addressBook;
 
-    /// @notice An array of all created otokens */
+    /// @notice array of all created otokens */
     address[] public otokens;
 
-    /// @dev A mapping from parameters hash to its deployed address
+    /// @dev mapping from parameters hash to its deployed address
     mapping(bytes32 => address) private idToAddress;
 
     constructor(address _addressBook) public {
         addressBook = _addressBook;
     }
 
-    /// @notice emitted when factory create a new Option
+    /// @notice emitted when the factory creates a new Option
     event OtokenCreated(
         address indexed tokenAddress,
         address indexed creator,
@@ -42,14 +42,14 @@ contract OtokenFactory is OtokenSpawner {
     );
 
     /**
-     * @notice create new otokens
-     * @dev deploy an eip-1167 minimal proxy with CREATE2 and register it to the whitelist module.
+     * @notice create new oTokens
+     * @dev deploy an eip-1167 minimal proxy with CREATE2 and register it to the whitelist module
      * @param _underlyingAsset asset that the option references
      * @param _strikeAsset asset that the strike price is denominated in
      * @param _collateralAsset asset that is held as collateral against short/written options
      * @param _strikePrice strike price with decimals = 18
-     * @param _expiry expiration timestamp in second
-     * @param _isPut is this a put option, if not it is a call
+     * @param _expiry expiration timestamp as a unix timestamp
+     * @param _isPut True if a put option, False if a call option
      * @return newOtoken address of the newly created option
      */
     function createOtoken(
@@ -113,22 +113,22 @@ contract OtokenFactory is OtokenSpawner {
     }
 
     /**
-     * @notice Get the total otokens created by the factory.
-     * @return length of the otokens array.
+     * @notice get the total oTokens created by the factory
+     * @return length of the oTokens array
      */
     function getOtokensLength() external view returns (uint256) {
         return otokens.length;
     }
 
     /**
-     * @notice get the otoken address. If no token has been created with these parameters, will return address(0).
+     * @notice get the oToken address for an already created oToken, if no oToken has been created with these parameters, it will return address(0)
      * @param _underlyingAsset asset that the option references
      * @param _strikeAsset asset that the strike price is denominated in
      * @param _collateralAsset asset that is held as collateral against short/written options
      * @param _strikePrice strike price with decimals = 18
-     * @param _expiry expiration timestamp in second
-     * @param _isPut is this a put option, if not it is a call
-     * @return otoken the address of target otoken.
+     * @param _expiry expiration timestamp as a unix timestamp
+     * @param _isPut True if a put option, False if a call option
+     * @return the address of target otoken.
      */
     function getOtoken(
         address _underlyingAsset,
@@ -143,15 +143,15 @@ contract OtokenFactory is OtokenSpawner {
     }
 
     /**
-     * @notice get the address at which a new otoken with these paramters will be deployed
+     * @notice get the address at which a new oToken with these paramters would be deployed
      * @dev return the exact address that will be deployed at with _computeAddress
      * @param _underlyingAsset asset that the option references
      * @param _strikeAsset asset that the strike price is denominated in
      * @param _collateralAsset asset that is held as collateral against short/written options
      * @param _strikePrice strike price with decimals = 18
-     * @param _expiry expiration timestamp in second
-     * @param _isPut is this a put option, if not it is a call
-     * @return targetAddress the address this otoken will be deployed at.
+     * @param _expiry expiration timestamp as a unix timestamp
+     * @param _isPut True if a put option, False if a call option
+     * @return targetAddress the address this oToken would be deployed at
      */
     function getTargetOtokenAddress(
         address _underlyingAsset,
@@ -176,14 +176,14 @@ contract OtokenFactory is OtokenSpawner {
     }
 
     /**
-     * @dev internal function to hash paramters and get option id. Each option has a unique id.
+     * @dev hash oToken parameters and return a unique option id
      * @param _underlyingAsset asset that the option references
      * @param _strikeAsset asset that the strike price is denominated in
      * @param _collateralAsset asset that is held as collateral against short/written options
      * @param _strikePrice strike price with decimals = 18
-     * @param _expiry expiration timestamp in second
-     * @param _isPut is this a put option, if not it is a call
-     * @return id the id of an otoken
+     * @param _expiry expiration timestamp as a unix timestamp
+     * @param _isPut True if a put option, False if a call option
+     * @return id the unique id of an oToken
      */
     function _getOptionId(
         address _underlyingAsset,

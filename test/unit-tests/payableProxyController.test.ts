@@ -26,7 +26,7 @@ const MockWhitelistModule = artifacts.require('MockWhitelistModule.sol')
 const AddressBook = artifacts.require('AddressBook.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
-const MarginAccount = artifacts.require('MarginAccount.sol')
+const MarginVault = artifacts.require('MarginVault.sol')
 const PayableProxyController = artifacts.require('PayableProxyController.sol')
 
 // address(0)
@@ -41,7 +41,7 @@ enum ActionType {
   DepositCollateral,
   WithdrawCollateral,
   SettleVault,
-  Exercise,
+  Redeem,
   Call,
 }
 
@@ -90,8 +90,8 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
     // set whitelist module address
     await addressBook.setWhitelist(whitelist.address)
     // deploy Controller module
-    const lib = await MarginAccount.new()
-    await Controller.link('MarginAccount', lib.address)
+    const lib = await MarginVault.new()
+    await Controller.link('MarginVault', lib.address)
     controllerImplementation = await Controller.new()
 
     // set controller address in AddressBook
@@ -126,7 +126,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
         {
           actionType: ActionType.OpenVault,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: ZERO_ADDR,
           vaultId: vaultCounter.toNumber(),
           amount: '0',
@@ -136,7 +136,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
         {
           actionType: ActionType.DepositCollateral,
           owner: accountOwner1,
-          sender: payableProxyController.address,
+          secondAddress: payableProxyController.address,
           asset: weth.address,
           vaultId: vaultCounter.toNumber(),
           amount: collateralToDeposit.toNumber(),
@@ -182,7 +182,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
         {
           actionType: ActionType.OpenVault,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: ZERO_ADDR,
           vaultId: vaultCounter.toNumber(),
           amount: '0',
@@ -192,7 +192,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
         {
           actionType: ActionType.DepositCollateral,
           owner: accountOwner1,
-          sender: payableProxyController.address,
+          secondAddress: payableProxyController.address,
           asset: weth.address,
           vaultId: vaultCounter.toNumber(),
           amount: collateralToDeposit.toNumber(),
@@ -238,7 +238,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
         {
           actionType: ActionType.OpenVault,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: ZERO_ADDR,
           vaultId: vaultCounter.toNumber(),
           amount: '0',
@@ -248,7 +248,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
         {
           actionType: ActionType.DepositCollateral,
           owner: accountOwner1,
-          sender: payableProxyController.address,
+          secondAddress: payableProxyController.address,
           asset: weth.address,
           vaultId: vaultCounter.toNumber(),
           amount: collateralToDeposit.toNumber(),
@@ -284,7 +284,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
         {
           actionType: ActionType.OpenVault,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: ZERO_ADDR,
           vaultId: vaultCounterBefore.plus(1).toNumber(),
           amount: '0',
@@ -309,7 +309,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
         {
           actionType: ActionType.OpenVault,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: ZERO_ADDR,
           vaultId: vaultCounterBefore.plus(1).toNumber(),
           amount: '0',
@@ -364,7 +364,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
         {
           actionType: ActionType.OpenVault,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: ZERO_ADDR,
           vaultId: vaultCounter.toNumber(),
           amount: '0',
@@ -374,7 +374,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
         {
           actionType: ActionType.MintShortOption,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: shortOtoken.address,
           vaultId: vaultCounter.toNumber(),
           amount: amountToMint.toString(),
@@ -384,7 +384,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
         {
           actionType: ActionType.DepositCollateral,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: usdc.address,
           vaultId: vaultCounter.toNumber(),
           amount: collateralToDeposit,
@@ -413,22 +413,22 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
     })
 
     it('should normally execute when owner address is equal to zero', async () => {
-      const amountToExercise = new BigNumber(1e12)
+      const amountToRedeem = new BigNumber(1e12)
       const actionArgs = [
         {
-          actionType: ActionType.Exercise,
+          actionType: ActionType.Redeem,
           owner: ZERO_ADDR,
-          sender: holder1,
+          secondAddress: holder1,
           asset: shortOtoken.address,
           vaultId: '0',
-          amount: amountToExercise.toString(),
+          amount: amountToRedeem.toString(),
           index: '0',
           data: ZERO_ADDR,
         },
       ]
       assert.equal(await controllerProxy.isExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
 
-      await shortOtoken.transfer(payableProxyController.address, amountToExercise.toString(), {from: holder1})
+      await shortOtoken.transfer(payableProxyController.address, amountToRedeem.toString(), {from: holder1})
       await payableProxyController.operate(actionArgs, holder1, {from: holder1})
     })
   })

@@ -54,7 +54,6 @@
     "lint:sol": "solhint -f table contracts/**/*.sol",
     "lint:sol:prettier:fix": "prettier --write \"contracts/**/*.sol\"",
     "lint:tests:prettier:fix": "prettier --write \"test/**/*.ts\"",
-    "test": "CI=true truffle test",
     "test:unit": "truffle test ./test/unit-tests/*.ts",
     "test:integration": "truffle test ./test/integration-tests/*.ts",
     "test:testing-engine": "truffle test ./test/test-engine/*.ts",
@@ -84,7 +83,9 @@
     "doc:uml:factory": "sol2uml ./contracts/OtokenFactory.sol -f png -o ./docs/uml/GammaFactory.png",
     "doc:uml:whitelist": "sol2uml ./contracts/Whitelist.sol -f png -o ./docs/uml/GammaWhitelist.png",
     "doc:uml:addressbook": "sol2uml ./contracts/AddressBook.sol -f png -o ./docs/uml/GammaAddressbook.png",
-    "docify": "node docify.js"
+    "docify": "node docify.js",
+    "ci:test:unit": "CI=true truffle test ./test/unit-tests/*.ts",
+    "ci:test:integration": "CI=true truffle test ./test/integration-tests/*.ts"
   },
   "husky": {
     "hooks": {

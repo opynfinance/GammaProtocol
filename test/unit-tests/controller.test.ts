@@ -25,7 +25,7 @@ const MockWhitelistModule = artifacts.require('MockWhitelistModule.sol')
 const AddressBook = artifacts.require('AddressBook.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
-const MarginAccount = artifacts.require('MarginAccount.sol')
+const MarginVault = artifacts.require('MarginVault.sol')
 
 // address(0)
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
@@ -39,8 +39,9 @@ enum ActionType {
   DepositCollateral,
   WithdrawCollateral,
   SettleVault,
-  Exercise,
+  Redeem,
   Call,
+  InvalidAction,
 }
 
 contract(
@@ -91,8 +92,8 @@ contract(
       // set whitelist module address
       await addressBook.setWhitelist(whitelist.address)
       // deploy Controller module
-      const lib = await MarginAccount.new()
-      await Controller.link('MarginAccount', lib.address)
+      const lib = await MarginVault.new()
+      await Controller.link('MarginVault', lib.address)
       controllerImplementation = await Controller.new()
 
       // set controller address in AddressBook
@@ -118,6 +119,24 @@ contract(
         await expectRevert(
           controllerProxy.initialize(addressBook.address, owner),
           'Contract instance has already been initialized',
+        )
+      })
+
+      it('should revert when calling initialize with addressbook equal to zero', async () => {
+        const controllerImplementation = await Controller.new()
+
+        await expectRevert(
+          controllerImplementation.initialize(ZERO_ADDR, owner),
+          'Controller: invalid addressbook address',
+        )
+      })
+
+      it('should revert when calling initialize with owner equal to zero', async () => {
+        const controllerImplementation = await Controller.new()
+
+        await expectRevert(
+          controllerImplementation.initialize(addressBook.address, ZERO_ADDR),
+          'Controller: invalid owner address',
         )
       })
     })
@@ -151,16 +170,14 @@ contract(
     })
 
     describe('Vault', () => {
-      // will be improved in later PR
       it('should get vault', async () => {
         const vaultId = new BigNumber(0)
         await controllerProxy.getVault(accountOwner1, vaultId)
       })
 
-      // will be improved in later PR
       it('should get vault balance', async () => {
         const vaultId = new BigNumber(0)
-        await controllerProxy.getVaultBalances(accountOwner1, vaultId)
+        await controllerProxy.getProceed(accountOwner1, vaultId)
       })
     })
 
@@ -170,7 +187,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: random,
+            secondAddress: random,
             asset: ZERO_ADDR,
             vaultId: '1',
             amount: '0',
@@ -189,7 +206,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: '0',
             amount: '0',
@@ -208,7 +225,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: '1',
             amount: '0',
@@ -218,7 +235,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: '2',
             amount: '0',
@@ -239,7 +256,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: '1',
             amount: '0',
@@ -249,7 +266,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner2,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: '1',
             amount: '0',
@@ -272,7 +289,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: vaultCounterBefore.toNumber() + 1,
             amount: '0',
@@ -300,7 +317,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOperator1,
+            secondAddress: accountOperator1,
             asset: ZERO_ADDR,
             vaultId: vaultCounterBefore.toNumber() + 1,
             amount: '0',
@@ -345,7 +362,7 @@ contract(
             {
               actionType: ActionType.DepositLongOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToDeposit,
@@ -361,17 +378,63 @@ contract(
           )
         })
 
-        it('should deposit long otoken into vault from account owner', async () => {
+        it('should revert depositing long with invalid vault id', async () => {
           // whitelist otoken
           await whitelist.whitelistOtoken(longOtoken.address)
 
+          const vaultCounter = new BigNumber('100')
+
+          const longToDeposit = createTokenAmount(20)
+          const actionArgs = [
+            {
+              actionType: ActionType.DepositLongOption,
+              owner: accountOwner1,
+              secondAddress: accountOwner1,
+              asset: longOtoken.address,
+              vaultId: vaultCounter.toNumber(),
+              amount: longToDeposit,
+              index: '0',
+              data: ZERO_ADDR,
+            },
+          ]
+
+          await longOtoken.approve(marginPool.address, longToDeposit, {from: accountOwner1})
+          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'Controller: invalid vault id')
+        })
+
+        it('should revert depositing long from an address that is not the msg.sender nor the owner account address', async () => {
+          const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
+
+          const longToDeposit = createTokenAmount(20)
+          const actionArgs = [
+            {
+              actionType: ActionType.DepositLongOption,
+              owner: accountOwner1,
+              secondAddress: random,
+              asset: longOtoken.address,
+              vaultId: vaultCounter.toNumber(),
+              amount: longToDeposit,
+              index: '0',
+              data: ZERO_ADDR,
+            },
+          ]
+
+          await longOtoken.approve(marginPool.address, longToDeposit, {from: random})
+          await longOtoken.approve(marginPool.address, longToDeposit, {from: accountOperator1})
+          await expectRevert(
+            controllerProxy.operate(actionArgs, {from: accountOperator1}),
+            'Controller: cannot deposit long otoken from this address',
+          )
+        })
+
+        it('should deposit long otoken into vault from account owner', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           const longToDeposit = createTokenAmount(20)
           const actionArgs = [
             {
               actionType: ActionType.DepositLongOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToDeposit,
@@ -425,7 +488,7 @@ contract(
             {
               actionType: ActionType.DepositLongOption,
               owner: accountOwner1,
-              sender: accountOperator1,
+              secondAddress: accountOperator1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToDeposit,
@@ -474,7 +537,7 @@ contract(
             {
               actionType: ActionType.DepositLongOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToDeposit.toString(),
@@ -484,7 +547,7 @@ contract(
             {
               actionType: ActionType.DepositLongOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToDeposit.toString(),
@@ -533,7 +596,7 @@ contract(
             {
               actionType: ActionType.DepositLongOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: '0',
@@ -545,7 +608,7 @@ contract(
           await longOtoken.approve(marginPool.address, longToDeposit, {from: accountOwner1})
           await expectRevert(
             controllerProxy.operate(actionArgs, {from: accountOwner1}),
-            'MarginAccount: invalid long otoken amount',
+            'MarginVault: invalid long otoken amount',
           )
         })
 
@@ -573,7 +636,7 @@ contract(
             {
               actionType: ActionType.DepositLongOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: expiredLongOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToDeposit,
@@ -612,7 +675,7 @@ contract(
             {
               actionType: ActionType.DepositLongOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: secondLongOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToDeposit,
@@ -635,7 +698,7 @@ contract(
             {
               actionType: ActionType.OpenVault,
               owner: accountOwner1,
-              sender: random,
+              secondAddress: random,
               asset: ZERO_ADDR,
               vaultId: '1',
               amount: '0',
@@ -645,7 +708,7 @@ contract(
             {
               actionType: ActionType.DepositLongOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: longOtoken.address,
               vaultId: 1,
               amount: longToDeposit,
@@ -672,7 +735,7 @@ contract(
             {
               actionType: ActionType.WithdrawLongOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToWithdraw.toString(),
@@ -683,7 +746,7 @@ contract(
 
           await expectRevert(
             controllerProxy.operate(actionArgs, {from: accountOwner1}),
-            'MarginAccount: long otoken address mismatch',
+            'MarginVault: long otoken address mismatch',
           )
         })
 
@@ -696,7 +759,7 @@ contract(
             {
               actionType: ActionType.WithdrawLongOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToWithdraw,
@@ -721,7 +784,7 @@ contract(
             {
               actionType: ActionType.WithdrawLongOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToWithdraw.toString(),
@@ -736,6 +799,26 @@ contract(
           )
         })
 
+        it('should revert withdrawing long with invalid vault id', async () => {
+          const vaultCounter = new BigNumber('100')
+
+          const longToWithdraw = createTokenAmount(10)
+          const actionArgs = [
+            {
+              actionType: ActionType.WithdrawLongOption,
+              owner: accountOwner1,
+              secondAddress: accountOwner1,
+              asset: longOtoken.address,
+              vaultId: vaultCounter.toNumber(),
+              amount: longToWithdraw,
+              index: '0',
+              data: ZERO_ADDR,
+            },
+          ]
+
+          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'Controller: invalid vault id')
+        })
+
         it('should withdraw long otoken to any random address where msg.sender is account owner', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
@@ -745,7 +828,7 @@ contract(
             {
               actionType: ActionType.WithdrawLongOption,
               owner: accountOwner1,
-              sender: random,
+              secondAddress: random,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToWithdraw,
@@ -796,7 +879,7 @@ contract(
             {
               actionType: ActionType.WithdrawLongOption,
               owner: accountOwner1,
-              sender: random,
+              secondAddress: random,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToWithdraw,
@@ -841,7 +924,7 @@ contract(
             {
               actionType: ActionType.WithdrawLongOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToWithdraw.toString(),
@@ -851,7 +934,7 @@ contract(
             {
               actionType: ActionType.WithdrawLongOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToWithdraw.toString(),
@@ -898,7 +981,7 @@ contract(
             {
               actionType: ActionType.WithdrawLongOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: longToWithdraw.toString(),
@@ -961,7 +1044,7 @@ contract(
               {
                 actionType: ActionType.DepositLongOption,
                 owner: accountOwner1,
-                sender: accountOwner1,
+                secondAddress: accountOwner1,
                 asset: expiredLongOtoken.address,
                 vaultId: vaultId.toNumber(),
                 amount: longToDeposit,
@@ -996,7 +1079,7 @@ contract(
               {
                 actionType: ActionType.WithdrawLongOption,
                 owner: accountOwner1,
-                sender: accountOwner1,
+                secondAddress: accountOwner1,
                 asset: expiredLongOtoken.address,
                 vaultId: vaultId.toNumber(),
                 amount: longToWithdraw.toString(),
@@ -1033,7 +1116,7 @@ contract(
             {
               actionType: ActionType.DepositCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToDeposit,
@@ -1084,7 +1167,7 @@ contract(
             {
               actionType: ActionType.DepositCollateral,
               owner: accountOwner1,
-              sender: accountOperator1,
+              secondAddress: accountOperator1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToDeposit,
@@ -1129,6 +1212,52 @@ contract(
           )
         })
 
+        it('should revert depositing collateral asset with invalid vault id', async () => {
+          const vaultCounter = new BigNumber('100')
+
+          const collateralToDeposit = createTokenAmount(10, usdcDecimals)
+          const actionArgs = [
+            {
+              actionType: ActionType.DepositCollateral,
+              owner: accountOwner1,
+              secondAddress: accountOwner1,
+              asset: usdc.address,
+              vaultId: vaultCounter.toNumber(),
+              amount: collateralToDeposit,
+              index: '0',
+              data: ZERO_ADDR,
+            },
+          ]
+
+          await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
+          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'Controller: invalid vault id')
+        })
+
+        it('should revert depositing long from an address that is not the msg.sender nor the owner account address', async () => {
+          const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
+
+          const collateralToDeposit = createTokenAmount(10, usdcDecimals)
+          const actionArgs = [
+            {
+              actionType: ActionType.DepositCollateral,
+              owner: accountOwner1,
+              secondAddress: random,
+              asset: usdc.address,
+              vaultId: vaultCounter.toNumber(),
+              amount: collateralToDeposit,
+              index: '0',
+              data: ZERO_ADDR,
+            },
+          ]
+
+          await usdc.approve(marginPool.address, collateralToDeposit, {from: random})
+          await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOperator1})
+          await expectRevert(
+            controllerProxy.operate(actionArgs, {from: accountOperator1}),
+            'Controller: cannot deposit collateral from this address',
+          )
+        })
+
         it('should revert depositing a collateral asset with amount equal to zero', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
@@ -1138,7 +1267,7 @@ contract(
             {
               actionType: ActionType.DepositCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToDeposit,
@@ -1150,7 +1279,7 @@ contract(
           await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
           await expectRevert(
             controllerProxy.operate(actionArgs, {from: accountOwner1}),
-            'MarginAccount: invalid collateral amount',
+            'MarginVault: invalid collateral amount',
           )
         })
 
@@ -1161,7 +1290,7 @@ contract(
             {
               actionType: ActionType.DepositCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToDeposit.toString(),
@@ -1171,7 +1300,7 @@ contract(
             {
               actionType: ActionType.DepositCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToDeposit.toString(),
@@ -1229,7 +1358,7 @@ contract(
               {
                 actionType: ActionType.DepositCollateral,
                 owner: accountOwner1,
-                sender: accountOwner1,
+                secondAddress: accountOwner1,
                 asset: trx.address,
                 vaultId: vaultCounter.toNumber(),
                 amount: collateralDeposit,
@@ -1257,7 +1386,7 @@ contract(
             {
               actionType: ActionType.DepositCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: weth.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToDeposit,
@@ -1284,7 +1413,7 @@ contract(
             {
               actionType: ActionType.WithdrawCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToWithdraw,
@@ -1295,7 +1424,7 @@ contract(
 
           await expectRevert(
             controllerProxy.operate(actionArgs, {from: accountOwner1}),
-            'MarginAccount: collateral token address mismatch',
+            'MarginVault: collateral token address mismatch',
           )
         })
 
@@ -1308,7 +1437,7 @@ contract(
             {
               actionType: ActionType.WithdrawCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: '1350',
               amount: collateralToWithdraw,
@@ -1330,7 +1459,7 @@ contract(
             {
               actionType: ActionType.WithdrawCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToWithdraw.toNumber(),
@@ -1354,7 +1483,7 @@ contract(
             {
               actionType: ActionType.WithdrawCollateral,
               owner: accountOwner1,
-              sender: random,
+              secondAddress: random,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToWithdraw,
@@ -1407,7 +1536,7 @@ contract(
             {
               actionType: ActionType.WithdrawCollateral,
               owner: accountOwner1,
-              sender: random,
+              secondAddress: random,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToWithdraw,
@@ -1454,7 +1583,7 @@ contract(
             {
               actionType: ActionType.WithdrawCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToWithdraw.toString(),
@@ -1464,7 +1593,7 @@ contract(
             {
               actionType: ActionType.WithdrawCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToWithdraw.toString(),
@@ -1513,7 +1642,7 @@ contract(
             {
               actionType: ActionType.WithdrawCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToWithdraw.toNumber(),
@@ -1607,7 +1736,7 @@ contract(
             {
               actionType: ActionType.MintShortOption,
               owner: accountOwner1,
-              sender: random,
+              secondAddress: random,
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: amountToMint,
@@ -1632,7 +1761,7 @@ contract(
             {
               actionType: ActionType.MintShortOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: amountToMint,
@@ -1642,7 +1771,7 @@ contract(
             {
               actionType: ActionType.DepositCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: weth.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToDeposit.toString(),
@@ -1661,6 +1790,26 @@ contract(
           )
         })
 
+        it('should revert minting short with invalid vault id', async () => {
+          const vaultCounter = new BigNumber('100')
+
+          const amountToMint = createTokenAmount(1)
+          const actionArgs = [
+            {
+              actionType: ActionType.MintShortOption,
+              owner: accountOwner1,
+              secondAddress: accountOwner1,
+              asset: shortOtoken.address,
+              vaultId: vaultCounter.toNumber(),
+              amount: amountToMint,
+              index: '0',
+              data: ZERO_ADDR,
+            },
+          ]
+
+          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'Controller: invalid vault id')
+        })
+
         it('mint naked short otoken from owner', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
@@ -1671,7 +1820,7 @@ contract(
             {
               actionType: ActionType.MintShortOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: amountToMint,
@@ -1681,7 +1830,7 @@ contract(
             {
               actionType: ActionType.DepositCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToDeposit.toNumber(),
@@ -1754,7 +1903,7 @@ contract(
             {
               actionType: ActionType.MintShortOption,
               owner: accountOwner1,
-              sender: accountOperator1,
+              secondAddress: accountOperator1,
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: amountToMint,
@@ -1764,7 +1913,7 @@ contract(
             {
               actionType: ActionType.DepositCollateral,
               owner: accountOwner1,
-              sender: accountOperator1,
+              secondAddress: accountOperator1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToDeposit.toNumber(),
@@ -1844,7 +1993,7 @@ contract(
             {
               actionType: ActionType.WithdrawCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToWithdraw.toNumber(),
@@ -1869,7 +2018,7 @@ contract(
             {
               actionType: ActionType.DepositCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: excessCollateralToDeposit,
@@ -1894,7 +2043,7 @@ contract(
             {
               actionType: ActionType.WithdrawCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: excessCollateralToDeposit,
@@ -1941,7 +2090,7 @@ contract(
             {
               actionType: ActionType.MintShortOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: amountToMint.toNumber(),
@@ -1977,7 +2126,7 @@ contract(
               {
                 actionType: ActionType.OpenVault,
                 owner: accountOperator1,
-                sender: accountOperator1,
+                secondAddress: accountOperator1,
                 asset: ZERO_ADDR,
                 vaultId: '1',
                 amount: '0',
@@ -1987,7 +2136,7 @@ contract(
               {
                 actionType: ActionType.MintShortOption,
                 owner: accountOperator1,
-                sender: accountOperator1,
+                secondAddress: accountOperator1,
                 asset: notWhitelistedShortOtoken.address,
                 vaultId: '1',
                 amount: amountToMint.toNumber(),
@@ -1997,7 +2146,7 @@ contract(
               {
                 actionType: ActionType.DepositCollateral,
                 owner: accountOperator1,
-                sender: accountOperator1,
+                secondAddress: accountOperator1,
                 asset: usdc.address,
                 vaultId: '1',
                 amount: collateralToDeposit.toNumber(),
@@ -2114,7 +2263,7 @@ contract(
             {
               actionType: ActionType.BurnShortOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: shortOtokenToBurn.toString(),
@@ -2125,7 +2274,7 @@ contract(
 
           await expectRevert(
             controllerProxy.operate(actionArgs, {from: accountOwner1}),
-            'MarginAccount: short otoken address mismatch',
+            'MarginVault: short otoken address mismatch',
           )
         })
 
@@ -2142,7 +2291,7 @@ contract(
             {
               actionType: ActionType.BurnShortOption,
               owner: accountOwner1,
-              sender: accountOperator1,
+              secondAddress: accountOperator1,
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: shortOtokenToBurn.toString(),
@@ -2153,7 +2302,7 @@ contract(
 
           await expectRevert(
             controllerProxy.operate(actionArgs, {from: accountOperator1}),
-            'MarginAccount: short otoken address mismatch',
+            'MarginVault: short otoken address mismatch',
           )
 
           // transfer back
@@ -2169,7 +2318,7 @@ contract(
             {
               actionType: ActionType.BurnShortOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: shortOtokenToBurn.toString(),
@@ -2184,6 +2333,49 @@ contract(
           )
         })
 
+        it('should revert minting short with invalid vault id', async () => {
+          const vaultCounter = new BigNumber('100')
+
+          const shortOtokenToBurn = new BigNumber(await shortOtoken.balanceOf(accountOperator1))
+          const actionArgs = [
+            {
+              actionType: ActionType.BurnShortOption,
+              owner: accountOwner1,
+              secondAddress: accountOperator1,
+              asset: shortOtoken.address,
+              vaultId: vaultCounter.toNumber(),
+              amount: shortOtokenToBurn.toString(),
+              index: '0',
+              data: ZERO_ADDR,
+            },
+          ]
+
+          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'Controller: invalid vault id')
+        })
+
+        it('should revert depositing long from an address that is not the msg.sender nor the owner account address', async () => {
+          const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
+
+          const shortOtokenToBurn = new BigNumber(await shortOtoken.balanceOf(accountOperator1))
+          const actionArgs = [
+            {
+              actionType: ActionType.BurnShortOption,
+              owner: accountOwner1,
+              secondAddress: random,
+              asset: shortOtoken.address,
+              vaultId: vaultCounter.toNumber(),
+              amount: shortOtokenToBurn.toString(),
+              index: '0',
+              data: ZERO_ADDR,
+            },
+          ]
+
+          await expectRevert(
+            controllerProxy.operate(actionArgs, {from: accountOperator1}),
+            'Controller: cannot burn from this address',
+          )
+        })
+
         it('should burn short otoken when called from account operator', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
@@ -2195,7 +2387,7 @@ contract(
             {
               actionType: ActionType.BurnShortOption,
               owner: accountOwner1,
-              sender: accountOperator1,
+              secondAddress: accountOperator1,
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: shortOtokenToBurn.toString(),
@@ -2243,7 +2435,7 @@ contract(
             {
               actionType: ActionType.BurnShortOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: shortOtokenToBurn.toString(),
@@ -2280,7 +2472,7 @@ contract(
             {
               actionType: ActionType.OpenVault,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: ZERO_ADDR,
               vaultId: vaultCounter.toNumber(),
               amount: '0',
@@ -2290,7 +2482,7 @@ contract(
             {
               actionType: ActionType.MintShortOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: amountToMint,
@@ -2300,7 +2492,7 @@ contract(
             {
               actionType: ActionType.BurnShortOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: amountToMint,
@@ -2321,7 +2513,7 @@ contract(
           )
         })
 
-        describe('Burn expired otoken', () => {
+        describe('Expired otoken', () => {
           let expiredShortOtoken: MockOtokenInstance
 
           before(async () => {
@@ -2348,7 +2540,7 @@ contract(
               {
                 actionType: ActionType.OpenVault,
                 owner: accountOwner1,
-                sender: accountOwner1,
+                secondAddress: accountOwner1,
                 asset: ZERO_ADDR,
                 vaultId: vaultCounterBefore.toNumber() + 1,
                 amount: '0',
@@ -2358,7 +2550,7 @@ contract(
               {
                 actionType: ActionType.MintShortOption,
                 owner: accountOwner1,
-                sender: accountOwner1,
+                secondAddress: accountOwner1,
                 asset: expiredShortOtoken.address,
                 vaultId: vaultCounterBefore.toNumber() + 1,
                 amount: amountToMint.toNumber(),
@@ -2368,7 +2560,7 @@ contract(
               {
                 actionType: ActionType.DepositCollateral,
                 owner: accountOwner1,
-                sender: accountOwner1,
+                secondAddress: accountOwner1,
                 asset: usdc.address,
                 vaultId: vaultCounterBefore.toNumber() + 1,
                 amount: collateralToDeposit.toNumber(),
@@ -2398,7 +2590,7 @@ contract(
             )
           })
 
-          it('should revert burning an expired long otoken', async () => {
+          it('should revert burning an expired short otoken', async () => {
             // increment time after expiredLongOtoken expiry
             await time.increase(3601) // increase time with one hour in seconds
 
@@ -2408,7 +2600,7 @@ contract(
               {
                 actionType: ActionType.BurnShortOption,
                 owner: accountOwner1,
-                sender: accountOwner1,
+                secondAddress: accountOwner1,
                 asset: expiredShortOtoken.address,
                 vaultId: vaultId.toNumber(),
                 amount: shortAmountToBurn.toNumber(),
@@ -2428,11 +2620,71 @@ contract(
               'Controller: can not burn expired otoken',
             )
           })
+
+          it('should revert minting an expired short otoken', async () => {
+            const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
+            assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+            const collateralToDeposit = new BigNumber(await expiredShortOtoken.strikePrice()).dividedBy(1e12)
+            const amountToMint = createTokenAmount(1)
+            const actionArgs = [
+              {
+                actionType: ActionType.MintShortOption,
+                owner: accountOwner1,
+                secondAddress: accountOwner1,
+                asset: expiredShortOtoken.address,
+                vaultId: vaultCounter.toNumber(),
+                amount: amountToMint,
+                index: '0',
+                data: ZERO_ADDR,
+              },
+              {
+                actionType: ActionType.DepositCollateral,
+                owner: accountOwner1,
+                secondAddress: accountOwner1,
+                asset: usdc.address,
+                vaultId: vaultCounter.toNumber(),
+                amount: collateralToDeposit.toNumber(),
+                index: '0',
+                data: ZERO_ADDR,
+              },
+            ]
+
+            await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOperator1})
+            await expectRevert(
+              controllerProxy.operate(actionArgs, {from: accountOwner1}),
+              'Controller: can not mint expired otoken',
+            )
+          })
+
+          it('should revert withdraw collateral from a vault with an expired short otoken', async () => {
+            const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
+            assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+            const collateralToWithdraw = createTokenAmount(10, usdcDecimals)
+            const actionArgs = [
+              {
+                actionType: ActionType.WithdrawCollateral,
+                owner: accountOwner1,
+                secondAddress: accountOwner1,
+                asset: usdc.address,
+                vaultId: vaultCounter.toNumber(),
+                amount: collateralToWithdraw,
+                index: '0',
+                data: ZERO_ADDR,
+              },
+            ]
+
+            await expectRevert(
+              controllerProxy.operate(actionArgs, {from: accountOwner1}),
+              'Controller: can not withdraw collateral from a vault with an expired short otoken',
+            )
+          })
         })
       })
     })
 
-    describe('Exercise', () => {
+    describe('Redeem', () => {
       let shortOtoken: MockOtokenInstance
 
       before(async () => {
@@ -2459,7 +2711,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: vaultCounter.toNumber(),
             amount: '0',
@@ -2469,7 +2721,7 @@ contract(
           {
             actionType: ActionType.MintShortOption,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: amountToMint.toNumber(),
@@ -2479,7 +2731,7 @@ contract(
           {
             actionType: ActionType.DepositCollateral,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: usdc.address,
             vaultId: vaultCounter.toNumber(),
             amount: collateralToDeposit.toNumber(),
@@ -2497,9 +2749,9 @@ contract(
         const shortAmountToBurn = new BigNumber('1')
         const actionArgs = [
           {
-            actionType: ActionType.Exercise,
+            actionType: ActionType.Redeem,
             owner: ZERO_ADDR,
-            sender: holder1,
+            secondAddress: holder1,
             asset: shortOtoken.address,
             vaultId: '0',
             amount: shortAmountToBurn.toNumber(),
@@ -2512,7 +2764,7 @@ contract(
 
         await expectRevert(
           controllerProxy.operate(actionArgs, {from: holder1}),
-          'Controller: can not exercise un-expired otoken',
+          'Controller: can not redeem un-expired otoken',
         )
       })
 
@@ -2543,9 +2795,9 @@ contract(
         const shortAmountToBurn = new BigNumber('1')
         const actionArgs = [
           {
-            actionType: ActionType.Exercise,
+            actionType: ActionType.Redeem,
             owner: ZERO_ADDR,
-            sender: holder1,
+            secondAddress: holder1,
             asset: shortOtoken.address,
             vaultId: '0',
             amount: shortAmountToBurn.toNumber(),
@@ -2558,7 +2810,7 @@ contract(
 
         await expectRevert(
           controllerProxy.operate(actionArgs, {from: holder1}),
-          'Controller: otoken underlying asset price is not finalized yet',
+          'Controller: asset prices not finalized yet',
         )
       })
 
@@ -2573,9 +2825,9 @@ contract(
         const shortAmountToBurn = new BigNumber(1e12)
         const actionArgs = [
           {
-            actionType: ActionType.Exercise,
+            actionType: ActionType.Redeem,
             owner: ZERO_ADDR,
-            sender: ZERO_ADDR,
+            secondAddress: ZERO_ADDR,
             asset: shortOtoken.address,
             vaultId: '0',
             amount: shortAmountToBurn.toNumber(),
@@ -2588,17 +2840,17 @@ contract(
 
         await expectRevert(
           controllerProxy.operate(actionArgs, {from: holder1}),
-          'Actions: cannot exercise to an invalid account',
+          'Actions: cannot redeem to an invalid account',
         )
       })
 
-      it('should exercise after expiry + price is finalized', async () => {
+      it('should redeem after expiry + price is finalized', async () => {
         const shortAmountToBurn = new BigNumber(1e12)
         const actionArgs = [
           {
-            actionType: ActionType.Exercise,
+            actionType: ActionType.Redeem,
             owner: ZERO_ADDR,
-            sender: holder1,
+            secondAddress: holder1,
             asset: shortOtoken.address,
             vaultId: '0',
             amount: shortAmountToBurn.toNumber(),
@@ -2636,7 +2888,7 @@ contract(
         )
       })
 
-      it('should exercise call option correctly', async () => {
+      it('should redeem call option correctly', async () => {
         const expiry = new BigNumber(await time.latest()).plus(new BigNumber(60 * 60)).toNumber()
         const call: MockOtokenInstance = await MockOtoken.new()
         await call.init(
@@ -2659,7 +2911,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: vaultCounter.toNumber(),
             amount: '0',
@@ -2669,7 +2921,7 @@ contract(
           {
             actionType: ActionType.DepositCollateral,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: weth.address,
             vaultId: vaultCounter.toNumber(),
             amount: amountCollateral,
@@ -2679,7 +2931,7 @@ contract(
           {
             actionType: ActionType.MintShortOption,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: call.address,
             vaultId: vaultCounter.toNumber(),
             amount: amountOtoken,
@@ -2694,11 +2946,11 @@ contract(
         await time.increaseTo(expiry + 10)
         await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(400, 18), true)
         await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1, 18), true)
-        const exerciseArgs = [
+        const redeemArgs = [
           {
-            actionType: ActionType.Exercise,
+            actionType: ActionType.Redeem,
             owner: ZERO_ADDR,
-            sender: holder1,
+            secondAddress: holder1,
             asset: call.address,
             vaultId: '0',
             amount: amountOtoken,
@@ -2710,12 +2962,12 @@ contract(
         const expectedPayout = createTokenAmount(0.5, 18)
 
         const userBalanceBefore = new BigNumber(await weth.balanceOf(holder1))
-        await controllerProxy.operate(exerciseArgs, {from: holder1})
+        await controllerProxy.operate(redeemArgs, {from: holder1})
         const userBalanceAfter = new BigNumber(await weth.balanceOf(holder1))
         assert.equal(userBalanceAfter.minus(userBalanceBefore).toString(), expectedPayout)
       })
 
-      it('should revert exercise option if collateral is different from underlying, and collateral price is not finalized', async () => {
+      it('should revert redeem option if collateral is different from underlying, and collateral price is not finalized', async () => {
         const expiry = new BigNumber(await time.latest()).plus(new BigNumber(60 * 60)).toNumber()
 
         await whitelist.whitelistCollateral(weth2.address)
@@ -2744,7 +2996,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: vaultCounter.toNumber(),
             amount: '0',
@@ -2754,7 +3006,7 @@ contract(
           {
             actionType: ActionType.MintShortOption,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: call.address,
             vaultId: vaultCounter.toNumber(),
             amount: amountOtoken,
@@ -2764,7 +3016,7 @@ contract(
           {
             actionType: ActionType.DepositCollateral,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: weth2.address,
             vaultId: vaultCounter.toNumber(),
             amount: amountCollateral,
@@ -2780,11 +3032,11 @@ contract(
         await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(400, 18), true)
         await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1, 18), true)
 
-        const exerciseArgs = [
+        const redeemArgs = [
           {
-            actionType: ActionType.Exercise,
+            actionType: ActionType.Redeem,
             owner: ZERO_ADDR,
-            sender: holder1,
+            secondAddress: holder1,
             asset: call.address,
             vaultId: '0',
             amount: amountOtoken,
@@ -2794,12 +3046,12 @@ contract(
         ]
 
         await expectRevert(
-          controllerProxy.operate(exerciseArgs, {from: holder1}),
-          'MarginCalculator: price at expiry not finalized yet.',
+          controllerProxy.operate(redeemArgs, {from: holder1}),
+          'Controller: asset prices not finalized yet',
         )
       })
 
-      describe('Exercise multiple Otokens', () => {
+      describe('Redeem multiple Otokens', () => {
         let firstOtoken: MockOtokenInstance
         let secondOtoken: MockOtokenInstance
 
@@ -2842,7 +3094,7 @@ contract(
             {
               actionType: ActionType.OpenVault,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: ZERO_ADDR,
               vaultId: vaultCounter.toNumber(),
               amount: '0',
@@ -2852,7 +3104,7 @@ contract(
             {
               actionType: ActionType.MintShortOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: firstOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: amountToMint.toNumber(),
@@ -2862,7 +3114,7 @@ contract(
             {
               actionType: ActionType.DepositCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: firstCollateralToDeposit.toNumber(),
@@ -2878,7 +3130,7 @@ contract(
             {
               actionType: ActionType.OpenVault,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: ZERO_ADDR,
               vaultId: vaultCounter.toNumber(),
               amount: '0',
@@ -2888,7 +3140,7 @@ contract(
             {
               actionType: ActionType.MintShortOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: secondOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: amountToMint.toNumber(),
@@ -2898,7 +3150,7 @@ contract(
             {
               actionType: ActionType.DepositCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: secondCollateralToDeposit.toNumber(),
@@ -2913,7 +3165,7 @@ contract(
           await secondOtoken.transfer(holder1, amountToMint, {from: accountOwner1})
         })
 
-        it('should exercise multiple Otokens in one transaction', async () => {
+        it('should redeem multiple Otokens in one transaction', async () => {
           // past time after expiry
           await time.increase(60 * 61 * 24)
           // set price in Oracle Mock, 150$ at expiry, expire ITM
@@ -2943,25 +3195,25 @@ contract(
             true,
           )
 
-          const amountToExercise = new BigNumber(1e12)
+          const amountToRedeem = new BigNumber(1e12)
           const actionArgs = [
             {
-              actionType: ActionType.Exercise,
+              actionType: ActionType.Redeem,
               owner: ZERO_ADDR,
-              sender: holder1,
+              secondAddress: holder1,
               asset: firstOtoken.address,
               vaultId: '0',
-              amount: amountToExercise.toNumber(),
+              amount: amountToRedeem.toNumber(),
               index: '0',
               data: ZERO_ADDR,
             },
             {
-              actionType: ActionType.Exercise,
+              actionType: ActionType.Redeem,
               owner: ZERO_ADDR,
-              sender: holder1,
+              secondAddress: holder1,
               asset: secondOtoken.address,
               vaultId: '0',
-              amount: amountToExercise.toNumber(),
+              amount: amountToRedeem.toNumber(),
               index: '0',
               data: ZERO_ADDR,
             },
@@ -3020,7 +3272,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: vaultCounter.toNumber(),
             amount: '0',
@@ -3030,7 +3282,7 @@ contract(
           {
             actionType: ActionType.DepositCollateral,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: usdc.address,
             vaultId: vaultCounter.toNumber(),
             amount: collateralToDespoit.toNumber(),
@@ -3048,7 +3300,7 @@ contract(
           {
             actionType: ActionType.SettleVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: '0',
@@ -3072,7 +3324,7 @@ contract(
           {
             actionType: ActionType.MintShortOption,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: amountToMint.toString(),
@@ -3088,7 +3340,7 @@ contract(
           {
             actionType: ActionType.SettleVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: '0',
@@ -3109,7 +3361,7 @@ contract(
           {
             actionType: ActionType.SettleVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounter.plus(10000).toNumber(),
             amount: '0',
@@ -3144,7 +3396,7 @@ contract(
           {
             actionType: ActionType.SettleVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: '0',
@@ -3157,7 +3409,7 @@ contract(
 
         await expectRevert(
           controllerProxy.operate(actionArgs, {from: accountOwner1}),
-          'Controller: otoken underlying asset price is not finalized yet',
+          'Controller: asset prices not finalized yet',
         )
       })
 
@@ -3170,7 +3422,7 @@ contract(
           {
             actionType: ActionType.SettleVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: '0',
@@ -3182,6 +3434,9 @@ contract(
         const payout = createTokenAmount(150, usdcDecimals)
         const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
         const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
+        const proceed = await controllerProxy.getProceed(accountOwner1, vaultCounter)
+
+        assert.equal(payout, proceed.toString())
 
         await controllerProxy.operate(actionArgs, {from: accountOwner1})
 
@@ -3225,7 +3480,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: vaultCounter.toNumber(),
             amount: '0',
@@ -3235,7 +3490,7 @@ contract(
           {
             actionType: ActionType.MintShortOption,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: longOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: longAmount,
@@ -3245,7 +3500,7 @@ contract(
           {
             actionType: ActionType.DepositCollateral,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: usdc.address,
             vaultId: vaultCounter.toNumber(),
             amount: collateralAmount,
@@ -3261,7 +3516,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: vaultCounter.toNumber() + 1,
             amount: '0',
@@ -3271,7 +3526,7 @@ contract(
           {
             actionType: ActionType.DepositLongOption,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: longOtoken.address,
             vaultId: vaultCounter.toNumber() + 1,
             amount: longAmount,
@@ -3297,7 +3552,7 @@ contract(
           {
             actionType: ActionType.SettleVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: vaultCounter.toNumber() + 1,
             amount: '0',
@@ -3351,7 +3606,7 @@ contract(
             {
               actionType: ActionType.OpenVault,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: ZERO_ADDR,
               vaultId: vaultCounter.toNumber(),
               amount: '0',
@@ -3361,7 +3616,7 @@ contract(
             {
               actionType: ActionType.MintShortOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: firstShortOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: amountToMint.toString(),
@@ -3371,7 +3626,7 @@ contract(
             {
               actionType: ActionType.DepositCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToDespoit,
@@ -3403,7 +3658,7 @@ contract(
             {
               actionType: ActionType.OpenVault,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: ZERO_ADDR,
               vaultId: vaultCounter.toNumber(),
               amount: '0',
@@ -3413,7 +3668,7 @@ contract(
             {
               actionType: ActionType.MintShortOption,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: secondShortOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: amountToMint.toString(),
@@ -3423,7 +3678,7 @@ contract(
             {
               actionType: ActionType.DepositCollateral,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: usdc.address,
               vaultId: vaultCounter.toNumber(),
               amount: collateralToDespoit,
@@ -3448,7 +3703,7 @@ contract(
             {
               actionType: ActionType.SettleVault,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: secondShortOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: '0',
@@ -3458,7 +3713,7 @@ contract(
             {
               actionType: ActionType.SettleVault,
               owner: accountOwner1,
-              sender: accountOwner1,
+              secondAddress: accountOwner1,
               asset: firstShortOtoken.address,
               vaultId: vaultCounter.minus(1).toNumber(),
               amount: '0',
@@ -3523,7 +3778,7 @@ contract(
 
         const expectedResutl = false
         assert.equal(
-          await controllerProxy.isPriceFinalized(expiredOtoken.address),
+          await controllerProxy.isSettlementAllowed(expiredOtoken.address),
           expectedResutl,
           'Price is not finalized because dispute period is not over yet',
         )
@@ -3543,13 +3798,14 @@ contract(
           true,
         )
 
-        // Mock oracle: dispute period over, set price to 200.
+        // Mock oracle: dispute periodd over, set price to 200.
         const priceMock = new BigNumber('200')
         await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, priceMock, true)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1, 18), true)
 
         const expectedResutl = true
         assert.equal(
-          await controllerProxy.isPriceFinalized(expiredOtoken.address),
+          await controllerProxy.isSettlementAllowed(expiredOtoken.address),
           expectedResutl,
           'Price is not finalized',
         )
@@ -3602,7 +3858,7 @@ contract(
           {
             actionType: ActionType.Call,
             owner: ZERO_ADDR,
-            sender: callTester.address,
+            secondAddress: callTester.address,
             asset: ZERO_ADDR,
             vaultId: '0',
             amount: '0',
@@ -3635,7 +3891,7 @@ contract(
           {
             actionType: ActionType.Call,
             owner: ZERO_ADDR,
-            sender: callTester.address,
+            secondAddress: callTester.address,
             asset: ZERO_ADDR,
             vaultId: '0',
             amount: '0',
@@ -3658,7 +3914,7 @@ contract(
           {
             actionType: ActionType.Call,
             owner: ZERO_ADDR,
-            sender: callTester.address,
+            secondAddress: callTester.address,
             asset: ZERO_ADDR,
             vaultId: '0',
             amount: '0',
@@ -3704,7 +3960,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: vaultCounterBefore.toNumber() + 1,
             amount: '0',
@@ -3714,7 +3970,7 @@ contract(
           {
             actionType: ActionType.MintShortOption,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounterBefore.toNumber() + 1,
             amount: amountToMint,
@@ -3724,7 +3980,7 @@ contract(
           {
             actionType: ActionType.DepositCollateral,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: usdc.address,
             vaultId: vaultCounterBefore.toNumber() + 1,
             amount: collateralToDeposit,
@@ -3738,6 +3994,13 @@ contract(
 
       it('should revert set pauser address from non-owner', async () => {
         await expectRevert(controllerProxy.setPauser(terminator, {from: random}), 'Ownable: caller is not the owner')
+      })
+
+      it('should revert set pauser address to address zero', async () => {
+        await expectRevert(
+          controllerProxy.setPauser(ZERO_ADDR, {from: owner}),
+          'Controller: pauser cannot be set to address zero',
+        )
       })
 
       it('should set pauser address', async () => {
@@ -3779,7 +4042,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: vaultCounter.toNumber() + 1,
             amount: '0',
@@ -3797,7 +4060,7 @@ contract(
           {
             actionType: ActionType.DepositCollateral,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: usdc.address,
             vaultId: vaultCounter.toNumber() + 1,
             amount: collateralToDeposit.toNumber(),
@@ -3816,7 +4079,7 @@ contract(
           {
             actionType: ActionType.MintShortOption,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: '1',
@@ -3826,7 +4089,7 @@ contract(
           {
             actionType: ActionType.DepositCollateral,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: usdc.address,
             vaultId: vaultCounter.toNumber(),
             amount: collateralToDeposit.toNumber(),
@@ -3845,7 +4108,7 @@ contract(
           {
             actionType: ActionType.WithdrawCollateral,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: usdc.address,
             vaultId: vaultCounter.toNumber(),
             amount: collateralToWithdraw.toNumber(),
@@ -3862,7 +4125,7 @@ contract(
           {
             actionType: ActionType.BurnShortOption,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: '1',
@@ -3887,7 +4150,7 @@ contract(
           {
             actionType: ActionType.SettleVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: '0',
@@ -3917,19 +4180,19 @@ contract(
         )
       })
 
-      it('should exercise when system is paused', async () => {
-        const amountToExercise = createTokenAmount(1, 18)
+      it('should redeem when system is paused', async () => {
+        const amountToRedeem = createTokenAmount(1, 18)
         // transfer to holder
-        await shortOtoken.transfer(holder1, amountToExercise, {from: accountOwner1})
+        await shortOtoken.transfer(holder1, amountToRedeem, {from: accountOwner1})
 
         const actionArgs = [
           {
-            actionType: ActionType.Exercise,
+            actionType: ActionType.Redeem,
             owner: ZERO_ADDR,
-            sender: holder1,
+            secondAddress: holder1,
             asset: shortOtoken.address,
             vaultId: '0',
-            amount: amountToExercise,
+            amount: amountToRedeem,
             index: '0',
             data: ZERO_ADDR,
           },
@@ -3959,7 +4222,7 @@ contract(
         )
         assert.equal(
           senderShortBalanceBefore.minus(senderShortBalanceAfter).toString(),
-          amountToExercise.toString(),
+          amountToRedeem.toString(),
           ' Burned short otoken amount mismatch',
         )
       })
@@ -3995,7 +4258,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: vaultCounterBefore.toNumber() + 1,
             amount: '0',
@@ -4005,7 +4268,7 @@ contract(
           {
             actionType: ActionType.MintShortOption,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounterBefore.toNumber() + 1,
             amount: amountToMint,
@@ -4015,7 +4278,7 @@ contract(
           {
             actionType: ActionType.DepositCollateral,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: usdc.address,
             vaultId: vaultCounterBefore.toNumber() + 1,
             amount: collateralToDeposit,
@@ -4031,6 +4294,13 @@ contract(
         await expectRevert(
           controllerProxy.setTerminator(terminator, {from: random}),
           'Ownable: caller is not the owner',
+        )
+      })
+
+      it('should revert set terminator address to address zero', async () => {
+        await expectRevert(
+          controllerProxy.setTerminator(ZERO_ADDR, {from: owner}),
+          'Controller: terminator cannot be set to address zero',
         )
       })
 
@@ -4076,7 +4346,7 @@ contract(
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: ZERO_ADDR,
             vaultId: vaultCounter.toNumber() + 1,
             amount: '0',
@@ -4097,7 +4367,7 @@ contract(
           {
             actionType: ActionType.DepositCollateral,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: usdc.address,
             vaultId: vaultCounter.toNumber() + 1,
             amount: collateralToDeposit.toNumber(),
@@ -4119,7 +4389,7 @@ contract(
           {
             actionType: ActionType.MintShortOption,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: '1',
@@ -4129,7 +4399,7 @@ contract(
           {
             actionType: ActionType.DepositCollateral,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: usdc.address,
             vaultId: vaultCounter.toNumber(),
             amount: collateralToDeposit.toNumber(),
@@ -4151,7 +4421,7 @@ contract(
           {
             actionType: ActionType.WithdrawCollateral,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: usdc.address,
             vaultId: vaultCounter.toNumber(),
             amount: collateralToWithdraw.toNumber(),
@@ -4171,7 +4441,7 @@ contract(
           {
             actionType: ActionType.BurnShortOption,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: '1',
@@ -4212,7 +4482,7 @@ contract(
           {
             actionType: ActionType.SettleVault,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounter.toNumber(),
             amount: '0',
@@ -4227,16 +4497,16 @@ contract(
         )
       })
 
-      it('should revert exercise when system is in emergency shutdown state', async () => {
+      it('should revert redeem when system is in emergency shutdown state', async () => {
         const shortAmountToBurn = new BigNumber('1')
         // transfer to holder
         await shortOtoken.transfer(holder1, shortAmountToBurn, {from: accountOwner1})
 
         const actionArgs = [
           {
-            actionType: ActionType.Exercise,
+            actionType: ActionType.Redeem,
             owner: ZERO_ADDR,
-            sender: holder1,
+            secondAddress: holder1,
             asset: shortOtoken.address,
             vaultId: '0',
             amount: shortAmountToBurn.toNumber(),
@@ -4276,6 +4546,30 @@ contract(
         assert.equal(_calculator, calculator.address, 'Calculator address mismatch after refresh')
         assert.equal(_pool, marginPool.address, 'Oracle address mismatch after refresh')
         assert.equal(_whitelist, whitelist.address, 'Oracle address mismatch after refresh')
+      })
+    })
+
+    describe('Execute an invalid action', () => {
+      it('Should execute transaction with no state updates', async () => {
+        const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
+        assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+        const collateralToDeposit = createTokenAmount(10, usdcDecimals)
+        const actionArgs = [
+          {
+            actionType: ActionType.InvalidAction,
+            owner: accountOwner1,
+            secondAddress: accountOwner1,
+            asset: usdc.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToDeposit,
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
+        await expectRevert.unspecified(controllerProxy.operate(actionArgs, {from: accountOwner1}))
       })
     })
   },
