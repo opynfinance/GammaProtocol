@@ -10,7 +10,7 @@ import {OpynPricerInterface} from "../interfaces/OpynPricerInterface.sol";
 contract USDCPricer is OpynPricerInterface {
     address public usdc;
 
-    uint256 private constant PRICE = 1e18;
+    uint256 private constant PRICE = 1e8;
 
     OracleInterface public oracle;
 

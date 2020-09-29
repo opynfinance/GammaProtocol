@@ -1,5 +1,5 @@
 import {USDCPricerInstance, MockOracleInstance, MockERC20Instance} from '../../build/types/truffle-types'
-import BigNumber from 'bignumber.js'
+import {createTokenAmount} from '../utils'
 
 const {time} = require('@openzeppelin/test-helpers')
 
@@ -20,9 +20,9 @@ contract('USDCPricer', ([owner, random]) => {
   })
 
   describe('getPrice', () => {
-    it('should return 1e18', async () => {
+    it('should return 1e8', async () => {
       const price = await pricer.getPrice()
-      const expectedResult = new BigNumber(1).times(1e18)
+      const expectedResult = createTokenAmount(1)
       assert.equal(price.toString(), expectedResult.toString())
     })
   })
@@ -33,7 +33,7 @@ contract('USDCPricer', ([owner, random]) => {
 
       await pricer.setExpiryPriceToOralce(expiry, {from: random})
       const priceFromOracle = await oracle.getExpiryPrice(usdc.address, expiry)
-      const expectedResult = new BigNumber(1).times(1e18)
+      const expectedResult = createTokenAmount(1)
       assert.equal(expectedResult.toString(), priceFromOracle[0].toString())
     })
   })
