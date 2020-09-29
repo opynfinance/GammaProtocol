@@ -37,7 +37,7 @@ contract Otoken is ERC20Initializable {
     /// @notice True if a put option, False if a call option
     bool public isPut;
 
-    uint256 private constant STRIKE_PRICE_DIGITS = 1e18;
+    uint256 private constant STRIKE_PRICE_DIGITS = 1e8;
 
     /**
      * @notice initialize the oToken
@@ -66,6 +66,7 @@ contract Otoken is ERC20Initializable {
         isPut = _isPut;
         (string memory tokenName, string memory tokenSymbol) = _getNameAndSymbol();
         __ERC20_init_unchained(tokenName, tokenSymbol);
+        _setupDecimals(8);
     }
 
     /**
