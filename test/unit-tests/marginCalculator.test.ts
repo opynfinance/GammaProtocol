@@ -385,22 +385,36 @@ contract('MarginCalculator', () => {
     })
 
     describe('Should return invalid vault for edge cases', () => {
-      it('(1) Short: 1 unit of 250 put with 0 collateral => invalid vault, need 1 USDC unit', async () => {
-        const vault = createVault(eth250Put.address, undefined, usdc.address, 1, undefined, 0)
+      let smallPut: MockOtokenInstance
+
+      before('setup put with low strke price', async () => {
+        smallPut = await MockOtoken.new()
+        await smallPut.init(
+          addressBook.address,
+          weth.address,
+          usdc.address,
+          usdc.address,
+          createTokenAmount(0.25),
+          expiry,
+          true,
+        )
+      })
+
+      it('(1) Short: 1 unit of 0.25 put with 0 collateral => invalid vault, need 1 USDC unit', async () => {
+        const vault = createVault(smallPut.address, undefined, usdc.address, 1, undefined, 0)
         const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
         assert.equal(isExcess, false)
         assert.equal(netValue.toString(), '1')
       })
 
-      it('(2) Short: 1e-18 250 put, collateral: 1e-6 USDC => valid vault', async () => {
-        const vault = createVault(eth250Put.address, undefined, usdc.address, 1, undefined, 1)
+      it('(2) Short: 1 0.25 put, collateral: 1e-6 USDC => valid vault', async () => {
+        const vault = createVault(smallPut.address, undefined, usdc.address, 1, undefined, 1)
         const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
         assert.equal(isExcess, true)
         assert.equal(netValue.toString(), '0') // excess = 0 because user can't take out that 1 USDC
       })
 
-      // TODO: Have document about this rounding issue.
-      xit('(3) Short: 1 unit of Put with strike price = 1e-18 => invalid vault, need at least 1 UCDC unit', async () => {
+      it('(3) Short: 1 unit of Put with strike price = 1e-8 => invalid vault, need at least 1 UCDC unit', async () => {
         const dustPut = await MockOtoken.new()
         await dustPut.init(addressBook.address, weth.address, usdc.address, usdc.address, 1, expiry, true)
 
@@ -413,9 +427,9 @@ contract('MarginCalculator', () => {
 
       it('(4) Short: 1 unit of Put with strike price = 1.5 * 1e-6 => invalid vault, need at least 1 UCDC unit', async () => {
         const dustPut = await MockOtoken.new()
-        const strikePrice = 1.5 * 1e12 //
+        const strikePrice = 1.5 * 1e2 //
         await dustPut.init(addressBook.address, weth.address, usdc.address, usdc.address, strikePrice, expiry, true)
-        const mintAmount = createTokenAmount(1, 18)
+        const mintAmount = createTokenAmount(1, 8)
         const vault = createVault(dustPut.address, undefined, usdc.address, mintAmount, undefined, 0)
         const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
         assert.equal(isExcess, false)
@@ -425,13 +439,12 @@ contract('MarginCalculator', () => {
       it('(5) Short: 1 200 call, long 1 0 call => need 0 usdc', async () => {
         const zeroCall = await MockOtoken.new()
         await zeroCall.init(addressBook.address, weth.address, usdc.address, weth.address, 0, expiry, false)
-        const otokenAmount = createTokenAmount(1, 18)
         const vault = createVault(
           eth200Call.address,
           zeroCall.address,
           undefined,
-          otokenAmount,
-          otokenAmount,
+          createTokenAmount(1),
+          createTokenAmount(1),
           undefined,
         )
         const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
@@ -733,15 +746,6 @@ contract('MarginCalculator', () => {
         const collateralAmount = createTokenAmount(350, rtokenDecimals)
         const expectOutPut = createTokenAmount(50, rtokenDecimals)
         const vault = createVault(put.address, undefined, rusd.address, amountOne, undefined, collateralAmount)
-        const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
-        assert.equal(isExcess, true)
-        assert.equal(netValue.toString(), expectOutPut.toString())
-      })
-
-      it('(4) Short: 1 unit 300 put, collateral: 35001 rUSDC => excess: 5001', async () => {
-        const collateralAmount = 3500001 // 350.01e-18
-        const expectOutPut = 500000
-        const vault = createVault(put.address, undefined, rusd.address, 1, undefined, collateralAmount)
         const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
         assert.equal(isExcess, true)
         assert.equal(netValue.toString(), expectOutPut.toString())
