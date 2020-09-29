@@ -28,7 +28,7 @@ overides the getPrice function in OpynPricerInterface.
 
 #### Return Values:
 
-- price of asset scaled by 1e18
+- price of asset scaled by 1e8
 
 ### Function `setExpiryPriceToOralce(uint256 _expiryTimestamp, uint256 _roundId) external`
 
