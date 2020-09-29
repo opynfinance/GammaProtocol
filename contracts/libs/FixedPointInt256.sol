@@ -121,9 +121,11 @@ library FixedPointInt256 {
      * @return mul of two fixed point
      */
     function mul(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (FixedPointInt memory) {
-        int256 value = (a.value.mul(b.value)).add(SCALING_FACTOR / 2) / SCALING_FACTOR;
-        if (value < 0) value = value.sub(1);
-        return FixedPointInt(value);
+        if (a.value.mul(b.value) > 0) {
+            return FixedPointInt((a.value.mul(b.value)).add(SCALING_FACTOR / 2) / SCALING_FACTOR);
+        } else {
+            return FixedPointInt((a.value.mul(b.value)).sub(SCALING_FACTOR / 2) / SCALING_FACTOR);
+        }
     }
 
     /**
@@ -134,9 +136,11 @@ library FixedPointInt256 {
      * @return div of two signed integer
      */
     function div(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (FixedPointInt memory) {
-        int256 value = (a.value.mul(SCALING_FACTOR)).add(b.value / 2) / b.value;
-        if (value < 0) value = value.sub(1);
-        return FixedPointInt(value);
+        if (a.value.div(b.value) > 0) {
+            return FixedPointInt((a.value.mul(SCALING_FACTOR)).add(b.value / 2) / b.value);
+        } else {
+            return FixedPointInt((a.value.mul(SCALING_FACTOR)).sub(b.value / 2) / b.value);
+        }
     }
 
     /**
