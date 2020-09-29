@@ -9,7 +9,7 @@ import {OwnableUpgradeSafe} from "./packages/oz/upgradeability/OwnableUpgradeSaf
 import {ReentrancyGuardUpgradeSafe} from "./packages/oz/upgradeability/ReentrancyGuardUpgradeSafe.sol";
 import {Initializable} from "./packages/oz/upgradeability/Initializable.sol";
 import {SafeMath} from "./packages/oz/SafeMath.sol";
-import {MarginAccount} from "./libs/MarginAccount.sol";
+import {MarginVault} from "./libs/MarginVault.sol";
 import {Actions} from "./libs/Actions.sol";
 import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
 import {OtokenInterface} from "./interfaces/OtokenInterface.sol";
@@ -25,7 +25,7 @@ import {CalleeInterface} from "./interfaces/CalleeInterface.sol";
  * @notice contract that controls the gamma protocol and interaction with all sub contracts
  */
 contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgradeSafe {
-    using MarginAccount for MarginAccount.Vault;
+    using MarginVault for MarginVault.Vault;
     using SafeMath for uint256;
 
     AddressBookInterface public addressbook;
@@ -40,7 +40,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /// @notice address that has permission to execute an emergency shutdown
     address public terminator;
 
-    /// @notice if true, all system functionality is paused other than exercise and settle vault
+    /// @notice if true, all system functionality is paused other than redeem and settle vault
     bool public systemPaused;
 
     /// @notice if true, all system functionality is paused
@@ -52,7 +52,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /// @dev mapping between an owner address and the number of owner address vaults
     mapping(address => uint256) internal accountVaultCounter;
     /// @dev mapping between an owner address and a specific vault using a vault id
-    mapping(address => mapping(uint256 => MarginAccount.Vault)) internal vaults;
+    mapping(address => mapping(uint256 => MarginVault.Vault)) internal vaults;
     /// @dev mapping between an account owner and their approved or unapproved account operators
     mapping(address => mapping(address => bool)) internal operators;
 
@@ -108,10 +108,10 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         uint256 vaultId,
         uint256 amount
     );
-    /// @notice emits an event when an oToken is exercised
-    event Exercise(
+    /// @notice emits an event when an oToken is redeemd
+    event Redeem(
         address indexed otoken,
-        address indexed exerciser,
+        address indexed redeemer,
         address indexed receiver,
         address collateralAsset,
         uint256 otokenBurned,
@@ -363,21 +363,19 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
-     * @notice before expiry or if there is no short oToken in a vault, return a the vault, if the short oToken has expired, adjust the vault collateral balances by the net option proceeds
-     * @dev if vault has no short oToken or the issued oToken is not expired yet, return the vault, else call getExcessCollateral and return it as collateral amount inside Vault struct.
+     * @notice return the proceed amount of a vault
      * @param _owner account owner of the vault
      * @param _vaultId vaultId to return balances for
-     * @return Vault struct with balances
+     * @return amount of collateral that can be taken out
      */
-    function getVaultBalances(address _owner, uint256 _vaultId) external view returns (MarginAccount.Vault memory) {
-        MarginAccount.Vault memory vault = getVault(_owner, _vaultId);
+    function getProceed(address _owner, uint256 _vaultId) external view returns (uint256) {
+        MarginVault.Vault memory vault = getVault(_owner, _vaultId);
 
         // if there is no minted short oToken or the short oToken has not expired yet
-        if ((vault.shortOtokens.length == 0) || (!isExpired(vault.shortOtokens[0]))) return vault;
+        if ((vault.shortOtokens.length == 0) || (!isExpired(vault.shortOtokens[0]))) return 0;
 
         (uint256 netValue, ) = calculator.getExcessCollateral(vault);
-        vault.collateralAmounts[0] = netValue;
-        return vault;
+        return netValue;
     }
 
     /**
@@ -385,14 +383,20 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _otoken address of the oToken
      * @return true if the oToken has expired AND the oraclePrice at the expiry timestamp has been finalized, otherwise it returns false
      */
-    function isPriceFinalized(address _otoken) public view returns (bool) {
+    function isSettlementAllowed(address _otoken) public view returns (bool) {
         OtokenInterface otoken = OtokenInterface(_otoken);
 
         address underlying = otoken.underlyingAsset();
+        address strike = otoken.strikeAsset();
+        address collateral = otoken.collateralAsset();
+
         uint256 expiry = otoken.expiryTimestamp();
 
-        bool isFinalized = oracle.isDisputePeriodOver(underlying, expiry);
-        return isFinalized;
+        bool isUnderlyingFinalized = oracle.isDisputePeriodOver(underlying, expiry);
+        bool isStrikeFinalized = oracle.isDisputePeriodOver(strike, expiry);
+        bool isCollateralFinalized = oracle.isDisputePeriodOver(collateral, expiry);
+
+        return isUnderlyingFinalized && isStrikeFinalized && isCollateralFinalized;
     }
 
     /**
@@ -421,13 +425,13 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _vaultId vault id of vault to return
      * @return Vault struct that corresponds to the _vaultId of _owner
      */
-    function getVault(address _owner, uint256 _vaultId) public view returns (MarginAccount.Vault memory) {
+    function getVault(address _owner, uint256 _vaultId) public view returns (MarginVault.Vault memory) {
         return vaults[_owner][_vaultId];
     }
 
     /**
      * @notice execute a variety of actions
-     * @dev for each action in the action array, execute the corresponding action, only one vault can be modified for all actions except SettleVault, Exercise, and Call
+     * @dev for each action in the action array, execute the corresponding action, only one vault can be modified for all actions except SettleVault, Redeem, and Call
      * @param _actions array of type Actions.ActionArgs[], which expresses which actions the user wants to execute
      * @return vaultUpdated, indicates if a vault has changed
      * @return owner, the vault owner if a vault has changed
@@ -451,7 +455,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
             if (
                 (actionType != Actions.ActionType.SettleVault) &&
-                (actionType != Actions.ActionType.Exercise) &&
+                (actionType != Actions.ActionType.Redeem) &&
                 (actionType != Actions.ActionType.Call)
             ) {
                 // check if this action is manipulating the same vault as all other actions, other than SettleVault
@@ -478,8 +482,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
                 _mintOtoken(Actions._parseMintArgs(action));
             } else if (actionType == Actions.ActionType.BurnShortOption) {
                 _burnOtoken(Actions._parseBurnArgs(action));
-            } else if (actionType == Actions.ActionType.Exercise) {
-                _exercise(Actions._parseExerciseArgs(action));
+            } else if (actionType == Actions.ActionType.Redeem) {
+                _redeem(Actions._parseRedeemArgs(action));
             } else if (actionType == Actions.ActionType.SettleVault) {
                 _settleVault(Actions._parseSettleVaultArgs(action));
             } else {
@@ -497,7 +501,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _vaultId vault id of the final vault
      */
     function _verifyFinalState(address _owner, uint256 _vaultId) internal view {
-        MarginAccount.Vault memory _vault = getVault(_owner, _vaultId);
+        MarginVault.Vault memory _vault = getVault(_owner, _vaultId);
         (, bool isValidVault) = calculator.getExcessCollateral(_vault);
 
         require(isValidVault, "Controller: invalid final vault state");
@@ -610,7 +614,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     {
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
 
-        MarginAccount.Vault memory vault = getVault(_args.owner, _args.vaultId);
+        MarginVault.Vault memory vault = getVault(_args.owner, _args.vaultId);
         if (_isNotEmpty(vault.shortOtokens)) {
             OtokenInterface otoken = OtokenInterface(vault.shortOtokens[0]);
 
@@ -669,16 +673,16 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
-     * @notice exercise an oToken after expiry, receiving the payout of the oToken in the collateral asset
+     * @notice redeem an oToken after expiry, receiving the payout of the oToken in the collateral asset
      * @dev cannot be called when system is paused
-     * @param _args ExerciseArgs structure
+     * @param _args RedeemArgs structure
      */
-    function _exercise(Actions.ExerciseArgs memory _args) internal {
+    function _redeem(Actions.RedeemArgs memory _args) internal {
         OtokenInterface otoken = OtokenInterface(_args.otoken);
 
-        require(now > otoken.expiryTimestamp(), "Controller: can not exercise un-expired otoken");
+        require(now > otoken.expiryTimestamp(), "Controller: can not redeem un-expired otoken");
 
-        require(isPriceFinalized(_args.otoken), "Controller: otoken underlying asset price is not finalized yet");
+        require(isSettlementAllowed(_args.otoken), "Controller: asset prices not finalized yet");
 
         uint256 payout = _getPayout(_args.otoken, _args.amount);
 
@@ -686,7 +690,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         pool.transferToUser(otoken.collateralAsset(), _args.receiver, payout);
 
-        emit Exercise(_args.otoken, msg.sender, _args.receiver, otoken.collateralAsset(), _args.amount, payout);
+        emit Redeem(_args.otoken, msg.sender, _args.receiver, otoken.collateralAsset(), _args.amount, payout);
     }
 
     /**
@@ -697,7 +701,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     function _settleVault(Actions.SettleVaultArgs memory _args) internal onlyAuthorized(msg.sender, _args.owner) {
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
 
-        MarginAccount.Vault memory vault = getVault(_args.owner, _args.vaultId);
+        MarginVault.Vault memory vault = getVault(_args.owner, _args.vaultId);
 
         require(_isNotEmpty(vault.shortOtokens) || _isNotEmpty(vault.longOtokens), "Can't settle vault with no otoken");
 
@@ -706,7 +710,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             : OtokenInterface(vault.longOtokens[0]);
 
         require(now > otoken.expiryTimestamp(), "Controller: can not settle vault with un-expired otoken");
-        require(isPriceFinalized(address(otoken)), "Controller: otoken underlying asset price is not finalized yet");
+        require(isSettlementAllowed(address(otoken)), "Controller: asset prices not finalized yet");
 
         (uint256 payout, ) = calculator.getExcessCollateral(vault);
 

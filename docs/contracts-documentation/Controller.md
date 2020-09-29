@@ -46,9 +46,9 @@ contract that controls the gamma protocol and interaction with all sub contracts
 
 - `getConfiguration() (external)`
 
-- `getVaultBalances(address _owner, uint256 _vaultId) (external)`
+- `getProceed(address _owner, uint256 _vaultId) (external)`
 
-- `isPriceFinalized(address _otoken) (public)`
+- `isSettlementAllowed(address _otoken) (public)`
 
 - `getAccountVaultCounter(address _accountOwner) (external)`
 
@@ -74,7 +74,7 @@ contract that controls the gamma protocol and interaction with all sub contracts
 
 - `_burnOtoken(struct Actions.BurnArgs _args) (internal)`
 
-- `_exercise(struct Actions.ExerciseArgs _args) (internal)`
+- `_redeem(struct Actions.RedeemArgs _args) (internal)`
 
 - `_settleVault(struct Actions.SettleVaultArgs _args) (internal)`
 
@@ -108,7 +108,7 @@ contract that controls the gamma protocol and interaction with all sub contracts
 
 - `ShortOtokenBurned(address otoken, address AccountOwner, address from, uint256 vaultId, uint256 amount)`
 
-- `Exercise(address otoken, address exerciser, address receiver, address collateralAsset, uint256 otokenBurned, uint256 payout)`
+- `Redeem(address otoken, address redeemer, address receiver, address collateralAsset, uint256 otokenBurned, uint256 payout)`
 
 - `VaultSettled(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 payout)`
 
@@ -290,7 +290,7 @@ returns the current controller configuration
 
 - the address of the pool module
 
-### Function `getVaultBalances(address _owner, uint256 _vaultId) → struct MarginAccount.Vault external`
+### Function `getProceed(address _owner, uint256 _vaultId) → struct MarginVault.Vault external`
 
 before expiry or if there is no short oToken in a vault, return a the vault, if the short oToken has expired, adjust the vault collateral balances by the net option proceeds
 
@@ -306,7 +306,7 @@ if vault has no short oToken or the issued oToken is not expired yet, return the
 
 - Vault struct with balances
 
-### Function `isPriceFinalized(address _otoken) → bool public`
+### Function `isSettlementAllowed(address _otoken) → bool public`
 
 return if an expired oToken contract’s settlement price has been finalized
 
@@ -342,7 +342,7 @@ check if an oToken has expired
 
 - true if the otoken has expired, otherwise it returns false
 
-### Function `getVault(address _owner, uint256 _vaultId) → struct MarginAccount.Vault public`
+### Function `getVault(address _owner, uint256 _vaultId) → struct MarginVault.Vault public`
 
 return a specific vault
 
@@ -360,7 +360,7 @@ return a specific vault
 
 execute a variety of actions
 
-for each action in the action array, execute the corresponding action, only one vault can be modified for all actions except SettleVault, Exercise, and Call
+for each action in the action array, execute the corresponding action, only one vault can be modified for all actions except SettleVault, Redeem, and Call
 
 #### Parameters:
 
@@ -454,15 +454,15 @@ only the account owner or operator can burn oTokens for a vault, cannot be calle
 
 - `_args`: MintArgs structure
 
-### Function `_exercise(struct Actions.ExerciseArgs _args) internal`
+### Function `_redeem(struct Actions.RedeemArgs _args) internal`
 
-exercise an oToken after expiry, receiving the payout of the oToken in the collateral asset
+redeem an oToken after expiry, receiving the payout of the oToken in the collateral asset
 
 cannot be called when system is paused
 
 #### Parameters:
 
-- `_args`: ExerciseArgs structure
+- `_args`: RedeemArgs structure
 
 ### Function `_settleVault(struct Actions.SettleVaultArgs _args) internal`
 
@@ -562,9 +562,9 @@ emits an event when a short oToken is minted from a vault
 
 emits an event when a short oToken is burned
 
-### Event `Exercise(address otoken, address exerciser, address receiver, address collateralAsset, uint256 otokenBurned, uint256 payout)`
+### Event `Redeem(address otoken, address redeemer, address receiver, address collateralAsset, uint256 otokenBurned, uint256 payout)`
 
-emits an event when an oToken is exercised
+emits an event when an oToken is redeemd
 
 ### Event `VaultSettled(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 payout)`
 

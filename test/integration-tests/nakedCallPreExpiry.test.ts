@@ -12,7 +12,7 @@ import {
 import {createTokenAmount, createValidExpiry} from '../utils'
 import BigNumber from 'bignumber.js'
 
-const {expectRevert, time} = require('@openzeppelin/test-helpers')
+const {time} = require('@openzeppelin/test-helpers')
 const AddressBook = artifacts.require('AddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const Otoken = artifacts.require('Otoken.sol')
@@ -21,7 +21,7 @@ const MarginCalculator = artifacts.require('MarginCalculator.sol')
 const Whitelist = artifacts.require('Whitelist.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
-const MarginAccount = artifacts.require('MarginAccount.sol')
+const MarginVault = artifacts.require('MarginVault.sol')
 const OTokenFactory = artifacts.require('OtokenFactory.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
@@ -34,11 +34,11 @@ enum ActionType {
   DepositCollateral,
   WithdrawCollateral,
   SettleVault,
-  Exercise,
+  Redeem,
   Call,
 }
 
-contract('Naked Call Option closed before expiry flow', ([accountOwner1, buyer]) => {
+contract('Naked Call Option closed before expiry flow', ([accountOwner1]) => {
   let expiry: number
 
   let addressBook: AddressBookInstance
@@ -80,10 +80,10 @@ contract('Naked Call Option closed before expiry flow', ([accountOwner1, buyer])
     calculator = await MarginCalculator.new(addressBook.address)
     // setup margin pool
     marginPool = await MarginPool.new(addressBook.address)
-    // setup margin account
-    const lib = await MarginAccount.new()
+    // setup margin vault
+    const lib = await MarginVault.new()
     // setup controllerProxy module
-    await Controller.link('MarginAccount', lib.address)
+    await Controller.link('MarginVault', lib.address)
     controllerImplementation = await Controller.new(addressBook.address)
     // setup mock Oracle module
     oracle = await MockOracle.new(addressBook.address)
@@ -172,7 +172,7 @@ contract('Naked Call Option closed before expiry flow', ([accountOwner1, buyer])
         {
           actionType: ActionType.OpenVault,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: ZERO_ADDR,
           vaultId: vaultCounter,
           amount: '0',
@@ -182,7 +182,7 @@ contract('Naked Call Option closed before expiry flow', ([accountOwner1, buyer])
         {
           actionType: ActionType.MintShortOption,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: ethCall.address,
           vaultId: vaultCounter,
           amount: scaledOptionsAmount,
@@ -192,7 +192,7 @@ contract('Naked Call Option closed before expiry flow', ([accountOwner1, buyer])
         {
           actionType: ActionType.DepositCollateral,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: weth.address,
           vaultId: vaultCounter,
           amount: scaledCollateralAmount,
@@ -270,7 +270,7 @@ contract('Naked Call Option closed before expiry flow', ([accountOwner1, buyer])
         {
           actionType: ActionType.WithdrawCollateral,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: weth.address,
           vaultId: vaultCounter,
           amount: scaledCollateralAmount,
@@ -280,7 +280,7 @@ contract('Naked Call Option closed before expiry flow', ([accountOwner1, buyer])
         {
           actionType: ActionType.BurnShortOption,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: ethCall.address,
           vaultId: vaultCounter,
           amount: scaledOptionsAmount,

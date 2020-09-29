@@ -14,9 +14,9 @@
 
 - `getOpenVaultArgs() (external)`
 
-- `testParseExerciseAction(struct Actions.ActionArgs _args) (external)`
+- `testParseRedeemAction(struct Actions.ActionArgs _args) (external)`
 
-- `getExerciseArgs() (external)`
+- `getRedeemArgs() (external)`
 
 - `testParseSettleVaultAction(struct Actions.ActionArgs _args) (external)`
 
@@ -46,9 +46,9 @@
 
 ### Function `getOpenVaultArgs() → struct Actions.OpenVaultArgs external`
 
-### Function `testParseExerciseAction(struct Actions.ActionArgs _args) external`
+### Function `testParseRedeemAction(struct Actions.ActionArgs _args) external`
 
-### Function `getExerciseArgs() → struct Actions.ExerciseArgs external`
+### Function `getRedeemArgs() → struct Actions.RedeemArgs external`
 
 ### Function `testParseSettleVaultAction(struct Actions.ActionArgs _args) external`
 

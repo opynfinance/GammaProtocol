@@ -12,7 +12,7 @@
 
 - `_parseWithdrawArgs(struct Actions.ActionArgs _args) (internal)`
 
-- `_parseExerciseArgs(struct Actions.ActionArgs _args) (internal)`
+- `_parseRedeemArgs(struct Actions.ActionArgs _args) (internal)`
 
 - `_parseSettleVaultArgs(struct Actions.ActionArgs _args) (internal)`
 
@@ -78,9 +78,9 @@ Parses the passed in action argmuents to get the argmuents for a withdraw action
 
 - The arguments for a withdraw action
 
-### Function `_parseExerciseArgs(struct Actions.ActionArgs _args) → struct Actions.ExerciseArgs internal`
+### Function `_parseRedeemArgs(struct Actions.ActionArgs _args) → struct Actions.RedeemArgs internal`
 
-Parses the passed in action argmuents to get the argmuents for an exercise action
+Parses the passed in action argmuents to get the argmuents for an redeem action
 
 #### Parameters:
 
@@ -88,7 +88,7 @@ Parses the passed in action argmuents to get the argmuents for an exercise actio
 
 #### Return Values:
 
-- The arguments for a exercise action
+- The arguments for a redeem action
 
 ### Function `_parseSettleVaultArgs(struct Actions.ActionArgs _args) → struct Actions.SettleVaultArgs internal`
 

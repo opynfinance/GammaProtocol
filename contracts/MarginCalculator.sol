@@ -10,7 +10,7 @@ import {OracleInterface} from "./interfaces/OracleInterface.sol";
 import {ERC20Interface} from "./interfaces/ERC20Interface.sol";
 import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
 import {FixedPointInt256 as FPI} from "./libs/FixedPointInt256.sol";
-import {MarginAccount} from "./libs/MarginAccount.sol";
+import {MarginVault} from "./libs/MarginVault.sol";
 
 /**
  * @title MarginCalculator
@@ -71,7 +71,7 @@ contract MarginCalculator {
      * @return isExcess True if there's excess margin in the vault. In this case, collateral can be taken out from the vault.
      * False if there is insufficient margin and additional collateral needs to be added to the vault to create the position.
      */
-    function getExcessCollateral(MarginAccount.Vault memory _vault) public view returns (uint256, bool) {
+    function getExcessCollateral(MarginVault.Vault memory _vault) public view returns (uint256, bool) {
         // include all the checks for a vault
         _checkIsValidVault(_vault);
 
@@ -140,7 +140,7 @@ contract MarginCalculator {
      * @param _vault the theoretical vault that needs to be checked
      * @return marginRequired the minimal amount of collateral needed in a vault, denominated in collateral
      */
-    function _getMarginRequired(MarginAccount.Vault memory _vault) internal view returns (FPI.FixedPointInt memory) {
+    function _getMarginRequired(MarginVault.Vault memory _vault) internal view returns (FPI.FixedPointInt memory) {
         // The vault passed must have either long otoken or short otoken in it.
         bool hasShort = _isNotEmpty(_vault.shortOtokens);
         bool hasLong = _isNotEmpty(_vault.longOtokens);
@@ -277,7 +277,7 @@ contract MarginCalculator {
      * c) at most 1 series of option used as the short option.
      * @param _vault the vault to check.
      */
-    function _checkIsValidVault(MarginAccount.Vault memory _vault) internal view {
+    function _checkIsValidVault(MarginVault.Vault memory _vault) internal view {
         // ensure all the arrays in the vault is valid
         require(_vault.shortOtokens.length <= 1, "MarginCalculator: Too many short otokens in the vault");
         require(_vault.longOtokens.length <= 1, "MarginCalculator: Too many long otokens in the vault");
@@ -307,7 +307,7 @@ contract MarginCalculator {
      * @dev if there is a short option and a long option in the vault, ensure that the long option series being used is a valid margin.
      * @param _vault the vault to check.
      */
-    function _isMarginableLong(MarginAccount.Vault memory _vault) internal view returns (bool) {
+    function _isMarginableLong(MarginVault.Vault memory _vault) internal view returns (bool) {
         bool hasLong = _isNotEmpty(_vault.longOtokens);
         bool hasShort = _isNotEmpty(_vault.shortOtokens);
         // if vault is missing long or short, return true.
@@ -328,7 +328,7 @@ contract MarginCalculator {
      * @dev if there is short option and collateral asset in the vault, ensure that the collateral asset being used is a valid margin.
      * @param _vault the vault to check.
      */
-    function _isMarginableCollateral(MarginAccount.Vault memory _vault) internal view returns (bool) {
+    function _isMarginableCollateral(MarginVault.Vault memory _vault) internal view returns (bool) {
         bool isMarginable = true;
 
         bool hasCollateral = _isNotEmpty(_vault.collateralAssets);

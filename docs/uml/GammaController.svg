@@ -17,7 +17,7 @@
 <polyline fill="none" stroke="#000000" points="0,-1293.3 820.0284,-1293.3 "/>
 <text text-anchor="start" x="8" y="-1276.7" font-family="Times,serif" font-size="14.00" fill="#000000">Internal:</text>
 <text text-anchor="start" x="8" y="-1259.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;accountVaultCounter: mapping(address=&gt;uint256)</text>
-<text text-anchor="start" x="8" y="-1243.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;vaults: mapping(address=&gt;mapping(uint256=&gt;MarginAccount.Vault))</text>
+<text text-anchor="start" x="8" y="-1243.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;vaults: mapping(address=&gt;mapping(uint256=&gt;MarginVault.Vault))</text>
 <text text-anchor="start" x="8" y="-1226.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;operators: mapping(address=&gt;mapping(address=&gt;bool))</text>
 <text text-anchor="start" x="8" y="-1209.5" font-family="Times,serif" font-size="14.00" fill="#000000">Public:</text>
 <text text-anchor="start" x="8" y="-1192.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;addressbook: AddressBookInterface</text>
@@ -44,7 +44,7 @@
 <text text-anchor="start" x="8" y="-848.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_withdrawCollateral(_args: Actions.WithdrawArgs)</text>
 <text text-anchor="start" x="8" y="-831.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_isNotShutdown()</text>
 <text text-anchor="start" x="8" y="-815.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_burnOtoken(_args: Actions.BurnArgs)</text>
-<text text-anchor="start" x="8" y="-798.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_exercise(_args: Actions.ExerciseArgs)</text>
+<text text-anchor="start" x="8" y="-798.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_redeem(_args: Actions.RedeemArgs)</text>
 <text text-anchor="start" x="8" y="-781.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_settleVault(_args: Actions.SettleVaultArgs)</text>
 <text text-anchor="start" x="8" y="-764.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_call(_args: Actions.CallArgs)</text>
 <text text-anchor="start" x="8" y="-747.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_checkVaultId(_accountOwner: address, _vaultId: uint256): bool</text>
@@ -64,7 +64,7 @@
 <text text-anchor="start" x="8" y="-512.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;initialize(_addressBook: address, _owner: address)</text>
 <text text-anchor="start" x="8" y="-495.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;isOperator(_owner: address, _operator: address): bool</text>
 <text text-anchor="start" x="8" y="-479.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getConfiguration(): (address, address, address, address)</text>
-<text text-anchor="start" x="8" y="-462.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getVaultBalances(_owner: address, _vaultId: uint256): MarginAccount.Vault</text>
+<text text-anchor="start" x="8" y="-462.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getProceed(_owner: address, _vaultId: uint256): MarginVault.Vault</text>
 <text text-anchor="start" x="8" y="-445.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getAccountVaultCounter(_accountOwner: address): uint256</text>
 <text text-anchor="start" x="8" y="-428.7" font-family="Times,serif" font-size="14.00" fill="#000000">Public:</text>
 <text text-anchor="start" x="8" y="-411.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; PauserUpdated(oldPauser: address, newPauser: address)</text>
@@ -75,7 +75,7 @@
 <text text-anchor="start" x="8" y="-327.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; CollateralAssetWithdrawed(asset: address, AccountOwner: address, to: address, vaultId: uint256, amount: uint256)</text>
 <text text-anchor="start" x="8" y="-311.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; ShortOtokenMinted(otoken: address, AccountOwner: address, to: address, vaultId: uint256, amount: uint256)</text>
 <text text-anchor="start" x="8" y="-294.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; ShortOtokenBurned(otoken: address, AccountOwner: address, from: address, vaultId: uint256, amount: uint256)</text>
-<text text-anchor="start" x="8" y="-277.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; Exercise(otoken: address, exerciser: address, receiver: address, collateralAsset: address, otokenBurned: uint256, payout: uint256)</text>
+<text text-anchor="start" x="8" y="-277.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; Redeem(otoken: address, redeemer: address, receiver: address, collateralAsset: address, otokenBurned: uint256, payout: uint256)</text>
 <text text-anchor="start" x="8" y="-260.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; VaultSettled(otoken: address, AccountOwner: address, to: address, vaultId: uint256, payout: uint256)</text>
 <text text-anchor="start" x="8" y="-243.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; CallExecuted(from: address, to: address, vaultOwner: address, vaultId: uint256, data: bytes)</text>
 <text text-anchor="start" x="8" y="-227.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; TerminatorUpdated(oldTerminator: address, newTerminator: address)</text>
@@ -89,9 +89,9 @@
 <text text-anchor="start" x="8" y="-92.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;modifier&gt;&gt; onlyPauser()</text>
 <text text-anchor="start" x="8" y="-75.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;modifier&gt;&gt; onlyAuthorized(_sender: address, _accountOwner: address)</text>
 <text text-anchor="start" x="8" y="-59.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;modifier&gt;&gt; onlyWhitelistedCallee(_callee: address)</text>
-<text text-anchor="start" x="8" y="-42.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;isPriceFinalized(_otoken: address): bool</text>
+<text text-anchor="start" x="8" y="-42.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;isSettlementAllowed(_otoken: address): bool</text>
 <text text-anchor="start" x="8" y="-25.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;isExpired(_otoken: address): bool</text>
-<text text-anchor="start" x="8" y="-8.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getVault(_owner: address, _vaultId: uint256): MarginAccount.Vault</text>
+<text text-anchor="start" x="8" y="-8.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getVault(_owner: address, _vaultId: uint256): MarginVault.Vault</text>
 </g>
 </g>
 </svg>

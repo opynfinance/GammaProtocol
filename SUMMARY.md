@@ -16,7 +16,7 @@
   * libs
     * [Actions](docs/contracts-documentation/libs/Actions.md)
     * [FixedPointInt256](docs/contracts-documentation/libs/FixedPointInt256.md)
-    * [MarginAccount](docs/contracts-documentation/libs/MarginAccount.md)
+    * [MarginVault](docs/contracts-documentation/libs/MarginVault.md)
     * [SignedConverter](docs/contracts-documentation/libs/SignedConverter.md)
   * pricers
     * [ChainlinkPricer](docs/contracts-documentation/pricers/ChainlinkPricer.md)

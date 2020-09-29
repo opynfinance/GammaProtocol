@@ -3,14 +3,14 @@ pragma solidity =0.6.10;
 // SPDX-License-Identifier: UNLICENSED
 pragma experimental ABIEncoderV2;
 
-import {MarginAccount} from "../libs/MarginAccount.sol";
+import {MarginVault} from "../libs/MarginVault.sol";
 
-contract MarginAccountTester {
-    using MarginAccount for MarginAccount.Vault;
+contract MarginVaultTester {
+    using MarginVault for MarginVault.Vault;
 
-    mapping(address => mapping(uint256 => MarginAccount.Vault)) private vault;
+    mapping(address => mapping(uint256 => MarginVault.Vault)) private vault;
 
-    function getVault(uint256 _vaultIndex) external view returns (MarginAccount.Vault memory) {
+    function getVault(uint256 _vaultIndex) external view returns (MarginVault.Vault memory) {
         return vault[msg.sender][_vaultIndex];
     }
 
