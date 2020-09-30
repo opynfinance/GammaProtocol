@@ -1,5 +1,5 @@
 // import library
-const MarginAccount = artifacts.require("MarginAccount")
+const MarginVault = artifacts.require("MarginVault")
 // import contract
 const OtokenFactory = artifacts.require("OtokenFactory")
 const Otoken = artifacts.require("Otoken")
@@ -14,8 +14,8 @@ module.exports = async function(deployer, network, accounts) {
   const [deployerAddress] = accounts;
 
   if(network == "mainnet") {
-    // deploy MarginAccount library
-    await deployer.deploy(MarginAccount, {from: deployerAddress})
+    // deploy MarginVault library
+    await deployer.deploy(MarginVault, {from: deployerAddress})
 
     // deploy AddressBook & transfer ownership
     await deployer.deploy(AddressBook, {from: deployerAddress})
@@ -45,13 +45,13 @@ module.exports = async function(deployer, network, accounts) {
     const calculator = await MarginCalculator.deployed()
     await addressbook.setMarginCalculator(calculator.address, {from: deployerAddress})
     // deploy Controller & set address
-    await deployer.link(MarginAccount, Controller)
+    await deployer.link(MarginVault, Controller)
     await deployer.deploy(Controller, {from: deployerAddress})
     const controller = await Controller.deployed()
     await addressbook.setController(controller.address)
   } else if (network == "rinkeby") {
-    // deploy MarginAccount library
-    await deployer.deploy(MarginAccount, {from: deployerAddress})
+    // deploy MarginVault library
+    await deployer.deploy(MarginVault, {from: deployerAddress})
 
     // deploy AddressBook & transfer ownership
     await deployer.deploy(AddressBook, {from: deployerAddress})
@@ -81,7 +81,7 @@ module.exports = async function(deployer, network, accounts) {
     const calculator = await MarginCalculator.deployed()
     await addressbook.setMarginCalculator(calculator.address, {from: deployerAddress})
     // deploy Controller & set address
-    await deployer.link(MarginAccount, Controller)
+    await deployer.link(MarginVault, Controller)
     await deployer.deploy(Controller, {from: deployerAddress})
     const controller = await Controller.deployed()
     await addressbook.setController(controller.address)

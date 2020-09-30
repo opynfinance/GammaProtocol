@@ -12,7 +12,7 @@ import {
 import {createTokenAmount, createValidExpiry} from '../utils'
 import BigNumber from 'bignumber.js'
 
-const {expectRevert, time} = require('@openzeppelin/test-helpers')
+const {time} = require('@openzeppelin/test-helpers')
 const AddressBook = artifacts.require('AddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const Otoken = artifacts.require('Otoken.sol')
@@ -21,7 +21,7 @@ const MarginCalculator = artifacts.require('MarginCalculator.sol')
 const Whitelist = artifacts.require('Whitelist.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
-const MarginAccount = artifacts.require('MarginAccount.sol')
+const MarginVault = artifacts.require('MarginVault.sol')
 const OTokenFactory = artifacts.require('OtokenFactory.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
@@ -34,11 +34,11 @@ enum ActionType {
   DepositCollateral,
   WithdrawCollateral,
   SettleVault,
-  Exercise,
+  Redeem,
   Call,
 }
 
-contract('Naked Put Option closed before expiry flow', ([accountOwner1, buyer]) => {
+contract('Naked Put Option closed before expiry flow', ([accountOwner1]) => {
   let expiry: number
 
   let addressBook: AddressBookInstance
@@ -80,10 +80,10 @@ contract('Naked Put Option closed before expiry flow', ([accountOwner1, buyer]) 
     calculator = await MarginCalculator.new(addressBook.address)
     // setup margin pool
     marginPool = await MarginPool.new(addressBook.address)
-    // setup margin account
-    const lib = await MarginAccount.new()
+    // setup margin vault
+    const lib = await MarginVault.new()
     // setup controller module
-    await Controller.link('MarginAccount', lib.address)
+    await Controller.link('MarginVault', lib.address)
     controllerImplementation = await Controller.new(addressBook.address)
     // setup mock Oracle module
     oracle = await MockOracle.new(addressBook.address)
@@ -173,7 +173,7 @@ contract('Naked Put Option closed before expiry flow', ([accountOwner1, buyer]) 
         {
           actionType: ActionType.OpenVault,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: ZERO_ADDR,
           vaultId: vaultCounter,
           amount: '0',
@@ -183,7 +183,7 @@ contract('Naked Put Option closed before expiry flow', ([accountOwner1, buyer]) 
         {
           actionType: ActionType.MintShortOption,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: ethPut.address,
           vaultId: vaultCounter,
           amount: scaledOptionsAmount,
@@ -193,7 +193,7 @@ contract('Naked Put Option closed before expiry flow', ([accountOwner1, buyer]) 
         {
           actionType: ActionType.DepositCollateral,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: usdc.address,
           vaultId: vaultCounter,
           amount: scaledCollateralAmount,
@@ -267,173 +267,6 @@ contract('Naked Put Option closed before expiry flow', ([accountOwner1, buyer]) 
       )
     })
 
-    it('deposit more collateral into the safe vault', async () => {
-      // Keep track of user and pool balances before
-      const ownerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
-      const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
-
-      const actionArgs = [
-        {
-          actionType: ActionType.DepositCollateral,
-          owner: accountOwner1,
-          sender: accountOwner1,
-          asset: usdc.address,
-          vaultId: vaultCounter,
-          amount: scaledCollateralAmount,
-          index: '0',
-          data: ZERO_ADDR,
-        },
-      ]
-
-      await controllerProxy.operate(actionArgs, {from: accountOwner1})
-
-      // keep track of user and pool balances after
-      const ownerUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
-      const marginPoolUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
-
-      // check balances before and after changed as expected
-      assert.equal(ownerUsdcBalanceBefore.minus(scaledCollateralAmount).toString(), ownerUsdcBalanceAfter.toString())
-      assert.equal(
-        marginPoolUsdcBalanceBefore.plus(scaledCollateralAmount).toString(),
-        marginPoolUsdcBalanceAfter.toString(),
-      )
-
-      // Check that there is excess margin
-      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
-      const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
-      assert.equal(vaultStateAfter[0].toString(), scaledCollateralAmount, 'Incorrect amount of excess collateral')
-      assert.equal(vaultStateAfter[1], true, 'Incorrect boolean of excess collateral')
-
-      // Check the vault state stored in the contract
-      assert.equal(vaultAfter.shortOtokens.length, 1, 'Length of the short otoken array in the vault is incorrect')
-      assert.equal(vaultAfter.collateralAssets.length, 1, 'Length of the collateral array in the vault is incorrect')
-      assert.equal(vaultAfter.longOtokens.length, 0, 'Length of the long otoken array in the vault is incorrect')
-
-      assert.equal(vaultAfter.shortOtokens[0], ethPut.address, 'Incorrect short otoken in the vault')
-      assert.equal(vaultAfter.collateralAssets[0], usdc.address, 'Incorrect collateral asset in the vault')
-
-      assert.equal(vaultAfter.shortAmounts.length, 1, 'Length of the short amounts array in the vault is incorrect')
-      assert.equal(
-        vaultAfter.collateralAmounts.length,
-        1,
-        'Length of the collateral amounts array in the vault is incorrect',
-      )
-      assert.equal(vaultAfter.longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
-
-      assert.equal(
-        vaultAfter.shortAmounts[0].toString(),
-        scaledOptionsAmount,
-        'Incorrect amount of short options stored in the vault',
-      )
-      assert.equal(
-        vaultAfter.collateralAmounts[0].toString(),
-        new BigNumber(scaledCollateralAmount).times(2).toString(),
-        'Incorrect amount of collateral stored in the vault',
-      )
-    })
-    it('withdraw excess collateral from the safe vault', async () => {
-      // Keep track of user and pool balances before
-      const ownerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
-      const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
-
-      const actionArgs = [
-        {
-          actionType: ActionType.WithdrawCollateral,
-          owner: accountOwner1,
-          sender: accountOwner1,
-          asset: usdc.address,
-          vaultId: vaultCounter,
-          amount: scaledCollateralAmount,
-          index: '0',
-          data: ZERO_ADDR,
-        },
-      ]
-
-      await controllerProxy.operate(actionArgs, {from: accountOwner1})
-
-      // keep track of user and pool balances after
-      const ownerUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
-      const marginPoolUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
-
-      // check balances before and after changed as expected
-      assert.equal(ownerUsdcBalanceBefore.plus(scaledCollateralAmount).toString(), ownerUsdcBalanceAfter.toString())
-      assert.equal(
-        marginPoolUsdcBalanceBefore.minus(scaledCollateralAmount).toString(),
-        marginPoolUsdcBalanceAfter.toString(),
-      )
-
-      // Check that we end at a valid state with 0 excess collateral
-      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
-      const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
-      assert.equal(vaultStateAfter[0].toString(), '0', 'Incorrect amount of excess collateral')
-      assert.equal(vaultStateAfter[1], true, 'Incorrect boolean of excess collateral')
-
-      // Check the vault state stored in the contract
-      assert.equal(vaultAfter.shortOtokens.length, 1, 'Length of the short otoken array in the vault is incorrect')
-      assert.equal(vaultAfter.collateralAssets.length, 1, 'Length of the collateral array in the vault is incorrect')
-      assert.equal(vaultAfter.longOtokens.length, 0, 'Length of the long otoken array in the vault is incorrect')
-
-      assert.equal(vaultAfter.shortOtokens[0], ethPut.address, 'Incorrect short otoken in the vault')
-      assert.equal(vaultAfter.collateralAssets[0], usdc.address, 'Incorrect collateral asset in the vault')
-
-      assert.equal(vaultAfter.shortAmounts.length, 1, 'Length of the short amounts array in the vault is incorrect')
-      assert.equal(
-        vaultAfter.collateralAmounts.length,
-        1,
-        'Length of the collateral amounts array in the vault is incorrect',
-      )
-      assert.equal(vaultAfter.longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
-
-      assert.equal(
-        vaultAfter.shortAmounts[0].toString(),
-        scaledOptionsAmount,
-        'Incorrect amount of short stored in the vault',
-      )
-      assert.equal(
-        vaultAfter.collateralAmounts[0].toString(),
-        scaledCollateralAmount,
-        'Incorrect amount of collateral stored in the vault',
-      )
-    })
-
-    it('withdrawing collateral from the safe vault without excess colalteral should fail', async () => {
-      const actionArgs = [
-        {
-          actionType: ActionType.WithdrawCollateral,
-          owner: accountOwner1,
-          sender: accountOwner1,
-          asset: usdc.address,
-          vaultId: vaultCounter,
-          amount: scaledCollateralAmount,
-          index: '0',
-          data: ZERO_ADDR,
-        },
-      ]
-      // TODO: Revert message to be updated
-      await expectRevert.unspecified(controllerProxy.operate(actionArgs, {from: accountOwner1}))
-    })
-
-    it('should be able to transfer long otokens to another address', async () => {
-      // keep track of user balances before
-      const ownerOtokenBalanceBeforeSell = new BigNumber(await ethPut.balanceOf(accountOwner1))
-      const buyerBalanceBeforeSell = new BigNumber(await ethPut.balanceOf(buyer))
-
-      // owner sells their put option
-      await ethPut.transfer(buyer, scaledOptionsAmount, {from: accountOwner1})
-
-      const ownerOtokenBalanceAfterSell = new BigNumber(await ethPut.balanceOf(accountOwner1))
-      const buyerBalanceAfterSell = new BigNumber(await ethPut.balanceOf(buyer))
-      // ensure that the sell changed balances for the buyer and seller
-      assert.equal(
-        ownerOtokenBalanceBeforeSell.minus(scaledOptionsAmount).toString(),
-        ownerOtokenBalanceAfterSell.toString(),
-      )
-      assert.equal(buyerBalanceBeforeSell.plus(scaledOptionsAmount).toString(), buyerBalanceAfterSell.toString())
-
-      // owner buys back their put option
-      await ethPut.transfer(accountOwner1, scaledOptionsAmount, {from: buyer})
-    })
-
     it('should be able to close out the short position', async () => {
       // Keep track of pool and user balances before
       const ownerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
@@ -451,7 +284,7 @@ contract('Naked Put Option closed before expiry flow', ([accountOwner1, buyer]) 
         {
           actionType: ActionType.WithdrawCollateral,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: usdc.address,
           vaultId: vaultCounter,
           amount: scaledCollateralAmount,
@@ -461,7 +294,7 @@ contract('Naked Put Option closed before expiry flow', ([accountOwner1, buyer]) 
         {
           actionType: ActionType.BurnShortOption,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: ethPut.address,
           vaultId: vaultCounter,
           amount: scaledOptionsAmount,

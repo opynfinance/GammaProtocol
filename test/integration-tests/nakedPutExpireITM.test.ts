@@ -21,7 +21,7 @@ const MarginCalculator = artifacts.require('MarginCalculator.sol')
 const Whitelist = artifacts.require('Whitelist.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
-const MarginAccount = artifacts.require('MarginAccount.sol')
+const MarginVault = artifacts.require('MarginVault.sol')
 const OTokenFactory = artifacts.require('OtokenFactory.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
@@ -34,7 +34,7 @@ enum ActionType {
   DepositCollateral,
   WithdrawCollateral,
   SettleVault,
-  Exercise,
+  Redeem,
   Call,
 }
 
@@ -80,10 +80,10 @@ contract('Naked Put Option expires Itm flow', ([accountOwner1, buyer]) => {
     calculator = await MarginCalculator.new(addressBook.address)
     // setup margin pool
     marginPool = await MarginPool.new(addressBook.address)
-    // setup margin account
-    const lib = await MarginAccount.new()
+    // setup margin vault
+    const lib = await MarginVault.new()
     // setup controller module
-    await Controller.link('MarginAccount', lib.address)
+    await Controller.link('MarginVault', lib.address)
     controllerImplementation = await Controller.new(addressBook.address)
     // setup mock Oracle module
     oracle = await MockOracle.new(addressBook.address)
@@ -149,7 +149,7 @@ contract('Naked Put Option expires Itm flow', ([accountOwner1, buyer]) => {
         {
           actionType: ActionType.OpenVault,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: ZERO_ADDR,
           vaultId: vaultCounter,
           amount: '0',
@@ -159,7 +159,7 @@ contract('Naked Put Option expires Itm flow', ([accountOwner1, buyer]) => {
         {
           actionType: ActionType.MintShortOption,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: ethPut.address,
           vaultId: vaultCounter,
           amount: scaledOptionsAmount,
@@ -169,7 +169,7 @@ contract('Naked Put Option expires Itm flow', ([accountOwner1, buyer]) => {
         {
           actionType: ActionType.DepositCollateral,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: usdc.address,
           vaultId: vaultCounter,
           amount: scaledCollateralAmount,
@@ -216,7 +216,7 @@ contract('Naked Put Option expires Itm flow', ([accountOwner1, buyer]) => {
         {
           actionType: ActionType.SettleVault,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: ZERO_ADDR,
           vaultId: vaultCounter,
           amount: '0',
@@ -260,7 +260,7 @@ contract('Naked Put Option expires Itm flow', ([accountOwner1, buyer]) => {
       assert.equal(vaultAfter.longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
     })
 
-    it('Buyer: exercise ITM put option after expiry', async () => {
+    it('Buyer: redeem ITM put option after expiry', async () => {
       // owner sells their put option
       await ethPut.transfer(buyer, scaledOptionsAmount, {from: accountOwner1})
       // oracle orice decreases
@@ -274,9 +274,9 @@ contract('Naked Put Option expires Itm flow', ([accountOwner1, buyer]) => {
 
       const actionArgs = [
         {
-          actionType: ActionType.Exercise,
+          actionType: ActionType.Redeem,
           owner: buyer,
-          sender: buyer,
+          secondAddress: buyer,
           asset: ethPut.address,
           vaultId: '0',
           amount: scaledOptionsAmount,
