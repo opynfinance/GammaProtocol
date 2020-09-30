@@ -117,7 +117,7 @@ contract('Long Call Spread Option closed before expiry flow', ([accountOwner1, n
       weth.address,
       usdc.address,
       weth.address,
-      createTokenAmount(lowerStrike, 18),
+      createTokenAmount(lowerStrike, 8),
       expiry,
       false,
     )
@@ -126,7 +126,7 @@ contract('Long Call Spread Option closed before expiry flow', ([accountOwner1, n
       weth.address,
       usdc.address,
       weth.address,
-      createTokenAmount(higherStrike, 18),
+      createTokenAmount(higherStrike, 8),
       expiry,
       false,
     )
@@ -135,7 +135,7 @@ contract('Long Call Spread Option closed before expiry flow', ([accountOwner1, n
       weth.address,
       usdc.address,
       weth.address,
-      createTokenAmount(lowerStrike, 18),
+      createTokenAmount(lowerStrike, 8),
       expiry,
       false,
     )
@@ -146,7 +146,7 @@ contract('Long Call Spread Option closed before expiry flow', ([accountOwner1, n
       weth.address,
       usdc.address,
       weth.address,
-      createTokenAmount(higherStrike, 18),
+      createTokenAmount(higherStrike, 8),
       expiry,
       false,
     )
@@ -175,7 +175,7 @@ contract('Long Call Spread Option closed before expiry flow', ([accountOwner1, n
   describe('Integration test: Open a long call spread and close it before expiry', () => {
     before('accountOwner2 mints the lower strike call option, sends it to accountOwner1', async () => {
       const collateralToMintLong = optionsAmount
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+      const scaledOptionsAmount = createTokenAmount(optionsAmount, 8)
       const scaledCollateralAmount = createTokenAmount(collateralToMintLong, wethDecimals)
 
       const actionArgs = [
@@ -217,7 +217,7 @@ contract('Long Call Spread Option closed before expiry flow', ([accountOwner1, n
       await lowerStrikeCall.transfer(accountOwner1, scaledOptionsAmount, {from: accountOwner2})
     })
     it('accountOwner1 opens a long call spread', async () => {
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+      const scaledOptionsAmount = createTokenAmount(optionsAmount, 8)
 
       // Keep track of balances before
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
@@ -353,7 +353,7 @@ contract('Long Call Spread Option closed before expiry flow', ([accountOwner1, n
     })
 
     it('accountOwner1 should be able to close out the long call spread position before expiry', async () => {
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+      const scaledOptionsAmount = createTokenAmount(optionsAmount, 8)
       // Keep track of balances before
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
@@ -455,7 +455,7 @@ contract('Long Call Spread Option closed before expiry flow', ([accountOwner1, n
     })
 
     it('accountOwner2 should be able to close out the naked call position before expiry', async () => {
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+      const scaledOptionsAmount = createTokenAmount(optionsAmount, 8)
       const scaledCollateralAmount = createTokenAmount(collateralAmount, wethDecimals)
       await lowerStrikeCall.transfer(accountOwner2, scaledOptionsAmount, {from: accountOwner1})
       // Keep track of balances before

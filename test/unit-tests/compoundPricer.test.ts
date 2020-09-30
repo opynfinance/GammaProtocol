@@ -85,14 +85,14 @@ contract('CompoundPricer', ([owner, random]) => {
       await wethPricer.setPrice(ethPrice)
       await cETH.setExchangeRate(exchangeRate)
     })
-    it('should return the price in 1e18', async () => {
+    it('should return the price in 1e8', async () => {
       // how much 1e8 cToken worth in USD
       const cTokenprice = await cethPricer.getPrice()
       const expectResult = await underlyingPriceToCtokenPrice(new BigNumber(ethPrice), exchangeRate, weth)
       assert.equal(cTokenprice.toString(), expectResult.toString())
       // hard coded answer
       // 1 cETH = 9.4 USD
-      assert.equal(cTokenprice.toString(), '9409058565621361934')
+      assert.equal(cTokenprice.toString(), '940905856')
     })
     it('should return the new price after resetting answer in underlying pricer', async () => {
       const newPrice = createScaledNumber(500)
@@ -114,14 +114,14 @@ contract('CompoundPricer', ([owner, random]) => {
       await usdcPricer.setPrice(usdPrice)
       await cUSDC.setExchangeRate(exchangeRate)
     })
-    it('should return the price in 1e18', async () => {
+    it('should return the price in 1e8', async () => {
       // how much 1e8 cToken worth in USD
       const cTokenprice = await cusdcPricer.getPrice()
       const expectResult = await underlyingPriceToCtokenPrice(new BigNumber(usdPrice), exchangeRate, usdc)
       assert.equal(cTokenprice.toString(), expectResult.toString())
       // hard coded answer
       // 1 cUSDC = 0.02 USD
-      assert.equal(cTokenprice.toString(), '21161987775742200') // 0.0211 usd
+      assert.equal(cTokenprice.toString(), '2116198') // 0.0211 usd
     })
     it('should return the new price after resetting answer in underlying pricer', async () => {
       const newPrice = createScaledNumber(1.1)

@@ -1,5 +1,5 @@
 import {OtokenInstance, MockERC20Instance} from '../../build/types/truffle-types'
-import BigNumber from 'bignumber.js'
+import {createTokenAmount} from '../utils'
 
 const {expectRevert} = require('@openzeppelin/test-helpers')
 
@@ -15,7 +15,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
   let addressBookAddr: string
 
   // let expiry: number;
-  const strikePrice = new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18))
+  const strikePrice = createTokenAmount(200)
   const expiry = 1601020800 // 2020/09/25 0800 UTC
   const isPut = true
 
@@ -47,7 +47,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
     it('should initilized the put option with valid name / symbol', async () => {
       assert.equal(await otoken.name(), `ETHUSDC 25-September-2020 200Put USDC Collateral`)
       assert.equal(await otoken.symbol(), `oETHUSDC-25SEP20-200P`)
-      assert.equal((await otoken.decimals()).toNumber(), 18)
+      assert.equal((await otoken.decimals()).toNumber(), 8)
     })
 
     it('should revert when init is called again with the same parameters', async () => {
@@ -217,7 +217,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
   })
 
   describe('Token operations: Mint', () => {
-    const amountToMint = new BigNumber(10).times(new BigNumber(10).exponentiatedBy(18))
+    const amountToMint = createTokenAmount(10)
     it('should be able to mint tokens from controller address', async () => {
       await otoken.mintOtoken(user1, amountToMint, {from: controller})
       const balance = await otoken.balanceOf(user1)
@@ -240,7 +240,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
   })
 
   describe('Token operations: Transfer', () => {
-    const amountToMint = new BigNumber(10).times(new BigNumber(10).exponentiatedBy(18))
+    const amountToMint = createTokenAmount(10)
     it('should be able to transfer tokens from user 1 to user 2', async () => {
       await otoken.transfer(user2, amountToMint, {from: user1})
       const balance = await otoken.balanceOf(user2)
@@ -270,7 +270,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
   })
 
   describe('Token operations: Burn', () => {
-    const amountToMint = new BigNumber(10).times(new BigNumber(10).exponentiatedBy(18))
+    const amountToMint = createTokenAmount(10)
     it('should revert when burning from random address', async () => {
       await expectRevert(
         otoken.burnOtoken(user1, amountToMint, {from: random}),

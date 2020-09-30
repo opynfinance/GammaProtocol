@@ -114,7 +114,7 @@ contract('Naked Put Option closed before expiry flow', ([accountOwner1]) => {
       weth.address,
       usdc.address,
       usdc.address,
-      createTokenAmount(strikePrice, 18),
+      createTokenAmount(strikePrice),
       expiry,
       true,
     )
@@ -122,7 +122,7 @@ contract('Naked Put Option closed before expiry flow', ([accountOwner1]) => {
       weth.address,
       usdc.address,
       usdc.address,
-      createTokenAmount(strikePrice, 18),
+      createTokenAmount(strikePrice),
       expiry,
       true,
     )
@@ -141,7 +141,7 @@ contract('Naked Put Option closed before expiry flow', ([accountOwner1]) => {
   })
 
   describe('Integration test: Sell a naked short put and close it before expiry', () => {
-    const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+    const scaledOptionsAmount = createTokenAmount(optionsAmount, 8)
     const scaledCollateralAmount = createTokenAmount(collateralAmount, usdcDecimals)
     it('Seller should be able to open a short put option', async () => {
       // Keep track of owner and pool balances

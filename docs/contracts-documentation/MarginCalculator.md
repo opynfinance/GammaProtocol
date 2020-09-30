@@ -52,7 +52,7 @@ Return the net worth of an expired oToken in collateral.
 
 #### Return Values:
 
-- the exchange rate that shows how much collateral unit can be take out by 1 otoken unit, scaled by 1e18
+- the exchange rate that shows how much collateral unit can be take out by 1 otoken unit, scaled by 1e8
 
 ### Function `getExcessCollateral(struct MarginVault.Vault _vault) → uint256, bool public`
 
@@ -82,7 +82,7 @@ For put return Max(0, oToken.strike - ETH Price)
 
 #### Return Values:
 
-- the cash value of an expired otoken, denominated in strike asset. scaled by 1e18
+- the cash value of an expired otoken, denominated in strike asset. scaled by 1e8
 
 ### Function `_getMarginRequired(struct MarginVault.Vault _vault) → struct FixedPointInt256.FixedPointInt internal`
 

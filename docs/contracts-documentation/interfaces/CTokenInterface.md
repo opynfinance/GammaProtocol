@@ -14,6 +14,6 @@ Calculates the exchange rate from the underlying to the CToken
 
 #### Return Values:
 
-- Calculated exchange rate scaled by 1e18
+- Calculated exchange rate scaled by 1e8
 
 ### Function `decimals() → uint256 external`

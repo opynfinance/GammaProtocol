@@ -62,7 +62,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
 
   let controller: ControllerInstance
 
-  const strikePrice = createScaled(200)
+  const strikePrice = createTokenAmount(200)
   const isPut = true
   let expiry: number
 
@@ -216,7 +216,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
   })
 
   describe('Controller only functions on cloned otokens', () => {
-    const amountToMint = createTokenAmount(10, 18)
+    const amountToMint = createTokenAmount(10)
 
     it('should revert when mintOtoken is called by random address', async () => {
       await expectRevert(
