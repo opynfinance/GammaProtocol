@@ -4013,13 +4013,6 @@ contract(
         await expectRevert(controllerProxy.setSystemPaused(true, {from: random}), 'Controller: sender is not pauser')
       })
 
-      it('should revert restarting system when already up-and-running', async () => {
-        await expectRevert(
-          controllerProxy.setSystemPaused(false, {from: pauser}),
-          'Controller: cannot change pause status',
-        )
-      })
-
       it('should pause system', async () => {
         const stateBefore = await controllerProxy.systemPaused()
         assert.equal(stateBefore, false, 'System already paused')
@@ -4028,13 +4021,6 @@ contract(
 
         const stateAfter = await controllerProxy.systemPaused()
         assert.equal(stateAfter, true, 'System not paused')
-      })
-
-      it('should revert pausing when system is already paused', async () => {
-        await expectRevert(
-          controllerProxy.setSystemPaused(true, {from: pauser}),
-          'Controller: cannot change pause status',
-        )
       })
 
       it('should revert opening a vault when system is paused', async () => {
@@ -4317,13 +4303,6 @@ contract(
         )
       })
 
-      it('should revert restarting system when already up-and-running', async () => {
-        await expectRevert(
-          controllerProxy.setEmergencyShutdown(false, {from: terminator}),
-          'Controller: cannot change shutdown status',
-        )
-      })
-
       it('should trigger emergency shutdown system', async () => {
         const stateBefore = await controllerProxy.systemShutdown()
         assert.equal(stateBefore, false, 'System already in emergency shutdown state')
@@ -4332,13 +4311,6 @@ contract(
 
         const stateAfter = await controllerProxy.systemShutdown()
         assert.equal(stateAfter, true, 'System not in emergency shutdown state')
-      })
-
-      it('should revert triggering emergency shutdown when system is already in emergency shutdown', async () => {
-        await expectRevert(
-          controllerProxy.setEmergencyShutdown(true, {from: terminator}),
-          'Controller: cannot change shutdown status',
-        )
       })
 
       it('should revert opening a vault when system is in emergency shutdown state', async () => {

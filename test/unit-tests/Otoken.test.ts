@@ -65,7 +65,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
     })
 
     it('should set the right name for calls', async () => {
-      const callOption = await Otoken.new(addressBookAddr)
+      const callOption = await Otoken.new()
       await callOption.init(addressBookAddr, ETH_ADDR, usdc.address, usdc.address, strikePrice, expiry, false, {
         from: deployer,
       })
@@ -75,7 +75,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
 
     it('should set the right name for non-eth options', async () => {
       const weth = await MockERC20.new('WETH', 'WETH', 18)
-      const putOption = await Otoken.new(addressBookAddr)
+      const putOption = await Otoken.new()
       await putOption.init(addressBookAddr, weth.address, usdc.address, usdc.address, strikePrice, expiry, isPut, {
         from: deployer,
       })
@@ -85,7 +85,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
 
     it('should revert when init asset with non-erc20 address', async () => {
       /* This behavior should've been banned by factory) */
-      const put = await Otoken.new(addressBookAddr)
+      const put = await Otoken.new()
       await expectRevert(
         put.init(addressBookAddr, random, usdc.address, usdc.address, strikePrice, expiry, isPut, {from: deployer}),
         'revert',
@@ -94,7 +94,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
 
     it('should set the right name for options with 0 expiry (should be banned by factory)', async () => {
       /* This behavior should've been banned by factory) */
-      const otoken = await Otoken.new(addressBookAddr)
+      const otoken = await Otoken.new()
       await otoken.init(addressBookAddr, ETH_ADDR, usdc.address, usdc.address, strikePrice, 0, isPut, {from: deployer})
       assert.equal(await otoken.name(), `ETHUSDC 01-January-1970 200Put USDC Collateral`)
       assert.equal(await otoken.symbol(), `oETHUSDC-01JAN70-200P`)
@@ -102,7 +102,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
 
     it('should set the right name for options expiry on 2345/12/31', async () => {
       /** This is the largest timestamp that the factoy will allow (the largest bokkypoobah covers) **/
-      const otoken = await Otoken.new(addressBookAddr)
+      const otoken = await Otoken.new()
       const _expiry = '11865394800' // Mon, 31 Dec 2345
       await otoken.init(addressBookAddr, ETH_ADDR, usdc.address, usdc.address, strikePrice, _expiry, isPut, {
         from: deployer,
@@ -111,86 +111,96 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
       assert.equal(await otoken.symbol(), `oETHUSDC-31DEC45-200P`)
     })
 
+    it('should set the right symbol for year 220x ', async () => {
+      const expiry = 7560230400 // 2209-07-29
+      const otoken = await Otoken.new()
+      await otoken.init(addressBookAddr, ETH_ADDR, usdc.address, usdc.address, strikePrice, expiry, true, {
+        from: deployer,
+      })
+      assert.equal(await otoken.symbol(), 'oETHUSDC-29JUL09-200P')
+      assert.equal(await otoken.name(), 'ETHUSDC 29-July-2209 200Put USDC Collateral')
+    })
+
     it('should set the right name and symbol for expiry on each month', async () => {
       // We need to go through all decision branches in _getMonth() to make a 100% test coverage.
-      const January = await Otoken.new(addressBookAddr)
+      const January = await Otoken.new()
       await January.init(addressBookAddr, ETH_ADDR, usdc.address, usdc.address, strikePrice, 1893456000, isPut, {
         from: deployer,
       })
       assert.equal(await January.name(), 'ETHUSDC 01-January-2030 200Put USDC Collateral')
       assert.equal(await January.symbol(), 'oETHUSDC-01JAN30-200P')
 
-      const February = await Otoken.new(addressBookAddr)
+      const February = await Otoken.new()
       await February.init(addressBookAddr, ETH_ADDR, usdc.address, usdc.address, strikePrice, 1896134400, isPut, {
         from: deployer,
       })
       assert.equal(await February.name(), 'ETHUSDC 01-February-2030 200Put USDC Collateral')
       assert.equal(await February.symbol(), 'oETHUSDC-01FEB30-200P')
 
-      const March = await Otoken.new(addressBookAddr)
+      const March = await Otoken.new()
       await March.init(addressBookAddr, ETH_ADDR, usdc.address, usdc.address, strikePrice, 1898553600, isPut, {
         from: deployer,
       })
       assert.equal(await March.name(), 'ETHUSDC 01-March-2030 200Put USDC Collateral')
       assert.equal(await March.symbol(), 'oETHUSDC-01MAR30-200P')
 
-      const April = await Otoken.new(addressBookAddr)
+      const April = await Otoken.new()
       await April.init(addressBookAddr, ETH_ADDR, usdc.address, usdc.address, strikePrice, 1901232000, isPut, {
         from: deployer,
       })
       assert.equal(await April.name(), 'ETHUSDC 01-April-2030 200Put USDC Collateral')
       assert.equal(await April.symbol(), 'oETHUSDC-01APR30-200P')
 
-      const May = await Otoken.new(addressBookAddr)
+      const May = await Otoken.new()
       await May.init(addressBookAddr, ETH_ADDR, usdc.address, usdc.address, strikePrice, 1903824000, isPut, {
         from: deployer,
       })
       assert.equal(await May.name(), 'ETHUSDC 01-May-2030 200Put USDC Collateral')
       assert.equal(await May.symbol(), 'oETHUSDC-01MAY30-200P')
 
-      const June = await Otoken.new(addressBookAddr)
+      const June = await Otoken.new()
       await June.init(addressBookAddr, ETH_ADDR, usdc.address, usdc.address, strikePrice, 1906502400, isPut, {
         from: deployer,
       })
       assert.equal(await June.name(), 'ETHUSDC 01-June-2030 200Put USDC Collateral')
       assert.equal(await June.symbol(), 'oETHUSDC-01JUN30-200P')
 
-      const July = await Otoken.new(addressBookAddr)
+      const July = await Otoken.new()
       await July.init(addressBookAddr, ETH_ADDR, usdc.address, usdc.address, strikePrice, 1909094400, isPut, {
         from: deployer,
       })
       assert.equal(await July.name(), 'ETHUSDC 01-July-2030 200Put USDC Collateral')
       assert.equal(await July.symbol(), 'oETHUSDC-01JUL30-200P')
 
-      const August = await Otoken.new(addressBookAddr)
+      const August = await Otoken.new()
       await August.init(addressBookAddr, ETH_ADDR, usdc.address, usdc.address, strikePrice, 1911772800, isPut, {
         from: deployer,
       })
       assert.equal(await August.name(), 'ETHUSDC 01-August-2030 200Put USDC Collateral')
       assert.equal(await August.symbol(), 'oETHUSDC-01AUG30-200P')
 
-      const September = await Otoken.new(addressBookAddr)
+      const September = await Otoken.new()
       await September.init(addressBookAddr, ETH_ADDR, usdc.address, usdc.address, strikePrice, 1914451200, isPut, {
         from: deployer,
       })
       assert.equal(await September.name(), 'ETHUSDC 01-September-2030 200Put USDC Collateral')
       assert.equal(await September.symbol(), 'oETHUSDC-01SEP30-200P')
 
-      const October = await Otoken.new(addressBookAddr)
+      const October = await Otoken.new()
       await October.init(addressBookAddr, ETH_ADDR, usdc.address, usdc.address, strikePrice, 1917043200, isPut, {
         from: deployer,
       })
       assert.equal(await October.name(), 'ETHUSDC 01-October-2030 200Put USDC Collateral')
       assert.equal(await October.symbol(), 'oETHUSDC-01OCT30-200P')
 
-      const November = await Otoken.new(addressBookAddr)
+      const November = await Otoken.new()
       await November.init(addressBookAddr, ETH_ADDR, usdc.address, usdc.address, strikePrice, 1919721600, isPut, {
         from: deployer,
       })
       assert.equal(await November.name(), 'ETHUSDC 01-November-2030 200Put USDC Collateral')
       assert.equal(await November.symbol(), 'oETHUSDC-01NOV30-200P')
 
-      const December = await Otoken.new(addressBookAddr)
+      const December = await Otoken.new()
       await December.init(addressBookAddr, ETH_ADDR, usdc.address, usdc.address, strikePrice, 1922313600, isPut, {
         from: deployer,
       })
@@ -199,7 +209,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
     })
 
     it('should display strikePrice as $0 in name and symbol when strikePrice < 10^18', async () => {
-      const testOtoken = await Otoken.new(addressBookAddr)
+      const testOtoken = await Otoken.new()
       await testOtoken.init(addressBookAddr, ETH_ADDR, usdc.address, usdc.address, 0, expiry, isPut, {from: deployer})
       assert.equal(await testOtoken.name(), `ETHUSDC 25-September-2020 0Put USDC Collateral`)
       assert.equal(await testOtoken.symbol(), `oETHUSDC-25SEP20-0P`)

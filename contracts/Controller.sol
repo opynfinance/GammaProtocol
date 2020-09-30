@@ -246,8 +246,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _paused new boolean value to set systemPaused to
      */
     function setSystemPaused(bool _paused) external onlyPauser {
-        require(systemPaused != _paused, "Controller: cannot change pause status");
-
         systemPaused = _paused;
 
         emit SystemPaused(systemPaused);
@@ -259,8 +257,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _shutdown new boolean value to set systemShutdown to
      */
     function setEmergencyShutdown(bool _shutdown) external onlyTerminator {
-        require(systemShutdown != _shutdown, "Controller: cannot change shutdown status");
-
         systemShutdown = _shutdown;
 
         emit EmergencyShutdown(systemShutdown);
@@ -376,6 +372,17 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         (uint256 netValue, ) = calculator.getExcessCollateral(vault);
         return netValue;
+    }
+
+    /**
+     * @notice get the oToken's payout after expiry, in the collateral asset
+     * @param _otoken oToken address
+     * @param _amount amount of the oToken to calculate the payout for, always represented in 1e18
+     * @return amount of collateral to pay out
+     */
+    function getPayout(address _otoken, uint256 _amount) public view returns (uint256) {
+        uint256 rate = calculator.getExpiredPayoutRate(_otoken);
+        return rate.mul(_amount).div(1e8);
     }
 
     /**
@@ -684,7 +691,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         require(isSettlementAllowed(_args.otoken), "Controller: asset prices not finalized yet");
 
-        uint256 payout = _getPayout(_args.otoken, _args.amount);
+        uint256 payout = getPayout(_args.otoken, _args.amount);
 
         otoken.burnOtoken(msg.sender, _args.amount);
 
@@ -755,17 +762,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
     function _isNotEmpty(address[] memory _array) internal pure returns (bool) {
         return (_array.length > 0) && (_array[0] != address(0));
-    }
-
-    /**
-     * @notice get the oToken's payout after expiry, in the collateral asset
-     * @param _otoken oToken address
-     * @param _amount amount of the oToken to calculate the payout for, always represented in 1e18
-     * @return amount of collateral to pay out
-     */
-    function _getPayout(address _otoken, uint256 _amount) internal view returns (uint256) {
-        uint256 rate = calculator.getExpiredPayoutRate(_otoken);
-        return rate.mul(_amount).div(1e8);
     }
 
     /**

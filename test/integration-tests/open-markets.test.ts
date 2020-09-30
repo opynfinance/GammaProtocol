@@ -385,7 +385,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
         otokenFactory.createOtoken(weth.address, usdc.address, usdc.address, newStrikePrice, expiry, isPut, {
           from: user1,
         }),
-        'WhiteList: Sender is not Otoken Factory',
+        'Whitelist: Sender is not OtokenFactory',
       )
     })
   })
