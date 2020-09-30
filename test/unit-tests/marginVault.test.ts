@@ -1,29 +1,29 @@
 import {
-  MarginAccountTesterInstance,
+  MarginVaultTesterInstance,
   MockERC20Instance,
   OtokenInstance,
   MockAddressBookInstance,
-} from '../build/types/truffle-types'
+} from '../../build/types/truffle-types'
 import {BigNumber} from 'bignumber.js'
 
 const {expectRevert} = require('@openzeppelin/test-helpers')
 
 const Otoken = artifacts.require('Otoken.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
-const MarginAccountTester = artifacts.require('MarginAccountTester.sol')
+const MarginVaultTester = artifacts.require('MarginVaultTester.sol')
 const MockAddressBook = artifacts.require('MockAddressBook')
-const MarginAccount = artifacts.require('MarginAccount.sol')
+const MarginVault = artifacts.require('MarginVault.sol')
 
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 const ETH_ADDR = ZERO_ADDR
 
-contract('MarginAccount', ([deployer, controller]) => {
+contract('MarginVault', ([deployer, controller]) => {
   let weth: MockERC20Instance
   let usdc: MockERC20Instance
   let otoken: OtokenInstance
   let otoken2: OtokenInstance
   let addressBook: MockAddressBookInstance
-  let marginAccountTester: MarginAccountTesterInstance
+  let marginVaultTester: MarginVaultTesterInstance
 
   // let expiry: number;
   const strikePrice = new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18))
@@ -48,18 +48,18 @@ contract('MarginAccount', ([deployer, controller]) => {
     await otoken2.init(addressBook.address, ETH_ADDR, usdc.address, usdc.address, strikePrice, expiry, isPut, {
       from: deployer,
     })
-    // margin account
-    const lib = await MarginAccount.new()
-    await MarginAccountTester.link('MarginAccount', lib.address)
-    marginAccountTester = await MarginAccountTester.new()
+    // margin vault
+    const lib = await MarginVault.new()
+    await MarginVaultTester.link('MarginVault', lib.address)
+    marginVaultTester = await MarginVaultTester.new()
   })
 
   describe('Add short', async () => {
     it('should add short otokens', async () => {
       const vaultCounter = new BigNumber(0)
 
-      await marginAccountTester.testAddShort(vaultCounter, otoken.address, 10, 0)
-      const vault = await marginAccountTester.getVault(vaultCounter)
+      await marginVaultTester.testAddShort(vaultCounter, otoken.address, 10, 0)
+      const vault = await marginVaultTester.getVault(vaultCounter)
       assert.equal(vault.shortAmounts[vault.shortAmounts.length - 1], new BigNumber(10))
     })
 
@@ -67,24 +67,24 @@ contract('MarginAccount', ([deployer, controller]) => {
       const vaultCounter = new BigNumber(0)
 
       await expectRevert(
-        marginAccountTester.testAddShort(vaultCounter, otoken.address, 0, 0),
-        'MarginAccount: invalid short otoken amount',
+        marginVaultTester.testAddShort(vaultCounter, otoken.address, 0, 0),
+        'MarginVault: invalid short otoken amount',
       )
     })
 
     it('should add a different short otokens to a different index', async () => {
       const vaultCounter = new BigNumber(0)
 
-      await marginAccountTester.testAddShort(vaultCounter, otoken2.address, 11, 1)
-      const vault = await marginAccountTester.getVault(vaultCounter)
+      await marginVaultTester.testAddShort(vaultCounter, otoken2.address, 11, 1)
+      const vault = await marginVaultTester.getVault(vaultCounter)
       assert.equal(vault.shortAmounts[vault.shortAmounts.length - 1], new BigNumber(11))
     })
 
     it('should add more amount of the second short otoken', async () => {
       const vaultCounter = new BigNumber(0)
 
-      await marginAccountTester.testAddShort(vaultCounter, otoken2.address, 12, 1)
-      const vault = await marginAccountTester.getVault(vaultCounter)
+      await marginVaultTester.testAddShort(vaultCounter, otoken2.address, 12, 1)
+      const vault = await marginVaultTester.getVault(vaultCounter)
       assert.equal(vault.shortAmounts[vault.shortAmounts.length - 1], new BigNumber(23))
     })
 
@@ -92,8 +92,8 @@ contract('MarginAccount', ([deployer, controller]) => {
       const vaultCounter = new BigNumber(0)
 
       await expectRevert(
-        marginAccountTester.testAddShort(vaultCounter, otoken.address, 10, 1),
-        'MarginAccount: invalid short otoken position',
+        marginVaultTester.testAddShort(vaultCounter, otoken.address, 10, 1),
+        'MarginVault: invalid short otoken position',
       )
     })
   })
@@ -103,10 +103,10 @@ contract('MarginAccount', ([deployer, controller]) => {
       const index = 0
       const toRemove = 5
       const vaultCounter = new BigNumber(0)
-      const vaultBefore = await marginAccountTester.getVault(vaultCounter)
+      const vaultBefore = await marginVaultTester.getVault(vaultCounter)
 
-      await marginAccountTester.testRemoveShort(vaultCounter, otoken.address, toRemove, index)
-      const vaultAfter = await marginAccountTester.getVault(vaultCounter)
+      await marginVaultTester.testRemoveShort(vaultCounter, otoken.address, toRemove, index)
+      const vaultAfter = await marginVaultTester.getVault(vaultCounter)
 
       assert.equal(
         new BigNumber(vaultBefore.shortAmounts[index]).minus(new BigNumber(vaultAfter.shortAmounts[index])).toString(),
@@ -117,12 +117,12 @@ contract('MarginAccount', ([deployer, controller]) => {
 
     it('should be able to remove all of the remaining amount of first short otoken and delete short otoken address', async () => {
       const vaultCounter = new BigNumber(0)
-      const vaultBefore = await marginAccountTester.getVault(vaultCounter)
+      const vaultBefore = await marginVaultTester.getVault(vaultCounter)
       const index = 0
       const toRemove = vaultBefore.shortAmounts[index]
 
-      await marginAccountTester.testRemoveShort(vaultCounter, otoken.address, toRemove, index)
-      const vaultAfter = await marginAccountTester.getVault(vaultCounter)
+      await marginVaultTester.testRemoveShort(vaultCounter, otoken.address, toRemove, index)
+      const vaultAfter = await marginVaultTester.getVault(vaultCounter)
 
       assert.equal(
         new BigNumber(vaultBefore.shortAmounts[index]).minus(new BigNumber(vaultAfter.shortAmounts[index])).toString(),
@@ -136,17 +136,17 @@ contract('MarginAccount', ([deployer, controller]) => {
       const vaultCounter = new BigNumber(0)
 
       await expectRevert(
-        marginAccountTester.testRemoveShort(vaultCounter, otoken2.address, 1, 0),
-        'MarginAccount: short otoken address mismatch',
+        marginVaultTester.testRemoveShort(vaultCounter, otoken2.address, 1, 0),
+        'MarginVault: short otoken address mismatch',
       )
     })
 
     it('should be able to add different short in the index of the old short otoken without increase short array length', async () => {
       const vaultCounter = new BigNumber(0)
-      const vaultBefore = await marginAccountTester.getVault(vaultCounter)
+      const vaultBefore = await marginVaultTester.getVault(vaultCounter)
 
-      await marginAccountTester.testAddShort(vaultCounter, otoken2.address, 10, 0)
-      const vaultAfter = await marginAccountTester.getVault(vaultCounter)
+      await marginVaultTester.testAddShort(vaultCounter, otoken2.address, 10, 0)
+      const vaultAfter = await marginVaultTester.getVault(vaultCounter)
       assert.equal(vaultAfter.shortAmounts[0], new BigNumber(10))
       assert.equal(
         vaultBefore.shortOtokens.length,
@@ -162,8 +162,8 @@ contract('MarginAccount', ([deployer, controller]) => {
       const amount = 10
       const vaultCounter = new BigNumber(0)
 
-      await marginAccountTester.testAddLong(vaultCounter, otoken.address, amount, index)
-      const vault = await marginAccountTester.getVault(vaultCounter)
+      await marginVaultTester.testAddLong(vaultCounter, otoken.address, amount, index)
+      const vault = await marginVaultTester.getVault(vaultCounter)
       assert.equal(vault.longAmounts[index], new BigNumber(amount))
     })
 
@@ -172,8 +172,8 @@ contract('MarginAccount', ([deployer, controller]) => {
       const amount = 10
       const vaultCounter = new BigNumber(0)
 
-      await marginAccountTester.testAddLong(vaultCounter, otoken2.address, amount, index)
-      const vault = await marginAccountTester.getVault(vaultCounter)
+      await marginVaultTester.testAddLong(vaultCounter, otoken2.address, amount, index)
+      const vault = await marginVaultTester.getVault(vaultCounter)
       assert.equal(vault.longAmounts[index], new BigNumber(amount))
     })
 
@@ -182,8 +182,8 @@ contract('MarginAccount', ([deployer, controller]) => {
       const amount = 10
       const vaultCounter = new BigNumber(0)
 
-      await marginAccountTester.testAddLong(vaultCounter, otoken2.address, amount, index)
-      const vault = await marginAccountTester.getVault(vaultCounter)
+      await marginVaultTester.testAddLong(vaultCounter, otoken2.address, amount, index)
+      const vault = await marginVaultTester.getVault(vaultCounter)
       assert.equal(vault.longAmounts[index], new BigNumber(20))
     })
 
@@ -193,8 +193,8 @@ contract('MarginAccount', ([deployer, controller]) => {
       const vaultCounter = new BigNumber(0)
 
       await expectRevert(
-        marginAccountTester.testAddLong(vaultCounter, otoken.address, amount, index),
-        'MarginAccount: invalid long otoken position',
+        marginVaultTester.testAddLong(vaultCounter, otoken.address, amount, index),
+        'MarginVault: invalid long otoken position',
       )
     })
   })
@@ -204,10 +204,10 @@ contract('MarginAccount', ([deployer, controller]) => {
       const index = 0
       const toRemove = 5
       const vaultCounter = new BigNumber(0)
-      const vaultBefore = await marginAccountTester.getVault(vaultCounter)
+      const vaultBefore = await marginVaultTester.getVault(vaultCounter)
 
-      await marginAccountTester.testRemoveLong(vaultCounter, otoken.address, toRemove, index)
-      const vaultAfter = await marginAccountTester.getVault(vaultCounter)
+      await marginVaultTester.testRemoveLong(vaultCounter, otoken.address, toRemove, index)
+      const vaultAfter = await marginVaultTester.getVault(vaultCounter)
 
       assert.equal(
         new BigNumber(vaultBefore.longAmounts[index]).minus(new BigNumber(vaultAfter.longAmounts[index])).toString(),
@@ -218,12 +218,12 @@ contract('MarginAccount', ([deployer, controller]) => {
 
     it('should be able to remove all of the remaining amount of first long otoken and delete long otoken address', async () => {
       const vaultCounter = new BigNumber(0)
-      const vaultBefore = await marginAccountTester.getVault(vaultCounter)
+      const vaultBefore = await marginVaultTester.getVault(vaultCounter)
       const index = 0
       const toRemove = vaultBefore.longAmounts[index]
 
-      await marginAccountTester.testRemoveLong(vaultCounter, otoken.address, toRemove, index)
-      const vaultAfter = await marginAccountTester.getVault(vaultCounter)
+      await marginVaultTester.testRemoveLong(vaultCounter, otoken.address, toRemove, index)
+      const vaultAfter = await marginVaultTester.getVault(vaultCounter)
 
       assert.equal(
         new BigNumber(vaultBefore.longAmounts[index]).minus(new BigNumber(vaultAfter.longAmounts[index])).toString(),
@@ -237,17 +237,17 @@ contract('MarginAccount', ([deployer, controller]) => {
       const vaultCounter = new BigNumber(0)
 
       await expectRevert(
-        marginAccountTester.testRemoveLong(vaultCounter, otoken2.address, 1, 0),
-        'MarginAccount: long otoken address mismatch',
+        marginVaultTester.testRemoveLong(vaultCounter, otoken2.address, 1, 0),
+        'MarginVault: long otoken address mismatch',
       )
     })
 
     it('should be able to add different long in the index of the old long otoken without increase long array length', async () => {
       const vaultCounter = new BigNumber(0)
-      const vaultBefore = await marginAccountTester.getVault(vaultCounter)
+      const vaultBefore = await marginVaultTester.getVault(vaultCounter)
 
-      await marginAccountTester.testAddLong(vaultCounter, otoken2.address, 10, 0)
-      const vaultAfter = await marginAccountTester.getVault(vaultCounter)
+      await marginVaultTester.testAddLong(vaultCounter, otoken2.address, 10, 0)
+      const vaultAfter = await marginVaultTester.getVault(vaultCounter)
       assert.equal(vaultAfter.shortAmounts[0], new BigNumber(10))
       assert.equal(vaultBefore.longOtokens.length, vaultAfter.longOtokens.length, 'long otokens array length mismatch')
     })
@@ -259,8 +259,8 @@ contract('MarginAccount', ([deployer, controller]) => {
       const amount = 10
       const vaultCounter = new BigNumber(0)
 
-      await marginAccountTester.testAddCollateral(vaultCounter, weth.address, amount, index)
-      const vault = await marginAccountTester.getVault(vaultCounter)
+      await marginVaultTester.testAddCollateral(vaultCounter, weth.address, amount, index)
+      const vault = await marginVaultTester.getVault(vaultCounter)
       assert.equal(vault.collateralAmounts[index], new BigNumber(amount))
     })
 
@@ -268,10 +268,10 @@ contract('MarginAccount', ([deployer, controller]) => {
       const changeAmt = 20
       const index = 0
       const vaultCounter = new BigNumber(0)
-      const vaultBefore = await marginAccountTester.getVault(vaultCounter)
+      const vaultBefore = await marginVaultTester.getVault(vaultCounter)
 
-      await marginAccountTester.testAddCollateral(vaultCounter, weth.address, changeAmt, index)
-      const vaultAfter = await marginAccountTester.getVault(vaultCounter)
+      await marginVaultTester.testAddCollateral(vaultCounter, weth.address, changeAmt, index)
+      const vaultAfter = await marginVaultTester.getVault(vaultCounter)
 
       assert.equal(
         new BigNumber(vaultAfter.collateralAmounts[index])
@@ -286,8 +286,8 @@ contract('MarginAccount', ([deployer, controller]) => {
       const amount = 20
       const vaultCounter = new BigNumber(0)
 
-      await marginAccountTester.testAddCollateral(vaultCounter, usdc.address, amount, index)
-      const vault = await marginAccountTester.getVault(vaultCounter)
+      await marginVaultTester.testAddCollateral(vaultCounter, usdc.address, amount, index)
+      const vault = await marginVaultTester.getVault(vaultCounter)
       assert.equal(vault.collateralAmounts[index], new BigNumber(amount))
     })
 
@@ -297,8 +297,8 @@ contract('MarginAccount', ([deployer, controller]) => {
       const vaultCounter = new BigNumber(0)
 
       await expectRevert(
-        marginAccountTester.testAddCollateral(vaultCounter, usdc.address, changeAmt, index),
-        'MarginAccount: invalid collateral token position',
+        marginVaultTester.testAddCollateral(vaultCounter, usdc.address, changeAmt, index),
+        'MarginVault: invalid collateral token position',
       )
     })
 
@@ -306,10 +306,10 @@ contract('MarginAccount', ([deployer, controller]) => {
       const changeAmt = 30
       const index = 1
       const vaultCounter = new BigNumber(0)
-      const vaultBefore = await marginAccountTester.getVault(vaultCounter)
+      const vaultBefore = await marginVaultTester.getVault(vaultCounter)
 
-      await marginAccountTester.testAddCollateral(vaultCounter, usdc.address, changeAmt, index)
-      const vaultAfter = await marginAccountTester.getVault(vaultCounter)
+      await marginVaultTester.testAddCollateral(vaultCounter, usdc.address, changeAmt, index)
+      const vaultAfter = await marginVaultTester.getVault(vaultCounter)
 
       assert.equal(
         new BigNumber(vaultAfter.collateralAmounts[index])
@@ -325,8 +325,8 @@ contract('MarginAccount', ([deployer, controller]) => {
       const vaultCounter = new BigNumber(0)
 
       await expectRevert(
-        marginAccountTester.testAddCollateral(vaultCounter, otoken.address, changeAmt, index),
-        'MarginAccount: invalid collateral token position',
+        marginVaultTester.testAddCollateral(vaultCounter, otoken.address, changeAmt, index),
+        'MarginVault: invalid collateral token position',
       )
     })
   })
@@ -336,10 +336,10 @@ contract('MarginAccount', ([deployer, controller]) => {
       const index = 0
       const toRemove = 5
       const vaultCounter = new BigNumber(0)
-      const vaultBefore = await marginAccountTester.getVault(vaultCounter)
+      const vaultBefore = await marginVaultTester.getVault(vaultCounter)
 
-      await marginAccountTester.testRemoveCollateral(vaultCounter, weth.address, toRemove, index)
-      const vaultAfter = await marginAccountTester.getVault(vaultCounter)
+      await marginVaultTester.testRemoveCollateral(vaultCounter, weth.address, toRemove, index)
+      const vaultAfter = await marginVaultTester.getVault(vaultCounter)
 
       assert.equal(
         new BigNumber(vaultBefore.collateralAmounts[index])
@@ -352,12 +352,12 @@ contract('MarginAccount', ([deployer, controller]) => {
 
     it('should be able to remove all of the remaining amount of first collateral asset and delete collateral asset address', async () => {
       const vaultCounter = new BigNumber(0)
-      const vaultBefore = await marginAccountTester.getVault(vaultCounter)
+      const vaultBefore = await marginVaultTester.getVault(vaultCounter)
       const index = 0
       const toRemove = vaultBefore.collateralAmounts[index]
 
-      await marginAccountTester.testRemoveCollateral(vaultCounter, weth.address, toRemove, index)
-      const vaultAfter = await marginAccountTester.getVault(vaultCounter)
+      await marginVaultTester.testRemoveCollateral(vaultCounter, weth.address, toRemove, index)
+      const vaultAfter = await marginVaultTester.getVault(vaultCounter)
 
       assert.equal(
         new BigNumber(vaultBefore.collateralAmounts[index])
@@ -373,17 +373,17 @@ contract('MarginAccount', ([deployer, controller]) => {
       const vaultCounter = new BigNumber(0)
 
       await expectRevert(
-        marginAccountTester.testRemoveCollateral(vaultCounter, weth.address, 1, 0),
-        'MarginAccount: collateral token address mismatch',
+        marginVaultTester.testRemoveCollateral(vaultCounter, weth.address, 1, 0),
+        'MarginVault: collateral token address mismatch',
       )
     })
 
     it('should be able to add different collateral asset in the index of the old collateral asset without increase collateral array length', async () => {
       const vaultCounter = new BigNumber(0)
-      const vaultBefore = await marginAccountTester.getVault(vaultCounter)
+      const vaultBefore = await marginVaultTester.getVault(vaultCounter)
 
-      await marginAccountTester.testAddCollateral(vaultCounter, usdc.address, 10, 0)
-      const vaultAfter = await marginAccountTester.getVault(vaultCounter)
+      await marginVaultTester.testAddCollateral(vaultCounter, usdc.address, 10, 0)
+      const vaultAfter = await marginVaultTester.getVault(vaultCounter)
 
       assert.equal(vaultAfter.collateralAmounts[0], new BigNumber(10))
       assert.equal(

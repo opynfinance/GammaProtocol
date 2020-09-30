@@ -1,24 +1,24 @@
-# `MarginAccount`
+# `MarginVault`
 
-The MarginAccount is a library that provides Controller with an Account of Vault structs, and
+The MarginVault is a library that provides Controller with an Account of Vault structs, and
 
 the functions that manipulate vaults. Vaults describe positions that users have.
 
 ## Functions:
 
-- `addShort(struct MarginAccount.Vault _vault, address _shortOtoken, uint256 _amount, uint256 _index) (external)`
+- `addShort(struct MarginVault.Vault _vault, address _shortOtoken, uint256 _amount, uint256 _index) (external)`
 
-- `removeShort(struct MarginAccount.Vault _vault, address _shortOtoken, uint256 _amount, uint256 _index) (external)`
+- `removeShort(struct MarginVault.Vault _vault, address _shortOtoken, uint256 _amount, uint256 _index) (external)`
 
-- `addLong(struct MarginAccount.Vault _vault, address _longOtoken, uint256 _amount, uint256 _index) (external)`
+- `addLong(struct MarginVault.Vault _vault, address _longOtoken, uint256 _amount, uint256 _index) (external)`
 
-- `removeLong(struct MarginAccount.Vault _vault, address _longOtoken, uint256 _amount, uint256 _index) (external)`
+- `removeLong(struct MarginVault.Vault _vault, address _longOtoken, uint256 _amount, uint256 _index) (external)`
 
-- `addCollateral(struct MarginAccount.Vault _vault, address _collateralAsset, uint256 _amount, uint256 _index) (external)`
+- `addCollateral(struct MarginVault.Vault _vault, address _collateralAsset, uint256 _amount, uint256 _index) (external)`
 
-- `removeCollateral(struct MarginAccount.Vault _vault, address _collateralAsset, uint256 _amount, uint256 _index) (external)`
+- `removeCollateral(struct MarginVault.Vault _vault, address _collateralAsset, uint256 _amount, uint256 _index) (external)`
 
-### Function `addShort(struct MarginAccount.Vault _vault, address _shortOtoken, uint256 _amount, uint256 _index) external`
+### Function `addShort(struct MarginVault.Vault _vault, address _shortOtoken, uint256 _amount, uint256 _index) external`
 
 increase the short oToken balance in a vault when a new oToken is minted.
 
@@ -32,7 +32,7 @@ increase the short oToken balance in a vault when a new oToken is minted.
 
 - `_index`: The index of _shortOtoken in the user's vault.shortOtokens array
 
-### Function `removeShort(struct MarginAccount.Vault _vault, address _shortOtoken, uint256 _amount, uint256 _index) external`
+### Function `removeShort(struct MarginVault.Vault _vault, address _shortOtoken, uint256 _amount, uint256 _index) external`
 
 decrease the short oToken balance in a vault when an oToken is burned.
 
@@ -46,7 +46,7 @@ decrease the short oToken balance in a vault when an oToken is burned.
 
 - `_index`: The index of _shortOtoken in the user's vault.shortOtokens array
 
-### Function `addLong(struct MarginAccount.Vault _vault, address _longOtoken, uint256 _amount, uint256 _index) external`
+### Function `addLong(struct MarginVault.Vault _vault, address _longOtoken, uint256 _amount, uint256 _index) external`
 
 increase the long oToken balance in a vault when an oToken is deposited
 
@@ -60,7 +60,7 @@ increase the long oToken balance in a vault when an oToken is deposited
 
 - `_index`: The index of _longOtoken in the user's vault.longOtokens array
 
-### Function `removeLong(struct MarginAccount.Vault _vault, address _longOtoken, uint256 _amount, uint256 _index) external`
+### Function `removeLong(struct MarginVault.Vault _vault, address _longOtoken, uint256 _amount, uint256 _index) external`
 
 decrease the long oToken balance in a vault when an oToken is withdrawn
 
@@ -74,7 +74,7 @@ decrease the long oToken balance in a vault when an oToken is withdrawn
 
 - `_index`: The index of _longOtoken in the user's vault.longOtokens array
 
-### Function `addCollateral(struct MarginAccount.Vault _vault, address _collateralAsset, uint256 _amount, uint256 _index) external`
+### Function `addCollateral(struct MarginVault.Vault _vault, address _collateralAsset, uint256 _amount, uint256 _index) external`
 
 increase the collateral balance in a vault
 
@@ -88,7 +88,7 @@ increase the collateral balance in a vault
 
 - `_index`: The index of _collateralAsset in the user's vault.collateralAssets array
 
-### Function `removeCollateral(struct MarginAccount.Vault _vault, address _collateralAsset, uint256 _amount, uint256 _index) external`
+### Function `removeCollateral(struct MarginVault.Vault _vault, address _collateralAsset, uint256 _amount, uint256 _index) external`
 
 decrease the collateral balance in a vault
 

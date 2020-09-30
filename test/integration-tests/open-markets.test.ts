@@ -24,7 +24,7 @@ const AddressBook = artifacts.require('AddressBook.sol')
 const Whitelist = artifacts.require('Whitelist.sol')
 const Calculator = artifacts.require('MarginCalculator.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
-const MarginAccount = artifacts.require('MarginAccount.sol')
+const MarginVault = artifacts.require('MarginVault.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 
 // used for testing change of Otoken impl address in AddressBook
@@ -41,7 +41,7 @@ enum ActionType {
   DepositCollateral,
   WithdrawCollateral,
   SettleVault,
-  Exercise,
+  Redeem,
   Call,
 }
 
@@ -92,8 +92,8 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
     await addressBook.setOracle(oracle.address, {from: owner})
 
     // deploy the controller instance
-    const lib = await MarginAccount.new()
-    await Controller.link('MarginAccount', lib.address)
+    const lib = await MarginVault.new()
+    await Controller.link('MarginVault', lib.address)
     controller = await Controller.new()
     await controller.initialize(addressBook.address, owner)
 
@@ -236,7 +236,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
         {
           actionType: ActionType.OpenVault,
           owner: user1,
-          sender: user1,
+          secondAddress: user1,
           asset: ZERO_ADDR,
           vaultId: vaultCounter,
           amount: '0',
@@ -246,7 +246,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
         {
           actionType: ActionType.MintShortOption,
           owner: user1,
-          sender: user1,
+          secondAddress: user1,
           asset: otoken1.address,
           vaultId: vaultCounter,
           amount: amountToMint,
@@ -256,7 +256,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
         {
           actionType: ActionType.DepositCollateral,
           owner: user1,
-          sender: user1,
+          secondAddress: user1,
           asset: usdc.address,
           vaultId: vaultCounter,
           amount: amountCollateral,
@@ -286,7 +286,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
         {
           actionType: ActionType.BurnShortOption,
           owner: user1,
-          sender: user1,
+          secondAddress: user1,
           asset: otoken1.address,
           vaultId: vaultCounter,
           amount: amountToMint,
@@ -296,7 +296,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
         {
           actionType: ActionType.WithdrawCollateral,
           owner: user1,
-          sender: user1,
+          secondAddress: user1,
           asset: usdc.address,
           vaultId: vaultCounter,
           amount: amountCollateral,
@@ -328,7 +328,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
         {
           actionType: ActionType.MintShortOption,
           owner: user1,
-          sender: user1,
+          secondAddress: user1,
           asset: otoken1.address,
           vaultId: vaultCounter,
           amount: amountToMint,
@@ -338,7 +338,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
         {
           actionType: ActionType.DepositCollateral,
           owner: user1,
-          sender: user1,
+          secondAddress: user1,
           asset: usdc.address,
           vaultId: vaultCounter,
           amount: amountCollateral,
@@ -385,7 +385,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
         otokenFactory.createOtoken(weth.address, usdc.address, usdc.address, newStrikePrice, expiry, isPut, {
           from: user1,
         }),
-        'WhiteList: Sender is not Otoken Factory',
+        'Whitelist: Sender is not OtokenFactory',
       )
     })
   })

@@ -21,7 +21,7 @@ const MarginCalculator = artifacts.require('MarginCalculator.sol')
 const Whitelist = artifacts.require('Whitelist.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
-const MarginAccount = artifacts.require('MarginAccount.sol')
+const MarginVault = artifacts.require('MarginVault.sol')
 const OTokenFactory = artifacts.require('OtokenFactory.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
@@ -34,7 +34,7 @@ enum ActionType {
   DepositCollateral,
   WithdrawCollateral,
   SettleVault,
-  Exercise,
+  Redeem,
   Call,
 }
 
@@ -84,10 +84,10 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
     calculator = await MarginCalculator.new(addressBook.address)
     // setup margin pool
     marginPool = await MarginPool.new(addressBook.address)
-    // setup margin account
-    const lib = await MarginAccount.new()
+    // setup margin vault
+    const lib = await MarginVault.new()
     // setup controller module
-    await Controller.link('MarginAccount', lib.address)
+    await Controller.link('MarginVault', lib.address)
     controllerImplementation = await Controller.new(addressBook.address)
     // setup mock Oracle module
     oracle = await MockOracle.new(addressBook.address)
@@ -200,7 +200,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
         {
           actionType: ActionType.OpenVault,
           owner: accountOwner1,
-          sender: accountOperator1,
+          secondAddress: accountOperator1,
           asset: ZERO_ADDR,
           vaultId: vaultCounter,
           amount: '0',
@@ -210,7 +210,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
         {
           actionType: ActionType.MintShortOption,
           owner: accountOwner1,
-          sender: accountOperator1,
+          secondAddress: accountOperator1,
           asset: ethPut1.address,
           vaultId: vaultCounter,
           amount: scaledOptionsAmount,
@@ -220,7 +220,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
         {
           actionType: ActionType.DepositCollateral,
           owner: accountOwner1,
-          sender: accountOwner1,
+          secondAddress: accountOwner1,
           asset: usdc.address,
           vaultId: vaultCounter,
           amount: scaledCollateralAmount,
@@ -306,7 +306,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
         {
           actionType: ActionType.BurnShortOption,
           owner: accountOwner1,
-          sender: accountOperator1,
+          secondAddress: accountOperator1,
           asset: ethPut1.address,
           vaultId: vaultCounter,
           amount: scaledOptionsAmount,
@@ -316,7 +316,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
         {
           actionType: ActionType.WithdrawCollateral,
           owner: accountOwner1,
-          sender: accountOperator1,
+          secondAddress: accountOperator1,
           asset: usdc.address,
           vaultId: vaultCounter,
           amount: scaledExcessCollateralAmount,
@@ -326,7 +326,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
         {
           actionType: ActionType.MintShortOption,
           owner: accountOwner1,
-          sender: accountOperator1,
+          secondAddress: accountOperator1,
           asset: ethPut2.address,
           vaultId: vaultCounter,
           amount: scaledOptionsAmount,
@@ -416,7 +416,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
-            sender: accountOperator1,
+            secondAddress: accountOperator1,
             asset: ZERO_ADDR,
             vaultId: vaultCounter,
             amount: '0',
@@ -426,7 +426,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
           {
             actionType: ActionType.MintShortOption,
             owner: accountOwner1,
-            sender: accountOperator1,
+            secondAddress: accountOperator1,
             asset: ethPut1.address,
             vaultId: vaultCounter,
             amount: scaledOptionsAmount,
@@ -436,7 +436,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
           {
             actionType: ActionType.DepositCollateral,
             owner: accountOwner1,
-            sender: accountOwner1,
+            secondAddress: accountOwner1,
             asset: usdc.address,
             vaultId: vaultCounter,
             amount: scaledCollateralAmount,
@@ -486,7 +486,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
         {
           actionType: ActionType.SettleVault,
           owner: accountOwner1,
-          sender: accountOperator1,
+          secondAddress: accountOperator1,
           asset: usdc.address,
           vaultId: vaultCounter,
           amount: scaledExcessCollateralAmount,
@@ -496,7 +496,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
         {
           actionType: ActionType.MintShortOption,
           owner: accountOwner1,
-          sender: accountOperator1,
+          secondAddress: accountOperator1,
           asset: ethPut2.address,
           vaultId: vaultCounter,
           amount: scaledOptionsAmount,
@@ -506,7 +506,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
         {
           actionType: ActionType.DepositCollateral,
           owner: accountOwner1,
-          sender: accountOperator1,
+          secondAddress: accountOperator1,
           asset: usdc.address,
           vaultId: vaultCounter,
           amount: scaledCollateralAmount2,
