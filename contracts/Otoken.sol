@@ -160,13 +160,12 @@ contract Otoken is ERC20Initializable {
      * @return 2 characters that corresponds to a number
      */
     function _uintTo2Chars(uint256 number) internal pure returns (string memory) {
+        if (number > 99) number = number % 100;
         string memory str = Strings.toString(number);
-        if (number > 99) return Strings.toString(number % 100);
         if (number < 10) {
             return string(abi.encodePacked("0", str));
-        } else {
-            return str;
         }
+        return str;
     }
 
     /**
