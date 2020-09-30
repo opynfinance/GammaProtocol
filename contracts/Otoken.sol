@@ -95,9 +95,9 @@ contract Otoken is ERC20Initializable {
      * @return tokenSymbol (ex: oETHUSDC-05SEP20-200P)
      */
     function _getNameAndSymbol() internal view returns (string memory tokenName, string memory tokenSymbol) {
-        string memory underlying = _getTokenSymbol(underlyingAsset);
-        string memory strike = _getTokenSymbol(strikeAsset);
-        string memory collateral = _getTokenSymbol(collateralAsset);
+        string memory underlying = ERC20Initializable(underlyingAsset).symbol();
+        string memory strike = ERC20Initializable(strikeAsset).symbol();
+        string memory collateral = ERC20Initializable(collateralAsset).symbol();
         uint256 displayedStrikePrice = strikePrice.div(STRIKE_PRICE_DIGITS);
 
         // convert expiry to a readable string
@@ -144,15 +144,6 @@ contract Otoken is ERC20Initializable {
                 typeSymbol
             )
         );
-    }
-
-    /**
-     * @dev get token symbol
-     * @param token the ERC20 token address
-     */
-    function _getTokenSymbol(address token) internal view returns (string memory) {
-        if (token == address(0)) return "ETH";
-        else return ERC20Initializable(token).symbol();
     }
 
     /**

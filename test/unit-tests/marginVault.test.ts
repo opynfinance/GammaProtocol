@@ -15,7 +15,6 @@ const MockAddressBook = artifacts.require('MockAddressBook')
 const MarginVault = artifacts.require('MarginVault.sol')
 
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
-const ETH_ADDR = ZERO_ADDR
 
 contract('MarginVault', ([deployer, controller]) => {
   let weth: MockERC20Instance
@@ -40,12 +39,12 @@ contract('MarginVault', ([deployer, controller]) => {
     await addressBook.setController(controller)
     // deploy otoken
     otoken = await Otoken.new()
-    await otoken.init(addressBook.address, ETH_ADDR, usdc.address, usdc.address, strikePrice, expiry, isPut, {
+    await otoken.init(addressBook.address, weth.address, usdc.address, usdc.address, strikePrice, expiry, isPut, {
       from: deployer,
     })
     // deploy second otoken
     otoken2 = await Otoken.new()
-    await otoken2.init(addressBook.address, ETH_ADDR, usdc.address, usdc.address, strikePrice, expiry, isPut, {
+    await otoken2.init(addressBook.address, weth.address, usdc.address, usdc.address, strikePrice, expiry, isPut, {
       from: deployer,
     })
     // margin vault
