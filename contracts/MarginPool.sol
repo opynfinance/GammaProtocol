@@ -136,7 +136,7 @@ contract MarginPool is Ownable {
 
     /**
      * @notice transfers multiple assets from the pool to users
-     * @dev all tokens are scaled to have 1e18 precision in contracts, but are scaled to native
+     * @dev all tokens are scaled to have 1e8 precision in contracts, but are scaled to native
      *      token decimals in Controller before being passed to MarginPool
      * @param _asset addresses of the assets to transfer
      * @param _user addresses of the users to transfer assets to

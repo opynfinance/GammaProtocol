@@ -7,7 +7,7 @@ import {
 } from '../../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 import {assert} from 'chai'
-import {createValidExpiry} from '../utils'
+import {createValidExpiry, createTokenAmount} from '../utils'
 const {expectEvent, expectRevert, time} = require('@openzeppelin/test-helpers')
 const OTokenFactory = artifacts.require('OtokenFactory.sol')
 const MockAddressBook = artifacts.require('MockAddressBook.sol')
@@ -25,7 +25,7 @@ contract('OTokenFactory', ([user1, user2]) => {
   let usdc: MockERC20Instance
   let shitcoin: MockERC20Instance
   const ethAddress = ZERO_ADDR
-  const strikePrice = new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18))
+  const strikePrice = createTokenAmount(200)
   const isPut = true
   let expiry: number
 
@@ -158,7 +158,7 @@ contract('OTokenFactory', ([user1, user2]) => {
 
     it('Should revert when creating a 0 strike put', async () => {
       await expectRevert(
-        otokenFactory.createOtoken(ethAddress, usdc.address, usdc.address, new BigNumber(0), expiry, isPut, {
+        otokenFactory.createOtoken(ethAddress, usdc.address, usdc.address, 0, expiry, isPut, {
           from: user1,
         }),
         "OtokenFactory: Can't create a $0 strike put option",
@@ -202,7 +202,7 @@ contract('OTokenFactory', ([user1, user2]) => {
     })
 
     it('Should be able to create a new Otoken by another user', async () => {
-      const _strikePrice = new BigNumber(250).times(new BigNumber(10).exponentiatedBy(18))
+      const _strikePrice = createTokenAmount(250)
       const targetAddress = await otokenFactory.getTargetOtokenAddress(
         ethAddress,
         usdc.address,
@@ -287,7 +287,7 @@ contract('OTokenFactory', ([user1, user2]) => {
       // Set the otoken Impl contract to a wrong address
       await addressBook.setOtokenImpl(otokenFactory.address)
       // Try to create a 250 strike (use the 200 strike will throw "Option Created" error first.)
-      const newStrikePrice = new BigNumber(250)
+      const newStrikePrice = 250
       await expectRevert(
         otokenFactory.createOtoken(ethAddress, usdc.address, usdc.address, newStrikePrice, expiry, isPut),
         'Create2: Failed on deploy',

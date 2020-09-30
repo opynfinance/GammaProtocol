@@ -42,15 +42,20 @@ contract('MarginCalculator', () => {
   let weth: MockERC20Instance
   let ceth: MockERC20Instance
   let cusdc: MockERC20Instance
-  // assume there's a R token that has 20 decimals
+
+  // assume there's a R token that has 22 decimals
   let rusd: MockERC20Instance
   let reth: MockERC20Instance
+  // assume there's a T token that has 20 decimals
+  let tusd: MockERC20Instance
 
   const usdcDecimals = 6
   const daiDecimals = 8
   const wethDecimals = 18
   const ctokenDecimals = 8
-  const rtokenDecimals = 20
+  // to test decimal conversions
+  const ttokenDecimals = 20
+  const rtokenDecimals = 22
 
   before('set up contracts', async () => {
     const now = (await time.latest()).toNumber()
@@ -72,6 +77,7 @@ contract('MarginCalculator', () => {
     // weird tokens
     rusd = await MockERC20.new('rUSD', 'rUSD', rtokenDecimals)
     reth = await MockERC20.new('rETH', 'rETH', rtokenDecimals)
+    tusd = await MockERC20.new('tUSD', 'tUSD', ttokenDecimals)
     // setup put tokens
     eth300Put = await MockOtoken.new()
     eth250Put = await MockOtoken.new()
@@ -379,22 +385,36 @@ contract('MarginCalculator', () => {
     })
 
     describe('Should return invalid vault for edge cases', () => {
-      it('(1) Short: 1 unit of 250 put with 0 collateral => invalid vault, need 1 USDC unit', async () => {
-        const vault = createVault(eth250Put.address, undefined, usdc.address, 1, undefined, 0)
+      let smallPut: MockOtokenInstance
+
+      before('setup put with low strke price', async () => {
+        smallPut = await MockOtoken.new()
+        await smallPut.init(
+          addressBook.address,
+          weth.address,
+          usdc.address,
+          usdc.address,
+          createTokenAmount(0.25),
+          expiry,
+          true,
+        )
+      })
+
+      it('(1) Short: 1 unit of 0.25 put with 0 collateral => invalid vault, need 1 USDC unit', async () => {
+        const vault = createVault(smallPut.address, undefined, usdc.address, 1, undefined, 0)
         const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
         assert.equal(isExcess, false)
         assert.equal(netValue.toString(), '1')
       })
 
-      it('(2) Short: 1e-18 250 put, collateral: 1e-6 USDC => valid vault', async () => {
-        const vault = createVault(eth250Put.address, undefined, usdc.address, 1, undefined, 1)
+      it('(2) Short: 1 0.25 put, collateral: 1e-6 USDC => valid vault', async () => {
+        const vault = createVault(smallPut.address, undefined, usdc.address, 1, undefined, 1)
         const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
         assert.equal(isExcess, true)
         assert.equal(netValue.toString(), '0') // excess = 0 because user can't take out that 1 USDC
       })
 
-      // TODO: Have document about this rounding issue.
-      xit('(3) Short: 1 unit of Put with strike price = 1e-18 => invalid vault, need at least 1 UCDC unit', async () => {
+      it('(3) Short: 1 unit of Put with strike price = 1e-8 => invalid vault, need at least 1 UCDC unit', async () => {
         const dustPut = await MockOtoken.new()
         await dustPut.init(addressBook.address, weth.address, usdc.address, usdc.address, 1, expiry, true)
 
@@ -407,9 +427,9 @@ contract('MarginCalculator', () => {
 
       it('(4) Short: 1 unit of Put with strike price = 1.5 * 1e-6 => invalid vault, need at least 1 UCDC unit', async () => {
         const dustPut = await MockOtoken.new()
-        const strikePrice = 1.5 * 1e12 //
+        const strikePrice = 1.5 * 1e2 //
         await dustPut.init(addressBook.address, weth.address, usdc.address, usdc.address, strikePrice, expiry, true)
-        const mintAmount = createTokenAmount(1, 18)
+        const mintAmount = createTokenAmount(1, 8)
         const vault = createVault(dustPut.address, undefined, usdc.address, mintAmount, undefined, 0)
         const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
         assert.equal(isExcess, false)
@@ -419,13 +439,12 @@ contract('MarginCalculator', () => {
       it('(5) Short: 1 200 call, long 1 0 call => need 0 usdc', async () => {
         const zeroCall = await MockOtoken.new()
         await zeroCall.init(addressBook.address, weth.address, usdc.address, weth.address, 0, expiry, false)
-        const otokenAmount = createTokenAmount(1, 18)
         const vault = createVault(
           eth200Call.address,
           zeroCall.address,
           undefined,
-          otokenAmount,
-          otokenAmount,
+          createTokenAmount(1),
+          createTokenAmount(1),
           undefined,
         )
         const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
@@ -655,7 +674,46 @@ contract('MarginCalculator', () => {
       })
     })
 
-    describe('Put vault check (with high decimal collateral token) before expiry', () => {
+    describe('Put vault check (collateral with 20 decimals) before expiry', () => {
+      const amountOne = scaleNum(1)
+
+      let put: MockOtokenInstance
+
+      before('create put with rUSD, set oracle price for rUSD', async () => {
+        // create put with rUSD as collateral + underlying
+        put = await MockOtoken.new()
+        await put.init(addressBook.address, weth.address, tusd.address, tusd.address, scaleNum(300), expiry, true)
+        const usdcPrice = scaleNum(1)
+        await oracle.setRealTimePrice(tusd.address, usdcPrice)
+      })
+
+      it('(1) Short: 1 300 put => need 300 rUSD collateral', async () => {
+        const collateralNeeded = createTokenAmount(300, ttokenDecimals)
+        const vault = createVault(put.address, undefined, tusd.address, amountOne, undefined, '0')
+        const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
+        assert.equal(isExcess, false)
+        assert.equal(netValue.toString(), collateralNeeded.toString())
+      })
+
+      it('(2) Short: 1 300 put, no collateral specified => need 300 USD collateral (default use short.collateral)', async () => {
+        const collateralNeeded = createTokenAmount(300, ttokenDecimals)
+        const vault = createVault(put.address, undefined, undefined, amountOne, undefined, undefined)
+        const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
+        assert.equal(isExcess, false)
+        assert.equal(netValue.toString(), collateralNeeded.toString())
+      })
+
+      it('(3) Short: 1 300 put, collateral: 350 tUSD => excess: 50', async () => {
+        const collateralAmount = createTokenAmount(350, ttokenDecimals)
+        const expectOutPut = createTokenAmount(50, ttokenDecimals)
+        const vault = createVault(put.address, undefined, tusd.address, amountOne, undefined, collateralAmount)
+        const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
+        assert.equal(isExcess, true)
+        assert.equal(netValue.toString(), expectOutPut.toString())
+      })
+    })
+
+    describe('Put vault check (collateral with 22 decimals) before expiry', () => {
       const amountOne = scaleNum(1)
 
       let put: MockOtokenInstance
@@ -688,15 +746,6 @@ contract('MarginCalculator', () => {
         const collateralAmount = createTokenAmount(350, rtokenDecimals)
         const expectOutPut = createTokenAmount(50, rtokenDecimals)
         const vault = createVault(put.address, undefined, rusd.address, amountOne, undefined, collateralAmount)
-        const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
-        assert.equal(isExcess, true)
-        assert.equal(netValue.toString(), expectOutPut.toString())
-      })
-
-      it('(4) Short: 1 unit 300 put, collateral: 35001 rUSDC => excess: 5000', async () => {
-        const collateralAmount = 35001 // 350.01 1e-18
-        const expectOutPut = 5000 // instead of 5001
-        const vault = createVault(put.address, undefined, rusd.address, 1, undefined, collateralAmount)
         const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
         assert.equal(isExcess, true)
         assert.equal(netValue.toString(), expectOutPut.toString())
@@ -1211,7 +1260,7 @@ contract('MarginCalculator', () => {
         assert.equal(netValue.toString(), '666666666666666667')
       })
 
-      it('(2) Short: 1 200 call, collateral: 2 weth, => excess: 1.6667 ', async () => {
+      it('(2) Short: 1 200 call, collateral: 2 weth, => excess: 1.666 ', async () => {
         const collateralAmount = createTokenAmount(2, wethDecimals)
         const vault = createVault(eth200Call.address, undefined, weth.address, amountOne, undefined, collateralAmount)
         const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
@@ -1231,7 +1280,7 @@ contract('MarginCalculator', () => {
         )
         const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
         assert.equal(isExcess, true)
-        assert.equal(netValue.toString(), '33333333333333333')
+        assert.equal(netValue.toString(), '33333333333333334')
       })
 
       it('(4) Short: 1 200 call, long: 2 250 call, collateral 0.2 eth => excess: 0.2 ', async () => {
@@ -1261,7 +1310,7 @@ contract('MarginCalculator', () => {
         const vault = createVault(eth250Call.address, eth200Call.address, weth.address, amountOne, scaleNum(3), 0)
         const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
         assert.equal(isExcess, true)
-        assert.equal(netValue.toString(), '833333333333333332')
+        assert.equal(netValue.toString(), '833333333333333333')
       })
     })
 
@@ -1280,7 +1329,7 @@ contract('MarginCalculator', () => {
         const vault = createVault(eth250Call.address, eth200Call.address, weth.address, amountOne, amountOne, '0')
         const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
         assert.equal(isExcess, true)
-        assert.equal(netValue.toString(), '47619047619047618') // 0.47619047619047618
+        assert.equal(netValue.toString(), '47619047619047619') // 0.47619047619047619
       })
 
       it('(2) Short: 1 200 put, long 1 250 put, collateral 0.2 weth => excess: 0.15 eth', async () => {
@@ -1299,6 +1348,26 @@ contract('MarginCalculator', () => {
       })
     })
 
+    describe('Call vault check after expiry, ETH price = 250 USD', () => {
+      const amountOne = scaleNum(1)
+
+      before(async () => {
+        if ((await time.latest()) < expiry) {
+          await time.increaseTo(expiry + 2)
+        }
+        await oracle.setExpiryPrice(weth.address, expiry, scaleNum(250))
+      })
+
+      it('(1) Short: 1 200 call, long 1 100 call => excess 0.4 weth', async () => {
+        const expectOutput = createTokenAmount(0.4, wethDecimals)
+
+        const vault = createVault(eth200Call.address, eth100Call.address, weth.address, amountOne, amountOne, '0')
+        const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
+        assert.equal(isExcess, true)
+        assert.equal(netValue.toString(), expectOutput)
+      })
+    })
+
     describe('Put vault on cToken options', () => {
       const amountOne = scaleNum(1)
 
@@ -1314,7 +1383,7 @@ contract('MarginCalculator', () => {
         const vault = createVault(eth250Call.address, eth200Call.address, weth.address, amountOne, amountOne, '0')
         const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
         assert.equal(isExcess, true)
-        assert.equal(netValue.toString(), '47619047619047618') // 0.47619047619047618
+        assert.equal(netValue.toString(), '47619047619047619') // 0.47619047619047619
       })
 
       it('(2) Short: 1 200 put, long 1 250 put, collateral 0.2 weth => excess: 0.15 eth', async () => {

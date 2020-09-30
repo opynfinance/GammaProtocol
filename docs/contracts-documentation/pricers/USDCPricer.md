@@ -20,7 +20,7 @@ overides the getPrice function in OpynPricerInterface.
 
 #### Return Values:
 
-- price of 1e8 cToken worth in USD, scaled by 1e18.
+- price of 1e8 cToken worth in USD, scaled by 1e8.
 
 ### Function `setExpiryPriceToOralce(uint256 _expiryTimestamp) external`
 

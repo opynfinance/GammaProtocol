@@ -29,7 +29,7 @@ contract('Whitelist', ([owner, otokenFactoryAddress, random, newOwner, callee]) 
     // deploy DAI token
     dai = await MockERC20.new('DAI', 'DAI', 18)
     // deploy option
-    otoken = await MockERC20.new('OETH', 'OETH', 18)
+    otoken = await MockERC20.new('OETH', 'OETH', 8)
 
     // deploy AddressBook mock
     addressBook = await MockAddressBook.new()

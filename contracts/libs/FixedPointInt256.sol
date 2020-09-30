@@ -115,24 +115,22 @@ library FixedPointInt256 {
 
     /**
      * @notice multiply two signed integer
-     * @dev rounds to zero if a*b < SCALING_FACTOR / 2
      * @param a FixedPoint
      * @param b FixedPoint
      * @return mul of two fixed point
      */
     function mul(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (FixedPointInt memory) {
-        return FixedPointInt((a.value.mul(b.value)).add(SCALING_FACTOR / 2) / SCALING_FACTOR);
+        return FixedPointInt((a.value.mul(b.value)) / SCALING_FACTOR);
     }
 
     /**
      * @notice divide two FixedPoint
-     * @dev rounds to zero if a*b < SCALING_FACTOR / 2
      * @param a FixedPoint
      * @param b FixedPoint
      * @return div of two signed integer
      */
     function div(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (FixedPointInt memory) {
-        return FixedPointInt((a.value.mul(SCALING_FACTOR)).add(b.value / 2) / b.value);
+        return FixedPointInt((a.value.mul(SCALING_FACTOR)) / b.value);
     }
 
     /**

@@ -73,8 +73,8 @@ contract CompoundPricer is OpynPricerInterface {
 
     /**
      * @dev convert underlying price to cToken price.
-     * @param _underlyingPrice price of 1 underlying token (1e6 USDC, 1e18 WETH) in USD, scled by 1e18
-     * @return net worth of 1e8 cToken in USD, scaled by 1e18.
+     * @param _underlyingPrice price of 1 underlying token (1e6 USDC, 1e18 WETH) in USD, scled by 1e8
+     * @return net worth of 1e8 cToken in USD, scaled by 1e8.
      */
     function _underlyingPriceToCtokenPrice(uint256 _underlyingPrice) internal view returns (uint256) {
         uint256 underlyingDecimals = underlying.decimals();

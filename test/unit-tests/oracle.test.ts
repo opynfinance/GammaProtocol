@@ -7,6 +7,7 @@ import {
 } from '../../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 import {assert} from 'chai'
+import {createTokenAmount} from '../utils'
 
 const {expectRevert, expectEvent, time} = require('@openzeppelin/test-helpers')
 
@@ -82,7 +83,7 @@ contract('Oracle', ([owner, disputer, random, collateral, strike]) => {
     })
 
     it('should update after Pricer update', async () => {
-      const price1 = new BigNumber(235).times(1e18).toString()
+      const price1 = createTokenAmount(235)
       await wethPricer.setPrice(price1)
       const oraclePrice = await oracle.getPrice(weth.address)
       assert.equal(oraclePrice.toString(), price1)

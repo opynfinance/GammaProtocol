@@ -39,6 +39,7 @@ contract MockOtoken is ERC20Initializable {
         string memory tokenName = "ETHUSDC/1597511955/200P/USDC";
         string memory tokenSymbol = "oETHUSDCP";
         __ERC20_init_unchained(tokenName, tokenSymbol);
+        _setupDecimals(8);
     }
 
     function mintOtoken(address _to, uint256 _amount) external {

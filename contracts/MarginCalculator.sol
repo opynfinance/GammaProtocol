@@ -23,7 +23,7 @@ contract MarginCalculator {
 
     address public addressBook;
 
-    uint256 internal constant BASE = 18;
+    uint256 internal constant BASE = 8;
     FPI.FixedPointInt internal ZERO = FPI.fromScaledUint(0, BASE);
 
     constructor(address _addressBook) public {
@@ -35,8 +35,8 @@ contract MarginCalculator {
     /**
      * @notice Return the net worth of an expired oToken, denominated in collateral.
      * @param _otoken otoken address
-     * @return the exchange rate that shows how much collateral unit can be take out by 1 otoken unit, scaled by 1e18.
-     * Or how much collateral can be taken out for 1 (1e18) otoken
+     * @return the exchange rate that shows how much collateral unit can be take out by 1 otoken unit, scaled by 1e8.
+     * Or how much collateral can be taken out for 1 (1e8) otoken
      */
     function getExpiredPayoutRate(address _otoken) external view returns (uint256) {
         require(_otoken != address(0), "MarginCalculator: Invalid token address");
@@ -57,8 +57,8 @@ contract MarginCalculator {
             expiry
         );
 
-        // the exchangeRate was scaled by 1e18, if 1e18 otoken can take out 1 USDC, the exchangeRate is currently 1e18
-        // we want to return: how much USDC unit can be take out by 1 (1e18 units) otoken
+        // the exchangeRate was scaled by 1e8, if 1e8 otoken can take out 1 USDC, the exchangeRate is currently 1e18
+        // we want to return: how much USDC unit can be take out by 1 (1e8 units) otoken
         uint256 collateralDecimals = uint256(ERC20Interface(collateral).decimals());
         return cashValueInCollateral.toScaledUint(collateralDecimals, true);
     }

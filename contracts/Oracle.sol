@@ -60,8 +60,8 @@ contract Oracle is Ownable {
     /**
      * @notice get the live price from oracle
      * @param _asset the asset address
-     * @return price scaled in 1e18, denominated in USD
-     * e.g. 173689000000000000000 => 175.689 USD
+     * @return price scaled in 1e8, denominated in USD
+     * e.g. 17368900000 => 175.689 USD
      */
     function getPrice(address _asset) external view returns (uint256) {
         require(assetPricer[_asset] != address(0), "Oracle: Pricer for this asset not set");
@@ -72,7 +72,7 @@ contract Oracle is Ownable {
      * @notice get the asset price at specific expiry timestamp.
      * @param _asset the asset want to get price at.
      * @param _expiryTimestamp expiry timestamp
-     * @return price denominated in USD, scaled 10e18
+     * @return price denominated in USD, scaled by 1e8
      * @return isFinalized if the price is finalized or not.
      */
     function getExpiryPrice(address _asset, uint256 _expiryTimestamp) external view returns (uint256, bool) {
