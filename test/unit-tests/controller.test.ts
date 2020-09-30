@@ -177,7 +177,8 @@ contract(
 
       it('should get vault balance', async () => {
         const vaultId = new BigNumber(0)
-        await controllerProxy.getProceed(accountOwner1, vaultId)
+        const proceed = await controllerProxy.getProceed(accountOwner1, vaultId)
+        assert.equal(proceed.toString(), '0')
       })
     })
 
@@ -1982,8 +1983,10 @@ contract(
 
           const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
 
-          const netValue = (await calculator.getExcessCollateral(vaultBefore))[0]
-          const isExcess = (await calculator.getExcessCollateral(vaultBefore))[1]
+          const [netValue, isExcess] = await calculator.getExcessCollateral(vaultBefore)
+
+          const proceed = await controllerProxy.getProceed(accountOwner1, vaultCounter)
+          assert.equal(netValue.toString(), proceed.toString())
 
           assert.equal(netValue.toString(), '0', 'Position net value mistmatch')
           assert.equal(isExcess, true, 'Position collateral excess mismatch')
@@ -2033,8 +2036,10 @@ contract(
           const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
           const withdrawerBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
 
-          const netValue = (await calculator.getExcessCollateral(vaultBefore))[0]
-          const isExcess = (await calculator.getExcessCollateral(vaultBefore))[1]
+          const [netValue, isExcess] = await calculator.getExcessCollateral(vaultBefore)
+
+          const proceed = await controllerProxy.getProceed(accountOwner1, vaultCounter)
+          assert.equal(netValue.toString(), proceed.toString())
 
           assert.equal(netValue.toString(), excessCollateralToDeposit.toString(), 'Position net value mistmatch')
           assert.equal(isExcess, true, 'Position collateral excess mismatch')
