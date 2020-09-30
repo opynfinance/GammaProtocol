@@ -345,13 +345,13 @@ contract(
           weth.address,
           usdc.address,
           usdc.address,
-          new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+          createTokenAmount(200),
           new BigNumber(await time.latest()).plus(expiryTime),
           true,
         )
 
-        await longOtoken.mintOtoken(accountOwner1, createTokenAmount(100, 18))
-        await longOtoken.mintOtoken(accountOperator1, createTokenAmount(100, 18))
+        await longOtoken.mintOtoken(accountOwner1, createTokenAmount(100))
+        await longOtoken.mintOtoken(accountOperator1, createTokenAmount(100))
       })
 
       describe('deposit long otoken', () => {
@@ -621,7 +621,7 @@ contract(
             weth.address,
             usdc.address,
             usdc.address,
-            new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+            createTokenAmount(200),
             '1219926985', // 2008
             true,
           )
@@ -663,7 +663,7 @@ contract(
             weth.address,
             usdc.address,
             usdc.address,
-            new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+            createTokenAmount(200),
             new BigNumber(await time.latest()).plus(expiryTime),
             true,
           )
@@ -1029,7 +1029,7 @@ contract(
               weth.address,
               usdc.address,
               usdc.address,
-              new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+              createTokenAmount(200),
               new BigNumber(await time.latest()).plus(expiryTime),
               true,
             )
@@ -1701,7 +1701,7 @@ contract(
           weth.address,
           usdc.address,
           usdc.address,
-          new BigNumber(250).times(new BigNumber(10).exponentiatedBy(18)),
+          createTokenAmount(250),
           new BigNumber(await time.latest()).plus(expiryTime),
           true,
         )
@@ -1710,7 +1710,7 @@ contract(
           weth.address,
           usdc.address,
           usdc.address,
-          new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+          createTokenAmount(200),
           new BigNumber(await time.latest()).plus(expiryTime),
           true,
         )
@@ -1755,7 +1755,7 @@ contract(
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-          const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e18)
+          const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e8)
           const amountToMint = createTokenAmount(1, wethDecimals)
           const actionArgs = [
             {
@@ -1814,7 +1814,7 @@ contract(
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-          const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e12)
+          const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(100)
           const amountToMint = createTokenAmount(1)
           const actionArgs = [
             {
@@ -1897,7 +1897,7 @@ contract(
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-          const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e12)
+          const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(100)
           const amountToMint = createTokenAmount(1)
           const actionArgs = [
             {
@@ -2084,7 +2084,7 @@ contract(
 
           await whitelist.whitelistOtoken(longOtoken.address, {from: owner})
 
-          const amountToMint = new BigNumber(1e12)
+          const amountToMint = '1'
 
           const actionArgs = [
             {
@@ -2093,7 +2093,7 @@ contract(
               secondAddress: accountOwner1,
               asset: longOtoken.address,
               vaultId: vaultCounter.toNumber(),
-              amount: amountToMint.toNumber(),
+              amount: amountToMint,
               index: '1',
               data: ZERO_ADDR,
             },
@@ -2115,13 +2115,13 @@ contract(
               weth.address,
               usdc.address,
               usdc.address,
-              new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+              createTokenAmount(200),
               new BigNumber(await time.latest()).plus(expiryTime),
               true,
             )
 
-            const collateralToDeposit = new BigNumber(await notWhitelistedShortOtoken.strikePrice()).dividedBy(1e12)
-            const amountToMint = new BigNumber(1e12)
+            const collateralToDeposit = new BigNumber(await notWhitelistedShortOtoken.strikePrice()).dividedBy(100)
+            const amountToMint = createTokenAmount(1)
             const actionArgs = [
               {
                 actionType: ActionType.OpenVault,
@@ -2139,7 +2139,7 @@ contract(
                 secondAddress: accountOperator1,
                 asset: notWhitelistedShortOtoken.address,
                 vaultId: '1',
-                amount: amountToMint.toNumber(),
+                amount: amountToMint,
                 index: '0',
                 data: ZERO_ADDR,
               },
@@ -2165,31 +2165,31 @@ contract(
 
         describe('Mint negligible amount', () => {
           let oneDollarPut: MockOtokenInstance
-          let oneCentPut: MockOtokenInstance
+          let smallestPut: MockOtokenInstance
           before('create options with small strike price', async () => {
             oneDollarPut = await MockOtoken.new()
-            oneCentPut = await MockOtoken.new()
+            smallestPut = await MockOtoken.new()
             // init otoken
             await oneDollarPut.init(
               addressBook.address,
               weth.address,
               usdc.address,
               usdc.address,
-              createTokenAmount(1, 18),
+              createTokenAmount(1),
               new BigNumber(await time.latest()).plus(86400),
               true,
             )
-            await oneCentPut.init(
+            await smallestPut.init(
               addressBook.address,
               weth.address,
               usdc.address,
               usdc.address,
-              createTokenAmount(0.000001, 18),
+              1,
               new BigNumber(await time.latest()).plus(86400),
               true,
             )
             await whitelist.whitelistOtoken(oneDollarPut.address)
-            await whitelist.whitelistOtoken(oneCentPut.address)
+            await whitelist.whitelistOtoken(smallestPut.address)
           })
           it('should revert if trying to mint 1 wei of oToken with strikePrice = 1 USD without putting collateral', async () => {
             const vaultId = (await controllerProxy.getAccountVaultCounter(accountOwner2)).toNumber() + 1
@@ -2221,7 +2221,7 @@ contract(
             )
           })
 
-          it('should allow minting 1 wei of oToken with strikePrice = 0.0001 USD without putting collateral', async () => {
+          it('should revert minting 1 wei of oToken with minimal strikePrice without putting collateral', async () => {
             const vaultId = (await controllerProxy.getAccountVaultCounter(accountOwner2)).toNumber() + 1
             const actionArgs = [
               {
@@ -2238,17 +2238,18 @@ contract(
                 actionType: ActionType.MintShortOption,
                 owner: accountOwner2,
                 secondAddress: accountOwner2,
-                asset: oneCentPut.address,
+                asset: smallestPut.address,
                 vaultId: vaultId,
                 amount: '1',
                 index: '0',
                 data: ZERO_ADDR,
               },
             ]
-            const balanceBefore = await oneCentPut.balanceOf(accountOwner2)
-            await controllerProxy.operate(actionArgs, {from: accountOwner2})
-            const balanceAfter = await oneCentPut.balanceOf(accountOwner2)
-            assert.equal(balanceAfter.toNumber(), balanceBefore.toNumber() + 1)
+
+            await expectRevert(
+              controllerProxy.operate(actionArgs, {from: accountOwner2}),
+              'Controller: invalid final vault state.',
+            )
           })
         })
       })
@@ -2526,7 +2527,7 @@ contract(
               weth.address,
               usdc.address,
               usdc.address,
-              new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+              createTokenAmount(200),
               new BigNumber(await time.latest()).plus(expiryTime),
               true,
             )
@@ -2534,8 +2535,8 @@ contract(
             // whitelist otoken to be minted
             await whitelist.whitelistOtoken(expiredShortOtoken.address, {from: owner})
 
-            const collateralToDeposit = new BigNumber(await expiredShortOtoken.strikePrice()).dividedBy(1e12)
-            const amountToMint = new BigNumber('1')
+            const collateralToDeposit = new BigNumber(await expiredShortOtoken.strikePrice()).dividedBy(100)
+            const amountToMint = createTokenAmount(1)
             const actionArgs = [
               {
                 actionType: ActionType.OpenVault,
@@ -2553,7 +2554,7 @@ contract(
                 secondAddress: accountOwner1,
                 asset: expiredShortOtoken.address,
                 vaultId: vaultCounterBefore.toNumber() + 1,
-                amount: amountToMint.toNumber(),
+                amount: amountToMint,
                 index: '0',
                 data: ZERO_ADDR,
               },
@@ -2625,7 +2626,7 @@ contract(
             const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
             assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-            const collateralToDeposit = new BigNumber(await expiredShortOtoken.strikePrice()).dividedBy(1e12)
+            const collateralToDeposit = new BigNumber(await expiredShortOtoken.strikePrice()).dividedBy(100)
             const amountToMint = createTokenAmount(1)
             const actionArgs = [
               {
@@ -2697,7 +2698,7 @@ contract(
           weth.address,
           usdc.address,
           usdc.address,
-          new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+          createTokenAmount(200),
           new BigNumber(await time.latest()).plus(expiryTime),
           true,
         )
@@ -2705,8 +2706,8 @@ contract(
         await whitelist.whitelistOtoken(shortOtoken.address, {from: owner})
         // open new vault, mintnaked short, sell it to holder 1
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
-        const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e12)
-        const amountToMint = new BigNumber(1e12)
+        const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(100)
+        const amountToMint = createTokenAmount(1)
         const actionArgs = [
           {
             actionType: ActionType.OpenVault,
@@ -2724,7 +2725,7 @@ contract(
             secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounter.toNumber(),
-            amount: amountToMint.toNumber(),
+            amount: amountToMint,
             index: '0',
             data: ZERO_ADDR,
           },
@@ -2775,7 +2776,7 @@ contract(
         await oracle.setExpiryPriceFinalizedAllPeiodOver(
           await shortOtoken.underlyingAsset(),
           new BigNumber(await shortOtoken.expiryTimestamp()),
-          new BigNumber(150).times(1e18),
+          createTokenAmount(150),
           true,
         )
         // set it as not finalized in mock
@@ -2788,7 +2789,7 @@ contract(
         await oracle.setExpiryPriceFinalizedAllPeiodOver(
           await shortOtoken.strikeAsset(),
           new BigNumber(await shortOtoken.expiryTimestamp()),
-          new BigNumber(1).times(1e18),
+          createTokenAmount(1),
           true,
         )
 
@@ -2822,7 +2823,7 @@ contract(
           true,
         )
 
-        const shortAmountToBurn = new BigNumber(1e12)
+        const shortAmountToBurn = createTokenAmount(1)
         const actionArgs = [
           {
             actionType: ActionType.Redeem,
@@ -2830,7 +2831,7 @@ contract(
             secondAddress: ZERO_ADDR,
             asset: shortOtoken.address,
             vaultId: '0',
-            amount: shortAmountToBurn.toNumber(),
+            amount: shortAmountToBurn,
             index: '0',
             data: ZERO_ADDR,
           },
@@ -2845,7 +2846,7 @@ contract(
       })
 
       it('should redeem after expiry + price is finalized', async () => {
-        const shortAmountToBurn = new BigNumber(1e12)
+        const shortAmountToBurn = createTokenAmount(1)
         const actionArgs = [
           {
             actionType: ActionType.Redeem,
@@ -2853,14 +2854,14 @@ contract(
             secondAddress: holder1,
             asset: shortOtoken.address,
             vaultId: '0',
-            amount: shortAmountToBurn.toNumber(),
+            amount: shortAmountToBurn,
             index: '0',
             data: ZERO_ADDR,
           },
         ]
         assert.equal(await controllerProxy.isExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
 
-        const payout = new BigNumber('50')
+        const payout = createTokenAmount(50, usdcDecimals)
         const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
         const senderBalanceBefore = new BigNumber(await usdc.balanceOf(holder1))
         const senderShortBalanceBefore = new BigNumber(await shortOtoken.balanceOf(holder1))
@@ -2896,7 +2897,7 @@ contract(
           weth.address,
           usdc.address,
           weth.address,
-          createTokenAmount(200, 18),
+          createTokenAmount(200),
           expiry,
           false,
         )
@@ -2906,7 +2907,7 @@ contract(
         const amountCollateral = createTokenAmount(1, wethDecimals)
         await weth.mint(accountOwner1, amountCollateral)
         await weth.approve(marginPool.address, amountCollateral, {from: accountOwner1})
-        const amountOtoken = createTokenAmount(1, 18)
+        const amountOtoken = createTokenAmount(1)
         const actionArgs = [
           {
             actionType: ActionType.OpenVault,
@@ -2944,8 +2945,8 @@ contract(
         await call.transfer(holder1, amountOtoken, {from: accountOwner1})
 
         await time.increaseTo(expiry + 10)
-        await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(400, 18), true)
-        await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1, 18), true)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(400), true)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1), true)
         const redeemArgs = [
           {
             actionType: ActionType.Redeem,
@@ -2959,7 +2960,7 @@ contract(
           },
         ]
 
-        const expectedPayout = createTokenAmount(0.5, 18)
+        const expectedPayout = createTokenAmount(0.5, wethDecimals)
 
         const userBalanceBefore = new BigNumber(await weth.balanceOf(holder1))
         await controllerProxy.operate(redeemArgs, {from: holder1})
@@ -2977,13 +2978,13 @@ contract(
           weth.address,
           usdc.address,
           weth2.address,
-          createTokenAmount(200, 18),
+          createTokenAmount(200),
           expiry,
           false,
         )
 
-        await oracle.setRealTimePrice(weth.address, new BigNumber(400).times(1e18))
-        await oracle.setRealTimePrice(weth2.address, new BigNumber(400).times(1e18))
+        await oracle.setRealTimePrice(weth.address, createTokenAmount(400))
+        await oracle.setRealTimePrice(weth2.address, createTokenAmount(400))
 
         await whitelist.whitelistOtoken(call.address)
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
@@ -2991,7 +2992,7 @@ contract(
         await weth2.mint(accountOwner1, amountCollateral)
         await weth2.approve(marginPool.address, amountCollateral, {from: accountOwner1})
 
-        const amountOtoken = createTokenAmount(1, 18)
+        const amountOtoken = createTokenAmount(1)
         const actionArgs = [
           {
             actionType: ActionType.OpenVault,
@@ -3029,8 +3030,8 @@ contract(
         await call.transfer(holder1, amountOtoken, {from: accountOwner1})
 
         await time.increaseTo(expiry + 10)
-        await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(400, 18), true)
-        await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1, 18), true)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(400), true)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1), true)
 
         const redeemArgs = [
           {
@@ -3068,7 +3069,7 @@ contract(
             weth.address,
             usdc.address,
             usdc.address,
-            new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+            createTokenAmount(200),
             expiry,
             true,
           )
@@ -3077,7 +3078,7 @@ contract(
             weth.address,
             usdc.address,
             usdc.address,
-            new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+            createTokenAmount(200),
             expiry,
             true,
           )
@@ -3086,9 +3087,9 @@ contract(
           await whitelist.whitelistOtoken(secondOtoken.address, {from: owner})
 
           // open new vault, mint naked short, sell it to holder 1
-          const firstCollateralToDeposit = new BigNumber(await firstOtoken.strikePrice()).dividedBy(1e12)
-          const secondCollateralToDeposit = new BigNumber(await secondOtoken.strikePrice()).dividedBy(1e12)
-          const amountToMint = new BigNumber(1e12)
+          const firstCollateralToDeposit = new BigNumber(await firstOtoken.strikePrice()).dividedBy(100)
+          const secondCollateralToDeposit = new BigNumber(await secondOtoken.strikePrice()).dividedBy(100)
+          const amountToMint = createTokenAmount(1)
           let vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
           let actionArgs = [
             {
@@ -3107,7 +3108,7 @@ contract(
               secondAddress: accountOwner1,
               asset: firstOtoken.address,
               vaultId: vaultCounter.toNumber(),
-              amount: amountToMint.toNumber(),
+              amount: amountToMint,
               index: '0',
               data: ZERO_ADDR,
             },
@@ -3143,7 +3144,7 @@ contract(
               secondAddress: accountOwner1,
               asset: secondOtoken.address,
               vaultId: vaultCounter.toNumber(),
-              amount: amountToMint.toNumber(),
+              amount: amountToMint,
               index: '0',
               data: ZERO_ADDR,
             },
@@ -3172,30 +3173,30 @@ contract(
           await oracle.setExpiryPriceFinalizedAllPeiodOver(
             await firstOtoken.underlyingAsset(),
             new BigNumber(await firstOtoken.expiryTimestamp()),
-            new BigNumber(150).times(1e18),
+            createTokenAmount(150),
             true,
           )
           await oracle.setExpiryPriceFinalizedAllPeiodOver(
             await secondOtoken.underlyingAsset(),
             new BigNumber(await secondOtoken.expiryTimestamp()),
-            new BigNumber(150).times(1e18),
+            createTokenAmount(150),
             true,
           )
 
           await oracle.setExpiryPriceFinalizedAllPeiodOver(
             await firstOtoken.strikeAsset(),
             new BigNumber(await firstOtoken.expiryTimestamp()),
-            new BigNumber(1).times(1e18),
+            createTokenAmount(1),
             true,
           )
           await oracle.setExpiryPriceFinalizedAllPeiodOver(
             await secondOtoken.strikeAsset(),
             new BigNumber(await firstOtoken.expiryTimestamp()),
-            new BigNumber(1).times(1e18),
+            createTokenAmount(1),
             true,
           )
 
-          const amountToRedeem = new BigNumber(1e12)
+          const amountToRedeem = createTokenAmount(1)
           const actionArgs = [
             {
               actionType: ActionType.Redeem,
@@ -3203,7 +3204,7 @@ contract(
               secondAddress: holder1,
               asset: firstOtoken.address,
               vaultId: '0',
-              amount: amountToRedeem.toNumber(),
+              amount: amountToRedeem,
               index: '0',
               data: ZERO_ADDR,
             },
@@ -3213,13 +3214,13 @@ contract(
               secondAddress: holder1,
               asset: secondOtoken.address,
               vaultId: '0',
-              amount: amountToRedeem.toNumber(),
+              amount: amountToRedeem,
               index: '0',
               data: ZERO_ADDR,
             },
           ]
 
-          const payout = new BigNumber('100')
+          const payout = createTokenAmount(100, usdcDecimals)
           const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
           const senderBalanceBefore = new BigNumber(await usdc.balanceOf(holder1))
 
@@ -3259,14 +3260,14 @@ contract(
           weth.address,
           usdc.address,
           usdc.address,
-          new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+          createTokenAmount(200),
           new BigNumber(await time.latest()).plus(expiryTime),
           true,
         )
         // whitelist otoken to be used in the protocol
         await whitelist.whitelistOtoken(shortOtoken.address, {from: owner})
         // open new vault, mint naked short, sell it to holder 1
-        const collateralToDespoit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e12)
+        const collateralToDespoit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(100)
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
         const actionArgs = [
           {
@@ -3317,7 +3318,7 @@ contract(
 
       it('should revert settling vault before expiry', async () => {
         // mint token in vault before
-        const amountToMint = new BigNumber(1e18)
+        const amountToMint = createTokenAmount(1)
         let vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
 
         let actionArgs = [
@@ -3327,7 +3328,7 @@ contract(
             secondAddress: accountOwner1,
             asset: shortOtoken.address,
             vaultId: vaultCounter.toNumber(),
-            amount: amountToMint.toString(),
+            amount: amountToMint,
             index: '0',
             data: ZERO_ADDR,
           },
@@ -3378,7 +3379,7 @@ contract(
         await time.increase(60 * 61 * 24) // increase time with one hour in seconds
         // set price in Oracle Mock, 150$ at expiry, expire ITM
         const expiry = new BigNumber(await shortOtoken.expiryTimestamp())
-        await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(150, 18), true)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(150), true)
         // set it as not finalized in mock
         await oracle.setIsFinalized(
           await shortOtoken.underlyingAsset(),
@@ -3415,8 +3416,8 @@ contract(
 
       it('should settle ITM otoken after expiry + price is finalized', async () => {
         const expiry = new BigNumber(await shortOtoken.expiryTimestamp())
-        await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(150, 18), true)
-        await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1, 18), true)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(150), true)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1), true)
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         const actionArgs = [
           {
@@ -3474,7 +3475,7 @@ contract(
 
         // mint some long otokens, (so we can put it as long)
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
-        const longAmount = createTokenAmount(1, 18)
+        const longAmount = createTokenAmount(1)
         const collateralAmount = createTokenAmount(stirkePrice, usdcDecimals)
         const mintArgs = [
           {
@@ -3592,7 +3593,7 @@ contract(
             weth.address,
             usdc.address,
             usdc.address,
-            new BigNumber(200).times(1e18),
+            createTokenAmount(200),
             new BigNumber(await time.latest()).plus(expiryTime),
             true,
           )
@@ -3600,7 +3601,7 @@ contract(
           await whitelist.whitelistOtoken(firstShortOtoken.address, {from: owner})
           // open new vault, mint naked short, sell it to holder 1
           let collateralToDespoit = createTokenAmount(200, usdcDecimals)
-          let amountToMint = new BigNumber(1e18)
+          let amountToMint = createTokenAmount(1)
           let vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
           let actionArgs = [
             {
@@ -3644,7 +3645,7 @@ contract(
             weth.address,
             usdc.address,
             usdc.address,
-            new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+            createTokenAmount(200),
             new BigNumber(await time.latest()).plus(expiryTime),
             true,
           )
@@ -3652,7 +3653,7 @@ contract(
           await whitelist.whitelistOtoken(secondShortOtoken.address, {from: owner})
           // open new vault, mint naked short, sell it to holder 1
           collateralToDespoit = createTokenAmount(200, usdcDecimals)
-          amountToMint = new BigNumber(1e18)
+          amountToMint = createTokenAmount(1)
           vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
           actionArgs = [
             {
@@ -3694,10 +3695,10 @@ contract(
           await time.increaseTo(new BigNumber(await secondShortOtoken.expiryTimestamp()).plus(1000).toString())
           const expiry = new BigNumber(await firstShortOtoken.expiryTimestamp())
           const expiry2 = new BigNumber(await secondShortOtoken.expiryTimestamp())
-          await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(200, 18), true)
-          await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1, 18), true)
-          await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry2, createTokenAmount(200, 18), true)
-          await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry2, createTokenAmount(1, 18), true)
+          await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(200), true)
+          await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1), true)
+          await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry2, createTokenAmount(200), true)
+          await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry2, createTokenAmount(1), true)
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           const actionArgs = [
             {
@@ -3758,7 +3759,7 @@ contract(
           weth.address,
           usdc.address,
           usdc.address,
-          new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+          createTokenAmount(200),
           new BigNumber(await time.latest()),
           true,
         )
@@ -3793,7 +3794,7 @@ contract(
           weth.address,
           usdc.address,
           usdc.address,
-          new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+          createTokenAmount(200),
           expiry,
           true,
         )
@@ -3801,7 +3802,7 @@ contract(
         // Mock oracle: dispute periodd over, set price to 200.
         const priceMock = new BigNumber('200')
         await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, priceMock, true)
-        await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1, 18), true)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1), true)
 
         const expectedResutl = true
         assert.equal(
@@ -3820,7 +3821,7 @@ contract(
           weth.address,
           usdc.address,
           usdc.address,
-          new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+          createTokenAmount(200),
           new BigNumber(await time.latest()).plus(60000 * 60000),
           true,
         )
@@ -3837,7 +3838,7 @@ contract(
           weth.address,
           usdc.address,
           usdc.address,
-          new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+          createTokenAmount(200),
           1219835219,
           true,
         )
@@ -3946,7 +3947,7 @@ contract(
           weth.address,
           usdc.address,
           usdc.address,
-          new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+          createTokenAmount(200),
           new BigNumber(await time.latest()).plus(expiryTime),
           true,
         )
@@ -3955,7 +3956,7 @@ contract(
         await whitelist.whitelistOtoken(shortOtoken.address, {from: owner})
 
         const collateralToDeposit = createTokenAmount(200, usdcDecimals)
-        const amountToMint = createTokenAmount(1, 18) // mint 1 otoken
+        const amountToMint = createTokenAmount(1) // mint 1 otoken
         const actionArgs = [
           {
             actionType: ActionType.OpenVault,
@@ -4055,7 +4056,7 @@ contract(
 
       it('should revert depositing collateral when system is paused', async () => {
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-        const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e18)
+        const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e8)
         const actionArgs = [
           {
             actionType: ActionType.DepositCollateral,
@@ -4074,7 +4075,7 @@ contract(
 
       it('should revert minting short otoken when system is paused', async () => {
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-        const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e18)
+        const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e8)
         const actionArgs = [
           {
             actionType: ActionType.MintShortOption,
@@ -4103,7 +4104,7 @@ contract(
 
       it('should revert withdrawing collateral when system is paused', async () => {
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-        const collateralToWithdraw = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e12)
+        const collateralToWithdraw = new BigNumber(await shortOtoken.strikePrice()).dividedBy(100)
         const actionArgs = [
           {
             actionType: ActionType.WithdrawCollateral,
@@ -4142,8 +4143,8 @@ contract(
         await time.increase(60 * 61) // increase time with one hour in seconds
         // set price in Oracle Mock, 150$ at expiry, expire ITM
         const expiry = new BigNumber(await shortOtoken.expiryTimestamp())
-        await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, new BigNumber(150).times(1e18), true)
-        await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, new BigNumber(1).times(1e18), true)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(150), true)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1), true)
 
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         const actionArgs = [
@@ -4181,7 +4182,7 @@ contract(
       })
 
       it('should redeem when system is paused', async () => {
-        const amountToRedeem = createTokenAmount(1, 18)
+        const amountToRedeem = createTokenAmount(1)
         // transfer to holder
         await shortOtoken.transfer(holder1, amountToRedeem, {from: accountOwner1})
 
@@ -4244,7 +4245,7 @@ contract(
           weth.address,
           usdc.address,
           usdc.address,
-          new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18)),
+          createTokenAmount(200),
           new BigNumber(await time.latest()).plus(expiryTime),
           true,
         )
@@ -4253,7 +4254,7 @@ contract(
         await whitelist.whitelistOtoken(shortOtoken.address, {from: owner})
 
         const collateralToDeposit = createTokenAmount(200, usdcDecimals)
-        const amountToMint = createTokenAmount(1, 18) // mint 1 otoken
+        const amountToMint = createTokenAmount(1) // mint 1 otoken
         const actionArgs = [
           {
             actionType: ActionType.OpenVault,
@@ -4362,7 +4363,7 @@ contract(
 
       it('should revert depositing collateral when system is in emergency shutdown state', async () => {
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-        const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e18)
+        const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e8)
         const actionArgs = [
           {
             actionType: ActionType.DepositCollateral,
@@ -4384,7 +4385,7 @@ contract(
 
       it('should revert minting short otoken when system is in emergency shutdown state', async () => {
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-        const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e18)
+        const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e8)
         const actionArgs = [
           {
             actionType: ActionType.MintShortOption,
@@ -4416,7 +4417,7 @@ contract(
 
       it('should revert withdrawing collateral when system is in emergency shutdown state', async () => {
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-        const collateralToWithdraw = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e18)
+        const collateralToWithdraw = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e8)
         const actionArgs = [
           {
             actionType: ActionType.WithdrawCollateral,
@@ -4463,7 +4464,7 @@ contract(
         await oracle.setExpiryPrice(
           await shortOtoken.underlyingAsset(),
           new BigNumber(await shortOtoken.expiryTimestamp()),
-          new BigNumber(150).times(new BigNumber(10).exponentiatedBy(18)),
+          createTokenAmount(150),
         )
         // set it as finalized in mock
         await oracle.setIsFinalized(

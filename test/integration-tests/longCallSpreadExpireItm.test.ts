@@ -117,7 +117,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
       weth.address,
       usdc.address,
       weth.address,
-      createTokenAmount(lowerStrike, 18),
+      createTokenAmount(lowerStrike),
       expiry,
       false,
     )
@@ -126,7 +126,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
       weth.address,
       usdc.address,
       weth.address,
-      createTokenAmount(higherStrike, 18),
+      createTokenAmount(higherStrike, 8),
       expiry,
       false,
     )
@@ -135,7 +135,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
       weth.address,
       usdc.address,
       weth.address,
-      createTokenAmount(lowerStrike, 18),
+      createTokenAmount(lowerStrike, 8),
       expiry,
       false,
     )
@@ -146,7 +146,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
       weth.address,
       usdc.address,
       weth.address,
-      createTokenAmount(higherStrike, 18),
+      createTokenAmount(higherStrike, 8),
       expiry,
       false,
     )
@@ -174,7 +174,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
   })
 
   describe('Integration test: Close a long call spread after it expires ITM', () => {
-    const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+    const scaledOptionsAmount = createTokenAmount(optionsAmount, 8)
     const expirySpotPrice = 250
     before(
       'accountOwner2 mints the lower strike call option, sends it to accountOwner1. accountOwner1 opens a long call spread',
@@ -277,8 +277,8 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
         await time.increaseTo(expiry + 2)
       }
       const strikePriceChange = Math.min(expirySpotPrice - lowerStrike, higherStrike - lowerStrike)
-      const scaledETHPrice = createTokenAmount(expirySpotPrice, 18)
-      const scaledUSDCPrice = createTokenAmount(1, 18)
+      const scaledETHPrice = createTokenAmount(expirySpotPrice, 8)
+      const scaledUSDCPrice = createTokenAmount(1)
       await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, scaledETHPrice, true)
       await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, scaledUSDCPrice, true)
 

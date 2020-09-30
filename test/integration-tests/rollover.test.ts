@@ -117,7 +117,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
       weth.address,
       usdc.address,
       usdc.address,
-      createTokenAmount(strikePrice1, 18),
+      createTokenAmount(strikePrice1),
       expiry1,
       true,
     )
@@ -125,7 +125,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
       weth.address,
       usdc.address,
       usdc.address,
-      createTokenAmount(strikePrice1, 18),
+      createTokenAmount(strikePrice1),
       expiry1,
       true,
     )
@@ -139,7 +139,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
       weth.address,
       usdc.address,
       usdc.address,
-      createTokenAmount(strikePrice2, 18),
+      createTokenAmount(strikePrice2),
       expiry2,
       true,
     )
@@ -147,7 +147,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
       weth.address,
       usdc.address,
       usdc.address,
-      createTokenAmount(strikePrice2, 18),
+      createTokenAmount(strikePrice2),
       expiry2,
       true,
     )
@@ -169,7 +169,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
 
   describe('Integration test: vault operator rolls over a naked short put before expiry', () => {
     it('accountOperator1 should be able to open a short put option on behalf of accountOwner1, taking usdc from accountOwner1', async () => {
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+      const scaledOptionsAmount = createTokenAmount(optionsAmount, 8)
       const scaledCollateralAmount = createTokenAmount(collateralAmount1, usdcDecimals)
       // Keep track of balances before
       const ownerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
@@ -285,7 +285,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
     })
 
     it('accountOperator1 should be able to rollover the unexpired short put position on behalf of accountOwner1 and withdraw excess collateral', async () => {
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+      const scaledOptionsAmount = createTokenAmount(optionsAmount, 8)
       const scaledExcessCollateralAmount = createTokenAmount(collateralAmount1 - collateralAmount2, usdcDecimals)
       const scaledCollateralAmountInVault = createTokenAmount(collateralAmount2, usdcDecimals)
       // Keep track of balances before
@@ -409,7 +409,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
         const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         vaultCounter = vaultCounterBefore.toNumber() + 1
 
-        const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+        const scaledOptionsAmount = createTokenAmount(optionsAmount, 8)
         const scaledCollateralAmount = createTokenAmount(collateralAmount1, usdcDecimals)
 
         const actionArgs = [
@@ -450,7 +450,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
     )
 
     it('accountOperator1 should be able to rollover the expired short put position on behalf of accountOwner1 and withdraw excess collateral', async () => {
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+      const scaledOptionsAmount = createTokenAmount(optionsAmount, 8)
       const scaledExcessCollateralAmount = createTokenAmount(collateralAmount1 - collateralAmount2, usdcDecimals)
       const scaledCollateralAmount2 = createTokenAmount(collateralAmount2, usdcDecimals)
       const scaledCollateralAmount1 = createTokenAmount(collateralAmount1, usdcDecimals)
@@ -465,8 +465,8 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
       if ((await time.latest()) < expiry1) {
         await time.increaseTo(expiry1 + 2)
       }
-      const scaledETHPrice = createTokenAmount(300, 18)
-      const scaledUSDCPrice = createTokenAmount(1, 18)
+      const scaledETHPrice = createTokenAmount(300)
+      const scaledUSDCPrice = createTokenAmount(1)
       await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry1, scaledETHPrice, true)
       await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry1, scaledUSDCPrice, true)
       // Keep track of balances before

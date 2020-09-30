@@ -113,7 +113,7 @@ contract('Naked Call Option closed before expiry flow', ([accountOwner1]) => {
       weth.address,
       usdc.address,
       weth.address,
-      createTokenAmount(strikePrice, 18),
+      createTokenAmount(strikePrice),
       expiry,
       false,
     )
@@ -122,7 +122,7 @@ contract('Naked Call Option closed before expiry flow', ([accountOwner1]) => {
       weth.address,
       usdc.address,
       weth.address,
-      createTokenAmount(strikePrice, 18),
+      createTokenAmount(strikePrice),
       expiry,
       false,
     )
@@ -140,7 +140,7 @@ contract('Naked Call Option closed before expiry flow', ([accountOwner1]) => {
   })
 
   describe('Integration test: Sell a naked call and close it before expiry', () => {
-    const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+    const scaledOptionsAmount = createTokenAmount(optionsAmount, 8)
     const scaledCollateralAmount = createTokenAmount(collateralAmount, wethDecimals)
     it('Seller should be able to open a short call option', async () => {
       // Keep track of balances before

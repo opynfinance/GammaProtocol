@@ -44,7 +44,7 @@ enum ActionType {
   Call,
 }
 
-contract('Naked Put Option closed before expiry flow', ([admin, accountOwner1, random, buyer]) => {
+contract('Yield Farming: Naked Put Option closed before expiry flow', ([admin, accountOwner1, random, buyer]) => {
   let expiry: number
 
   let addressBook: AddressBookInstance
@@ -119,7 +119,7 @@ contract('Naked Put Option closed before expiry flow', ([admin, accountOwner1, r
       weth.address,
       usdc.address,
       usdc.address,
-      createTokenAmount(strikePrice, 18),
+      createTokenAmount(strikePrice),
       expiry,
       true,
     )
@@ -127,7 +127,7 @@ contract('Naked Put Option closed before expiry flow', ([admin, accountOwner1, r
       weth.address,
       usdc.address,
       usdc.address,
-      createTokenAmount(strikePrice, 18),
+      createTokenAmount(strikePrice),
       expiry,
       true,
     )
@@ -147,7 +147,7 @@ contract('Naked Put Option closed before expiry flow', ([admin, accountOwner1, r
 
   describe('Integration test: Admin should be able te remove excess collateral sent to margin pool', () => {
     before('Seller should be able to open a short put option', async () => {
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+      const scaledOptionsAmount = createTokenAmount(optionsAmount, 8)
       const scaledCollateralAmount = createTokenAmount(usdcCollateralAmount, usdcDecimals)
 
       const actionArgs = [
@@ -189,7 +189,7 @@ contract('Naked Put Option closed before expiry flow', ([admin, accountOwner1, r
     it('admin should be able to remove excess collateral sent to the margin pool', async () => {
       await marginPool.setFarmer(admin, {from: admin})
       const usdcAmount = new BigNumber(15)
-      const scaledUsdcAmount = new BigNumber(10).exponentiatedBy(usdcDecimals).times(usdcAmount)
+      const scaledUsdcAmount = createTokenAmount(usdcAmount.toNumber(), usdcDecimals)
 
       const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
 
@@ -257,7 +257,7 @@ contract('Naked Put Option closed before expiry flow', ([admin, accountOwner1, r
         weth.address,
         usdc.address,
         cusdc.address,
-        createTokenAmount(strikePrice, 18),
+        createTokenAmount(strikePrice),
         expiry,
         true,
       )
@@ -265,7 +265,7 @@ contract('Naked Put Option closed before expiry flow', ([admin, accountOwner1, r
         weth.address,
         usdc.address,
         cusdc.address,
-        createTokenAmount(strikePrice, 18),
+        createTokenAmount(strikePrice),
         expiry,
         true,
       )
@@ -275,7 +275,7 @@ contract('Naked Put Option closed before expiry flow', ([admin, accountOwner1, r
       // Set the initial prices
       const cusdcPrice = 0.02
       const scaledCusdcPrice = createTokenAmount(cusdcPrice, 16) // 1 cToken = 0.02 USD
-      const usdPrice = createTokenAmount(1, 18)
+      const usdPrice = createTokenAmount(1)
       await usdcPricer.setPrice(usdPrice)
       await cusdc.setExchangeRate(scaledCusdcPrice)
 
@@ -291,7 +291,7 @@ contract('Naked Put Option closed before expiry flow', ([admin, accountOwner1, r
     })
 
     it('accountOwner1 should be able to open a short put spread position', async () => {
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+      const scaledOptionsAmount = createTokenAmount(optionsAmount, 8)
       const scaledCollateralAmount = createTokenAmount(cusdcCollateralAmount.toNumber(), cusdcDecimals)
       // Keep track of balances before
       const ownerCusdcBalanceBefore = new BigNumber(await cusdc.balanceOf(accountOwner1))
@@ -412,8 +412,8 @@ contract('Naked Put Option closed before expiry flow', ([admin, accountOwner1, r
         await time.increaseTo(expiry + lockingPeriod + 10)
       }
       const strikePriceChange = strikePrice - ethPriceAtExpiry
-      const scaledETHPrice = createTokenAmount(ethPriceAtExpiry, 18)
-      const scaledUSDCPrice = createTokenAmount(1, 18)
+      const scaledETHPrice = createTokenAmount(ethPriceAtExpiry)
+      const scaledUSDCPrice = createTokenAmount(1)
       const cusdcPrice = 0.025
       const scaledCusdcPrice = createTokenAmount(cusdcPrice, 16) // 1 cToken = 0.025 USD
       await cusdc.setExchangeRate(scaledCusdcPrice)
@@ -482,7 +482,7 @@ contract('Naked Put Option closed before expiry flow', ([admin, accountOwner1, r
     })
 
     it('Buyer: exercise ITM put option after expiry', async () => {
-      const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+      const scaledOptionsAmount = createTokenAmount(optionsAmount, 8)
       // owner sells their put option
       cusdcEthPut.transfer(buyer, scaledOptionsAmount, {from: accountOwner1})
       // oracle orice decreases
