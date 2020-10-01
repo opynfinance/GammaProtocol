@@ -13,7 +13,7 @@ library SignedConverter {
      * @return the converted signed integer.
      */
     function uintToInt(uint256 a) internal pure returns (int256) {
-        require(a < uint256(-1), "FixedPointInt256: out of int range");
+        require(a < 2**255, "FixedPointInt256: out of int range");
 
         return int256(a);
     }
