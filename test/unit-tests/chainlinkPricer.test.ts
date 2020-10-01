@@ -5,7 +5,7 @@ import {
   MockERC20Instance,
 } from '../../build/types/truffle-types'
 
-import {changeAmountScaled, createTokenAmount} from '../utils'
+import {createTokenAmount} from '../utils'
 const {expectRevert, time} = require('@openzeppelin/test-helpers')
 
 const ChainlinkPricer = artifacts.require('ChainLinkPricer.sol')
@@ -57,16 +57,16 @@ contract('ChainlinkPricer', ([owner, random]) => {
     before('mock data in weth aggregator', async () => {
       await wethAggregator.setLatestAnswer(ethPrice)
     })
-    it('should return the price in 1e18', async () => {
+    it('should return the price in 1e8', async () => {
       const price = await pricer.getPrice()
-      const expectedResult = createTokenAmount(300, 18)
+      const expectedResult = createTokenAmount(300, 8)
       assert.equal(price.toString(), expectedResult.toString())
     })
     it('should return the new price after resetting answer in aggregator', async () => {
       const newPrice = createTokenAmount(400, 8)
       await wethAggregator.setLatestAnswer(newPrice)
       const price = await pricer.getPrice()
-      const expectedResult = createTokenAmount(400, 18)
+      const expectedResult = createTokenAmount(400, 8)
       assert.equal(price.toString(), expectedResult.toString())
     })
     it('should revert if price is lower than 0', async () => {
@@ -113,7 +113,7 @@ contract('ChainlinkPricer', ([owner, random]) => {
 
       await pricer.setExpiryPriceToOralce(expiryTimestamp, roundId)
       const priceFromOracle = await oracle.getExpiryPrice(weth.address, expiryTimestamp)
-      assert.equal(changeAmountScaled(p1, 8, 18).toString(), priceFromOracle[0].toString())
+      assert.equal(p1.toString(), priceFromOracle[0].toString())
     })
 
     it('everyone can set an price oracle', async () => {
@@ -121,7 +121,7 @@ contract('ChainlinkPricer', ([owner, random]) => {
       const roundId = 2
       await pricer.setExpiryPriceToOralce(expiryTimestamp, roundId, {from: random})
       const priceFromOracle = await oracle.getExpiryPrice(weth.address, expiryTimestamp)
-      assert.equal(changeAmountScaled(p2, 8, 18).toString(), priceFromOracle[0].toString())
+      assert.equal(p2.toString(), priceFromOracle[0].toString())
     })
 
     it('should revert if round ID is incorrect: price[roundId].timestamp < expiry', async () => {

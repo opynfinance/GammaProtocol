@@ -5,6 +5,7 @@ import {
   MockAddressBookInstance,
 } from '../../build/types/truffle-types'
 import {BigNumber} from 'bignumber.js'
+import {createTokenAmount} from '../utils'
 
 const {expectRevert} = require('@openzeppelin/test-helpers')
 
@@ -25,7 +26,7 @@ contract('MarginVault', ([deployer, controller]) => {
   let marginVaultTester: MarginVaultTesterInstance
 
   // let expiry: number;
-  const strikePrice = new BigNumber(200).times(new BigNumber(10).exponentiatedBy(18))
+  const strikePrice = createTokenAmount(200)
   const expiry = 1601020800 // 2020/09/25 0800 UTC
   const isPut = true
 

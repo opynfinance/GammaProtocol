@@ -359,7 +359,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
       // open new vault, mintnaked short, sell it to holder 1
       const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
       const collateralToDeposit = createTokenAmount(strikePrice, 6)
-      const amountToMint = new BigNumber(1e12)
+      const amountToMint = createTokenAmount(1)
       const actionArgs = [
         {
           actionType: ActionType.OpenVault,
@@ -413,7 +413,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
     })
 
     it('should normally execute when owner address is equal to zero', async () => {
-      const amountToRedeem = new BigNumber(1e12)
+      const amountToRedeem = createTokenAmount(1)
       const actionArgs = [
         {
           actionType: ActionType.Redeem,

@@ -117,7 +117,7 @@ contract('Short Call Spread Option expires Itm flow', ([accountOwner1, nakedBuye
       weth.address,
       usdc.address,
       weth.address,
-      createTokenAmount(higherStrike, 18),
+      createTokenAmount(higherStrike, 8),
       expiry,
       false,
     )
@@ -126,7 +126,7 @@ contract('Short Call Spread Option expires Itm flow', ([accountOwner1, nakedBuye
       weth.address,
       usdc.address,
       weth.address,
-      createTokenAmount(lowerStrike, 18),
+      createTokenAmount(lowerStrike, 8),
       expiry,
       false,
     )
@@ -135,7 +135,7 @@ contract('Short Call Spread Option expires Itm flow', ([accountOwner1, nakedBuye
       weth.address,
       usdc.address,
       weth.address,
-      createTokenAmount(higherStrike, 18),
+      createTokenAmount(higherStrike, 8),
       expiry,
       false,
     )
@@ -146,7 +146,7 @@ contract('Short Call Spread Option expires Itm flow', ([accountOwner1, nakedBuye
       weth.address,
       usdc.address,
       weth.address,
-      createTokenAmount(lowerStrike, 18),
+      createTokenAmount(lowerStrike, 8),
       expiry,
       false,
     )
@@ -175,7 +175,7 @@ contract('Short Call Spread Option expires Itm flow', ([accountOwner1, nakedBuye
 
   describe('Integration test: Close a short call spread after it expires ITM', () => {
     const expirySpotPrice = 200
-    const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+    const scaledOptionsAmount = createTokenAmount(optionsAmount, 8)
     before(
       'accountOwner2 mints the higher strike call option, sends it to accountOwner1. accountOwner1 opens a short call spread',
       async () => {
@@ -289,8 +289,8 @@ contract('Short Call Spread Option expires Itm flow', ([accountOwner1, nakedBuye
         await time.increaseTo(expiry + 2)
       }
       const strikePriceChange = Math.max(expirySpotPrice - lowerStrike, 0)
-      const scaledETHPrice = createTokenAmount(expirySpotPrice, 18)
-      const scaledUSDCPrice = createTokenAmount(1, 18)
+      const scaledETHPrice = createTokenAmount(expirySpotPrice, 8)
+      const scaledUSDCPrice = createTokenAmount(1)
       await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, scaledETHPrice, true)
       await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, scaledUSDCPrice, true)
       const collateralPayout = Math.max(collateralAmount - (strikePriceChange * optionsAmount) / expirySpotPrice, 0)

@@ -7,18 +7,18 @@ import "./packages/oz/Ownable.sol";
 /**
  * @author Opyn Team
  * @title Whitelist Module
- * @notice The whitelist module keeps track of all valid Otoken contracts.
+ * @notice The whitelist module keeps track of all valid oToken addresses, product hashes, collateral addresses, and callee addresses.
  */
 contract Whitelist is Ownable {
     /// @notice AddressBook module address
     address public addressBook;
-    /// @dev mapping to track whitelisted product
+    /// @dev mapping to track whitelisted products
     mapping(bytes32 => bool) internal whitelistedProduct;
-    /// @dev mapping to track whitelised collateral
+    /// @dev mapping to track whitelisted collateral
     mapping(address => bool) internal whitelistedCollateral;
-    /// @dev mapping to track whitelisted otokens
+    /// @dev mapping to track whitelisted oTokens
     mapping(address => bool) internal whitelistedOtoken;
-    /// @dev mapping to track whistelisted callee for call action
+    /// @dev mapping to track whitelisted callee addresses for the call action
     mapping(address => bool) internal whitelistedCallee;
 
     /**
@@ -31,7 +31,7 @@ contract Whitelist is Ownable {
         addressBook = _addressBook;
     }
 
-    /// @notice emitted when owner whitelist a product
+    /// @notice emits an event a product is whitelisted by the owner address
     event ProductWhitelisted(
         bytes32 productHash,
         address indexed underlying,
@@ -39,7 +39,7 @@ contract Whitelist is Ownable {
         address indexed collateral,
         bool isPut
     );
-    /// @notice emitted when owner blacklist a product
+    /// @notice emits an event a product is blacklisted by the owner address
     event ProductBlacklisted(
         bytes32 productHash,
         address indexed underlying,
@@ -51,22 +51,22 @@ contract Whitelist is Ownable {
     event CollateralWhitelisted(address indexed collateral);
     /// @notice emits an event when a collateral address is blacklist by the owner address
     event CollateralBlacklisted(address indexed collateral);
-    /// @notice emitted when Otoken Factory module whitelist an otoken
+    /// @notice emits an event when an oToken is whitelisted by the OtokenFactory module
     event OtokenWhitelisted(address indexed otoken);
-    /// @notice emitted when owner blacklist an otoken
+    /// @notice emits an event when an oToken is blacklisted by the OtokenFactory module
     event OtokenBlacklisted(address indexed otoken);
-    /// @notice emitted when owner whitelist a callee address
+    /// @notice emits an event when a callee address is whitelisted by the owner address
     event CalleeWhitelisted(address indexed _callee);
-    /// @notice emitted when owner blacklist a callee address
+    /// @notice emits an event when a callee address is blacklisted by the owner address
     event CalleeBlacklisted(address indexed _callee);
 
     /**
-     * @notice check if the sender is the Otoken Factory module
+     * @notice check if the sender is the oTokenFactory module
      */
     modifier onlyFactory() {
         require(
             msg.sender == AddressBookInterface(addressBook).getOtokenFactory(),
-            "WhiteList: Sender is not Otoken Factory"
+            "Whitelist: Sender is not OtokenFactory"
         );
 
         _;
@@ -74,11 +74,12 @@ contract Whitelist is Ownable {
 
     /**
      * @notice check if a product is whitelisted
-     * @dev product = the hash of underlying, strike and collateral asset
+     * @dev product is the hash of underlying asset, strike asset, collateral asset, and isPut
      * @param _underlying asset that the option references
      * @param _strike asset that the strike price is denominated in
      * @param _collateral asset that is held as collateral against short/written options
-     * @return boolean, true if product is whitelisted
+     * @param _isPut True if a put option, False if a call option
+     * @return boolean, True if product is whitelisted
      */
     function isWhitelistedProduct(
         address _underlying,
@@ -92,40 +93,40 @@ contract Whitelist is Ownable {
     }
 
     /**
-     * @notice check if the collateral is whitelisted
+     * @notice check if a collateral asset is whitelisted
      * @param _collateral asset that is held as collateral against short/written options
-     * @return boolean, true if the collateral is whitelisted
+     * @return boolean, True if the collateral is whitelisted
      */
     function isWhitelistedCollateral(address _collateral) external view returns (bool) {
         return whitelistedCollateral[_collateral];
     }
 
     /**
-     * @notice check if an otoken is whitelisted
-     * @param _otoken otoken address
-     * @return boolean, true if otoken is whitelisted
+     * @notice check if an oToken is whitelisted
+     * @param _otoken oToken address
+     * @return boolean, True if the oToken is whitelisted
      */
     function isWhitelistedOtoken(address _otoken) external view returns (bool) {
         return whitelistedOtoken[_otoken];
     }
 
     /**
-     * @notice check if a callee address is whitelisted for call acton
-     * @param _callee destination address
-     * @return boolean, true if address is whitelisted
+     * @notice check if a callee address is whitelisted for the call action
+     * @param _callee callee destination address
+     * @return boolean, True if the address is whitelisted
      */
     function isWhitelistedCallee(address _callee) external view returns (bool) {
         return whitelistedCallee[_callee];
     }
 
     /**
-     * @notice allow owner to whitelist product
-     * @dev a product is the hash of the underlying, collateral and strike assets
-     * can only be called from owner address
+     * @notice allows the owner to whitelist a product
+     * @dev product is the hash of underlying asset, strike asset, collateral asset, and isPut
+     * can only be called from the owner address
      * @param _underlying asset that the option references
      * @param _strike asset that the strike price is denominated in
      * @param _collateral asset that is held as collateral against short/written options
-     * @param _isPut is this a put option, if not it is a call
+     * @param _isPut True if a put option, False if a call option
      */
     function whitelistProduct(
         address _underlying,
@@ -141,13 +142,13 @@ contract Whitelist is Ownable {
     }
 
     /**
-     * @notice allow owner to blacklist product
-     * @dev a product is the hash of the underlying, collateral and strike assets
-     * can only be called from owner address
+     * @notice allow the owner to blacklist a product
+     * @dev product is the hash of underlying asset, strike asset, collateral asset, and isPut
+     * can only be called from the owner address
      * @param _underlying asset that the option references
      * @param _strike asset that the strike price is denominated in
      * @param _collateral asset that is held as collateral against short/written options
-     * @param _isPut is this a put option, if not it is a call
+     * @param _isPut True if a put option, False if a call option
      */
     function blacklistProduct(
         address _underlying,
@@ -163,8 +164,8 @@ contract Whitelist is Ownable {
     }
 
     /**
-     * @notice whitelist a collateral address, can only be called by owner
-     * @dev function can only be called by owner
+     * @notice allows the owner to whitelist a collateral address
+     * @dev can only be called from the owner address
      * @param _collateral collateral asset address
      */
     function whitelistCollateral(address _collateral) external onlyOwner {
@@ -174,8 +175,8 @@ contract Whitelist is Ownable {
     }
 
     /**
-     * @notice whitelist a collateral address, can only be called by owner
-     * @dev function can only be called by owner
+     * @notice allows the owner to blacklist a collateral address
+     * @dev can only be called from the owner address
      * @param _collateral collateral asset address
      */
     function blacklistCollateral(address _collateral) external onlyOwner {
@@ -185,9 +186,9 @@ contract Whitelist is Ownable {
     }
 
     /**
-     * @notice allow Otoken Factory to whitelist a new option
-     * @dev can only be called from the Otoken Factory address
-     * @param _otokenAddress otoken
+     * @notice allows the OtokenFactory module to whitelist a new option
+     * @dev can only be called from the OtokenFactory address
+     * @param _otokenAddress oToken
      */
     function whitelistOtoken(address _otokenAddress) external onlyFactory {
         whitelistedOtoken[_otokenAddress] = true;
@@ -196,9 +197,9 @@ contract Whitelist is Ownable {
     }
 
     /**
-     * @notice allow owner to blacklist a new option
-     * @dev can only be called from the owner's address
-     * @param _otokenAddress otoken
+     * @notice allows the owner to blacklist an option
+     * @dev can only be called from the owner address
+     * @param _otokenAddress oToken
      */
     function blacklistOtoken(address _otokenAddress) external onlyOwner {
         whitelistedOtoken[_otokenAddress] = false;
@@ -207,7 +208,7 @@ contract Whitelist is Ownable {
     }
 
     /**
-     * @notice allow Owner to whitelisted a callee address
+     * @notice allows the owner to whitelist a destination address for the call action
      * @dev can only be called from the owner address
      * @param _callee callee address
      */
@@ -218,8 +219,8 @@ contract Whitelist is Ownable {
     }
 
     /**
-     * @notice allow owner to blacklist a destination address for call action
-     * @dev can only be called from the owner's address
+     * @notice allows the owner to blacklist a destination address for the call action
+     * @dev can only be called from the owner address
      * @param _callee callee address
      */
     function blacklistCallee(address _callee) external onlyOwner {

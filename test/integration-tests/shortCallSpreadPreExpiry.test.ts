@@ -117,7 +117,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
       weth.address,
       usdc.address,
       weth.address,
-      createTokenAmount(higherStrike, 18),
+      createTokenAmount(higherStrike, 8),
       expiry,
       false,
     )
@@ -126,7 +126,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
       weth.address,
       usdc.address,
       weth.address,
-      createTokenAmount(lowerStrike, 18),
+      createTokenAmount(lowerStrike, 8),
       expiry,
       false,
     )
@@ -135,7 +135,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
       weth.address,
       usdc.address,
       weth.address,
-      createTokenAmount(higherStrike, 18),
+      createTokenAmount(higherStrike, 8),
       expiry,
       false,
     )
@@ -146,7 +146,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
       weth.address,
       usdc.address,
       weth.address,
-      createTokenAmount(lowerStrike, 18),
+      createTokenAmount(lowerStrike, 8),
       expiry,
       false,
     )
@@ -174,7 +174,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
   })
 
   describe('Integration test: Open a short call spread and close it before expiry', () => {
-    const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+    const scaledOptionsAmount = createTokenAmount(optionsAmount, 8)
     const scaledCollateralAmount = createTokenAmount(collateralAmount, wethDecimals)
     before('accountOwner2 mints the higher strike call option, sends it to accountOwner1', async () => {
       const collateralToMintLong = optionsAmount

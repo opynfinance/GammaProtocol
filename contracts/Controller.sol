@@ -375,6 +375,17 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
+     * @notice get the oToken's payout after expiry, in the collateral asset
+     * @param _otoken oToken address
+     * @param _amount amount of the oToken to calculate the payout for, always represented in 1e18
+     * @return amount of collateral to pay out
+     */
+    function getPayout(address _otoken, uint256 _amount) public view returns (uint256) {
+        uint256 rate = calculator.getExpiredPayoutRate(_otoken);
+        return rate.mul(_amount).div(1e8);
+    }
+
+    /**
      * @dev return if an expired oToken contract’s settlement price has been finalized
      * @param _otoken address of the oToken
      * @return true if the oToken has expired AND the oraclePrice at the expiry timestamp has been finalized, otherwise it returns false
@@ -680,7 +691,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         require(isSettlementAllowed(_args.otoken), "Controller: asset prices not finalized yet");
 
-        uint256 payout = _getPayout(_args.otoken, _args.amount);
+        uint256 payout = getPayout(_args.otoken, _args.amount);
 
         otoken.burnOtoken(msg.sender, _args.amount);
 
@@ -751,17 +762,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
     function _isNotEmpty(address[] memory _array) internal pure returns (bool) {
         return (_array.length > 0) && (_array[0] != address(0));
-    }
-
-    /**
-     * @notice get the oToken's payout after expiry, in the collateral asset
-     * @param _otoken oToken address
-     * @param _amount amount of the oToken to calculate the payout for, always represented in 1e18
-     * @return amount of collateral to pay out
-     */
-    function _getPayout(address _otoken, uint256 _amount) internal view returns (uint256) {
-        uint256 rate = calculator.getExpiredPayoutRate(_otoken);
-        return rate.mul(_amount).div(1e18);
     }
 
     /**
