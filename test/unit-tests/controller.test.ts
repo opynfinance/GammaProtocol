@@ -1090,7 +1090,7 @@ contract(
             ]
 
             assert.equal(
-              await controllerProxy.isExpired(expiredLongOtoken.address),
+              await controllerProxy.hasExpired(expiredLongOtoken.address),
               true,
               'Long otoken is not expired yet',
             )
@@ -2616,7 +2616,7 @@ contract(
             ]
 
             assert.equal(
-              await controllerProxy.isExpired(expiredShortOtoken.address),
+              await controllerProxy.hasExpired(expiredShortOtoken.address),
               true,
               'Long otoken is not expired yet',
             )
@@ -2766,7 +2766,7 @@ contract(
           },
         ]
 
-        assert.equal(await controllerProxy.isExpired(shortOtoken.address), false, 'Short otoken has already expired')
+        assert.equal(await controllerProxy.hasExpired(shortOtoken.address), false, 'Short otoken has already expired')
 
         await expectRevert(
           controllerProxy.operate(actionArgs, {from: holder1}),
@@ -2812,7 +2812,7 @@ contract(
           },
         ]
 
-        assert.equal(await controllerProxy.isExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
+        assert.equal(await controllerProxy.hasExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
 
         await expectRevert(
           controllerProxy.operate(actionArgs, {from: holder1}),
@@ -2842,7 +2842,7 @@ contract(
           },
         ]
 
-        assert.equal(await controllerProxy.isExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
+        assert.equal(await controllerProxy.hasExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
 
         await expectRevert(
           controllerProxy.operate(actionArgs, {from: holder1}),
@@ -2864,7 +2864,7 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-        assert.equal(await controllerProxy.isExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
+        assert.equal(await controllerProxy.hasExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
 
         const payout = createTokenAmount(50, usdcDecimals)
         const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
@@ -3411,7 +3411,7 @@ contract(
           },
         ]
 
-        assert.equal(await controllerProxy.isExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
+        assert.equal(await controllerProxy.hasExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
 
         await expectRevert(
           controllerProxy.operate(actionArgs, {from: accountOwner1}),
@@ -3837,7 +3837,7 @@ contract(
           true,
         )
 
-        assert.equal(await controllerProxy.isExpired(otoken.address), false, 'Otoken expiry check mismatch')
+        assert.equal(await controllerProxy.hasExpired(otoken.address), false, 'Otoken expiry check mismatch')
       })
 
       it('should return true for expired otoken', async () => {
@@ -3854,7 +3854,7 @@ contract(
           true,
         )
 
-        assert.equal(await controllerProxy.isExpired(expiredOtoken.address), true, 'Otoken expiry check mismatch')
+        assert.equal(await controllerProxy.hasExpired(expiredOtoken.address), true, 'Otoken expiry check mismatch')
       })
     })
 
@@ -4195,7 +4195,7 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-        assert.equal(await controllerProxy.isExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
+        assert.equal(await controllerProxy.hasExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
 
         const payout = createTokenAmount(50, usdcDecimals)
         const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))

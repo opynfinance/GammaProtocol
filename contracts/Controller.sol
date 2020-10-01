@@ -417,7 +417,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _otoken oToken address
      * @return true if the otoken has expired, otherwise it returns false
      */
-    function isExpired(address _otoken) public view returns (bool) {
+    function hasExpired(address _otoken) external view returns (bool) {
         uint256 otokenExpiryTimestamp = OtokenInterface(_otoken).expiryTimestamp();
 
         return now > otokenExpiryTimestamp;

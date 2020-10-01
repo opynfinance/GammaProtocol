@@ -426,7 +426,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
           data: ZERO_ADDR,
         },
       ]
-      assert.equal(await controllerProxy.isExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
+      assert.equal(await controllerProxy.hasExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
 
       await shortOtoken.transfer(payableProxyController.address, amountToRedeem.toString(), {from: holder1})
       await payableProxyController.operate(actionArgs, holder1, {from: holder1})
