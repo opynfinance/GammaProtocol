@@ -367,9 +367,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     function getProceed(address _owner, uint256 _vaultId) external view returns (uint256) {
         MarginVault.Vault memory vault = getVault(_owner, _vaultId);
 
-        // if there is no minted short oToken or the short oToken has not expired yet
-        if ((vault.shortOtokens.length == 0) || (!isExpired(vault.shortOtokens[0]))) return 0;
-
         (uint256 netValue, ) = calculator.getExcessCollateral(vault);
         return netValue;
     }
