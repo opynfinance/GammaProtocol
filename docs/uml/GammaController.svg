@@ -90,7 +90,7 @@
 <text text-anchor="start" x="8" y="-75.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;modifier&gt;&gt; onlyAuthorized(_sender: address, _accountOwner: address)</text>
 <text text-anchor="start" x="8" y="-59.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;modifier&gt;&gt; onlyWhitelistedCallee(_callee: address)</text>
 <text text-anchor="start" x="8" y="-42.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;isSettlementAllowed(_otoken: address): bool</text>
-<text text-anchor="start" x="8" y="-25.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;isExpired(_otoken: address): bool</text>
+<text text-anchor="start" x="8" y="-25.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;hasExpired(_otoken: address): bool</text>
 <text text-anchor="start" x="8" y="-8.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getVault(_owner: address, _vaultId: uint256): MarginVault.Vault</text>
 </g>
 </g>
