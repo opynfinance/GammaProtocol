@@ -113,7 +113,7 @@ contract('Naked Put Option expires Otm flow', ([accountOwner1, buyer]) => {
       weth.address,
       usdc.address,
       usdc.address,
-      createTokenAmount(strikePrice, 18),
+      createTokenAmount(strikePrice),
       expiry,
       true,
     )
@@ -121,7 +121,7 @@ contract('Naked Put Option expires Otm flow', ([accountOwner1, buyer]) => {
       weth.address,
       usdc.address,
       usdc.address,
-      createTokenAmount(strikePrice, 18),
+      createTokenAmount(strikePrice),
       expiry,
       true,
     )
@@ -140,7 +140,7 @@ contract('Naked Put Option expires Otm flow', ([accountOwner1, buyer]) => {
   })
 
   describe('Integration test: Close a naked put after it expires OTM', () => {
-    const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+    const scaledOptionsAmount = createTokenAmount(optionsAmount, 8)
     const scaledCollateralAmount = createTokenAmount(collateralAmount, usdcDecimals)
     const expirySpotPrice = 400
     before('Seller should be able to open a short put option', async () => {
@@ -198,8 +198,8 @@ contract('Naked Put Option expires Otm flow', ([accountOwner1, buyer]) => {
         await time.increaseTo(expiry + 2)
       }
       const strikePriceChange = Math.max(strikePrice - expirySpotPrice, 0)
-      const scaledETHPrice = createTokenAmount(expirySpotPrice, 18)
-      const scaledUSDCPrice = createTokenAmount(1, 18)
+      const scaledETHPrice = createTokenAmount(expirySpotPrice, 8)
+      const scaledUSDCPrice = createTokenAmount(1)
       await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, scaledETHPrice, true)
       await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, scaledUSDCPrice, true)
 

@@ -117,7 +117,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
       weth.address,
       usdc.address,
       weth.address,
-      createTokenAmount(lowerStrike, 18),
+      createTokenAmount(lowerStrike),
       expiry,
       false,
     )
@@ -126,7 +126,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
       weth.address,
       usdc.address,
       weth.address,
-      createTokenAmount(higherStrike, 18),
+      createTokenAmount(higherStrike, 8),
       expiry,
       false,
     )
@@ -135,7 +135,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
       weth.address,
       usdc.address,
       weth.address,
-      createTokenAmount(lowerStrike, 18),
+      createTokenAmount(lowerStrike, 8),
       expiry,
       false,
     )
@@ -146,7 +146,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
       weth.address,
       usdc.address,
       weth.address,
-      createTokenAmount(higherStrike, 18),
+      createTokenAmount(higherStrike, 8),
       expiry,
       false,
     )
@@ -174,7 +174,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
   })
 
   describe('Integration test: Close a long call spread after it expires ITM', () => {
-    const scaledOptionsAmount = createTokenAmount(optionsAmount, 18)
+    const scaledOptionsAmount = createTokenAmount(optionsAmount, 8)
     const expirySpotPrice = 250
     before(
       'accountOwner2 mints the lower strike call option, sends it to accountOwner1. accountOwner1 opens a long call spread',
@@ -277,8 +277,8 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
         await time.increaseTo(expiry + 2)
       }
       const strikePriceChange = Math.min(expirySpotPrice - lowerStrike, higherStrike - lowerStrike)
-      const scaledETHPrice = createTokenAmount(expirySpotPrice, 18)
-      const scaledUSDCPrice = createTokenAmount(1, 18)
+      const scaledETHPrice = createTokenAmount(expirySpotPrice, 8)
+      const scaledUSDCPrice = createTokenAmount(1)
       await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, scaledETHPrice, true)
       await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, scaledUSDCPrice, true)
 
@@ -286,10 +286,10 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
 
       // Check that after expiry, the vault excess balance has updated as expected
       const vaultStateBeforeSettlement = await calculator.getExcessCollateral(vaultBefore)
-      // Todo: Fix following rounding problem
+
       assert.equal(
-        new BigNumber(vaultStateBeforeSettlement[0]).plus(1).toString(), // 3999999999999999999
-        createTokenAmount(collateralPayout, wethDecimals), // 4000000000000000000
+        new BigNumber(vaultStateBeforeSettlement[0]).toString(),
+        createTokenAmount(collateralPayout, wethDecimals),
       )
       assert.equal(vaultStateBeforeSettlement[1], true)
 
@@ -318,20 +318,13 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
       const longOtokenSupplyAfter = new BigNumber(await lowerStrikeCall.totalSupply())
 
       // check balances before and after changed as expected
-      // Todo: Fix following rounding problem
       assert.equal(
-        ownerWethBalanceBefore
-          .plus(createTokenAmount(collateralPayout, wethDecimals))
-          .minus(1)
-          .toString(),
+        ownerWethBalanceBefore.plus(createTokenAmount(collateralPayout, wethDecimals)).toString(),
         ownerWethBalanceAfter.toString(),
         'weth balance mismatch',
       )
       assert.equal(
-        marginPoolWethBalanceBefore
-          .minus(createTokenAmount(collateralPayout, wethDecimals))
-          .plus(1)
-          .toString(),
+        marginPoolWethBalanceBefore.minus(createTokenAmount(collateralPayout, wethDecimals)).toString(),
         marginPoolWethBalanceAfter.toString(),
         'pool weth balance mismatch',
       )

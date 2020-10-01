@@ -48,9 +48,9 @@ export const createVault = (
   }
 }
 
-BigNumber.config({EXPONENTIAL_AT: 30})
+BigNumber.config({EXPONENTIAL_AT: 60})
 
-export const createTokenAmount = (num: number, decimals = 18) => {
+export const createTokenAmount = (num: number, decimals = 8) => {
   return new BigNumber(num).times(new BigNumber(10).pow(decimals)).toString()
 }
 
@@ -59,7 +59,7 @@ export const createTokenAmount = (num: number, decimals = 18) => {
  * @param num
  */
 export const createScaledNumber = (num: number): string => {
-  return new BigNumber(num).times(1e18).toString()
+  return new BigNumber(num).times(1e8).toString()
 }
 
 export const underlyingPriceToCtokenPrice = async (

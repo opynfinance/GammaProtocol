@@ -29,7 +29,7 @@ contract('Whitelist', ([owner, otokenFactoryAddress, random, newOwner, callee]) 
     // deploy DAI token
     dai = await MockERC20.new('DAI', 'DAI', 18)
     // deploy option
-    otoken = await MockERC20.new('OETH', 'OETH', 18)
+    otoken = await MockERC20.new('OETH', 'OETH', 8)
 
     // deploy AddressBook mock
     addressBook = await MockAddressBook.new()
@@ -98,7 +98,10 @@ contract('Whitelist', ([owner, otokenFactoryAddress, random, newOwner, callee]) 
 
   describe('Whitelist otoken', () => {
     it('should revert whitelisting an otoken from sender other than Otoken Factory', async () => {
-      await expectRevert(whitelist.whitelistOtoken(otoken.address, {from: owner}), 'Sender is not Otoken Factory')
+      await expectRevert(
+        whitelist.whitelistOtoken(otoken.address, {from: owner}),
+        'Whitelist: Sender is not OtokenFactory',
+      )
     })
 
     it('should whitelist an otoken from Otoken Factory address', async () => {

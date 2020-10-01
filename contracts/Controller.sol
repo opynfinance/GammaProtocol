@@ -367,11 +367,19 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     function getProceed(address _owner, uint256 _vaultId) external view returns (uint256) {
         MarginVault.Vault memory vault = getVault(_owner, _vaultId);
 
-        // if there is no minted short oToken or the short oToken has not expired yet
-        if ((vault.shortOtokens.length == 0) || (!isExpired(vault.shortOtokens[0]))) return 0;
-
         (uint256 netValue, ) = calculator.getExcessCollateral(vault);
         return netValue;
+    }
+
+    /**
+     * @notice get the oToken's payout after expiry, in the collateral asset
+     * @param _otoken oToken address
+     * @param _amount amount of the oToken to calculate the payout for, always represented in 1e18
+     * @return amount of collateral to pay out
+     */
+    function getPayout(address _otoken, uint256 _amount) public view returns (uint256) {
+        uint256 rate = calculator.getExpiredPayoutRate(_otoken);
+        return rate.mul(_amount).div(1e8);
     }
 
     /**
@@ -680,7 +688,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         require(isSettlementAllowed(_args.otoken), "Controller: asset prices not finalized yet");
 
-        uint256 payout = _getPayout(_args.otoken, _args.amount);
+        uint256 payout = getPayout(_args.otoken, _args.amount);
 
         otoken.burnOtoken(msg.sender, _args.amount);
 
@@ -751,17 +759,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
     function _isNotEmpty(address[] memory _array) internal pure returns (bool) {
         return (_array.length > 0) && (_array[0] != address(0));
-    }
-
-    /**
-     * @notice get the oToken's payout after expiry, in the collateral asset
-     * @param _otoken oToken address
-     * @param _amount amount of the oToken to calculate the payout for, always represented in 1e18
-     * @return amount of collateral to pay out
-     */
-    function _getPayout(address _otoken, uint256 _amount) internal view returns (uint256) {
-        uint256 rate = calculator.getExpiredPayoutRate(_otoken);
-        return rate.mul(_amount).div(1e18);
     }
 
     /**
