@@ -76,6 +76,10 @@ contract Otoken is ERC20Initializable {
      * @param amount amount to mint
      */
     function mintOtoken(address account, uint256 amount) external {
+        require(
+            msg.sender == AddressBookInterface(addressBook).getController(),
+            "Otoken: Only Controller can mint Otokens"
+        );
         _mint(account, amount);
     }
 
@@ -86,6 +90,10 @@ contract Otoken is ERC20Initializable {
      * @param amount amount to burn
      */
     function burnOtoken(address account, uint256 amount) external {
+        require(
+            msg.sender == AddressBookInterface(addressBook).getController(),
+            "Otoken: Only Controller can burn Otokens"
+        );
         _burn(account, amount);
     }
 
@@ -212,32 +220,6 @@ contract Otoken is ERC20Initializable {
             return ("NOV", "November");
         } else {
             return ("DEC", "December");
-        }
-    }
-
-    /**
-     * @dev this function overrides the _beforeTokenTransfer hook in ERC20Initializable.sol
-     * if the operation is mint or burn, requires msg.sender to be the controller
-     * the function signature is the same as _beforeTokenTransfer defined in ERC20Initializable.sol
-     * @param from from address
-     * @param to to address
-     * @param amount amount to transfer
-     */
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 amount
-    ) internal override {
-        if (from == address(0)) {
-            require(
-                msg.sender == AddressBookInterface(addressBook).getController(),
-                "Otoken: Only Controller can mint Otokens"
-            );
-        } else if (to == address(0)) {
-            require(
-                msg.sender == AddressBookInterface(addressBook).getController(),
-                "Otoken: Only Controller can burn Otokens"
-            );
         }
     }
 }
