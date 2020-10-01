@@ -3428,13 +3428,15 @@ contract(
         await controllerProxy.operate(mintArgs, {from: accountOwner1})
 
         // Use the newly minted otoken as long and put it in a new vault
+        const newVulatId = vaultCounter.toNumber() + 1
+
         const newVaultArgs = [
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
             secondAddress: accountOwner1,
             asset: ZERO_ADDR,
-            vaultId: vaultCounter.toNumber() + 1,
+            vaultId: newVulatId,
             amount: '0',
             index: '0',
             data: ZERO_ADDR,
@@ -3444,7 +3446,7 @@ contract(
             owner: accountOwner1,
             secondAddress: accountOwner1,
             asset: longOtoken.address,
-            vaultId: vaultCounter.toNumber() + 1,
+            vaultId: newVulatId,
             amount: longAmount,
             index: '0',
             data: ZERO_ADDR,
@@ -3470,15 +3472,19 @@ contract(
             owner: accountOwner1,
             secondAddress: accountOwner1,
             asset: ZERO_ADDR,
-            vaultId: vaultCounter.toNumber() + 1,
+            vaultId: newVulatId,
             amount: '0',
             index: '0',
             data: ZERO_ADDR,
           },
         ]
-        const amountPayout = new BigNumber(createTokenAmount(stirkePrice - ethPriceAtExpiry, usdcDecimals))
+        const expectedPayout = new BigNumber(createTokenAmount(stirkePrice - ethPriceAtExpiry, usdcDecimals))
         const ownerUSDCBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
         const poolOtokenBefore = new BigNumber(await longOtoken.balanceOf(marginPool.address))
+
+        const amountPayout = await controllerProxy.getProceed(accountOwner1, newVulatId)
+
+        assert.equal(amountPayout.toString(), expectedPayout.toString(), 'payout calculation mismatch')
 
         await controllerProxy.operate(settleArgs, {from: accountOwner1})
         const ownerUSDCBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
