@@ -28,7 +28,7 @@ contract Otoken is ERC20Initializable {
     /// @notice asset that is held as collateral against short/written options
     address public collateralAsset;
 
-    /// @notice strike price with decimals = 18
+    /// @notice strike price with decimals = 8
     uint256 public strikePrice;
 
     /// @notice expiration timestamp of the option, represented as a unix timestamp
@@ -37,14 +37,15 @@ contract Otoken is ERC20Initializable {
     /// @notice True if a put option, False if a call option
     bool public isPut;
 
-    uint256 private constant STRIKE_PRICE_DIGITS = 1e8;
+    uint256 private constant STRIKE_PRICE_SCALE = 1e8;
+    uint256 private constant STRIKE_PRICE_DIGITS = 8;
 
     /**
      * @notice initialize the oToken
      * @param _underlyingAsset asset that the option references
      * @param _strikeAsset asset that the strike price is denominated in
      * @param _collateralAsset asset that is held as collateral against short/written options
-     * @param _strikePrice strike price with decimals = 18
+     * @param _strikePrice strike price with decimals = 8
      * @param _expiryTimestamp expiration timestamp of the option, represented as a unix timestamp
      * @param _isPut True if a put option, False if a call option
      */
@@ -107,7 +108,7 @@ contract Otoken is ERC20Initializable {
         string memory underlying = ERC20Initializable(underlyingAsset).symbol();
         string memory strike = ERC20Initializable(strikeAsset).symbol();
         string memory collateral = ERC20Initializable(collateralAsset).symbol();
-        uint256 displayedStrikePrice = strikePrice.div(STRIKE_PRICE_DIGITS);
+        string memory displayStrikePrice = _getDisplayedStrikePrice(strikePrice);
 
         // convert expiry to a readable string
         (uint256 year, uint256 month, uint256 day) = BokkyPooBahsDateTimeLibrary.timestampToDate(expiryTimestamp);
@@ -130,7 +131,7 @@ contract Otoken is ERC20Initializable {
                 "-",
                 Strings.toString(year),
                 " ",
-                Strings.toString(displayedStrikePrice),
+                displayStrikePrice,
                 typeFull,
                 " ",
                 collateral,
@@ -149,10 +150,53 @@ contract Otoken is ERC20Initializable {
                 monthSymbol,
                 _uintTo2Chars(year),
                 "-",
-                Strings.toString(displayedStrikePrice),
+                displayStrikePrice,
                 typeSymbol
             )
         );
+    }
+
+    /**
+     * @dev convert strike price scaled by 1e8 to human readable number string
+     * @param _strikePrice strike price scaled by 1e8
+     * @return strike price string
+     */
+    function _getDisplayedStrikePrice(uint256 _strikePrice) internal pure returns (string memory) {
+        uint256 remainder = _strikePrice.mod(STRIKE_PRICE_SCALE);
+        uint256 quotient = _strikePrice.div(STRIKE_PRICE_SCALE);
+        string memory quotientStr = Strings.toString(quotient);
+
+        if (remainder == 0) return quotientStr;
+
+        string memory remainderStr = Strings.toString(remainder);
+        // count how many digits, starting and ending zeros the remainder has, e.g.:
+        //  5000000 has 7 digits, 6 ending zeros, 1 starting zeros
+        //     4550 has 4 digits, 1 ending zero,  4 starging zeros
+        uint256 digits = 0;
+        uint256 endingZeros = 0;
+        for (uint256 i = 1; i <= STRIKE_PRICE_DIGITS; i++) {
+            if (remainder.mod(10**i) == 0) {
+                endingZeros = i;
+            } else if (remainder < 10**i) {
+                digits = i;
+                break;
+            }
+        }
+        uint256 startingZeros = STRIKE_PRICE_DIGITS.sub(digits);
+
+        string memory tmpStr = remainderStr;
+
+        // remove ending zeros
+        tmpStr = _slice(tmpStr, digits.sub(endingZeros));
+
+        // pad starting zeros before the string
+        for (uint256 i = 0; i < startingZeros; i++) {
+            tmpStr = string(abi.encodePacked("0", tmpStr));
+        }
+
+        // add quotient string at the front
+        string memory completeStr = string(abi.encodePacked(quotientStr, ".", tmpStr));
+        return completeStr;
     }
 
     /**
@@ -179,6 +223,19 @@ contract Otoken is ERC20Initializable {
         } else {
             return ("C", "Call");
         }
+    }
+
+    /**
+     * @dev cut string s into s[0:end]
+     * @param _s the string to cut
+     * @param _end the ending index of the string.
+     */
+    function _slice(string memory _s, uint256 _end) internal pure returns (string memory) {
+        bytes memory a = new bytes(_end);
+        for (uint256 i = 0; i < _end; i++) {
+            a[i] = bytes(_s)[i];
+        }
+        return string(a);
     }
 
     /**
