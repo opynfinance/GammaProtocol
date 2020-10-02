@@ -149,7 +149,7 @@ contract('Pricer + Oracle', ([owner, disputer]) => {
       }
       const roundId = 1
       await expectRevert(
-        wethPricer.setExpiryPriceToOralce(expiryTimestamp, roundId),
+        wethPricer.setExpiryPriceInOracle(expiryTimestamp, roundId),
         'Oracle: locking period is not over yet',
       )
     })
@@ -157,7 +157,7 @@ contract('Pricer + Oracle', ([owner, disputer]) => {
     it('should revert when setting ceth expiry price before weth pricer has a price', async () => {
       const expiryTimestamp = (t0 + t1) / 2 // between t0 and t1
       await expectRevert(
-        cethPricer.setExpiryPriceToOralce(expiryTimestamp),
+        cethPricer.setExpiryPriceInOracle(expiryTimestamp),
         'CompoundPricer: underlying price not set yet',
       )
     })
@@ -168,7 +168,7 @@ contract('Pricer + Oracle', ([owner, disputer]) => {
         await time.increaseTo(expiryTimestamp + lockingPeriod + 10)
       }
       const roundId = 1
-      await wethPricer.setExpiryPriceToOralce(expiryTimestamp, roundId)
+      await wethPricer.setExpiryPriceInOracle(expiryTimestamp, roundId)
       const [priceFromOracle, isFinalized] = await oracle.getExpiryPrice(weth.address, expiryTimestamp)
       assert.equal(p1.toString(), priceFromOracle.toString())
       assert.equal(isFinalized, false)
@@ -180,7 +180,7 @@ contract('Pricer + Oracle', ([owner, disputer]) => {
       if ((await time.latest()) < expiryTimestamp + lockingPeriod) {
         await time.increaseTo(expiryTimestamp + lockingPeriod + 10)
       }
-      await cethPricer.setExpiryPriceToOralce(expiryTimestamp)
+      await cethPricer.setExpiryPriceInOracle(expiryTimestamp)
       const [underlyingPrice, _] = await oracle.getExpiryPrice(weth.address, expiryTimestamp)
       const expectedCTokenPrice = await underlyingPriceToCtokenPrice(underlyingPrice, newExchangeRate, weth)
       const [cTokenPrice, isFinalized] = await oracle.getExpiryPrice(ceth.address, expiryTimestamp)
@@ -191,7 +191,7 @@ contract('Pricer + Oracle', ([owner, disputer]) => {
     it('should revert when trying to submit weth price again', async () => {
       const expiryTimestamp = (t0 + t1) / 2 // between t0 and t1
       const roundId = 1
-      await expectRevert(wethPricer.setExpiryPriceToOralce(expiryTimestamp, roundId), 'Oracle: dispute period started')
+      await expectRevert(wethPricer.setExpiryPriceInOracle(expiryTimestamp, roundId), 'Oracle: dispute period started')
       const priceFromOracle = await oracle.getExpiryPrice(weth.address, expiryTimestamp)
       assert.equal(p1.toString(), priceFromOracle[0].toString())
     })

@@ -417,9 +417,9 @@ contract('Yield Farming: Naked Put Option closed before expiry flow', ([admin, a
       const cusdcPrice = 0.025
       const scaledCusdcPrice = createTokenAmount(cusdcPrice, 16) // 1 cToken = 0.025 USD
       await cusdc.setExchangeRate(scaledCusdcPrice)
-      await usdcPricer.setExpiryPriceToOralce(expiry, scaledUSDCPrice)
-      await wethPricer.setExpiryPriceToOralce(expiry, scaledETHPrice)
-      await cusdcPricer.setExpiryPriceToOralce(expiry)
+      await usdcPricer.setExpiryPriceInOracle(expiry, scaledUSDCPrice)
+      await wethPricer.setExpiryPriceInOracle(expiry, scaledETHPrice)
+      await cusdcPricer.setExpiryPriceInOracle(expiry)
 
       await time.increase(disputePeriod + 10)
 

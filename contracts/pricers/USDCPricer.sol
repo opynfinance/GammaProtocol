@@ -5,13 +5,16 @@ import {OracleInterface} from "../interfaces/OracleInterface.sol";
 import {OpynPricerInterface} from "../interfaces/OpynPricerInterface.sol";
 
 /**
- * @notice A Pricer contract for USDC.
+ * @notice A Pricer contract for USDC
  */
 contract USDCPricer is OpynPricerInterface {
+    /// @notice USDC address
     address public usdc;
 
+    /// USDC price = 1, scaled by 1e8
     uint256 private constant PRICE = 1e8;
 
+    /// @notice Opyn Oracle address
     OracleInterface public oracle;
 
     constructor(address _usdc, address _oracle) public {
@@ -20,19 +23,19 @@ contract USDCPricer is OpynPricerInterface {
     }
 
     /**
-     * @notice get live price for USDC, always return 1
-     * @dev overides the getPrice function in OpynPricerInterface.
-     * @return price of 1e8 cToken worth in USD, scaled by 1e8.
+     * @notice get the live price for USDC, which always returns 1
+     * @dev overrides the getPrice function in OpynPricerInterface
+     * @return price of USDC in USD, scaled by 1e8
      */
     function getPrice() external override view returns (uint256) {
         return PRICE;
     }
 
     /**
-     * Set the expiry price to the oracle
-     * @param _expiryTimestamp the expiry want to send
+     * @notice set the expiry price in the oracle
+     * @param _expiryTimestamp expiry to set a price for
      */
-    function setExpiryPriceToOralce(uint256 _expiryTimestamp) external {
+    function setExpiryPriceInOracle(uint256 _expiryTimestamp) external {
         oracle.setExpiryPrice(address(usdc), _expiryTimestamp, PRICE);
     }
 }
