@@ -113,11 +113,7 @@ contract('MarginCalculator Test Engine', () => {
         )
         // Check that the test passes, only fail if it doesn't
         const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
-        assert.equal(
-          netValue.toString(),
-          createTokenAmount(expectedNetValue, usdcDecimals, expectedIsExcess),
-          testToString(tests[i]),
-        )
+        assert.equal(netValue.toString(), createTokenAmount(expectedNetValue, usdcDecimals), testToString(tests[i]))
         assert.equal(isExcess, expectedIsExcess, testToString(tests[i]))
       }
     })
@@ -168,11 +164,7 @@ contract('MarginCalculator Test Engine', () => {
         )
 
         const [netValue, isExcess] = await calculator.getExcessCollateral(vaultWithCollateral)
-        assert.equal(
-          netValue.toString(),
-          createTokenAmount(expectedNetValue, wethDecimals, expectedIsExcess),
-          testToString(tests[i]),
-        )
+        assert.equal(netValue.toString(), createTokenAmount(expectedNetValue, wethDecimals), testToString(tests[i]))
         assert.equal(isExcess, expectedIsExcess, testToString(tests[i]))
       }
     })
