@@ -245,7 +245,6 @@ contract MarginCalculator {
          *                             long strike
          */
         FPI.FixedPointInt memory firstPart = _longStrike.sub(_shortStrike).mul(_shortAmount).div(_longStrike);
-
         /**
          * calculate max ( short amount - long amount , 0)
          */

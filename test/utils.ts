@@ -50,9 +50,12 @@ export const createVault = (
 
 BigNumber.config({EXPONENTIAL_AT: 60})
 
-export const createTokenAmount = (num: number | BigNumber, decimals = 8) => {
+export const createTokenAmount = (num: number | BigNumber, decimals = 8, roundDown = true) => {
   const amount = new BigNumber(num).times(new BigNumber(10).pow(decimals))
-  return amount.integerValue(BigNumber.ROUND_FLOOR).toString()
+  if (roundDown) {
+    return amount.integerValue(BigNumber.ROUND_FLOOR).toString()
+  }
+  return amount.integerValue(BigNumber.ROUND_CEIL).toString()
 }
 
 /**
