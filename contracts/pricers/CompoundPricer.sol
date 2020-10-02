@@ -52,7 +52,7 @@ contract CompoundPricer is OpynPricerInterface {
     /**
      * @notice get the live price for the asset
      * @dev overrides the getPrice function in OpynPricerInterface
-     * @return price of the cToken in USD, scaled by 1e8
+     * @return price of 1e8 cToken in USD, scaled by 1e8
      */
     function getPrice() external override view returns (uint256) {
         uint256 underlyingPrice = underlyingPricer.getPrice();
@@ -75,7 +75,7 @@ contract CompoundPricer is OpynPricerInterface {
     /**
      * @dev convert underlying price to cToken price with the cToken to underlying exchange rate
      * @param _underlyingPrice price of 1 underlying token (ie 1e6 USDC, 1e18 WETH) in USD, scaled by 1e8
-     * @return price of 1 cToken in USD, scaled by 1e8
+     * @return price of 1e8 cToken in USD, scaled by 1e8
      */
     function _underlyingPriceToCtokenPrice(uint256 _underlyingPrice) internal view returns (uint256) {
         uint256 underlyingDecimals = underlying.decimals();
