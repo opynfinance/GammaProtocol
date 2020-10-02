@@ -92,7 +92,7 @@ contract MarginPool is Ownable {
      */
     function transferToUser(
         address _asset,
-        address payable _user,
+        address _user,
         uint256 _amount
     ) public onlyController {
         assetBalance[_asset] = assetBalance[_asset].sub(_amount);
@@ -144,7 +144,7 @@ contract MarginPool is Ownable {
      */
     function batchTransferToUser(
         address[] memory _asset,
-        address payable[] memory _user,
+        address[] memory _user,
         uint256[] memory _amount
     ) external onlyController {
         require(
