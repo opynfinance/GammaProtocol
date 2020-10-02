@@ -307,6 +307,30 @@ contract('Actions', ([owner, random, random2, random3]) => {
       assert.equal(depositArgs.to, random)
       assert.equal(depositArgs.vaultId, new BN(vaultId))
     })
+    it('should not be able to parse an invalid sender address', async () => {
+      const actionType = ActionType.SettleVault
+      const asset = ZERO_ADDR
+      const vaultId = '0'
+      const amount = '10'
+      const index = '0'
+      const bytesArgs = ZERO_ADDR
+
+      const data = {
+        actionType: actionType,
+        owner: owner,
+        secondAddress: ZERO_ADDR,
+        asset: asset,
+        vaultId: vaultId,
+        amount: amount,
+        index: index,
+        data: bytesArgs,
+      }
+
+      await expectRevert(
+        actionTester.testParseSettleVaultAction(data),
+        'Actions: cannot withdraw payout to an invalid account',
+      )
+    })
   })
 
   describe('Parse Withdraw Arguments', () => {

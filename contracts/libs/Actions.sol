@@ -267,6 +267,7 @@ library Actions {
             "Actions: can only parse arguments for settle vault actions"
         );
         require(_args.owner != address(0), "Actions: cannot settle vault for an invalid account");
+        require(_args.secondAddress != address(0), "Actions: cannot withdraw payout to an invalid account");
 
         return SettleVaultArgs({owner: _args.owner, vaultId: _args.vaultId, to: _args.secondAddress});
     }
