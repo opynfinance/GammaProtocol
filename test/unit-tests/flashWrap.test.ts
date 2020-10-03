@@ -38,7 +38,7 @@ enum ActionType {
   Call,
 }
 
-contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, holder1, terminator, random]) => {
+contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, holder1, fullPauser, random]) => {
   // Oracle module
   let oracle: MockOracleInstance
   // calculator module
@@ -91,7 +91,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
 
     assert.equal(await proxy.proxyOwner(), addressBook.address, 'Proxy owner address mismatch')
     assert.equal(await controllerProxy.owner(), owner, 'Controller owner address mismatch')
-    assert.equal(await controllerProxy.systemPaused(), false, 'System is paused')
+    assert.equal(await controllerProxy.systemPartiallyPaused(), false, 'system is partially paused')
 
     // deploy WETH token
     weth = await WETH9.new()

@@ -104,7 +104,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
 
     assert.equal(await proxy.proxyOwner(), addressBook.address, 'Proxy owner address mismatch')
     assert.equal(await controllerProxy.owner(), owner, 'Controller owner address mismatch')
-    assert.equal(await controllerProxy.systemPaused(), false, 'System is paused')
+    assert.equal(await controllerProxy.systemPartiallyPaused(), false, 'system is partially paused')
 
     payableProxyController = await PayableProxyController.new(controllerProxy.address, marginPool.address, weth.address)
 

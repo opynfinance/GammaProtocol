@@ -22,7 +22,7 @@ import {CalleeInterface} from "./interfaces/CalleeInterface.sol";
 /**
  * @author Opyn Team
  * @title Controller
- * @notice contract that controls the gamma protocol and interaction with all sub contracts
+ * @notice Contract that controls the Gamma Protocol and the interaction of all sub contracts
  */
 contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgradeSafe {
     using MarginVault for MarginVault.Vault;
@@ -34,19 +34,20 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     MarginCalculatorInterface public calculator;
     MarginPoolInterface public pool;
 
-    /// @notice address that has permission to pause the system
-    address public pauser;
+    /// @notice address that has permission to partially pause the system, where system functionality is paused
+    /// except redeem and settleVault
+    address public partialPauser;
 
-    /// @notice address that has permission to execute an emergency shutdown
-    address public terminator;
+    /// @notice address that has permission to fully pause the system, where all system functionality is paused
+    address public fullPauser;
 
-    /// @notice if true, all system functionality is paused other than redeem and settle vault
-    bool public systemPaused;
+    /// @notice True if all system functionality is paused other than redeem and settle vault
+    bool public systemPartiallyPaused;
 
-    /// @notice if true, all system functionality is paused
-    bool public systemShutdown;
+    /// @notice True if all system functionality is paused
+    bool public systemFullyPaused;
 
-    /// @notice if true, a call action can only be executed to a whitelisted callee
+    /// @notice True if a call action can only be executed to a whitelisted callee
     bool public callRestricted;
 
     /// @dev mapping between an owner address and the number of owner address vaults
@@ -108,7 +109,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         uint256 vaultId,
         uint256 amount
     );
-    /// @notice emits an event when an oToken is redeemd
+    /// @notice emits an event when an oToken is redeemed
     event Redeem(
         address indexed otoken,
         address indexed redeemer,
@@ -127,55 +128,55 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         uint256 vaultId,
         bytes data
     );
-    /// @notice emits an event when the terminator address changes
-    event TerminatorUpdated(address indexed oldTerminator, address indexed newTerminator);
-    /// @notice emits an event when the pauser address changes
-    event PauserUpdated(address indexed oldPauser, address indexed newPauser);
-    /// @notice emits an event when the system paused status changes
-    event SystemPaused(bool isActive);
-    /// @notice emits an event when the system emergency shutdown status changes
-    event EmergencyShutdown(bool isActive);
+    /// @notice emits an event when the fullPauser address changes
+    event FullPauserUpdated(address indexed oldFullPauser, address indexed newFullPauser);
+    /// @notice emits an event when the partialPauser address changes
+    event PartialPauserUpdated(address indexed oldPartialPauser, address indexed newPartialPauser);
+    /// @notice emits an event when the system partial paused status changes
+    event SystemPartiallyPaused(bool isActive);
+    /// @notice emits an event when the system fully paused status changes
+    event SystemFullyPaused(bool isActive);
     /// @notice emits an event when the call action restriction changes
     event CallRestricted(bool isRestricted);
 
     /**
-     * @notice modifier to check if the system is not paused
+     * @notice modifier to check if the system is not partially paused, where only redeem and settleVault is allowed
      */
-    modifier notPaused {
-        _isNotPaused();
+    modifier notPartiallyPaused {
+        _isNotPartiallyPaused();
 
         _;
     }
 
     /**
-     * @notice modifier to check if the system is not in an emergency shutdown state
+     * @notice modifier to check if the system is not fully paused, where no functionality is allowed
      */
-    modifier notShutdown {
-        _isNotShutdown();
+    modifier notFullyPaused {
+        _isNotFullyPaused();
 
         _;
     }
 
     /**
-     * @notice modifier to check if sender is the terminator address
+     * @notice modifier to check if sender is the fullPauser address
      */
-    modifier onlyTerminator {
-        require(msg.sender == terminator, "Controller: sender is not terminator");
+    modifier onlyFullPauser {
+        require(msg.sender == fullPauser, "Controller: sender is not fullPauser");
 
         _;
     }
 
     /**
-     * @notice modifier to check if the sender is the pauser address
+     * @notice modifier to check if the sender is the partialPauser address
      */
-    modifier onlyPauser {
-        require(msg.sender == pauser, "Controller: sender is not pauser");
+    modifier onlyPartialPauser {
+        require(msg.sender == partialPauser, "Controller: sender is not partialPauser");
 
         _;
     }
 
     /**
-     * @notice modifier to check if the sender is an account owner or an approved account operator
+     * @notice modifier to check if the sender is the account owner or an approved account operator
      * @param _sender sender address
      * @param _accountOwner account owner address
      */
@@ -198,17 +199,17 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
-     * @dev check if the system is not paused
+     * @dev check if the system is not in a partiallyPaused state
      */
-    function _isNotPaused() internal view {
-        require(!systemPaused, "Controller: system is paused");
+    function _isNotPartiallyPaused() internal view {
+        require(!systemPartiallyPaused, "Controller: system is partially paused");
     }
 
     /**
-     * @dev check if the system is not in an emergency shutdown state
+     * @dev check if the system is not in an fullyPaused state
      */
-    function _isNotShutdown() internal view {
-        require(!systemShutdown, "Controller: system is in emergency shutdown state");
+    function _isNotFullyPaused() internal view {
+        require(!systemFullyPaused, "Controller: system is fully paused");
     }
 
     /**
@@ -241,57 +242,58 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
-     * @notice allows the pauser to toggle the pause variable and pause or unpause the system
-     * @dev can only be called by the pauser
-     * @param _paused new boolean value to set systemPaused to
+     * @notice allows the partialPauser to toggle the systemPartiallyPaused variable and partially pause or partially unpause the system
+     * @dev can only be called by the partialPauser
+     * @param _partiallyPaused new boolean value to set systemPartiallyPaused to
      */
-    function setSystemPaused(bool _paused) external onlyPauser {
-        systemPaused = _paused;
+    function setSystemPartiallyPaused(bool _partiallyPaused) external onlyPartialPauser {
+        systemPartiallyPaused = _partiallyPaused;
 
-        emit SystemPaused(systemPaused);
+        emit SystemPartiallyPaused(systemPartiallyPaused);
     }
 
     /**
-     * @notice allows the terminator to toggle the emergency shutdown variable and put the system in an emergency shutdown state or return to a non-emergency shutdown state
-     * @dev can only be called by the terminator
-     * @param _shutdown new boolean value to set systemShutdown to
+     * @notice allows the fullPauser to toggle the systemFullyPaused variable and fully pause or fully unpause the system
+     * @dev can only be called by the fullPauser
+     * @param _fullyPaused new boolean value to set systemFullyPaused to
      */
-    function setEmergencyShutdown(bool _shutdown) external onlyTerminator {
-        systemShutdown = _shutdown;
+    function setSystemFullyPaused(bool _fullyPaused) external onlyFullPauser {
+        systemFullyPaused = _fullyPaused;
 
-        emit EmergencyShutdown(systemShutdown);
+        emit SystemFullyPaused(systemFullyPaused);
     }
 
     /**
-     * @notice allows the owner to set the terminator address
+     * @notice allows the owner to set the fullPauser address
      * @dev can only be called by the owner
-     * @param _terminator new terminator address
+     * @param _fullPauser new fullPauser address
      */
-    function setTerminator(address _terminator) external onlyOwner {
-        require(_terminator != address(0), "Controller: terminator cannot be set to address zero");
+    function setFullPauser(address _fullPauser) external onlyOwner {
+        require(_fullPauser != address(0), "Controller: fullPauser cannot be set to address zero");
 
-        emit TerminatorUpdated(terminator, _terminator);
+        emit FullPauserUpdated(fullPauser, _fullPauser);
 
-        terminator = _terminator;
+        fullPauser = _fullPauser;
     }
 
     /**
-     * @notice allows the owner to set the pauser address
+     * @notice allows the owner to set the partialPauser address
      * @dev can only be called by the owner
-     * @param _pauser new pauser address
+     * @param _partialPauser new partialPauser address
      */
-    function setPauser(address _pauser) external onlyOwner {
-        require(_pauser != address(0), "Controller: pauser cannot be set to address zero");
+    function setPartialPauser(address _partialPauser) external onlyOwner {
+        require(_partialPauser != address(0), "Controller: partialPauser cannot be set to address zero");
 
-        emit PauserUpdated(pauser, _pauser);
+        emit PartialPauserUpdated(partialPauser, _partialPauser);
 
-        pauser = _pauser;
+        partialPauser = _partialPauser;
     }
 
     /**
-     * @notice allows the owner to toggle the restriction on whitelisted call actions and only allow whitelisted call addresses or allow any arbitrary call addresses
+     * @notice allows the owner to toggle the restriction on whitelisted call actions and only allow whitelisted
+     * call addresses or allow any arbitrary call addresses
      * @dev can only be called by the owner
-     * @param _isRestricted new call restriction
+     * @param _isRestricted new call restriction state
      */
     function setCallRestriction(bool _isRestricted) external onlyOwner {
         callRestricted = _isRestricted;
@@ -320,10 +322,10 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
     /**
      * @notice execute a number of actions on specific vaults
-     * @dev can only be called when the system is not shutdown
+     * @dev can only be called when the system is not fully paused
      * @param _actions array of actions arguments
      */
-    function operate(Actions.ActionArgs[] memory _actions) external payable nonReentrant notShutdown {
+    function operate(Actions.ActionArgs[] memory _actions) external payable nonReentrant notFullyPaused {
         (bool vaultUpdated, address vaultOwner, uint256 vaultId) = _runActions(_actions);
         if (vaultUpdated) _verifyFinalState(vaultOwner, vaultId);
     }
@@ -332,7 +334,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @notice check if a specific address is an operator for an owner account
      * @param _owner account owner address
      * @param _operator account operator address
-     * @return true if the _operator is an approved operator for the _owner account
+     * @return True if the _operator is an approved operator for the _owner account
      */
     function isOperator(address _owner, address _operator) external view returns (bool) {
         return operators[_owner][_operator];
@@ -359,7 +361,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
-     * @notice return the proceed amount of a vault
+     * @notice return a vault's proceeds pre or post expiry, the amount of collateral that can be removed from a vault
      * @param _owner account owner of the vault
      * @param _vaultId vaultId to return balances for
      * @return amount of collateral that can be taken out
@@ -372,9 +374,9 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
-     * @notice get the oToken's payout after expiry, in the collateral asset
+     * @notice get an oToken's payout/cash value after expiry, in the collateral asset
      * @param _otoken oToken address
-     * @param _amount amount of the oToken to calculate the payout for, always represented in 1e18
+     * @param _amount amount of the oToken to calculate the payout for, always represented in 1e8
      * @return amount of collateral to pay out
      */
     function getPayout(address _otoken, uint256 _amount) public view returns (uint256) {
@@ -385,7 +387,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /**
      * @dev return if an expired oToken contract’s settlement price has been finalized
      * @param _otoken address of the oToken
-     * @return true if the oToken has expired AND the oraclePrice at the expiry timestamp has been finalized, otherwise it returns false
+     * @return True if the oToken has expired AND all oracle prices at the expiry timestamp have been finalized, False if not
      */
     function isSettlementAllowed(address _otoken) public view returns (bool) {
         OtokenInterface otoken = OtokenInterface(_otoken);
@@ -404,7 +406,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
-     * @notice get the number of current vaults for a specified account owner
+     * @notice get the number of vaults for a specified account owner
      * @param _accountOwner account owner address
      * @return number of vaults
      */
@@ -415,7 +417,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /**
      * @notice check if an oToken has expired
      * @param _otoken oToken address
-     * @return true if the otoken has expired, otherwise it returns false
+     * @return True if the otoken has expired, False if not
      */
     function hasExpired(address _otoken) external view returns (bool) {
         uint256 otokenExpiryTimestamp = OtokenInterface(_otoken).expiryTimestamp();
@@ -435,7 +437,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
     /**
      * @notice execute a variety of actions
-     * @dev for each action in the action array, execute the corresponding action, only one vault can be modified for all actions except SettleVault, Redeem, and Call
+     * @dev for each action in the action array, execute the corresponding action, only one vault can be modified
+     * for all actions except SettleVault, Redeem, and Call
      * @param _actions array of type Actions.ActionArgs[], which expresses which actions the user wants to execute
      * @return vaultUpdated, indicates if a vault has changed
      * @return owner, the vault owner if a vault has changed
@@ -462,7 +465,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
                 (actionType != Actions.ActionType.Redeem) &&
                 (actionType != Actions.ActionType.Call)
             ) {
-                // check if this action is manipulating the same vault as all other actions, other than SettleVault
+                // check if this action is manipulating the same vault as all other actions, if a vault has already been updated
                 if (vaultUpdated) {
                     require(vaultOwner == action.owner, "Controller: can not run actions for different owners");
                     require(vaultId == action.vaultId, "Controller: can not run actions on different vaults");
@@ -513,10 +516,14 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
     /**
      * @notice open a new vault inside an account
-     * @dev only the account owner or operator can open a vault, cannot be called when system is paused or shutdown
+     * @dev only the account owner or operator can open a vault, cannot be called when system is partiallyPaused or fullyPaused
      * @param _args OpenVaultArgs structure
      */
-    function _openVault(Actions.OpenVaultArgs memory _args) internal notPaused onlyAuthorized(msg.sender, _args.owner) {
+    function _openVault(Actions.OpenVaultArgs memory _args)
+        internal
+        notPartiallyPaused
+        onlyAuthorized(msg.sender, _args.owner)
+    {
         accountVaultCounter[_args.owner] = accountVaultCounter[_args.owner].add(1);
 
         require(
@@ -529,10 +536,14 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
     /**
      * @notice deposit a long oToken into a vault
-     * @dev cannot be called when system is paused or shutdown
+     * @dev only the account owner or operator can deposit a long oToken, cannot be called when system is partiallyPaused or fullyPaused
      * @param _args DepositArgs structure
      */
-    function _depositLong(Actions.DepositArgs memory _args) internal notPaused onlyAuthorized(msg.sender, _args.owner) {
+    function _depositLong(Actions.DepositArgs memory _args)
+        internal
+        notPartiallyPaused
+        onlyAuthorized(msg.sender, _args.owner)
+    {
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         require(
             (_args.from == msg.sender) || (_args.from == _args.owner),
@@ -557,12 +568,12 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
     /**
      * @notice withdraw a long oToken from a vault
-     * @dev only the account owner or operator can withdraw a long oToken from a vault, cannot be called when system is paused or shutdown
+     * @dev only the account owner or operator can withdraw a long oToken, cannot be called when system is partiallyPaused or fullyPaused
      * @param _args WithdrawArgs structure
      */
     function _withdrawLong(Actions.WithdrawArgs memory _args)
         internal
-        notPaused
+        notPartiallyPaused
         onlyAuthorized(msg.sender, _args.owner)
     {
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
@@ -580,12 +591,12 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
     /**
      * @notice deposit a collateral asset into a vault
-     * @dev cannot be called when the system is paused or shutdown
+     * @dev only the account owner or operator can deposit collateral, cannot be called when system is partiallyPaused or fullyPaused
      * @param _args DepositArgs structure
      */
     function _depositCollateral(Actions.DepositArgs memory _args)
         internal
-        notPaused
+        notPartiallyPaused
         onlyAuthorized(msg.sender, _args.owner)
     {
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
@@ -608,12 +619,12 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
     /**
      * @notice withdraw a collateral asset from a vault
-     * @dev only the account owner or operator can withdraw a collateral from a vault, cannot be called when system is paused or shutdown
+     * @dev only the account owner or operator can withdraw collateral, cannot be called when system is partiallyPaused or fullyPaused
      * @param _args WithdrawArgs structure
      */
     function _withdrawCollateral(Actions.WithdrawArgs memory _args)
         internal
-        notPaused
+        notPartiallyPaused
         onlyAuthorized(msg.sender, _args.owner)
     {
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
@@ -636,11 +647,15 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
-     * @notice mint short oTokens from a vault which creates an obligation recorded in a vault
-     * @dev only the account owner or operator can mint short oTokens from a vault, cannot be called when system is paused or shutdown
+     * @notice mint short oTokens from a vault which creates an obligation that is recorded in the vault
+     * @dev only the account owner or operator can mint an oToken, cannot be called when system is partiallyPaused or fullyPaused
      * @param _args MintArgs structure
      */
-    function _mintOtoken(Actions.MintArgs memory _args) internal notPaused onlyAuthorized(msg.sender, _args.owner) {
+    function _mintOtoken(Actions.MintArgs memory _args)
+        internal
+        notPartiallyPaused
+        onlyAuthorized(msg.sender, _args.owner)
+    {
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
 
         require(whitelist.isWhitelistedOtoken(_args.otoken), "Controller: otoken is not whitelisted to be minted");
@@ -657,11 +672,15 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
-     * @notice burn oTokens to reduce or remove minted oToken obligation recorded in a vault
-     * @dev only the account owner or operator can burn oTokens for a vault, cannot be called when system is paused or shutdown
+     * @notice burn oTokens to reduce or remove the minted oToken obligation recorded in a vault
+     * @dev only the account owner or operator can burn an oToken, cannot be called when system is partiallyPaused or fullyPaused
      * @param _args MintArgs structure
      */
-    function _burnOtoken(Actions.BurnArgs memory _args) internal notPaused onlyAuthorized(msg.sender, _args.owner) {
+    function _burnOtoken(Actions.BurnArgs memory _args)
+        internal
+        notPartiallyPaused
+        onlyAuthorized(msg.sender, _args.owner)
+    {
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         require((_args.from == msg.sender) || (_args.from == _args.owner), "Controller: cannot burn from this address");
 
@@ -678,7 +697,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
     /**
      * @notice redeem an oToken after expiry, receiving the payout of the oToken in the collateral asset
-     * @dev cannot be called when system is paused
+     * @dev cannot be called when system is fullyPaused
      * @param _args RedeemArgs structure
      */
     function _redeem(Actions.RedeemArgs memory _args) internal {
@@ -698,8 +717,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
-     * @notice settle a vault after expiry, removing the remaining collateral in a vault after both long and short oToken payouts have been removed
-     * @dev deletes a vault of vaultId after remaining collateral is removed, cannot be called when system is paused
+     * @notice settle a vault after expiry, removing the net proceeds/collateral after both long and short oToken payouts have settled
+     * @dev deletes a vault of vaultId after net proceeds/collateral is removed, cannot be called when system is fullyPaused
      * @param _args SettleVaultArgs structure
      */
     function _settleVault(Actions.SettleVaultArgs memory _args) internal onlyAuthorized(msg.sender, _args.owner) {
@@ -733,10 +752,10 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
     /**
      * @notice execute arbitrary calls
-     * @dev cannot be called when system is paused or shutdown
+     * @dev cannot be called when system is partiallyPaused or fullyPaused
      * @param _args Call action
      */
-    function _call(Actions.CallArgs memory _args) internal notPaused onlyWhitelistedCallee(_args.callee) {
+    function _call(Actions.CallArgs memory _args) internal notPartiallyPaused onlyWhitelistedCallee(_args.callee) {
         CalleeInterface(_args.callee).callFunction{value: _args.msgValue}(
             msg.sender,
             _args.owner,
@@ -748,10 +767,10 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
-     * @notice check if a vault id is valid
+     * @notice check if a vault id is valid for a given account owner address
      * @param _accountOwner account owner address
      * @param _vaultId vault id to check
-     * @return true if the _vaultId is valid, otherwise it returns falue
+     * @return True if the _vaultId is valid, False if not
      */
     function _checkVaultId(address _accountOwner, uint256 _vaultId) internal view returns (bool) {
         return ((_vaultId > 0) && (_vaultId <= accountVaultCounter[_accountOwner]));
@@ -764,7 +783,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /**
      * @notice return if a callee address is whitelisted or not
      * @param _callee callee address
-     * @return true if callee address is whitelisted, otherwise false
+     * @return True if callee address is whitelisted, False if not
      */
     function _isCalleeWhitelisted(address _callee) internal view returns (bool) {
         return whitelist.isWhitelistedCallee(_callee);
