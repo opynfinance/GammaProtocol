@@ -52,7 +52,7 @@ contract that controls the gamma protocol and interaction with all sub contracts
 
 - `getAccountVaultCounter(address _accountOwner) (external)`
 
-- `isExpired(address _otoken) (public)`
+- `hasExpired(address _otoken) (public)`
 
 - `getVault(address _owner, uint256 _vaultId) (public)`
 
@@ -330,7 +330,7 @@ get the number of current vaults for a specified account owner
 
 - number of vaults
 
-### Function `isExpired(address _otoken) → bool public`
+### Function `hasExpired(address _otoken) → bool public`
 
 check if an oToken has expired
 

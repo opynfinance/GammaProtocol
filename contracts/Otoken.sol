@@ -76,6 +76,10 @@ contract Otoken is ERC20Initializable {
      * @param amount amount to mint
      */
     function mintOtoken(address account, uint256 amount) external {
+        require(
+            msg.sender == AddressBookInterface(addressBook).getController(),
+            "Otoken: Only Controller can mint Otokens"
+        );
         _mint(account, amount);
     }
 
@@ -86,6 +90,10 @@ contract Otoken is ERC20Initializable {
      * @param amount amount to burn
      */
     function burnOtoken(address account, uint256 amount) external {
+        require(
+            msg.sender == AddressBookInterface(addressBook).getController(),
+            "Otoken: Only Controller can burn Otokens"
+        );
         _burn(account, amount);
     }
 
@@ -96,9 +104,9 @@ contract Otoken is ERC20Initializable {
      * @return tokenSymbol (ex: oETHUSDC-05SEP20-200P)
      */
     function _getNameAndSymbol() internal view returns (string memory tokenName, string memory tokenSymbol) {
-        string memory underlying = _getTokenSymbol(underlyingAsset);
-        string memory strike = _getTokenSymbol(strikeAsset);
-        string memory collateral = _getTokenSymbol(collateralAsset);
+        string memory underlying = ERC20Initializable(underlyingAsset).symbol();
+        string memory strike = ERC20Initializable(strikeAsset).symbol();
+        string memory collateral = ERC20Initializable(collateralAsset).symbol();
         uint256 displayedStrikePrice = strikePrice.div(STRIKE_PRICE_DIGITS);
 
         // convert expiry to a readable string
@@ -145,15 +153,6 @@ contract Otoken is ERC20Initializable {
                 typeSymbol
             )
         );
-    }
-
-    /**
-     * @dev get token symbol
-     * @param token the ERC20 token address
-     */
-    function _getTokenSymbol(address token) internal view returns (string memory) {
-        if (token == address(0)) return "ETH";
-        else return ERC20Initializable(token).symbol();
     }
 
     /**
@@ -212,32 +211,6 @@ contract Otoken is ERC20Initializable {
             return ("NOV", "November");
         } else {
             return ("DEC", "December");
-        }
-    }
-
-    /**
-     * @dev this function overrides the _beforeTokenTransfer hook in ERC20Initializable.sol
-     * if the operation is mint or burn, requires msg.sender to be the controller
-     * the function signature is the same as _beforeTokenTransfer defined in ERC20Initializable.sol
-     * @param from from address
-     * @param to to address
-     * @param amount amount to transfer
-     */
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 amount
-    ) internal override {
-        if (from == address(0)) {
-            require(
-                msg.sender == AddressBookInterface(addressBook).getController(),
-                "Otoken: Only Controller can mint Otokens"
-            );
-        } else if (to == address(0)) {
-            require(
-                msg.sender == AddressBookInterface(addressBook).getController(),
-                "Otoken: Only Controller can burn Otokens"
-            );
         }
     }
 }

@@ -177,7 +177,8 @@ contract(
 
       it('should get vault balance', async () => {
         const vaultId = new BigNumber(0)
-        await controllerProxy.getProceed(accountOwner1, vaultId)
+        const proceed = await controllerProxy.getProceed(accountOwner1, vaultId)
+        assert.equal(proceed.toString(), '0')
       })
     })
 
@@ -1089,7 +1090,7 @@ contract(
             ]
 
             assert.equal(
-              await controllerProxy.isExpired(expiredLongOtoken.address),
+              await controllerProxy.hasExpired(expiredLongOtoken.address),
               true,
               'Long otoken is not expired yet',
             )
@@ -1982,8 +1983,10 @@ contract(
 
           const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
 
-          const netValue = (await calculator.getExcessCollateral(vaultBefore))[0]
-          const isExcess = (await calculator.getExcessCollateral(vaultBefore))[1]
+          const [netValue, isExcess] = await calculator.getExcessCollateral(vaultBefore)
+
+          const proceed = await controllerProxy.getProceed(accountOwner1, vaultCounter)
+          assert.equal(netValue.toString(), proceed.toString())
 
           assert.equal(netValue.toString(), '0', 'Position net value mistmatch')
           assert.equal(isExcess, true, 'Position collateral excess mismatch')
@@ -2033,8 +2036,10 @@ contract(
           const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
           const withdrawerBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
 
-          const netValue = (await calculator.getExcessCollateral(vaultBefore))[0]
-          const isExcess = (await calculator.getExcessCollateral(vaultBefore))[1]
+          const [netValue, isExcess] = await calculator.getExcessCollateral(vaultBefore)
+
+          const proceed = await controllerProxy.getProceed(accountOwner1, vaultCounter)
+          assert.equal(netValue.toString(), proceed.toString())
 
           assert.equal(netValue.toString(), excessCollateralToDeposit.toString(), 'Position net value mistmatch')
           assert.equal(isExcess, true, 'Position collateral excess mismatch')
@@ -2611,7 +2616,7 @@ contract(
             ]
 
             assert.equal(
-              await controllerProxy.isExpired(expiredShortOtoken.address),
+              await controllerProxy.hasExpired(expiredShortOtoken.address),
               true,
               'Long otoken is not expired yet',
             )
@@ -2761,7 +2766,7 @@ contract(
           },
         ]
 
-        assert.equal(await controllerProxy.isExpired(shortOtoken.address), false, 'Short otoken has already expired')
+        assert.equal(await controllerProxy.hasExpired(shortOtoken.address), false, 'Short otoken has already expired')
 
         await expectRevert(
           controllerProxy.operate(actionArgs, {from: holder1}),
@@ -2807,7 +2812,7 @@ contract(
           },
         ]
 
-        assert.equal(await controllerProxy.isExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
+        assert.equal(await controllerProxy.hasExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
 
         await expectRevert(
           controllerProxy.operate(actionArgs, {from: holder1}),
@@ -2837,7 +2842,7 @@ contract(
           },
         ]
 
-        assert.equal(await controllerProxy.isExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
+        assert.equal(await controllerProxy.hasExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
 
         await expectRevert(
           controllerProxy.operate(actionArgs, {from: holder1}),
@@ -2859,7 +2864,7 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-        assert.equal(await controllerProxy.isExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
+        assert.equal(await controllerProxy.hasExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
 
         const payout = createTokenAmount(50, usdcDecimals)
         const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
@@ -3406,7 +3411,7 @@ contract(
           },
         ]
 
-        assert.equal(await controllerProxy.isExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
+        assert.equal(await controllerProxy.hasExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
 
         await expectRevert(
           controllerProxy.operate(actionArgs, {from: accountOwner1}),
@@ -3513,13 +3518,15 @@ contract(
         await controllerProxy.operate(mintArgs, {from: accountOwner1})
 
         // Use the newly minted otoken as long and put it in a new vault
+        const newVulatId = vaultCounter.toNumber() + 1
+
         const newVaultArgs = [
           {
             actionType: ActionType.OpenVault,
             owner: accountOwner1,
             secondAddress: accountOwner1,
             asset: ZERO_ADDR,
-            vaultId: vaultCounter.toNumber() + 1,
+            vaultId: newVulatId,
             amount: '0',
             index: '0',
             data: ZERO_ADDR,
@@ -3529,7 +3536,7 @@ contract(
             owner: accountOwner1,
             secondAddress: accountOwner1,
             asset: longOtoken.address,
-            vaultId: vaultCounter.toNumber() + 1,
+            vaultId: newVulatId,
             amount: longAmount,
             index: '0',
             data: ZERO_ADDR,
@@ -3555,15 +3562,19 @@ contract(
             owner: accountOwner1,
             secondAddress: accountOwner1,
             asset: ZERO_ADDR,
-            vaultId: vaultCounter.toNumber() + 1,
+            vaultId: newVulatId,
             amount: '0',
             index: '0',
             data: ZERO_ADDR,
           },
         ]
-        const amountPayout = new BigNumber(createTokenAmount(stirkePrice - ethPriceAtExpiry, usdcDecimals))
+        const expectedPayout = new BigNumber(createTokenAmount(stirkePrice - ethPriceAtExpiry, usdcDecimals))
         const ownerUSDCBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
         const poolOtokenBefore = new BigNumber(await longOtoken.balanceOf(marginPool.address))
+
+        const amountPayout = await controllerProxy.getProceed(accountOwner1, newVulatId)
+
+        assert.equal(amountPayout.toString(), expectedPayout.toString(), 'payout calculation mismatch')
 
         await controllerProxy.operate(settleArgs, {from: accountOwner1})
         const ownerUSDCBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
@@ -3826,7 +3837,7 @@ contract(
           true,
         )
 
-        assert.equal(await controllerProxy.isExpired(otoken.address), false, 'Otoken expiry check mismatch')
+        assert.equal(await controllerProxy.hasExpired(otoken.address), false, 'Otoken expiry check mismatch')
       })
 
       it('should return true for expired otoken', async () => {
@@ -3843,7 +3854,7 @@ contract(
           true,
         )
 
-        assert.equal(await controllerProxy.isExpired(expiredOtoken.address), true, 'Otoken expiry check mismatch')
+        assert.equal(await controllerProxy.hasExpired(expiredOtoken.address), true, 'Otoken expiry check mismatch')
       })
     })
 
@@ -4184,7 +4195,7 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-        assert.equal(await controllerProxy.isExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
+        assert.equal(await controllerProxy.hasExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
 
         const payout = createTokenAmount(50, usdcDecimals)
         const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))

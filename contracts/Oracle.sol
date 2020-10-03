@@ -10,45 +10,47 @@ import {SafeMath} from "./packages/oz/SafeMath.sol";
 /**
  * @author Opyn Team
  * @title Oracle Module
- * @notice The Oracle module provide the system with on-chain prices
+ * @notice The Oracle module sets, retrieves, and stores USD prices (USD per asset) for underlying, collateral, and strike assets
+ * manages pricers that are used for different assets
  */
 contract Oracle is Ownable {
     using SafeMath for uint256;
 
-    /// @dev structure that represent price, and timestamp
+    /// @dev structure that stores price of asset and timestamp when the price was stored
     struct Price {
         uint256 price;
         uint256 timestamp; // timestamp at which the price is pushed to this oracle
     }
 
-    /// @dev mapping between pricer and it's locking period.
-    /// locking period is a period of time after expiry timestamp, that preventing from pushing asset price.
+    /// @dev mapping of asset pricer to its locking period
+    /// locking period is the period of time after the expiry timestamp where a price can not be pushed
     mapping(address => uint256) internal pricerLockingPeriod;
-    /// @dev mapping of asset pricer to it's dispute period. Dispute period start from the timestamp of pushing underyling price
+    /// @dev mapping of asset pricer to its dispute period
+    /// dispute period is the period of time after an expiry price has been pushed where a price can be disputed
     mapping(address => uint256) internal pricerDisputePeriod;
-    /// @dev mapping between asset and its pricer.
+    /// @dev mapping between an asset and its pricer
     mapping(address => address) internal assetPricer;
-    /// @dev mapping between asset, timestamp and the price at the timestamp.
+    /// @dev mapping between asset, expiry timestamp, and the Price structure at the expiry timestamp
     mapping(address => mapping(uint256 => Price)) internal storedPrice;
-    //// @dev a disputer is a role defined by owner that has the ability to dispute a price during dispute period.
+    //// @dev disputer is a role defined by the owner that has the ability to dispute a price during the dispute period
     address internal disputer;
 
-    /// @notice emits an event when disputer is updated
+    /// @notice emits an event when the disputer is updated
     event DisputerUpdated(address indexed newDisputer);
-    /// @notice emits an event when an pricer updated for a specific asset
+    /// @notice emits an event when the pricer is updated for an asset
     event PricerUpdated(address asset, address pricer);
-    /// @notice emits an event when a locking period updated for a specific oracle
+    /// @notice emits an event when the locking period is updated for a pricer
     event PricerLockingPeriodUpdated(address indexed pricer, uint256 lockingPeriod);
-    /// @notice emits an event when a dispute period updated for a specific oracle
+    /// @notice emits an event when the dispute period is updated for a pricer
     event PricerDisputePeriodUpdated(address indexed pricer, uint256 disputePeriod);
-    /// @notice emits an event when price is updated for a specific asset
+    /// @notice emits an event when an expiry price is updated for a specific asset
     event ExpiryPriceUpdated(
         address indexed asset,
         uint256 indexed expirtyTimestamp,
         uint256 price,
         uint256 onchainTimestamp
     );
-    /// @notice emits an event when owner dispute a asset price during dispute period
+    /// @notice emits an event when the disputer disputes a price during the dispute period
     event ExpiryPriceDisputed(
         address indexed asset,
         uint256 indexed expiryTimestamp,
@@ -58,9 +60,9 @@ contract Oracle is Ownable {
     );
 
     /**
-     * @notice get the live price from oracle
-     * @param _asset the asset address
-     * @return price scaled in 1e8, denominated in USD
+     * @notice get a live asset price from the asset's pricer contract
+     * @param _asset asset address
+     * @return price scaled by 1e8, denominated in USD
      * e.g. 17368900000 => 175.689 USD
      */
     function getPrice(address _asset) external view returns (uint256) {
@@ -69,11 +71,11 @@ contract Oracle is Ownable {
     }
 
     /**
-     * @notice get the asset price at specific expiry timestamp.
-     * @param _asset the asset want to get price at.
+     * @notice get the asset price at specific expiry timestamp
+     * @param _asset asset address
      * @param _expiryTimestamp expiry timestamp
-     * @return price denominated in USD, scaled by 1e8
-     * @return isFinalized if the price is finalized or not.
+     * @return price scaled by 1e8, denominated in USD
+     * @return isFinalized True, if the price is finalized, False if not
      */
     function getExpiryPrice(address _asset, uint256 _expiryTimestamp) external view returns (uint256, bool) {
         uint256 price = storedPrice[_asset][_expiryTimestamp].price;
@@ -82,8 +84,8 @@ contract Oracle is Ownable {
     }
 
     /**
-     * @notice get asset pricer
-     * @param _asset get the pricer for a specific asset.
+     * @notice get the pricer for an asset
+     * @param _asset asset address
      * @return pricer address
      */
     function getPricer(address _asset) external view returns (address) {
@@ -91,16 +93,17 @@ contract Oracle is Ownable {
     }
 
     /**
-     * @notice get disputer address
-     * @return pricer address
+     * @notice get the disputer address
+     * @return disputer address
      */
     function getDisputer() external view returns (address) {
         return disputer;
     }
 
     /**
-     * @notice get pricer locking period. A locking period is a period of time after expiry where no one can push price to oracle
-     * @dev during locking period, price can not be submitted to this contract
+     * @notice get a pricer's locking period
+     * locking period is the period of time after the expiry timestamp where a price can not be pushed
+     * @dev during the locking period an expiry price can not be submitted to this contract
      * @param _pricer pricer address
      * @return locking period
      */
@@ -109,10 +112,10 @@ contract Oracle is Ownable {
     }
 
     /**
-     * @notice get pricer dispute period
-     * @dev during dispute period, the owner of this contract can dispute the submitted price and modify it.
-     * The dispute period start after submitting a price on-chain
-     * @param _pricer oracle address
+     * @notice get a pricer's dispute period
+     * dispute period is the period of time after an expiry price has been pushed where a price can be disputed
+     * @dev during dispute period, the disputer can dispute the submitted price and modify it
+     * @param _pricer pricer address
      * @return dispute period
      */
     function getPricerDisputePeriod(address _pricer) external view returns (uint256) {
@@ -120,10 +123,10 @@ contract Oracle is Ownable {
     }
 
     /**
-     * @notice check if locking period is over for setting the asset price for that timestamp
+     * @notice check if the locking period is over for setting the asset price at a particular expiry timestamp
      * @param _asset asset address
      * @param _expiryTimestamp expiry timestamp
-     * @return True if locking period is over, otherwise false
+     * @return True if locking period is over, False if not
      */
     function isLockingPeriodOver(address _asset, uint256 _expiryTimestamp) public view returns (bool) {
         address pricer = assetPricer[_asset];
@@ -133,13 +136,13 @@ contract Oracle is Ownable {
     }
 
     /**
-     * @notice check if dispute period is over
-     * @param _asset assets to query
-     * @param _expiryTimestamp expiry timestamp of otoken
-     * @return True if dispute period is over, otherwise false
+     * @notice check if the dispute period is over
+     * @param _asset asset address
+     * @param _expiryTimestamp expiry timestamp
+     * @return True if dispute period is over, False if not
      */
     function isDisputePeriodOver(address _asset, uint256 _expiryTimestamp) public view returns (bool) {
-        // check if the pricer has submitted the price at this tiestamp
+        // check if the pricer has a price for this expiry timestamp
         Price memory price = storedPrice[_asset][_expiryTimestamp];
         if (price.timestamp == 0) {
             return false;
@@ -151,9 +154,9 @@ contract Oracle is Ownable {
     }
 
     /**
-     * @notice set pricer for an asset
-     * @dev can only be called by owner
-     * @param _asset asset
+     * @notice sets the pricer for an asset
+     * @dev can only be called by the owner
+     * @param _asset asset address
      * @param _pricer pricer address
      */
     function setAssetPricer(address _asset, address _pricer) external onlyOwner {
@@ -164,8 +167,8 @@ contract Oracle is Ownable {
     }
 
     /**
-     * @notice set pricer locking period
-     * @dev this function can only be called by owner
+     * @notice sets the locking period for a pricer
+     * @dev can only be called by the owner
      * @param _pricer pricer address
      * @param _lockingPeriod locking period
      */
@@ -176,9 +179,9 @@ contract Oracle is Ownable {
     }
 
     /**
-     * @notice set oracle dispute period
-     * @dev can only be called by owner
-     * @param _pricer oracle address
+     * @notice sets the dispute period for a pricer
+     * @dev can only be called by the owner
+     * @param _pricer pricer address
      * @param _disputePeriod dispute period
      */
     function setDisputePeriod(address _pricer, uint256 _disputePeriod) external onlyOwner {
@@ -188,9 +191,9 @@ contract Oracle is Ownable {
     }
 
     /**
-     * @notice set the disputer role
-     * @dev can only be called by owner
-     * @param _disputer oracle address
+     * @notice set the disputer address
+     * @dev can only be called by the owner
+     * @param _disputer disputer address
      */
     function setDisputer(address _disputer) external onlyOwner {
         disputer = _disputer;
@@ -199,8 +202,8 @@ contract Oracle is Ownable {
     }
 
     /**
-     * @notice dispute an asset price by owner during dispute period
-     * @dev only owner can dispute a price during the dispute period, by setting a new one.
+     * @notice dispute an asset price during the dispute period
+     * @dev only the owner can dispute a price during the dispute period, by setting a new one
      * @param _asset asset address
      * @param _expiryTimestamp expiry timestamp
      * @param _price the correct price
@@ -221,11 +224,11 @@ contract Oracle is Ownable {
     }
 
     /**
-     * @notice submit expiry price to the oracle, can only be set from the pricer.
-     * @dev asset price can only be set after locking period is over and before starting dispute period
+     * @notice submits the expiry price to the oracle, can only be set from the pricer
+     * @dev asset price can only be set after the locking period is over and before the dispute period has started
      * @param _asset asset address
      * @param _expiryTimestamp expiry timestamp
-     * @param _price the asset price at expiry
+     * @param _price asset price at expiry
      */
     function setExpiryPrice(
         address _asset,
