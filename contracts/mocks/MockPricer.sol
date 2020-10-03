@@ -22,7 +22,7 @@ contract MockPricer {
         return price;
     }
 
-    function setExpiryPriceToOralce(uint256 _expiryTimestamp, uint256 _price) external {
+    function setExpiryPriceInOracle(uint256 _expiryTimestamp, uint256 _price) external {
         oracle.setExpiryPrice(asset, _expiryTimestamp, _price);
     }
 }

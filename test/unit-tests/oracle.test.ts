@@ -163,7 +163,7 @@ contract('Oracle', ([owner, disputer, random, collateral, strike]) => {
     it('should revert setting price if locking period is not over', async () => {
       // the setExpiryPrice is set through pricer
       await expectRevert(
-        wethPricer.setExpiryPriceToOralce(otokenExpiry, assetPrice),
+        wethPricer.setExpiryPriceInOracle(otokenExpiry, assetPrice),
         'Oracle: locking period is not over yet',
       )
     })
@@ -177,7 +177,7 @@ contract('Oracle', ([owner, disputer, random, collateral, strike]) => {
 
     it('should set price correctly', async () => {
       // setExpiryPrice is called through pricer
-      await wethPricer.setExpiryPriceToOralce(otokenExpiry, assetPrice)
+      await wethPricer.setExpiryPriceInOracle(otokenExpiry, assetPrice)
 
       const [price, isFinalized] = await oracle.getExpiryPrice(weth.address, otokenExpiry)
       assert.equal(price.toString(), assetPrice.toString())
@@ -185,7 +185,7 @@ contract('Oracle', ([owner, disputer, random, collateral, strike]) => {
     })
 
     it('should revert if the same asset - expiry is set twice', async () => {
-      await expectRevert(wethPricer.setExpiryPriceToOralce(otokenExpiry, assetPrice), 'Oracle: dispute period started')
+      await expectRevert(wethPricer.setExpiryPriceInOracle(otokenExpiry, assetPrice), 'Oracle: dispute period started')
     })
   })
 

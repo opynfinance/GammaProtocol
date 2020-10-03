@@ -31,7 +31,7 @@ contract('USDCPricer', ([owner, random]) => {
     it('everyone can set an price to oracle', async () => {
       const expiry = (await time.latest()) + time.duration.days(30).toNumber()
 
-      await pricer.setExpiryPriceToOralce(expiry, {from: random})
+      await pricer.setExpiryPriceInOracle(expiry, {from: random})
       const priceFromOracle = await oracle.getExpiryPrice(usdc.address, expiry)
       const expectedResult = createTokenAmount(1)
       assert.equal(expectedResult.toString(), priceFromOracle[0].toString())

@@ -8,29 +8,29 @@ import {ERC20Interface} from "../interfaces/ERC20Interface.sol";
 import {SafeMath} from "../packages/oz/SafeMath.sol";
 
 /**
- * @notice A Pricer contract for Compound Asset.
+ * @notice A Pricer contract for a Compound cToken
  */
 contract CompoundPricer is OpynPricerInterface {
     using SafeMath for uint256;
 
-    /// @notice the opyn oracle address
+    /// @notice opyn oracle address
     OracleInterface public oracle;
 
-    /// @notice the pricer interface to get price for cToken's underying asset
-    // If cToken is cUSDC, underlyingPricer is the Pricer for USDC
+    /// @notice pricer interface to get the price for the cToken's underying asset
+    // if the cToken is cUSDC, underlyingPricer is the pricer for USDC
     OpynPricerInterface public underlyingPricer;
 
-    /// @notice the compound asset (cToken) that this pricer will get price for.
+    /// @notice cToken that this pricer will a get price for
     CTokenInterface public cToken;
 
-    /// @notice the underlying sset for this cToken
+    /// @notice underlying asset for this cToken
     ERC20Interface public underlying;
 
     /**
-     * @param _cToken the asset type
-     * @param _underlying the underlying asset for this cToken
-     * @param _underlyingPricer the pricer for cToken's underlying
-     * @param _oracle the Opyn Oracle contract address.
+     * @param _cToken cToken asset
+     * @param _underlying underlying asset for this cToken
+     * @param _underlyingPricer pricer for cToken's underlying
+     * @param _oracle Opyn Oracle contract address
      */
     constructor(
         address _cToken,
@@ -50,9 +50,9 @@ contract CompoundPricer is OpynPricerInterface {
     }
 
     /**
-     * @notice get live price for the asset.
-     * @dev overides the getPrice function in OpynPricerInterface.
-     * @return price of 1e8 cToken worth in USD, scaled by 1e18.
+     * @notice get the live price for the asset
+     * @dev overrides the getPrice function in OpynPricerInterface
+     * @return price of 1e8 cToken in USD, scaled by 1e8
      */
     function getPrice() external override view returns (uint256) {
         uint256 underlyingPrice = underlyingPricer.getPrice();
@@ -61,10 +61,11 @@ contract CompoundPricer is OpynPricerInterface {
     }
 
     /**
-     * Set the expiry price to the oracle
-     * @param _expiryTimestamp the expiry want to send
+     * @notice set the expiry price in the oracle
+     * @dev requires that the underlying price has been set before setting a cToken price
+     * @param _expiryTimestamp expiry to set a price for
      */
-    function setExpiryPriceToOralce(uint256 _expiryTimestamp) external {
+    function setExpiryPriceInOracle(uint256 _expiryTimestamp) external {
         (uint256 underlyingPriceExpiry, ) = oracle.getExpiryPrice(address(underlying), _expiryTimestamp);
         require(underlyingPriceExpiry > 0, "CompoundPricer: underlying price not set yet");
         uint256 cTokenPrice = _underlyingPriceToCtokenPrice(underlyingPriceExpiry);
@@ -72,9 +73,9 @@ contract CompoundPricer is OpynPricerInterface {
     }
 
     /**
-     * @dev convert underlying price to cToken price.
-     * @param _underlyingPrice price of 1 underlying token (1e6 USDC, 1e18 WETH) in USD, scled by 1e8
-     * @return net worth of 1e8 cToken in USD, scaled by 1e8.
+     * @dev convert underlying price to cToken price with the cToken to underlying exchange rate
+     * @param _underlyingPrice price of 1 underlying token (ie 1e6 USDC, 1e18 WETH) in USD, scaled by 1e8
+     * @return price of 1e8 cToken in USD, scaled by 1e8
      */
     function _underlyingPriceToCtokenPrice(uint256 _underlyingPrice) internal view returns (uint256) {
         uint256 underlyingDecimals = underlying.decimals();
