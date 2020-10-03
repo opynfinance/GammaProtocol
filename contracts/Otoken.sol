@@ -211,9 +211,10 @@ contract Otoken is ERC20Initializable {
     }
 
     /**
-     * @dev cut string s into s[0:end]
+     * @dev cut string s into s[start:end]
      * @param _s the string to cut
-     * @param _end the ending index of the string.
+     * @param _start the starting index
+     * @param _end the ending index (excluded in the substring)
      */
     function _slice(
         string memory _s,
