@@ -54,8 +54,8 @@ contract('MarginCalculator', () => {
   const wethDecimals = 18
   const ctokenDecimals = 8
   // to test decimal conversions
-  const ttokenDecimals = 20
-  const rtokenDecimals = 22
+  const ttokenDecimals = 27
+  const rtokenDecimals = 29
 
   before('set up contracts', async () => {
     const now = (await time.latest()).toNumber()
@@ -674,7 +674,7 @@ contract('MarginCalculator', () => {
       })
     })
 
-    describe('Put vault check (collateral with 20 decimals) before expiry', () => {
+    describe('Put vault check (collateral with 27 decimals) before expiry', () => {
       const amountOne = scaleNum(1)
 
       let put: MockOtokenInstance
@@ -713,7 +713,7 @@ contract('MarginCalculator', () => {
       })
     })
 
-    describe('Put vault check (collateral with 22 decimals) before expiry', () => {
+    describe('Put vault check (collateral with 29 decimals) before expiry', () => {
       const amountOne = scaleNum(1)
 
       let put: MockOtokenInstance
