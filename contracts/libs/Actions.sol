@@ -6,7 +6,9 @@ pragma solidity 0.6.10;
 import {MarginVault} from "./MarginVault.sol";
 
 /**
- *
+ * @title Actions
+ * @author Opyn Team
+ * @notice A library that provides a ActionArgs struct, sub types of Action structs, and functions to parse ActionArgs into specific Actions.
  */
 library Actions {
     // possible actions that can be performed

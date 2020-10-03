@@ -9,7 +9,7 @@ import "../packages/oz/SafeMath.sol";
 
 /**
  * @title FixedPointInt256
- * @author Opyn
+ * @author Opyn Team
  * @notice FixedPoint library
  */
 library FixedPointInt256 {
@@ -26,24 +26,24 @@ library FixedPointInt256 {
     }
 
     /**
-     * @notice Constructs an `FixedPointInt` from an unscaled int, e.g., `b=5` gets stored internally as `5**18`.
-     * @param a int to convert into a FixedPoint.
-     * @return the converted FixedPoint.
+     * @notice constructs an `FixedPointInt` from an unscaled int, e.g., `b=5` gets stored internally as `5**18`
+     * @param a int to convert into a FixedPoint
+     * @return converted FixedPoint
      */
     function fromUnscaledInt(int256 a) internal pure returns (FixedPointInt memory) {
         return FixedPointInt(a.mul(SCALING_FACTOR));
     }
 
     /**
-     * @notice Constructs an `FixedPointInt` from an scaled uint with {_decimals} decimals
+     * @notice constructs an FixedPointInt from an scaled uint with {_decimals} decimals
      * Examples:
      * (1)  USDC    decimals = 6
      *      Input:  5 * 1e6 USDC  =>    Output: 5 * 1e18 (FixedPoint 8.0 USDC)
      * (2)  cUSDC   decimals = 8
      *      Input:  5 * 1e6 cUSDC =>    Output: 5 * 1e16 (FixedPoint 0.08 cUSDC)
-     * @param _a uint256 to convert into a FixedPoint.
-     * @param _decimals the origianl decimals the number has.
-     * @return the converted FixedPoint, with 18 decimals.
+     * @param _a uint256 to convert into a FixedPoint
+     * @param _decimals  original decimals _a has
+     * @return converted FixedPointInt, with 18 decimals
      */
     function fromScaledUint(uint256 _a, uint256 _decimals) internal pure returns (FixedPointInt memory) {
         FixedPointInt memory fixedPoint;
@@ -62,11 +62,11 @@ library FixedPointInt256 {
     }
 
     /**
-     * @notice Convert a FixedPointInt number to an uint256 with a specific decimals
-     * @param _a FixedPoint
+     * @notice convert a FixedPointInt number to an uint256 with a specific number of decimals
+     * @param _a FixedPointInt to convert
      * @param _decimals number of decimals that the uint256 should be scaled to
-     * @param _roundDown true to round down the result
-     * @return the converted FixedPoint.
+     * @param _roundDown True to round down the result, False to round up
+     * @return the converted uint256
      */
     function toScaledUint(
         FixedPointInt memory _a,
@@ -94,110 +94,110 @@ library FixedPointInt256 {
     }
 
     /**
-     * @notice return the sum of two signed integer
-     * @param a FixedPoint
-     * @param b FixedPoint
-     * @return sum of two signed integer
+     * @notice add two signed integers, a + b
+     * @param a FixedPointInt
+     * @param b FixedPointInt
+     * @return sum of the two signed integers
      */
     function add(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (FixedPointInt memory) {
         return FixedPointInt(a.value.add(b.value));
     }
 
     /**
-     * @notice return the difference of two signed integer
-     * @param a FixedPoint
-     * @param b FixedPoint
-     * @return difference of two fixed point
+     * @notice subtract two signed integers, a-b
+     * @param a FixedPointInt
+     * @param b FixedPointInt
+     * @return difference of two signed integers
      */
     function sub(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (FixedPointInt memory) {
         return FixedPointInt(a.value.sub(b.value));
     }
 
     /**
-     * @notice multiply two signed integer
-     * @param a FixedPoint
-     * @param b FixedPoint
-     * @return mul of two fixed point
+     * @notice multiply two signed integers, a by b
+     * @param a FixedPointInt
+     * @param b FixedPointInt
+     * @return mul of two signed integers
      */
     function mul(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (FixedPointInt memory) {
         return FixedPointInt((a.value.mul(b.value)) / SCALING_FACTOR);
     }
 
     /**
-     * @notice divide two FixedPoint
-     * @param a FixedPoint
-     * @param b FixedPoint
-     * @return div of two signed integer
+     * @notice divide two signed integers, a by b
+     * @param a FixedPointInt
+     * @param b FixedPointInt
+     * @return div of two signed integers
      */
     function div(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (FixedPointInt memory) {
         return FixedPointInt((a.value.mul(SCALING_FACTOR)) / b.value);
     }
 
     /**
-     * @notice the minimum between a and b
-     * @param a signed integer
-     * @param b signed integer
-     * @return min of two signed integer
+     * @notice minimum between two signed integers, a and b
+     * @param a FixedPointInt
+     * @param b FixedPointInt
+     * @return min of two signed integers
      */
     function min(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (FixedPointInt memory) {
         return a.value < b.value ? a : b;
     }
 
     /**
-     * @notice the maximum between a and b
-     * @param a signed integer
-     * @param b signed integer
-     * @return max of two signed integer
+     * @notice maximum between two signed integers, a and b
+     * @param a FixedPointInt
+     * @param b FixedPointInt
+     * @return max of two signed integers
      */
     function max(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (FixedPointInt memory) {
         return a.value > b.value ? a : b;
     }
 
     /**
-     * @notice Whether `a` is equal to `b`.
-     * @param a a signed integer
-     * @param b a signed integer
-     * @return True if equal, or False.
+     * @notice is a is equal to b
+     * @param a FixedPointInt
+     * @param b FixedPointInt
+     * @return True if equal, False if not
      */
     function isEqual(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (bool) {
         return a.value == b.value;
     }
 
     /**
-     * @notice Whether `a` is greater than `b`.
-     * @param a a signed integer
-     * @param b a signed integer
-     * @return True if `a > b`, or False.
+     * @notice is a greater than b
+     * @param a FixedPointInt
+     * @param b FixedPointInt
+     * @return True if a > b, False if not
      */
     function isGreaterThan(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (bool) {
         return a.value > b.value;
     }
 
     /**
-     * @notice Whether `a` is greater than or equal to `b`.
-     * @param a a signed integer
-     * @param b a signed integer
-     * @return True if `a >= b`, or False.
+     * @notice is a greater than or equal to b
+     * @param a FixedPointInt
+     * @param b FixedPointInt
+     * @return True if a >= b, False if not
      */
     function isGreaterThanOrEqual(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (bool) {
         return a.value >= b.value;
     }
 
     /**
-     * @notice Whether `a` is less than `b`.
-     * @param a a signed integer
-     * @param b a signed integer
-     * @return True if `a < b`, or False.
+     * @notice is a is less than b
+     * @param a FixedPointInt
+     * @param b FixedPointInt
+     * @return True if a < b, False if not
      */
     function isLessThan(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (bool) {
         return a.value < b.value;
     }
 
     /**
-     * @notice Whether `a` is less than or equal to `b`.
-     * @param a a Fixed
-     * @param b a signed integer
-     * @return True if `a <= b`, or False.
+     * @notice is a less than or equal to b
+     * @param a FixedPointInt
+     * @param b FixedPointInt
+     * @return True if a <= b, False if not
      */
     function isLessThanOrEqual(FixedPointInt memory a, FixedPointInt memory b) internal pure returns (bool) {
         return a.value <= b.value;

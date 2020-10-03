@@ -11,162 +11,162 @@ import {OwnedUpgradeabilityProxy} from "./packages/oz/upgradeability/OwnedUpgrad
  * @title AddressBook Module
  */
 contract AddressBook is Ownable {
-    /// @dev otoken implementation key
+    /// @dev Otoken implementation key
     bytes32 private constant OTOKEN_IMPL = "OTOKEN_IMPL";
-    /// @dev otoken factory key
+    /// @dev OtokenFactory key
     bytes32 private constant OTOKEN_FACTORY = "OTOKEN_FACTORY";
-    /// @dev whitelist key
+    /// @dev Whitelist key
     bytes32 private constant WHITELIST = "WHITELIST";
-    /// @dev controller key
+    /// @dev Controller key
     bytes32 private constant CONTROLLER = "CONTROLLER";
-    /// @dev pool key
+    /// @dev MarginPool key
     bytes32 private constant MARGIN_POOL = "MARGIN_POOL";
-    /// @dev margin calculator key
+    /// @dev MarginCalculator key
     bytes32 private constant MARGIN_CALCULATOR = "MARGIN_CALCULATOR";
-    /// @dev liquidation manager key
+    /// @dev LiquidationManager key
     bytes32 private constant LIQUIDATION_MANAGER = "LIQUIDATION_MANAGER";
-    /// @dev oracle key
+    /// @dev Oracle key
     bytes32 private constant ORACLE = "ORACLE";
 
-    /// @dev a mapping between key and address
+    /// @dev mapping between key and address
     mapping(bytes32 => address) private addresses;
 
-    /// @notice event emitted when a new proxy get created
+    /// @notice emits an event when a new proxy is created
     event ProxyCreated(bytes32 id, address proxy);
-    /// @notice event emitted when a new address get added
+    /// @notice emits an event when a new address is added
     event AddressAdded(bytes32 id, address add);
 
     /**
-     * @notice return otoken implementation address
-     * @return otoken implementation address
+     * @notice return Otoken implementation address
+     * @return Otoken implementation address
      */
     function getOtokenImpl() external view returns (address) {
         return getAddress(OTOKEN_IMPL);
     }
 
     /**
-     * @notice return otoken factory address
-     * @return otoken factory address
+     * @notice return oTokenFactory address
+     * @return OtokenFactory address
      */
     function getOtokenFactory() external view returns (address) {
         return getAddress(OTOKEN_FACTORY);
     }
 
     /**
-     * @notice return whitelist address
-     * @return whitelist address
+     * @notice return Whitelist address
+     * @return Whitelist address
      */
     function getWhitelist() external view returns (address) {
         return getAddress(WHITELIST);
     }
 
     /**
-     * @notice return controller address
-     * @return controller address
+     * @notice return Controller address
+     * @return Controller address
      */
     function getController() external view returns (address) {
         return getAddress(CONTROLLER);
     }
 
     /**
-     * @notice return pool address
-     * @return pool address
+     * @notice return MarginPool address
+     * @return MarginPool address
      */
     function getMarginPool() external view returns (address) {
         return getAddress(MARGIN_POOL);
     }
 
     /**
-     * @notice return margin calculator address
-     * @return margin calculator address
+     * @notice return MarginCalculator address
+     * @return MarginCalculator address
      */
     function getMarginCalculator() external view returns (address) {
         return getAddress(MARGIN_CALCULATOR);
     }
 
     /**
-     * @notice return liquidation manager address
-     * @return liquidation manager address
+     * @notice return LiquidationManager address
+     * @return LiquidationManager address
      */
     function getLiquidationManager() external view returns (address) {
         return getAddress(LIQUIDATION_MANAGER);
     }
 
     /**
-     * @notice return oracle address
-     * @return oracle address
+     * @notice return Oracle address
+     * @return Oracle address
      */
     function getOracle() external view returns (address) {
         return getAddress(ORACLE);
     }
 
     /**
-     * @notice set otoken implementation address
-     * @dev can only be called by addressbook owner
-     * @param _otokenImpl otoken implementation address
+     * @notice set Otoken implementation address
+     * @dev can only be called by the addressbook owner
+     * @param _otokenImpl Otoken implementation address
      */
     function setOtokenImpl(address _otokenImpl) external onlyOwner {
         setAddress(OTOKEN_IMPL, _otokenImpl);
     }
 
     /**
-     * @notice set otoken factory address
-     * @dev can only be called by addressbook owner
-     * @param _otokenFactory otoken factory address
+     * @notice set OtokenFactory address
+     * @dev can only be called by the addressbook owner
+     * @param _otokenFactory OtokenFactory address
      */
     function setOtokenFactory(address _otokenFactory) external onlyOwner {
         setAddress(OTOKEN_FACTORY, _otokenFactory);
     }
 
     /**
-     * @notice set whitelist address
-     * @dev can only be called by addressbook owner
-     * @param _whitelist whitelist address
+     * @notice set Whitelist address
+     * @dev can only be called by the addressbook owner
+     * @param _whitelist Whitelist address
      */
     function setWhitelist(address _whitelist) external onlyOwner {
         setAddress(WHITELIST, _whitelist);
     }
 
     /**
-     * @notice set controller address
-     * @dev can only be called by addressbook owner
-     * @param _controller controller address
+     * @notice set Controller address
+     * @dev can only be called by the addressbook owner
+     * @param _controller Controller address
      */
     function setController(address _controller) external onlyOwner {
         updateImpl(CONTROLLER, _controller);
     }
 
     /**
-     * @notice set pool address
-     * @dev can only be called by addressbook owner
-     * @param _marginPool pool address
+     * @notice set MarginPool address
+     * @dev can only be called by the addressbook owner
+     * @param _marginPool MarginPool address
      */
     function setMarginPool(address _marginPool) external onlyOwner {
         setAddress(MARGIN_POOL, _marginPool);
     }
 
     /**
-     * @notice set margin calculator address
-     * @dev can only be called by addressbook owner
-     * @param _marginCalculator margin calculator address
+     * @notice set MarginCalculator address
+     * @dev can only be called by the addressbook owner
+     * @param _marginCalculator MarginCalculator address
      */
     function setMarginCalculator(address _marginCalculator) external onlyOwner {
         setAddress(MARGIN_CALCULATOR, _marginCalculator);
     }
 
     /**
-     * @notice set liquidation manager address
-     * @dev can only be called by addressbook owner
-     * @param _liquidationManager liquidation manager address
+     * @notice set LiquidationManager address
+     * @dev can only be called by the addressbook owner
+     * @param _liquidationManager LiquidationManager address
      */
     function setLiquidationManager(address _liquidationManager) external onlyOwner {
         setAddress(LIQUIDATION_MANAGER, _liquidationManager);
     }
 
     /**
-     * @notice set oracle address
-     * @dev can only be called by addressbook owner
-     * @param _oracle oracle address
+     * @notice set Oracle address
+     * @dev can only be called by the addressbook owner
+     * @param _oracle Oracle address
      */
     function setOracle(address _oracle) external onlyOwner {
         setAddress(ORACLE, _oracle);
@@ -183,7 +183,7 @@ contract AddressBook is Ownable {
 
     /**
      * @notice set a specific address for a specific key
-     * @dev can only be called by addressbook owner
+     * @dev can only be called by the addressbook owner
      * @param _key key
      * @param _address address
      */
@@ -195,8 +195,8 @@ contract AddressBook is Ownable {
 
     /**
      * @dev internal function to update the implementation of a specific component of the protocol
-     * @param _id the id of the contract to be updated
-     * @param _newAddress the address of the new implementation
+     * @param _id id of the contract to be updated
+     * @param _newAddress address of the new implementation
      **/
     function updateImpl(bytes32 _id, address _newAddress) public onlyOwner {
         address payable proxyAddress = address(uint160(getAddress(_id)));
