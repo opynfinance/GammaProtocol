@@ -6,7 +6,7 @@ import {
   MockOtokenInstance,
 } from '../../build/types/truffle-types'
 import {createVault, createTokenAmount} from '../utils'
-import {testCaseGenerator, Tests, Test, testToString} from './testCaseGenerator'
+import {testCaseGenerator, Tests, Test, testToString, callMarginRequiredBeforeExpiry} from './testCaseGenerator'
 import BigNumber from 'bignumber.js'
 
 const {time} = require('@openzeppelin/test-helpers')

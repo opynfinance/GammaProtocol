@@ -52,7 +52,7 @@ BigNumber.config({EXPONENTIAL_AT: 60})
 
 export const createTokenAmount = (num: number | BigNumber, decimals = 8) => {
   const amount = new BigNumber(num).times(new BigNumber(10).pow(decimals))
-  return amount.integerValue(BigNumber.ROUND_FLOOR).toString()
+  return amount.integerValue().toString()
 }
 
 /**

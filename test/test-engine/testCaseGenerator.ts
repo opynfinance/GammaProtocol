@@ -19,6 +19,9 @@ const minCollateral = 0
 const minSpot = 0
 const maxSpot = 100000000000
 
+let usdcDecimals = 6
+let wethDecimals = 18
+
 /**
  *
  * TEST ENGINE RULES
@@ -104,6 +107,14 @@ export interface Result {
  */
 function getRandomInt(max: number) {
   return Math.min(Math.floor(Math.random() * Math.floor(max)) + 1, max)
+}
+
+/**
+ * Return a rounded big number which has precision matching the collateral asset
+ * @param value
+ */
+function round(value: BigNumber, decimals: number): BigNumber {
+  return new BigNumber(value.toFixed(decimals, BigNumber.ROUND_CEIL))
 }
 
 /**
@@ -195,7 +206,7 @@ function putMarginRequiredAfterExpiry(spotPrice: number, strikePrices: StrikePri
  * @param strikePrices The strike prices of the short and long option
  * @param amounts The amount of the short and the long option
  */
-function callMarginRequiredBeforeExpiry(strikePrices: StrikePrices, amounts: Amounts): BigNumber {
+export function callMarginRequiredBeforeExpiry(strikePrices: StrikePrices, amounts: Amounts): BigNumber {
   const shortStrike = new BigNumber(strikePrices.shortStrike)
   const longStrike = new BigNumber(strikePrices.longStrike)
   const shortAmount = new BigNumber(amounts.shortAmount)
@@ -208,7 +219,7 @@ function callMarginRequiredBeforeExpiry(strikePrices: StrikePrices, amounts: Amo
       .dividedBy(longStrike),
     BigNumber.max(shortAmount.minus(longAmount), 0),
   )
-  return netValue
+  return round(netValue, wethDecimals)
 }
 
 /**
@@ -226,7 +237,7 @@ function callMarginRequiredAfterExpiry(spotPrice: number, strikePrices: StrikePr
   const longCashValue = BigNumber.max(0, bnSpotPrice.minus(longStrike)).times(longAmount)
   const shortCashValue = BigNumber.max(0, bnSpotPrice.minus(shortStrike)).times(shortAmount)
 
-  return shortCashValue.minus(longCashValue).div(bnSpotPrice)
+  return round(shortCashValue.minus(longCashValue).div(bnSpotPrice), wethDecimals)
 }
 
 /**
@@ -391,7 +402,10 @@ function callBeforExpiryTestCreator(rule: collateralRules, strikePrices: StrikeP
  * Return an array of tests for puts before expiry, puts after expiry.
  */
 
-export function testCaseGenerator(): Tests {
+export function testCaseGenerator(putUnderlyingDecimals = 6, callUnderlyingDecimals = 18): Tests {
+  usdcDecimals = putUnderlyingDecimals
+  wethDecimals = callUnderlyingDecimals
+
   const putTestsBeforeExpiry: Test[] = []
   const putTestsAfterExpiry: Test[] = []
   const callTestsBeforeExpiry: Test[] = []
