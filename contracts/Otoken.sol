@@ -168,33 +168,18 @@ contract Otoken is ERC20Initializable {
 
         if (remainder == 0) return quotientStr;
 
-        string memory remainderStr = Strings.toString(remainder);
-        // count how many digits, starting and ending zeros the remainder has, e.g.:
-        //  5000000 has 7 digits, 6 ending zeros, 1 starting zeros
-        //     4550 has 4 digits, 1 ending zero,  4 starging zeros
-        uint256 digits = 0;
-        uint256 endingZeros = 0;
-        for (uint256 i = 1; i <= STRIKE_PRICE_DIGITS; i++) {
-            if (remainder.mod(10**i) == 0) {
-                endingZeros = i;
-            } else if (remainder < 10**i) {
-                digits = i;
-                break;
-            }
-        }
-        uint256 startingZeros = STRIKE_PRICE_DIGITS.sub(digits);
-
-        string memory tmpStr = remainderStr;
-
-        // remove ending zeros
-        tmpStr = _slice(tmpStr, digits.sub(endingZeros));
-
-        // pad starting zeros before the string
-        for (uint256 i = 0; i < startingZeros; i++) {
-            tmpStr = string(abi.encodePacked("0", tmpStr));
+        uint256 trailingZeroes = 0;
+        while (remainder.mod(10) == 0) {
+            remainder = remainder / 10;
+            trailingZeroes += 1;
         }
 
-        // add quotient string at the front
+        // pad the number with "1 + starting zeroes"
+        remainder += 10**(STRIKE_PRICE_DIGITS - trailingZeroes);
+
+        string memory tmpStr = Strings.toString(remainder);
+        tmpStr = _slice(tmpStr, 1, 1 + STRIKE_PRICE_DIGITS - trailingZeroes);
+
         string memory completeStr = string(abi.encodePacked(quotientStr, ".", tmpStr));
         return completeStr;
     }
@@ -230,10 +215,14 @@ contract Otoken is ERC20Initializable {
      * @param _s the string to cut
      * @param _end the ending index of the string.
      */
-    function _slice(string memory _s, uint256 _end) internal pure returns (string memory) {
-        bytes memory a = new bytes(_end);
-        for (uint256 i = 0; i < _end; i++) {
-            a[i] = bytes(_s)[i];
+    function _slice(
+        string memory _s,
+        uint256 _start,
+        uint256 _end
+    ) internal pure returns (string memory) {
+        bytes memory a = new bytes(_end - _start);
+        for (uint256 i = 0; i < _end - _start; i++) {
+            a[i] = bytes(_s)[_start + i];
         }
         return string(a);
     }

@@ -82,7 +82,9 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
       })
       assert.equal(await o1.name(), `WETHUSDC 25-September-2020 0.5Put USDC Collateral`)
       assert.equal(await o1.symbol(), `oWETHUSDC-25SEP20-0.5P`)
+    })
 
+    it('should set the right name and symbol for option with strikePrice < 1, with 8 decimals', async () => {
       // strike price with 8 decimals
       const strikePrice2 = createTokenAmount(0.00010052)
       const o2 = await Otoken.new()
@@ -91,7 +93,9 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
       })
       assert.equal(await o2.name(), `WETHUSDC 25-September-2020 0.00010052Put USDC Collateral`)
       assert.equal(await o2.symbol(), `oWETHUSDC-25SEP20-0.00010052P`)
+    })
 
+    it('should set the right name and symbol for option with strikePrice < 1, with starting and trailing zeroes.', async () => {
       const strikePrice3 = createTokenAmount(0.0729)
       const o3 = await Otoken.new()
       await o3.init(addressBookAddr, weth.address, usdc.address, usdc.address, strikePrice3, expiry, true, {
