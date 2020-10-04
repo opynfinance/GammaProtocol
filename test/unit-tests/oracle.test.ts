@@ -152,11 +152,11 @@ contract('Oracle', ([owner, disputer, random, collateral, strike]) => {
       assetPrice = new BigNumber(278)
     })
 
-    it('should revert setting price if caller is not the pricer', async () => {
+    it('should revert setting price if caller is not the pricer or disputer', async () => {
       // increase til locking period over
       await expectRevert(
-        oracle.setExpiryPrice(weth.address, otokenExpiry, assetPrice),
-        'Oracle: caller is not the pricer',
+        oracle.setExpiryPrice(weth.address, otokenExpiry, assetPrice, {from: random}),
+        'Oracle: caller is not authorized to set expiry price',
       )
     })
 
@@ -190,11 +190,6 @@ contract('Oracle', ([owner, disputer, random, collateral, strike]) => {
   })
 
   describe('Set disputer', () => {
-    it('should return address(0) for disputer', async () => {
-      const disputer = await oracle.getDisputer()
-      assert.equal(disputer, ZERO_ADDR)
-    })
-
     it('should revert setting disputer from a non-owner address', async () => {
       await expectRevert(oracle.setDisputer(disputer, {from: random}), 'Ownable: caller is not the owner')
     })
@@ -237,6 +232,39 @@ contract('Oracle', ([owner, disputer, random, collateral, strike]) => {
         oracle.disputeExpiryPrice(weth.address, otokenExpiry, disputePrice, {from: disputer}),
         'Oracle: dispute period over',
       )
+    })
+  })
+
+  describe('Set Expiry Price From Disputer', async () => {
+    const lockingPeriod = new BigNumber(60 * 15) // 15min
+    const disputePeriod = new BigNumber(60 * 45) // 45min
+    const assetPrice = new BigNumber(278)
+
+    let otoken: MockOtokenInstance
+    let otokenExpiry: BigNumber
+
+    before(async () => {
+      otoken = await Otoken.new()
+      otokenExpiry = new BigNumber((await time.latest()).toNumber() + time.duration.days(30).toNumber())
+      await otoken.init(addressBook.address, weth.address, strike, collateral, '200', otokenExpiry, true)
+      await oracle.setAssetPricer(weth.address, wethPricer.address, {from: owner})
+      await oracle.setLockingPeriod(wethPricer.address, lockingPeriod, {from: owner})
+      await oracle.setDisputePeriod(wethPricer.address, disputePeriod, {from: owner})
+
+      await time.increaseTo(otokenExpiry.toNumber())
+      await time.increase(lockingPeriod.toNumber() + 100)
+
+      // set disputer address
+      await oracle.setDisputer(disputer, {from: owner})
+    })
+
+    it('should set price correctly from disputer', async () => {
+      // setExpiryPrice is called from disputer
+      await oracle.setExpiryPrice(weth.address, otokenExpiry, assetPrice, {from: disputer})
+
+      const [price, isFinalized] = await oracle.getExpiryPrice(weth.address, otokenExpiry)
+      assert.equal(price.toString(), assetPrice.toString())
+      assert.equal(isFinalized, false)
     })
   })
 })
