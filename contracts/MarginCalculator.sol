@@ -64,7 +64,7 @@ contract MarginCalculator {
     }
 
     /**
-     * @notice returns the amount of collateral that can be removed from a actual or theoretical vault
+     * @notice returns the amount of collateral that can be removed from an actual or a theoretical vault
      * @dev return amount is denominated in the collateral asset for the oToken in the vault, or the collateral asset in the vault
      * @param _vault theoretical vault that needs to be checked
      * @return excessCollateral the amount by which the margin is above or below the required amount
