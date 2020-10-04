@@ -79,7 +79,7 @@ contract MarginCalculator {
         bool hasShort = _isNotEmpty(_vault.shortOtokens);
         bool hasLong = _isNotEmpty(_vault.longOtokens);
 
-        // if the vault contains no oTokens, return the ammount of collateral
+        // if the vault contains no oTokens, return the amount of collateral
         if (!hasShort && !hasLong) {
             uint256 amount = hasCollateral ? _vault.collateralAmounts[0] : 0;
             return (amount, true);
