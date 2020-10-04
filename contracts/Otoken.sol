@@ -28,7 +28,7 @@ contract Otoken is ERC20Initializable {
     /// @notice asset that is held as collateral against short/written options
     address public collateralAsset;
 
-    /// @notice strike price with decimals = 18
+    /// @notice strike price with decimals = 8
     uint256 public strikePrice;
 
     /// @notice expiration timestamp of the option, represented as a unix timestamp
@@ -37,14 +37,15 @@ contract Otoken is ERC20Initializable {
     /// @notice True if a put option, False if a call option
     bool public isPut;
 
-    uint256 private constant STRIKE_PRICE_DIGITS = 1e8;
+    uint256 private constant STRIKE_PRICE_SCALE = 1e8;
+    uint256 private constant STRIKE_PRICE_DIGITS = 8;
 
     /**
      * @notice initialize the oToken
      * @param _underlyingAsset asset that the option references
      * @param _strikeAsset asset that the strike price is denominated in
      * @param _collateralAsset asset that is held as collateral against short/written options
-     * @param _strikePrice strike price with decimals = 18
+     * @param _strikePrice strike price with decimals = 8
      * @param _expiryTimestamp expiration timestamp of the option, represented as a unix timestamp
      * @param _isPut True if a put option, False if a call option
      */
@@ -107,7 +108,7 @@ contract Otoken is ERC20Initializable {
         string memory underlying = ERC20Initializable(underlyingAsset).symbol();
         string memory strike = ERC20Initializable(strikeAsset).symbol();
         string memory collateral = ERC20Initializable(collateralAsset).symbol();
-        uint256 displayedStrikePrice = strikePrice.div(STRIKE_PRICE_DIGITS);
+        string memory displayStrikePrice = _getDisplayedStrikePrice(strikePrice);
 
         // convert expiry to a readable string
         (uint256 year, uint256 month, uint256 day) = BokkyPooBahsDateTimeLibrary.timestampToDate(expiryTimestamp);
@@ -130,7 +131,7 @@ contract Otoken is ERC20Initializable {
                 "-",
                 Strings.toString(year),
                 " ",
-                Strings.toString(displayedStrikePrice),
+                displayStrikePrice,
                 typeFull,
                 " ",
                 collateral,
@@ -149,10 +150,38 @@ contract Otoken is ERC20Initializable {
                 monthSymbol,
                 _uintTo2Chars(year),
                 "-",
-                Strings.toString(displayedStrikePrice),
+                displayStrikePrice,
                 typeSymbol
             )
         );
+    }
+
+    /**
+     * @dev convert strike price scaled by 1e8 to human readable number string
+     * @param _strikePrice strike price scaled by 1e8
+     * @return strike price string
+     */
+    function _getDisplayedStrikePrice(uint256 _strikePrice) internal pure returns (string memory) {
+        uint256 remainder = _strikePrice.mod(STRIKE_PRICE_SCALE);
+        uint256 quotient = _strikePrice.div(STRIKE_PRICE_SCALE);
+        string memory quotientStr = Strings.toString(quotient);
+
+        if (remainder == 0) return quotientStr;
+
+        uint256 trailingZeroes = 0;
+        while (remainder.mod(10) == 0) {
+            remainder = remainder / 10;
+            trailingZeroes += 1;
+        }
+
+        // pad the number with "1 + starting zeroes"
+        remainder += 10**(STRIKE_PRICE_DIGITS - trailingZeroes);
+
+        string memory tmpStr = Strings.toString(remainder);
+        tmpStr = _slice(tmpStr, 1, 1 + STRIKE_PRICE_DIGITS - trailingZeroes);
+
+        string memory completeStr = string(abi.encodePacked(quotientStr, ".", tmpStr));
+        return completeStr;
     }
 
     /**
@@ -179,6 +208,24 @@ contract Otoken is ERC20Initializable {
         } else {
             return ("C", "Call");
         }
+    }
+
+    /**
+     * @dev cut string s into s[start:end]
+     * @param _s the string to cut
+     * @param _start the starting index
+     * @param _end the ending index (excluded in the substring)
+     */
+    function _slice(
+        string memory _s,
+        uint256 _start,
+        uint256 _end
+    ) internal pure returns (string memory) {
+        bytes memory a = new bytes(_end - _start);
+        for (uint256 i = 0; i < _end - _start; i++) {
+            a[i] = bytes(_s)[_start + i];
+        }
+        return string(a);
     }
 
     /**
