@@ -143,7 +143,7 @@ contract OtokenFactory is OtokenSpawner {
     }
 
     /**
-     * @notice get the address at which a new oToken with these paramters would be deployed
+     * @notice get the address at which a new oToken with these parameters would be deployed
      * @dev return the exact address that will be deployed at with _computeAddress
      * @param _underlyingAsset asset that the option references
      * @param _strikeAsset asset that the strike price is denominated in
