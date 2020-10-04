@@ -235,7 +235,10 @@ contract Oracle is Ownable {
         uint256 _expiryTimestamp,
         uint256 _price
     ) external {
-        require(msg.sender == assetPricer[_asset], "Oracle: caller is not the pricer");
+        require(
+            (msg.sender == assetPricer[_asset]) || (msg.sender == disputer),
+            "Oracle: caller is not authorized to set expiry price"
+        );
         require(isLockingPeriodOver(_asset, _expiryTimestamp), "Oracle: locking period is not over yet");
         require(storedPrice[_asset][_expiryTimestamp].timestamp == 0, "Oracle: dispute period started");
 
