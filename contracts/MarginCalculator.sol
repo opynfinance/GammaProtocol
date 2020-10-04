@@ -72,7 +72,7 @@ contract MarginCalculator {
      * if True, collateral can be taken out from the vault, if False, additional collateral needs to be added to vault
      */
     function getExcessCollateral(MarginVault.Vault memory _vault) public view returns (uint256, bool) {
-        // include all the checks for to ensure the vault is valud
+        // include all the checks for to ensure the vault is valid
         _checkIsValidVault(_vault);
 
         bool hasCollateral = _isNotEmpty(_vault.collateralAssets);
