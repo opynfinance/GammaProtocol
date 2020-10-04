@@ -548,11 +548,11 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         require(now < otoken.expiryTimestamp(), "Controller: otoken used as collateral is already expired");
 
-        vaults[_args.owner][_args.vaultId].addLong(address(otoken), _args.amount, _args.index);
+        vaults[_args.owner][_args.vaultId].addLong(_args.asset, _args.amount, _args.index);
 
-        pool.transferToPool(address(otoken), _args.from, _args.amount);
+        pool.transferToPool(_args.asset, _args.from, _args.amount);
 
-        emit LongOtokenDeposited(address(otoken), _args.owner, _args.from, _args.vaultId, _args.amount);
+        emit LongOtokenDeposited(_args.asset, _args.owner, _args.from, _args.vaultId, _args.amount);
     }
 
     /**
@@ -571,11 +571,11 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         require(now < otoken.expiryTimestamp(), "Controller: can not withdraw an expired otoken");
 
-        vaults[_args.owner][_args.vaultId].removeLong(address(otoken), _args.amount, _args.index);
+        vaults[_args.owner][_args.vaultId].removeLong(_args.asset, _args.amount, _args.index);
 
-        pool.transferToUser(address(otoken), _args.to, _args.amount);
+        pool.transferToUser(_args.asset, _args.to, _args.amount);
 
-        emit LongOtokenWithdrawed(address(otoken), _args.owner, _args.to, _args.vaultId, _args.amount);
+        emit LongOtokenWithdrawed(_args.asset, _args.owner, _args.to, _args.vaultId, _args.amount);
     }
 
     /**
