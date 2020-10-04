@@ -63,11 +63,9 @@ contract MarginPool is Ownable {
 
     /**
      * @notice transfers an asset from a user to the pool
-     * @dev all tokens are scaled to have 1e18 precision in contracts, but are scaled to native
-     *      token decimals in Controller before being passed to MarginPool
      * @param _asset address of the asset to transfer
      * @param _user address of the user to transfer assets from
-     * @param _amount amount of the token to transfer from _user, scaled to 1e18 of precision
+     * @param _amount amount of the token to transfer from _user
      */
     function transferToPool(
         address _asset,
@@ -84,11 +82,9 @@ contract MarginPool is Ownable {
 
     /**
      * @notice transfers an asset from the pool to a user
-     * @dev all tokens are scaled to have 1e18 precision in contracts, but are scaled to native
-     *      token decimals in Controller before being passed to MarginPool
      * @param _asset address of the asset to transfer
      * @param _user address of the user to transfer assets to
-     * @param _amount amount of the token to transfer to _user, scaled to 1e18 of precision
+     * @param _amount amount of the token to transfer to _user
      */
     function transferToUser(
         address _asset,
@@ -112,11 +108,9 @@ contract MarginPool is Ownable {
 
     /**
      * @notice transfers multiple assets from users to the pool
-     * @dev all tokens are scaled to have 1e18 precision in contracts, but are scaled to native
-     *      token decimals in Controller before being passed to MarginPool
      * @param _asset addresses of the assets to transfer
      * @param _user addresses of the users to transfer assets to
-     * @param _amount amount of each token to transfer to pool, scaled to 1e18 of precision
+     * @param _amount amount of each token to transfer to pool
      */
     function batchTransferToPool(
         address[] memory _asset,
@@ -136,11 +130,9 @@ contract MarginPool is Ownable {
 
     /**
      * @notice transfers multiple assets from the pool to users
-     * @dev all tokens are scaled to have 1e8 precision in contracts, but are scaled to native
-     *      token decimals in Controller before being passed to MarginPool
      * @param _asset addresses of the assets to transfer
      * @param _user addresses of the users to transfer assets to
-     * @param _amount amount of each token to transfer to _user, scaled to 1e18 of precision
+     * @param _amount amount of each token to transfer to _user
      */
     function batchTransferToUser(
         address[] memory _asset,
