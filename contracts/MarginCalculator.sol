@@ -57,8 +57,8 @@ contract MarginCalculator {
             expiry
         );
 
-        // the exchangeRate was scaled by 1e8, if 1e8 otoken can take out 1 USDC, the exchangeRate is currently 1e18
-        // we want to return: how much USDC unit can be take out by 1 (1e8 units) otoken
+        // the exchangeRate was scaled by 1e8, if 1e8 otoken can take out 1 USDC, the exchangeRate is currently 1e8
+        // we want to return: how much USDC units can be taken out by 1 (1e8 units) oToken
         uint256 collateralDecimals = uint256(ERC20Interface(collateral).decimals());
         return cashValueInCollateral.toScaledUint(collateralDecimals, true);
     }
@@ -72,14 +72,14 @@ contract MarginCalculator {
      * if True, collateral can be taken out from the vault, if False, additional collateral needs to be added to vault
      */
     function getExcessCollateral(MarginVault.Vault memory _vault) public view returns (uint256, bool) {
-        // include all the checks for to ensure the vault is valud
+        // include all the checks for to ensure the vault is valid
         _checkIsValidVault(_vault);
 
         bool hasCollateral = _isNotEmpty(_vault.collateralAssets);
         bool hasShort = _isNotEmpty(_vault.shortOtokens);
         bool hasLong = _isNotEmpty(_vault.longOtokens);
 
-        // if the vault contains no oTokens, return the ammount of collateral
+        // if the vault contains no oTokens, return the amount of collateral
         if (!hasShort && !hasLong) {
             uint256 amount = hasCollateral ? _vault.collateralAmounts[0] : 0;
             return (amount, true);
