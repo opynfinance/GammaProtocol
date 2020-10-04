@@ -181,9 +181,10 @@ contract Oracle is Ownable {
     /**
      * @notice sets the dispute period for a pricer
      * @dev can only be called by the owner
-     * for a composite pricer (ie CompoundPricer) that depends on or calls other pricers, ensure that the dispute period
-     * for the composite pricer is longer than the dispute period for the asset pricer that it calls to ensure safe usage
-     * as a dispute in the other pricer will cause the need to dispute the composite pricer
+     * for a composite pricer (ie CompoundPricer) that depends on or calls other pricers, ensure
+     * that the dispute period for the composite pricer is longer than the dispute period for the
+     * asset pricer that it calls to ensure safe usage as a dispute in the other pricer will cause
+     * the need for a dispute with the composite pricer's price
      * @param _pricer pricer address
      * @param _disputePeriod dispute period
      */
