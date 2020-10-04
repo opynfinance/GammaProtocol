@@ -46,7 +46,7 @@ enum ActionType {
 
 contract(
   'Controller',
-  ([owner, accountOwner1, accountOwner2, accountOperator1, holder1, terminator, pauser, random]) => {
+  ([owner, accountOwner1, accountOwner2, accountOperator1, holder1, fullPauser, partialPauser, random]) => {
     // ERC20 mock
     let usdc: MockERC20Instance
     let weth: MockERC20Instance
@@ -106,7 +106,7 @@ contract(
 
       assert.equal(await proxy.proxyOwner(), addressBook.address, 'Proxy owner address mismatch')
       assert.equal(await controllerProxy.owner(), owner, 'Controller owner address mismatch')
-      assert.equal(await controllerProxy.systemPaused(), false, 'System is paused')
+      assert.equal(await controllerProxy.systemPartiallyPaused(), false, 'system is partially paused')
 
       // make everyone rich
       await usdc.mint(accountOwner1, createTokenAmount(10000, usdcDecimals))
@@ -4004,37 +4004,43 @@ contract(
         await controllerProxy.operate(actionArgs, {from: accountOwner1})
       })
 
-      it('should revert set pauser address from non-owner', async () => {
-        await expectRevert(controllerProxy.setPauser(terminator, {from: random}), 'Ownable: caller is not the owner')
-      })
-
-      it('should revert set pauser address to address zero', async () => {
+      it('should revert set partialPauser address from non-owner', async () => {
         await expectRevert(
-          controllerProxy.setPauser(ZERO_ADDR, {from: owner}),
-          'Controller: pauser cannot be set to address zero',
+          controllerProxy.setPartialPauser(partialPauser, {from: random}),
+          'Ownable: caller is not the owner',
         )
       })
 
-      it('should set pauser address', async () => {
-        await controllerProxy.setPauser(pauser, {from: owner})
-        assert.equal(await controllerProxy.pauser(), pauser, 'Pauser address mismatch')
+      it('should revert set partialPauser address to address zero', async () => {
+        await expectRevert(
+          controllerProxy.setPartialPauser(ZERO_ADDR, {from: owner}),
+          'Controller: partialPauser cannot be set to address zero',
+        )
       })
 
-      it('should revert when pausing the system from address other than pauser', async () => {
-        await expectRevert(controllerProxy.setSystemPaused(true, {from: random}), 'Controller: sender is not pauser')
+      it('should set partialPauser address', async () => {
+        await controllerProxy.setPartialPauser(partialPauser, {from: owner})
+        assert.equal(await controllerProxy.partialPauser(), partialPauser, 'partialPauser address mismatch')
+      })
+
+      it('should revert when pausing the system from address other than partialPauser', async () => {
+        await expectRevert(
+          controllerProxy.setSystemPartiallyPaused(true, {from: random}),
+          'Controller: sender is not partialPauser',
+        )
       })
 
       it('should pause system', async () => {
-        const stateBefore = await controllerProxy.systemPaused()
+        const stateBefore = await controllerProxy.systemPartiallyPaused()
         assert.equal(stateBefore, false, 'System already paused')
 
-        await controllerProxy.setSystemPaused(true, {from: pauser})
+        await controllerProxy.setSystemPartiallyPaused(true, {from: partialPauser})
 
-        const stateAfter = await controllerProxy.systemPaused()
+        const stateAfter = await controllerProxy.systemPartiallyPaused()
         assert.equal(stateAfter, true, 'System not paused')
       })
 
-      it('should revert opening a vault when system is paused', async () => {
+      it('should revert opening a vault when system is partially paused', async () => {
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         const actionArgs = [
           {
@@ -4048,10 +4054,13 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'Controller: system is paused')
+        await expectRevert(
+          controllerProxy.operate(actionArgs, {from: accountOwner1}),
+          'Controller: system is partially paused',
+        )
       })
 
-      it('should revert depositing collateral when system is paused', async () => {
+      it('should revert depositing collateral when system is partially paused', async () => {
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e8)
         const actionArgs = [
@@ -4067,10 +4076,13 @@ contract(
           },
         ]
         await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'Controller: system is paused')
+        await expectRevert(
+          controllerProxy.operate(actionArgs, {from: accountOwner1}),
+          'Controller: system is partially paused',
+        )
       })
 
-      it('should revert minting short otoken when system is paused', async () => {
+      it('should revert minting short otoken when system is partially paused', async () => {
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e8)
         const actionArgs = [
@@ -4096,10 +4108,13 @@ contract(
           },
         ]
         await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'Controller: system is paused')
+        await expectRevert(
+          controllerProxy.operate(actionArgs, {from: accountOwner1}),
+          'Controller: system is partially paused',
+        )
       })
 
-      it('should revert withdrawing collateral when system is paused', async () => {
+      it('should revert withdrawing collateral when system is partially paused', async () => {
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         const collateralToWithdraw = new BigNumber(await shortOtoken.strikePrice()).dividedBy(100)
         const actionArgs = [
@@ -4114,10 +4129,13 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'Controller: system is paused')
+        await expectRevert(
+          controllerProxy.operate(actionArgs, {from: accountOwner1}),
+          'Controller: system is partially paused',
+        )
       })
 
-      it('should revert burning short otoken when system is paused', async () => {
+      it('should revert burning short otoken when system is partially paused', async () => {
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         const actionArgs = [
           {
@@ -4132,10 +4150,13 @@ contract(
           },
         ]
 
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'Controller: system is paused')
+        await expectRevert(
+          controllerProxy.operate(actionArgs, {from: accountOwner1}),
+          'Controller: system is partially paused',
+        )
       })
 
-      it('should settle vault when system is paused', async () => {
+      it('should settle vault when system is partially paused', async () => {
         // past time after expiry
         await time.increase(60 * 61) // increase time with one hour in seconds
         // set price in Oracle Mock, 150$ at expiry, expire ITM
@@ -4178,7 +4199,7 @@ contract(
         )
       })
 
-      it('should redeem when system is paused', async () => {
+      it('should redeem when system is partially paused', async () => {
         const amountToRedeem = createTokenAmount(1)
         // transfer to holder
         await shortOtoken.transfer(holder1, amountToRedeem, {from: accountOwner1})
@@ -4226,12 +4247,12 @@ contract(
       })
     })
 
-    describe('Emergency shutdown', () => {
+    describe('Full Pause', () => {
       let shortOtoken: MockOtokenInstance
 
       before(async () => {
         // deactivate pausing mechanism
-        await controllerProxy.setSystemPaused(false, {from: pauser})
+        await controllerProxy.setSystemPartiallyPaused(false, {from: partialPauser})
 
         const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         const expiryTime = new BigNumber(60 * 60) // after 1 hour
@@ -4288,43 +4309,43 @@ contract(
         await controllerProxy.operate(actionArgs, {from: accountOwner1})
       })
 
-      it('should revert set terminator address from non-owner', async () => {
+      it('should revert set fullPauser address from non-owner', async () => {
         await expectRevert(
-          controllerProxy.setTerminator(terminator, {from: random}),
+          controllerProxy.setFullPauser(fullPauser, {from: random}),
           'Ownable: caller is not the owner',
         )
       })
 
-      it('should revert set terminator address to address zero', async () => {
+      it('should revert set fullPauser address to address zero', async () => {
         await expectRevert(
-          controllerProxy.setTerminator(ZERO_ADDR, {from: owner}),
-          'Controller: terminator cannot be set to address zero',
+          controllerProxy.setFullPauser(ZERO_ADDR, {from: owner}),
+          'Controller: fullPauser cannot be set to address zero',
         )
       })
 
-      it('should set terminator address', async () => {
-        await controllerProxy.setTerminator(terminator, {from: owner})
-        assert.equal(await controllerProxy.terminator(), terminator, 'Terminator address mismatch')
+      it('should set fullPauser address', async () => {
+        await controllerProxy.setFullPauser(fullPauser, {from: owner})
+        assert.equal(await controllerProxy.fullPauser(), fullPauser, 'fullPauser address mismatch')
       })
 
-      it('should revert when trigerring emergency shutdown the system from address other than terminator', async () => {
+      it('should revert when triggering full pause from address other than fullPauser', async () => {
         await expectRevert(
-          controllerProxy.setEmergencyShutdown(true, {from: random}),
-          'Controller: sender is not terminator',
+          controllerProxy.setSystemFullyPaused(true, {from: random}),
+          'Controller: sender is not fullPauser',
         )
       })
 
-      it('should trigger emergency shutdown system', async () => {
-        const stateBefore = await controllerProxy.systemShutdown()
-        assert.equal(stateBefore, false, 'System already in emergency shutdown state')
+      it('should trigger full pause', async () => {
+        const stateBefore = await controllerProxy.systemFullyPaused()
+        assert.equal(stateBefore, false, 'System already in full pause state')
 
-        await controllerProxy.setEmergencyShutdown(true, {from: terminator})
+        await controllerProxy.setSystemFullyPaused(true, {from: fullPauser})
 
-        const stateAfter = await controllerProxy.systemShutdown()
-        assert.equal(stateAfter, true, 'System not in emergency shutdown state')
+        const stateAfter = await controllerProxy.systemFullyPaused()
+        assert.equal(stateAfter, true, 'System not in full pause state')
       })
 
-      it('should revert opening a vault when system is in emergency shutdown state', async () => {
+      it('should revert opening a vault when system is in full pause state', async () => {
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         const actionArgs = [
           {
@@ -4340,11 +4361,11 @@ contract(
         ]
         await expectRevert(
           controllerProxy.operate(actionArgs, {from: accountOwner1}),
-          'Controller: system is in emergency shutdown state',
+          'Controller: system is fully paused',
         )
       })
 
-      it('should revert depositing collateral when system is in emergency shutdown state', async () => {
+      it('should revert depositing collateral when system is in full pause state', async () => {
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e8)
         const actionArgs = [
@@ -4362,11 +4383,11 @@ contract(
         await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
         await expectRevert(
           controllerProxy.operate(actionArgs, {from: accountOwner1}),
-          'Controller: system is in emergency shutdown state',
+          'Controller: system is fully paused',
         )
       })
 
-      it('should revert minting short otoken when system is in emergency shutdown state', async () => {
+      it('should revert minting short otoken when system is in full pause state', async () => {
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e8)
         const actionArgs = [
@@ -4394,11 +4415,11 @@ contract(
         await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
         await expectRevert(
           controllerProxy.operate(actionArgs, {from: accountOwner1}),
-          'Controller: system is in emergency shutdown state',
+          'Controller: system is fully paused',
         )
       })
 
-      it('should revert withdrawing collateral when system is in emergency shutdown state', async () => {
+      it('should revert withdrawing collateral when system is in full pause state', async () => {
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         const collateralToWithdraw = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e8)
         const actionArgs = [
@@ -4415,11 +4436,11 @@ contract(
         ]
         await expectRevert(
           controllerProxy.operate(actionArgs, {from: accountOwner1}),
-          'Controller: system is in emergency shutdown state',
+          'Controller: system is fully paused',
         )
       })
 
-      it('should revert burning short otoken when system is in emergency shutdown state', async () => {
+      it('should revert burning short otoken when system is in full pause state', async () => {
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         const actionArgs = [
           {
@@ -4436,11 +4457,11 @@ contract(
 
         await expectRevert(
           controllerProxy.operate(actionArgs, {from: accountOwner1}),
-          'Controller: system is in emergency shutdown state',
+          'Controller: system is fully paused',
         )
       })
 
-      it('should revert settling vault when system is in emergency shutdown state', async () => {
+      it('should revert settling vault when system is in full pause state', async () => {
         // past time after expiry
         await time.increase(60 * 61) // increase time with one hour in seconds
         // set price in Oracle Mock, 150$ at expiry, expire ITM
@@ -4477,11 +4498,11 @@ contract(
 
         await expectRevert(
           controllerProxy.operate(actionArgs, {from: accountOwner1}),
-          'Controller: system is in emergency shutdown state',
+          'Controller: system is fully paused',
         )
       })
 
-      it('should revert redeem when system is in emergency shutdown state', async () => {
+      it('should revert redeem when system is in full pause state', async () => {
         const shortAmountToBurn = new BigNumber('1')
         // transfer to holder
         await shortOtoken.transfer(holder1, shortAmountToBurn, {from: accountOwner1})
@@ -4501,7 +4522,7 @@ contract(
 
         await expectRevert(
           controllerProxy.operate(actionArgs, {from: accountOwner1}),
-          'Controller: system is in emergency shutdown state',
+          'Controller: system is fully paused',
         )
       })
     })

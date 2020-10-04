@@ -8,7 +8,7 @@ import {OpynPricerInterface} from "../interfaces/OpynPricerInterface.sol";
  * @notice A Pricer contract for USDC
  */
 contract USDCPricer is OpynPricerInterface {
-    /// @notice USDC address
+    /// @dev USDC address
     address public usdc;
 
     /// USDC price = 1, scaled by 1e8

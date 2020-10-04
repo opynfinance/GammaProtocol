@@ -14,7 +14,7 @@ import {Controller} from "../../Controller.sol";
 /**
  * @title PayableProxyController
  * @author Opyn Team
- * @dev Contractfor wrapping/unwrapping ETH before/after interacting with Gamma
+ * @dev Contract for wrapping/unwrapping ETH before/after interacting with the Gamma Protocol
  */
 contract PayableProxyController is ReentrancyGuard {
     WETH9 public weth;
@@ -32,7 +32,7 @@ contract PayableProxyController is ReentrancyGuard {
     }
 
     /**
-     * @notice Fallback function. Disallows ether to be sent to this contract without data except when unwrapping WETH.
+     * @notice fallback function which disallows ETH to be sent to this contract without data except when unwrapping WETH
      */
     fallback() external payable {
         require(msg.sender == address(weth), "PayableProxyController: Cannot receive ETH");
@@ -40,7 +40,7 @@ contract PayableProxyController is ReentrancyGuard {
 
     /**
      * @notice execute a number of actions
-     * @dev a wrapper for Controller operate function, to wrap WETH and the beginning and unwrap WETH at the end of the execution
+     * @dev a wrapper for the Controller operate function, to wrap WETH and the beginning and unwrap WETH at the end of the execution
      * @param _actions array of actions arguments
      */
     function operate(Actions.ActionArgs[] memory _actions, address payable sendEthTo) external payable nonReentrant {
@@ -53,7 +53,7 @@ contract PayableProxyController is ReentrancyGuard {
         for (uint256 i = 0; i < _actions.length; i++) {
             Actions.ActionArgs memory action = _actions[i];
 
-            // check the msg.sender is an owner or operator
+            // check that msg.sender is an owner or operator
             if (action.owner != address(0)) {
                 require(
                     (msg.sender == action.owner) || (controller.isOperator(action.owner, msg.sender)),
@@ -64,7 +64,7 @@ contract PayableProxyController is ReentrancyGuard {
 
         controller.operate(_actions);
 
-        // return all remaining WETH to the sendEthTo as ETH
+        // return all remaining WETH to the sendEthTo address as ETH
         uint256 remainingWeth = weth.balanceOf(address(this));
         if (remainingWeth != 0) {
             require(sendEthTo != address(0), "PayableProxyController: cannot send ETH to address zero");
