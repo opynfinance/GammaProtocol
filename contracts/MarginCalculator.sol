@@ -15,7 +15,7 @@ import {MarginVault} from "./libs/MarginVault.sol";
 /**
  * @title MarginCalculator
  * @author Opyn
- * @notice Calculator module that check if a given vault is valid.
+ * @notice Calculator module that checks if a given vault is valid, calculates margin requirements, and settlement proceeds
  */
 contract MarginCalculator {
     using SafeMath for uint256;
@@ -33,10 +33,10 @@ contract MarginCalculator {
     }
 
     /**
-     * @notice Return the net worth of an expired oToken, denominated in collateral.
-     * @param _otoken otoken address
-     * @return the exchange rate that shows how much collateral unit can be take out by 1 otoken unit, scaled by 1e8.
-     * Or how much collateral can be taken out for 1 (1e8) otoken
+     * @notice return the cash value of an expired oToken, denominated in collateral
+     * @param _otoken oToken address
+     * @return how much collateral can be taken out by 1 otoken unit, scaled by 1e8,
+     * or how much collateral can be taken out for 1 (1e8) oToken
      */
     function getExpiredPayoutRate(address _otoken) external view returns (uint256) {
         require(_otoken != address(0), "MarginCalculator: Invalid token address");
@@ -64,22 +64,22 @@ contract MarginCalculator {
     }
 
     /**
-     * @notice returns the amount of collateral that owner can take out from this vault.
-     * @dev The return amount is denominated in the collateral asset for the otoken
-     * @param _vault the theoretical vault that needs to be checked
-     * @return excessCollateral the amount by which the margin is above or below the required amount.
-     * @return isExcess True if there's excess margin in the vault. In this case, collateral can be taken out from the vault.
-     * False if there is insufficient margin and additional collateral needs to be added to the vault to create the position.
+     * @notice returns the amount of collateral that can be removed from a actual or theoretical vault
+     * @dev return amount is denominated in the collateral asset for the oToken in the vault, or the collateral asset in the vault
+     * @param _vault theoretical vault that needs to be checked
+     * @return excessCollateral the amount by which the margin is above or below the required amount
+     * @return isExcess True if there is excess margin in the vault, False if there is a deficit of margin in the vault
+     * if True, collateral can be taken out from the vault, if False, additional collateral needs to be added to vault
      */
     function getExcessCollateral(MarginVault.Vault memory _vault) public view returns (uint256, bool) {
-        // include all the checks for a vault
+        // include all the checks for to ensure the vault is valud
         _checkIsValidVault(_vault);
 
         bool hasCollateral = _isNotEmpty(_vault.collateralAssets);
         bool hasShort = _isNotEmpty(_vault.shortOtokens);
         bool hasLong = _isNotEmpty(_vault.longOtokens);
 
-        // if the vault contains no otokens: return collateral value.
+        // if the vault contains no oTokens, return the ammount of collateral
         if (!hasShort && !hasLong) {
             uint256 amount = hasCollateral ? _vault.collateralAmounts[0] : 0;
             return (amount, true);
@@ -99,27 +99,27 @@ contract MarginCalculator {
 
         address otoken = hasLong ? _vault.longOtokens[0] : _vault.shortOtokens[0];
         uint256 collateralDecimals = ERC20Interface(OtokenInterface(otoken).collateralAsset()).decimals();
-        // if there's excess, truncate the tailing digits in excessCollateralExternal calculation
+        // if is excess, truncate the tailing digits in excessCollateralExternal calculation
         uint256 excessCollateralExternal = excessCollateral.toScaledUint(collateralDecimals, isExcess);
         return (excessCollateralExternal, isExcess);
     }
 
     /**
-     * @notice Return the cash value of an expired oToken, denominated in strike asset.
-     * @dev For call return = Max (0, ETH Price - oToken.strike)
-     * @dev For put return Max(0, oToken.strike - ETH Price)
-     * @param _otoken otoken address
-     * @return the cash value of an expired otoken, denominated in strike asset.
+     * @notice return the cash value of an expired oToken, denominated in strike asset
+     * @dev for a call, return Max (0, underlyingPriceInStrike - otoken.strikePrice)
+     * @dev for a put, return Max(0, otoken.strikePrice - underlyingPriceInStrike)
+     * @param _otoken oToken address
+     * @return cash value of an expired otoken, denominated in the strike asset
      */
     function _getExpiredCashValue(address _otoken) internal view returns (FPI.FixedPointInt memory) {
         OtokenInterface otoken = OtokenInterface(_otoken);
 
-        // strike price is denominated in strike asset.
+        // strike price is denominated in strike asset
         FPI.FixedPointInt memory strikePrice = FPI.fromScaledUint(otoken.strikePrice(), BASE);
 
-        // calculate the expiry convertion rate between strike and underlying
         FPI.FixedPointInt memory one = FPI.fromScaledUint(1, 0);
 
+        // calculate the value of the underlying asset in terms of the strike asset
         FPI.FixedPointInt memory underlyingPriceInStrike = _convertAmountOnExpiryPrice(
             one, // underlying price denominated in underlying
             otoken.underlyingAsset(),
@@ -135,13 +135,13 @@ contract MarginCalculator {
     }
 
     /**
-     * @notice Calculate the amount of collateral needed for a spread vault.
-     * @dev The vault passed in already pass amount array length = asset array length check.
-     * @param _vault the theoretical vault that needs to be checked
+     * @notice calculate the amount of collateral needed for a vault
+     * @dev vault passed in has already passed the checkIsValidVault function
+     * @param _vault theoretical vault that needs to be checked
      * @return marginRequired the minimal amount of collateral needed in a vault, denominated in collateral
      */
     function _getMarginRequired(MarginVault.Vault memory _vault) internal view returns (FPI.FixedPointInt memory) {
-        // The vault passed must have either long otoken or short otoken in it.
+        // vault has either long oTokens or short oTokens in it
         bool hasShort = _isNotEmpty(_vault.shortOtokens);
         bool hasLong = _isNotEmpty(_vault.longOtokens);
 
@@ -203,11 +203,11 @@ contract MarginCalculator {
     }
 
     /**
-     * @dev returns the strike asset needed for a put spread with given short and long asset
+     * @dev returns the strike asset amount of margin required for a put or put spread with the given short oTokens, long oTokens and amounts
      *
      * marginRequired = max( (short amount * short strike) - (long strike * min (short amount, long amount)) , 0 )
      *
-     * @return margin requirement denominated in strike asset.
+     * @return margin requirement denominated in the strike asset
      */
     function _getPutSpreadMarginRequired(
         FPI.FixedPointInt memory _shortAmount,
@@ -219,14 +219,14 @@ contract MarginCalculator {
     }
 
     /**
-     * @dev returns the underlying asset needed for a call spread with given short and long asset
+     * @dev returns the underlying asset amount required for a call or call spread with the given short oTokens, long oTokens, and amounts
      *
      *                           (long strike - short strike) * short amount
-     * marginRequired =  max( ------------------------------------------------- , max ( short amount - long amount , 0) )
+     * marginRequired =  max( ------------------------------------------------- , max (short amount - long amount, 0) )
      *                                           long strike
      *
-     * @dev if long strike = 0 (no long token), then return net = short amount.
-     * @return margin requirement denominated in underlying asset.
+     * @dev if long strike = 0, return max( short amount - long amount, 0)
+     * @return margin requirement denominated in the underlying asset
      */
     function _getCallSpreadMarginRequired(
         FPI.FixedPointInt memory _shortAmount,
@@ -255,11 +255,11 @@ contract MarginCalculator {
     }
 
     /**
-     * @dev calculate cash value for an expired vault.
+     * @dev calculate the cash value obligation for an expired vault, where a positive number is an obligation
      *
      * Formula: net = (short cash value * short amount) - ( long cash value * long Amount )
      *
-     * @return cash value denominated in strike asset.
+     * @return cash value obligation denominated in the strike asset
      */
     function _getExpiredSpreadCashValue(
         FPI.FixedPointInt memory _shortAmount,
@@ -271,14 +271,16 @@ contract MarginCalculator {
     }
 
     /**
-     * @dev ensure that the vault contains
-     * a) at most 1 asset type used as collateral,
-     * b) at most 1 series of option used as the long option and
-     * c) at most 1 series of option used as the short option.
-     * @param _vault the vault to check.
+     * @dev ensure that:
+     * a) at most 1 asset type used as collateral
+     * b) at most 1 series of option used as the long option
+     * c) at most 1 series of option used as the short option
+     * d) asset array lengths match for long, short and collateral
+     * e) long option and collateral asset is acceptable for margin with short asset
+     * @param _vault the vault to check
      */
     function _checkIsValidVault(MarginVault.Vault memory _vault) internal view {
-        // ensure all the arrays in the vault is valid
+        // ensure all the arrays in the vault are valid
         require(_vault.shortOtokens.length <= 1, "MarginCalculator: Too many short otokens in the vault");
         require(_vault.longOtokens.length <= 1, "MarginCalculator: Too many long otokens in the vault");
         require(_vault.collateralAssets.length <= 1, "MarginCalculator: Too many collateral assets in the vault");
@@ -296,7 +298,7 @@ contract MarginCalculator {
             "MarginCalculator: Collateral asset and amount mismatch"
         );
 
-        // ensure the long asset is valid for the short asset.
+        // ensure the long asset is valid for the short asset
         require(_isMarginableLong(_vault), "MarginCalculator: long asset not marginable for short asset");
 
         // ensure that the collateral asset is valid for the short asset
@@ -304,13 +306,13 @@ contract MarginCalculator {
     }
 
     /**
-     * @dev if there is a short option and a long option in the vault, ensure that the long option series being used is a valid margin.
+     * @dev if there is a short option and a long option in the vault, ensure that the long option is able to be used as collateral for the short option
      * @param _vault the vault to check.
      */
     function _isMarginableLong(MarginVault.Vault memory _vault) internal view returns (bool) {
         bool hasLong = _isNotEmpty(_vault.longOtokens);
         bool hasShort = _isNotEmpty(_vault.shortOtokens);
-        // if vault is missing long or short, return true.
+        // if vault is missing a long or a short, return True
         if (!hasLong || !hasShort) return true;
 
         OtokenInterface long = OtokenInterface(_vault.longOtokens[0]);
@@ -325,7 +327,7 @@ contract MarginCalculator {
     }
 
     /**
-     * @dev if there is short option and collateral asset in the vault, ensure that the collateral asset being used is a valid margin.
+     * @dev if there is short option and collateral asset in the vault, ensure that the collateral asset is valid for the short option
      * @param _vault the vault to check.
      */
     function _isMarginableCollateral(MarginVault.Vault memory _vault) internal view returns (bool) {
@@ -349,12 +351,12 @@ contract MarginCalculator {
     }
 
     /**
-     * @notice convert an amount in asset A to equivalent value of asset B, base on live price.
-     * @dev this function include the amount and apply .mul() first to increase accuracy
+     * @notice convert an amount in asset A to equivalent amount of asset B, based on a live price
+     * @dev function includes the amount and applies .mul() first to increase the accuracy
      * @param _amount amount in asset A
      * @param _assetA asset A
      * @param _assetB asset B
-     * @return _amount in asset B.
+     * @return _amount in asset B
      */
     function _convertAmountOnLivePrice(
         FPI.FixedPointInt memory _amount,
@@ -373,12 +375,12 @@ contract MarginCalculator {
     }
 
     /**
-     * @notice convert an amount in asset A to equivalent value of asset B, base on expiry price
-     * @dev this function include the amount and apply .mul() first to increase accuracy
+     * @notice convert an amount in asset A to equivalent amount of asset B, based on an expiry price
+     * @dev function includes the amount and apply .mul() first to increase the accuracy
      * @param _amount amount in asset A
      * @param _assetA asset A
      * @param _assetB asset B
-     * @return _amount in asset B.
+     * @return _amount in asset B
      */
     function _convertAmountOnExpiryPrice(
         FPI.FixedPointInt memory _amount,
@@ -399,8 +401,8 @@ contract MarginCalculator {
     }
 
     /**
-     * @dev check if asset array contain a token address.
-     * @return true if the array is not empty
+     * @dev check if asset array contain a token address
+     * @return True if the array is not empty
      */
     function _isNotEmpty(address[] memory _assets) internal pure returns (bool) {
         return _assets.length > 0 && _assets[0] != address(0);

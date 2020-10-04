@@ -16,8 +16,8 @@
 pragma solidity 0.6.10;
 
 /**
- * @author Opyn Team
  * @title WETH contract
+ * @author Opyn Team
  * @dev A wrapper to use ETH as collateral
  */
 contract WETH9 {
@@ -25,13 +25,13 @@ contract WETH9 {
     string public symbol = "WETH";
     uint8 public decimals = 18;
 
-    /// @notice emmitted when a sender approve WETH transfer
+    /// @notice emits an event when a sender approves WETH
     event Approval(address indexed src, address indexed guy, uint256 wad);
-    /// @notice emmitted when a sender transfer WETH
+    /// @notice emits an event when a sender transfers WETH
     event Transfer(address indexed src, address indexed dst, uint256 wad);
-    /// @notice emitted when a sender deposit ETH into this contract
+    /// @notice emits an event when a sender deposits ETH into this contract
     event Deposit(address indexed dst, uint256 wad);
-    /// @notice emmited when a sender withdraw ETH from this contract
+    /// @notice emits an event when a sender withdraws ETH from this contract
     event Withdrawal(address indexed src, uint256 wad);
 
     /// @notice mapping between address and WETH balance
@@ -40,15 +40,15 @@ contract WETH9 {
     mapping(address => mapping(address => uint256)) public allowance;
 
     /**
-     * @notice fallback function that receive ETH
-     * @dev will get called in a tx with
+     * @notice fallback function that receives ETH
+     * @dev will get called in a tx with ETH
      */
     receive() external payable {
         deposit();
     }
 
     /**
-     * @notice Wrap deposited ETH into WETH
+     * @notice wrap deposited ETH into WETH
      */
     function deposit() public payable {
         balanceOf[msg.sender] += msg.value;
@@ -79,7 +79,7 @@ contract WETH9 {
      * @notice approve transfer
      * @param _guy address to approve
      * @param _wad amount of WETH
-     * @return true if tx succeeded
+     * @return True if tx succeeds, False if not
      */
     function approve(address _guy, uint256 _wad) public returns (bool) {
         allowance[msg.sender][_guy] = _wad;
@@ -91,7 +91,7 @@ contract WETH9 {
      * @notice transfer WETH
      * @param _dst destination address
      * @param _wad amount to transfer
-     * @return true if tx succeeded
+     * @return True if tx succeeds, False if not
      */
     function transfer(address _dst, uint256 _wad) public returns (bool) {
         return transferFrom(msg.sender, _dst, _wad);
@@ -102,7 +102,7 @@ contract WETH9 {
      * @param _src source address
      * @param _dst destination address
      * @param _wad amount to transfer
-     * @return true if tx succeeded
+     * @return True if tx succeeds, False if not
      */
     function transferFrom(
         address _src,

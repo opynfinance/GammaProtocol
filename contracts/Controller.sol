@@ -20,8 +20,8 @@ import {MarginPoolInterface} from "./interfaces/MarginPoolInterface.sol";
 import {CalleeInterface} from "./interfaces/CalleeInterface.sol";
 
 /**
- * @author Opyn Team
  * @title Controller
+ * @author Opyn Team
  * @notice Contract that controls the Gamma Protocol and the interaction of all sub contracts
  */
 contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgradeSafe {
