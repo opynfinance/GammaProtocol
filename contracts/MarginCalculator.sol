@@ -57,8 +57,8 @@ contract MarginCalculator {
             expiry
         );
 
-        // the exchangeRate was scaled by 1e8, if 1e8 otoken can take out 1 USDC, the exchangeRate is currently 1e18
-        // we want to return: how much USDC unit can be take out by 1 (1e8 units) otoken
+        // the exchangeRate was scaled by 1e8, if 1e8 otoken can take out 1 USDC, the exchangeRate is currently 1e8
+        // we want to return: how much USDC can be taken out by 1 (1e8 units) oToken
         uint256 collateralDecimals = uint256(ERC20Interface(collateral).decimals());
         return cashValueInCollateral.toScaledUint(collateralDecimals, true);
     }
