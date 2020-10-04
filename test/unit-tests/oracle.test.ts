@@ -190,6 +190,11 @@ contract('Oracle', ([owner, disputer, random, collateral, strike]) => {
   })
 
   describe('Set disputer', () => {
+    it('should return address(0) for disputer', async () => {
+      const disputer = await oracle.getDisputer()
+      assert.equal(disputer, ZERO_ADDR)
+    })
+
     it('should revert setting disputer from a non-owner address', async () => {
       await expectRevert(oracle.setDisputer(disputer, {from: random}), 'Ownable: caller is not the owner')
     })
