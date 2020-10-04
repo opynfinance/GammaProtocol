@@ -114,7 +114,7 @@ contract Oracle is Ownable {
     /**
      * @notice get a pricer's dispute period
      * dispute period is the period of time after an expiry price has been pushed where a price can be disputed
-     * @dev during dispute period, the disputer can dispute the submitted price and modify it
+     * @dev during the dispute period, the disputer can dispute the submitted price and modify it
      * @param _pricer pricer address
      * @return dispute period
      */
@@ -181,6 +181,9 @@ contract Oracle is Ownable {
     /**
      * @notice sets the dispute period for a pricer
      * @dev can only be called by the owner
+     * for a composite pricer (ie CompoundPricer) that depends on or calls other pricers, ensure that the dispute period
+     * for the composite pricer is longer than the dispute period for the asset pricer that it calls to ensure safe usage
+     * as a dispute in the other pricer will cause the need to dispute the composite pricer
      * @param _pricer pricer address
      * @param _disputePeriod dispute period
      */
