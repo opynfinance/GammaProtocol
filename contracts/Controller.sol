@@ -34,6 +34,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     MarginCalculatorInterface public calculator;
     MarginPoolInterface public pool;
 
+    uint256 internal constant BASE = 8;
+
     /// @notice address that has permission to partially pause the system, where system functionality is paused
     /// except redeem and settleVault
     address public partialPauser;
@@ -381,7 +383,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     function getPayout(address _otoken, uint256 _amount) public view returns (uint256) {
         uint256 rate = calculator.getExpiredPayoutRate(_otoken);
-        return rate.mul(_amount).div(1e8);
+        return rate.mul(_amount).div(10**BASE);
     }
 
     /**
