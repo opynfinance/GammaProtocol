@@ -34,6 +34,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     MarginCalculatorInterface public calculator;
     MarginPoolInterface public pool;
 
+    ///@dev scale used in MarginCalculator
     uint256 internal constant BASE = 8;
 
     /// @notice address that has permission to partially pause the system, where system functionality is paused
