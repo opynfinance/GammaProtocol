@@ -10,7 +10,7 @@ import {
   FlashWrapInstance,
 } from '../../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
-
+const {expectRevert} = require('@openzeppelin/test-helpers')
 const MockOracle = artifacts.require('MockOracle.sol')
 const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy.sol')
 const MarginCalculator = artifacts.require('MarginCalculator.sol')
@@ -38,7 +38,7 @@ enum ActionType {
   Call,
 }
 
-contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, holder1, fullPauser, random]) => {
+contract('Controller', ([owner, accountOwner1]) => {
   // Oracle module
   let oracle: MockOracleInstance
   // calculator module
@@ -132,6 +132,35 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         senderWethBalanceAfter.minus(senderWethBalanceBefore).toString(),
         amountToWrap.toString(),
         'sender WETH balance mismatch',
+      )
+    })
+    it('should revert if total msg.value and action.value mismath', async () => {
+      const amountToWrap = new BigNumber(web3.utils.toWei('1', 'ether'))
+      const actionArgs = [
+        {
+          actionType: ActionType.Call,
+          owner: ZERO_ADDR,
+          secondAddress: flashWrap.address,
+          asset: ZERO_ADDR,
+          vaultId: '0',
+          amount: amountToWrap.toString(),
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.Call,
+          owner: ZERO_ADDR,
+          secondAddress: flashWrap.address,
+          asset: ZERO_ADDR,
+          vaultId: '0',
+          amount: amountToWrap.toString(),
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+      await expectRevert(
+        controllerProxy.operate(actionArgs, {from: accountOwner1, value: web3.utils.toWei('1', 'ether')}),
+        'Controller: msg.value and CallArgs.value mismatch',
       )
     })
   })

@@ -34,6 +34,9 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     MarginCalculatorInterface public calculator;
     MarginPoolInterface public pool;
 
+    ///@dev scale used in MarginCalculator
+    uint256 internal constant BASE = 8;
+
     /// @notice address that has permission to partially pause the system, where system functionality is paused
     /// except redeem and settleVault
     address public partialPauser;
@@ -381,7 +384,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     function getPayout(address _otoken, uint256 _amount) public view returns (uint256) {
         uint256 rate = calculator.getExpiredPayoutRate(_otoken);
-        return rate.mul(_amount).div(1e8);
+        return rate.mul(_amount).div(10**BASE);
     }
 
     /**
@@ -454,6 +457,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     {
         address vaultOwner;
         uint256 vaultId;
+        uint256 ethLeft = msg.value;
         bool vaultUpdated;
 
         for (uint256 i = 0; i < _actions.length; i++) {
@@ -495,7 +499,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
                 _settleVault(Actions._parseSettleVaultArgs(action));
             } else {
                 // actionType == Actions.ActionType.Call
-                _call(Actions._parseCallArgs(action));
+                ethLeft = _call(Actions._parseCallArgs(action), ethLeft);
             }
         }
 
@@ -754,8 +758,15 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @notice execute arbitrary calls
      * @dev cannot be called when system is partiallyPaused or fullyPaused
      * @param _args Call action
+     * @param _ethLeft amount of eth left for this call.
      */
-    function _call(Actions.CallArgs memory _args) internal notPartiallyPaused onlyWhitelistedCallee(_args.callee) {
+    function _call(Actions.CallArgs memory _args, uint256 _ethLeft)
+        internal
+        notPartiallyPaused
+        onlyWhitelistedCallee(_args.callee)
+        returns (uint256)
+    {
+        _ethLeft = _ethLeft.sub(_args.msgValue, "Controller: msg.value and CallArgs.value mismatch");
         CalleeInterface(_args.callee).callFunction{value: _args.msgValue}(
             msg.sender,
             _args.owner,
@@ -764,6 +775,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         );
 
         emit CallExecuted(msg.sender, _args.callee, _args.owner, _args.vaultId, _args.data);
+
+        return _ethLeft;
     }
 
     /**
