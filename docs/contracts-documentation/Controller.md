@@ -80,7 +80,7 @@ Contract that controls the Gamma Protocol and the interaction of all sub contrac
 
 - `_settleVault(struct Actions.SettleVaultArgs _args) (internal)`
 
-- `_call(struct Actions.CallArgs _args) (internal)`
+- `_call(struct Actions.CallArgs _args, uint256 _ethLeft) (internal)`
 
 - `_checkVaultId(address _accountOwner, uint256 _vaultId) (internal)`
 
@@ -490,7 +490,7 @@ deletes a vault of vaultId after net proceeds/collateral is removed, cannot be c
 
 - `_args`: SettleVaultArgs structure
 
-### Function `_call(struct Actions.CallArgs _args) internal`
+### Function `_call(struct Actions.CallArgs _args, uint256 _ethLeft) → uint256 internal`
 
 execute arbitrary calls
 
@@ -499,6 +499,8 @@ cannot be called when system is partiallyPaused or fullyPaused
 #### Parameters:
 
 - `_args`: Call action
+
+- `_ethLeft`: amount of eth left for this call.
 
 ### Function `_checkVaultId(address _accountOwner, uint256 _vaultId) → bool internal`
 
