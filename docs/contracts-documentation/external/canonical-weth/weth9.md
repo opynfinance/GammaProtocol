@@ -30,13 +30,13 @@ A wrapper to use ETH as collateral
 
 ### Function `receive() external`
 
-fallback function that receive ETH
+fallback function that receives ETH
 
-will get called in a tx with
+will get called in a tx with ETH
 
 ### Function `deposit() public`
 
-Wrap deposited ETH into WETH
+wrap deposited ETH into WETH
 
 ### Function `withdraw(uint256 _wad) public`
 
@@ -68,7 +68,7 @@ approve transfer
 
 #### Return Values:
 
-- true if tx succeeded
+- True if tx succeeds, False if not
 
 ### Function `transfer(address _dst, uint256 _wad) → bool public`
 
@@ -82,7 +82,7 @@ transfer WETH
 
 #### Return Values:
 
-- true if tx succeeded
+- True if tx succeeds, False if not
 
 ### Function `transferFrom(address _src, address _dst, uint256 _wad) → bool public`
 
@@ -98,20 +98,20 @@ transfer from address
 
 #### Return Values:
 
-- true if tx succeeded
+- True if tx succeeds, False if not
 
 ### Event `Approval(address src, address guy, uint256 wad)`
 
-emmitted when a sender approve WETH transfer
+emits an event when a sender approves WETH
 
 ### Event `Transfer(address src, address dst, uint256 wad)`
 
-emmitted when a sender transfer WETH
+emits an event when a sender transfers WETH
 
 ### Event `Deposit(address dst, uint256 wad)`
 
-emitted when a sender deposit ETH into this contract
+emits an event when a sender deposits ETH into this contract
 
 ### Event `Withdrawal(address src, uint256 wad)`
 
-emmited when a sender withdraw ETH from this contract
+emits an event when a sender withdraws ETH from this contract

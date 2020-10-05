@@ -1,6 +1,6 @@
 # `Whitelist`
 
-The whitelist module keeps track of all valid Otoken contracts.
+The whitelist module keeps track of all valid oToken addresses, product hashes, collateral addresses, and callee addresses.
 
 ## Modifiers:
 
@@ -54,7 +54,7 @@ The whitelist module keeps track of all valid Otoken contracts.
 
 ### Modifier `onlyFactory()`
 
-check if the sender is the Otoken Factory module
+check if the sender is the oTokenFactory module
 
 ### Function `constructor(address _addressBook) public`
 
@@ -68,7 +68,7 @@ constructor
 
 check if a product is whitelisted
 
-product = the hash of underlying, strike and collateral asset
+product is the hash of underlying asset, strike asset, collateral asset, and isPut
 
 #### Parameters:
 
@@ -78,13 +78,15 @@ product = the hash of underlying, strike and collateral asset
 
 - `_collateral`: asset that is held as collateral against short/written options
 
+- `_isPut`: True if a put option, False if a call option
+
 #### Return Values:
 
-- true if product is whitelisted
+- True if product is whitelisted
 
 ### Function `isWhitelistedCollateral(address _collateral) → bool external`
 
-check if the collateral is whitelisted
+check if a collateral asset is whitelisted
 
 #### Parameters:
 
@@ -92,39 +94,39 @@ check if the collateral is whitelisted
 
 #### Return Values:
 
-- true if the collateral is whitelisted
+- True if the collateral is whitelisted
 
 ### Function `isWhitelistedOtoken(address _otoken) → bool external`
 
-check if an otoken is whitelisted
+check if an oToken is whitelisted
 
 #### Parameters:
 
-- `_otoken`: otoken address
+- `_otoken`: oToken address
 
 #### Return Values:
 
-- true if otoken is whitelisted
+- True if the oToken is whitelisted
 
 ### Function `isWhitelistedCallee(address _callee) → bool external`
 
-check if a callee address is whitelisted for call acton
+check if a callee address is whitelisted for the call action
 
 #### Parameters:
 
-- `_callee`: destination address
+- `_callee`: callee destination address
 
 #### Return Values:
 
-- true if address is whitelisted
+- True if the address is whitelisted
 
 ### Function `whitelistProduct(address _underlying, address _strike, address _collateral, bool _isPut) external`
 
-allow owner to whitelist product
+allows the owner to whitelist a product
 
-a product is the hash of the underlying, collateral and strike assets
+product is the hash of underlying asset, strike asset, collateral asset, and isPut
 
-can only be called from owner address
+can only be called from the owner address
 
 #### Parameters:
 
@@ -134,15 +136,15 @@ can only be called from owner address
 
 - `_collateral`: asset that is held as collateral against short/written options
 
-- `_isPut`: is this a put option, if not it is a call
+- `_isPut`: True if a put option, False if a call option
 
 ### Function `blacklistProduct(address _underlying, address _strike, address _collateral, bool _isPut) external`
 
-allow owner to blacklist product
+allow the owner to blacklist a product
 
-a product is the hash of the underlying, collateral and strike assets
+product is the hash of underlying asset, strike asset, collateral asset, and isPut
 
-can only be called from owner address
+can only be called from the owner address
 
 #### Parameters:
 
@@ -152,13 +154,13 @@ can only be called from owner address
 
 - `_collateral`: asset that is held as collateral against short/written options
 
-- `_isPut`: is this a put option, if not it is a call
+- `_isPut`: True if a put option, False if a call option
 
 ### Function `whitelistCollateral(address _collateral) external`
 
-whitelist a collateral address, can only be called by owner
+allows the owner to whitelist a collateral address
 
-function can only be called by owner
+can only be called from the owner address
 
 #### Parameters:
 
@@ -166,9 +168,9 @@ function can only be called by owner
 
 ### Function `blacklistCollateral(address _collateral) external`
 
-whitelist a collateral address, can only be called by owner
+allows the owner to blacklist a collateral address
 
-function can only be called by owner
+can only be called from the owner address
 
 #### Parameters:
 
@@ -176,27 +178,27 @@ function can only be called by owner
 
 ### Function `whitelistOtoken(address _otokenAddress) external`
 
-allow Otoken Factory to whitelist a new option
+allows the OtokenFactory module to whitelist a new option
 
-can only be called from the Otoken Factory address
+can only be called from the OtokenFactory address
 
 #### Parameters:
 
-- `_otokenAddress`: otoken
+- `_otokenAddress`: oToken
 
 ### Function `blacklistOtoken(address _otokenAddress) external`
 
-allow owner to blacklist a new option
+allows the owner to blacklist an option
 
-can only be called from the owner's address
+can only be called from the owner address
 
 #### Parameters:
 
-- `_otokenAddress`: otoken
+- `_otokenAddress`: oToken
 
 ### Function `whitelisteCallee(address _callee) external`
 
-allow Owner to whitelisted a callee address
+allows the owner to whitelist a destination address for the call action
 
 can only be called from the owner address
 
@@ -206,9 +208,9 @@ can only be called from the owner address
 
 ### Function `blacklistCallee(address _callee) external`
 
-allow owner to blacklist a destination address for call action
+allows the owner to blacklist a destination address for the call action
 
-can only be called from the owner's address
+can only be called from the owner address
 
 #### Parameters:
 
@@ -216,11 +218,11 @@ can only be called from the owner's address
 
 ### Event `ProductWhitelisted(bytes32 productHash, address underlying, address strike, address collateral, bool isPut)`
 
-emitted when owner whitelist a product
+emits an event a product is whitelisted by the owner address
 
 ### Event `ProductBlacklisted(bytes32 productHash, address underlying, address strike, address collateral, bool isPut)`
 
-emitted when owner blacklist a product
+emits an event a product is blacklisted by the owner address
 
 ### Event `CollateralWhitelisted(address collateral)`
 
@@ -232,16 +234,16 @@ emits an event when a collateral address is blacklist by the owner address
 
 ### Event `OtokenWhitelisted(address otoken)`
 
-emitted when Otoken Factory module whitelist an otoken
+emits an event when an oToken is whitelisted by the OtokenFactory module
 
 ### Event `OtokenBlacklisted(address otoken)`
 
-emitted when owner blacklist an otoken
+emits an event when an oToken is blacklisted by the OtokenFactory module
 
 ### Event `CalleeWhitelisted(address _callee)`
 
-emitted when owner whitelist a callee address
+emits an event when a callee address is whitelisted by the owner address
 
 ### Event `CalleeBlacklisted(address _callee)`
 
-emitted when owner blacklist a callee address
+emits an event when a callee address is blacklisted by the owner address

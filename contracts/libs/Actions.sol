@@ -148,7 +148,7 @@ library Actions {
     }
 
     /**
-     * @notice parses the passed in action argmuents to get the argmuents for an open vault action
+     * @notice parses the passed in action arguments to get the arguments for an open vault action
      * @param _args general action arguments structure
      * @return arguments for a open vault action
      */
@@ -160,7 +160,7 @@ library Actions {
     }
 
     /**
-     * @notice parses the passed in action argmuents to get the argmuents for a mint action
+     * @notice parses the passed in action arguments to get the arguments for a mint action
      * @param _args general action arguments structure
      * @return arguments for a mint action
      */
@@ -180,7 +180,7 @@ library Actions {
     }
 
     /**
-     * @notice parses the passed in action argmuents to get the argmuents for a burn action
+     * @notice parses the passed in action arguments to get the arguments for a burn action
      * @param _args general action arguments structure
      * @return arguments for a burn action
      */
@@ -200,7 +200,7 @@ library Actions {
     }
 
     /**
-     * @notice parses the passed in action argmuents to get the argmuents for a deposit action
+     * @notice parses the passed in action arguments to get the arguments for a deposit action
      * @param _args general action arguments structure
      * @return arguments for a deposit action
      */
@@ -223,7 +223,7 @@ library Actions {
     }
 
     /**
-     * @notice parses the passed in action argmuents to get the argmuents for a withdraw action
+     * @notice parses the passed in action arguments to get the arguments for a withdraw action
      * @param _args general action arguments structure
      * @return arguments for a withdraw action
      */
@@ -247,7 +247,7 @@ library Actions {
     }
 
     /**
-     * @notice parses the passed in action argmuents to get the argmuents for an redeem action
+     * @notice parses the passed in action arguments to get the arguments for an redeem action
      * @param _args general action arguments structure
      * @return arguments for a redeem action
      */
@@ -259,7 +259,7 @@ library Actions {
     }
 
     /**
-     * @notice parses the passed in action argmuents to get the argmuents for a settle vault action
+     * @notice parses the passed in action arguments to get the arguments for a settle vault action
      * @param _args general action arguments structure
      * @return arguments for a settle vault action
      */
@@ -275,7 +275,7 @@ library Actions {
     }
 
     /**
-     * @notice parses the passed in action argmuents to get the argmuents for a call action
+     * @notice parses the passed in action arguments to get the arguments for a call action
      * @param _args general action arguments structure
      * @return arguments for a call action
      */
