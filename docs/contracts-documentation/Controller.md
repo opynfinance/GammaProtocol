@@ -1,16 +1,16 @@
 # `Controller`
 
-contract that controls the gamma protocol and interaction with all sub contracts
+Contract that controls the Gamma Protocol and the interaction of all sub contracts
 
 ## Modifiers:
 
-- `notPaused()`
+- `notPartiallyPaused()`
 
-- `notShutdown()`
+- `notFullyPaused()`
 
-- `onlyTerminator()`
+- `onlyFullPauser()`
 
-- `onlyPauser()`
+- `onlyPartialPauser()`
 
 - `onlyAuthorized(address _sender, address _accountOwner)`
 
@@ -18,21 +18,21 @@ contract that controls the gamma protocol and interaction with all sub contracts
 
 ## Functions:
 
-- `_isNotPaused() (internal)`
+- `_isNotPartiallyPaused() (internal)`
 
-- `_isNotShutdown() (internal)`
+- `_isNotFullyPaused() (internal)`
 
 - `_isAuthorized(address _sender, address _accountOwner) (internal)`
 
 - `initialize(address _addressBook, address _owner) (external)`
 
-- `setSystemPaused(bool _paused) (external)`
+- `setSystemPartiallyPaused(bool _partiallyPaused) (external)`
 
-- `setEmergencyShutdown(bool _shutdown) (external)`
+- `setSystemFullyPaused(bool _fullyPaused) (external)`
 
-- `setTerminator(address _terminator) (external)`
+- `setFullPauser(address _fullPauser) (external)`
 
-- `setPauser(address _pauser) (external)`
+- `setPartialPauser(address _partialPauser) (external)`
 
 - `setCallRestriction(bool _isRestricted) (external)`
 
@@ -48,11 +48,13 @@ contract that controls the gamma protocol and interaction with all sub contracts
 
 - `getProceed(address _owner, uint256 _vaultId) (external)`
 
+- `getPayout(address _otoken, uint256 _amount) (public)`
+
 - `isSettlementAllowed(address _otoken) (public)`
 
 - `getAccountVaultCounter(address _accountOwner) (external)`
 
-- `hasExpired(address _otoken) (public)`
+- `hasExpired(address _otoken) (external)`
 
 - `getVault(address _owner, uint256 _vaultId) (public)`
 
@@ -84,8 +86,6 @@ contract that controls the gamma protocol and interaction with all sub contracts
 
 - `_isNotEmpty(address[] _array) (internal)`
 
-- `_getPayout(address _otoken, uint256 _amount) (internal)`
-
 - `_isCalleeWhitelisted(address _callee) (internal)`
 
 - `_refreshConfigInternal() (internal)`
@@ -110,39 +110,39 @@ contract that controls the gamma protocol and interaction with all sub contracts
 
 - `Redeem(address otoken, address redeemer, address receiver, address collateralAsset, uint256 otokenBurned, uint256 payout)`
 
-- `VaultSettled(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 payout)`
+- `VaultSettled(address AccountOwner, address to, uint256 vaultId, uint256 payout)`
 
 - `CallExecuted(address from, address to, address vaultOwner, uint256 vaultId, bytes data)`
 
-- `TerminatorUpdated(address oldTerminator, address newTerminator)`
+- `FullPauserUpdated(address oldFullPauser, address newFullPauser)`
 
-- `PauserUpdated(address oldPauser, address newPauser)`
+- `PartialPauserUpdated(address oldPartialPauser, address newPartialPauser)`
 
-- `SystemPaused(bool isActive)`
+- `SystemPartiallyPaused(bool isActive)`
 
-- `EmergencyShutdown(bool isActive)`
+- `SystemFullyPaused(bool isActive)`
 
 - `CallRestricted(bool isRestricted)`
 
-### Modifier `notPaused()`
+### Modifier `notPartiallyPaused()`
 
-modifier to check if the system is not paused
+modifier to check if the system is not partially paused, where only redeem and settleVault is allowed
 
-### Modifier `notShutdown()`
+### Modifier `notFullyPaused()`
 
-modifier to check if the system is not in an emergency shutdown state
+modifier to check if the system is not fully paused, where no functionality is allowed
 
-### Modifier `onlyTerminator()`
+### Modifier `onlyFullPauser()`
 
-modifier to check if sender is the terminator address
+modifier to check if sender is the fullPauser address
 
-### Modifier `onlyPauser()`
+### Modifier `onlyPartialPauser()`
 
-modifier to check if the sender is the pauser address
+modifier to check if the sender is the partialPauser address
 
 ### Modifier `onlyAuthorized(address _sender, address _accountOwner)`
 
-modifier to check if the sender is an account owner or an approved account operator
+modifier to check if the sender is the account owner or an approved account operator
 
 #### Parameters:
 
@@ -158,13 +158,13 @@ modifier to check if the called address is a whitelisted callee address
 
 - `_callee`: called address
 
-### Function `_isNotPaused() internal`
+### Function `_isNotPartiallyPaused() internal`
 
-check if the system is not paused
+check if the system is not in a partiallyPaused state
 
-### Function `_isNotShutdown() internal`
+### Function `_isNotFullyPaused() internal`
 
-check if the system is not in an emergency shutdown state
+check if the system is not in an fullyPaused state
 
 ### Function `_isAuthorized(address _sender, address _accountOwner) internal`
 
@@ -186,55 +186,57 @@ initalize the deployed contract
 
 - `_owner`: account owner address
 
-### Function `setSystemPaused(bool _paused) external`
+### Function `setSystemPartiallyPaused(bool _partiallyPaused) external`
 
-allows the pauser to toggle the pause variable and pause or unpause the system
+allows the partialPauser to toggle the systemPartiallyPaused variable and partially pause or partially unpause the system
 
-can only be called by the pauser
-
-#### Parameters:
-
-- `_paused`: new boolean value to set systemPaused to
-
-### Function `setEmergencyShutdown(bool _shutdown) external`
-
-allows the terminator to toggle the emergency shutdown variable and put the system in an emergency shutdown state or return to a non-emergency shutdown state
-
-can only be called by the terminator
+can only be called by the partialPauser
 
 #### Parameters:
 
-- `_shutdown`: new boolean value to set systemShutdown to
+- `_partiallyPaused`: new boolean value to set systemPartiallyPaused to
 
-### Function `setTerminator(address _terminator) external`
+### Function `setSystemFullyPaused(bool _fullyPaused) external`
 
-allows the owner to set the terminator address
+allows the fullPauser to toggle the systemFullyPaused variable and fully pause or fully unpause the system
+
+can only be called by the fullPauser
+
+#### Parameters:
+
+- `_fullyPaused`: new boolean value to set systemFullyPaused to
+
+### Function `setFullPauser(address _fullPauser) external`
+
+allows the owner to set the fullPauser address
 
 can only be called by the owner
 
 #### Parameters:
 
-- `_terminator`: new terminator address
+- `_fullPauser`: new fullPauser address
 
-### Function `setPauser(address _pauser) external`
+### Function `setPartialPauser(address _partialPauser) external`
 
-allows the owner to set the pauser address
+allows the owner to set the partialPauser address
 
 can only be called by the owner
 
 #### Parameters:
 
-- `_pauser`: new pauser address
+- `_partialPauser`: new partialPauser address
 
 ### Function `setCallRestriction(bool _isRestricted) external`
 
-allows the owner to toggle the restriction on whitelisted call actions and only allow whitelisted call addresses or allow any arbitrary call addresses
+allows the owner to toggle the restriction on whitelisted call actions and only allow whitelisted
+
+call addresses or allow any arbitrary call addresses
 
 can only be called by the owner
 
 #### Parameters:
 
-- `_isRestricted`: new call restriction
+- `_isRestricted`: new call restriction state
 
 ### Function `setOperator(address _operator, bool _isOperator) external`
 
@@ -256,7 +258,7 @@ updates the configuration of the controller. can only be called by the owner
 
 execute a number of actions on specific vaults
 
-can only be called when the system is not shutdown
+can only be called when the system is not fully paused
 
 #### Parameters:
 
@@ -274,7 +276,7 @@ check if a specific address is an operator for an owner account
 
 #### Return Values:
 
-- true if the _operator is an approved operator for the _owner account
+- True if the _operator is an approved operator for the _owner account
 
 ### Function `getConfiguration() → address, address, address, address external`
 
@@ -290,11 +292,9 @@ returns the current controller configuration
 
 - the address of the pool module
 
-### Function `getProceed(address _owner, uint256 _vaultId) → struct MarginVault.Vault external`
+### Function `getProceed(address _owner, uint256 _vaultId) → uint256 external`
 
-before expiry or if there is no short oToken in a vault, return a the vault, if the short oToken has expired, adjust the vault collateral balances by the net option proceeds
-
-if vault has no short oToken or the issued oToken is not expired yet, return the vault, else call getExcessCollateral and return it as collateral amount inside Vault struct.
+return a vault's proceeds pre or post expiry, the amount of collateral that can be removed from a vault
 
 #### Parameters:
 
@@ -304,7 +304,21 @@ if vault has no short oToken or the issued oToken is not expired yet, return the
 
 #### Return Values:
 
-- Vault struct with balances
+- amount of collateral that can be taken out
+
+### Function `getPayout(address _otoken, uint256 _amount) → uint256 public`
+
+get an oToken's payout/cash value after expiry, in the collateral asset
+
+#### Parameters:
+
+- `_otoken`: oToken address
+
+- `_amount`: amount of the oToken to calculate the payout for, always represented in 1e8
+
+#### Return Values:
+
+- amount of collateral to pay out
 
 ### Function `isSettlementAllowed(address _otoken) → bool public`
 
@@ -316,11 +330,11 @@ return if an expired oToken contract’s settlement price has been finalized
 
 #### Return Values:
 
-- true if the oToken has expired AND the oraclePrice at the expiry timestamp has been finalized, otherwise it returns false
+- True if the oToken has expired AND all oracle prices at the expiry timestamp have been finalized, False if not
 
 ### Function `getAccountVaultCounter(address _accountOwner) → uint256 external`
 
-get the number of current vaults for a specified account owner
+get the number of vaults for a specified account owner
 
 #### Parameters:
 
@@ -330,7 +344,7 @@ get the number of current vaults for a specified account owner
 
 - number of vaults
 
-### Function `hasExpired(address _otoken) → bool public`
+### Function `hasExpired(address _otoken) → bool external`
 
 check if an oToken has expired
 
@@ -340,7 +354,7 @@ check if an oToken has expired
 
 #### Return Values:
 
-- true if the otoken has expired, otherwise it returns false
+- True if the otoken has expired, False if not
 
 ### Function `getVault(address _owner, uint256 _vaultId) → struct MarginVault.Vault public`
 
@@ -360,7 +374,9 @@ return a specific vault
 
 execute a variety of actions
 
-for each action in the action array, execute the corresponding action, only one vault can be modified for all actions except SettleVault, Redeem, and Call
+for each action in the action array, execute the corresponding action, only one vault can be modified
+
+for all actions except SettleVault, Redeem, and Call
 
 #### Parameters:
 
@@ -388,7 +404,7 @@ verify the vault final state after executing all actions
 
 open a new vault inside an account
 
-only the account owner or operator can open a vault, cannot be called when system is paused or shutdown
+only the account owner or operator can open a vault, cannot be called when system is partiallyPaused or fullyPaused
 
 #### Parameters:
 
@@ -398,7 +414,7 @@ only the account owner or operator can open a vault, cannot be called when syste
 
 deposit a long oToken into a vault
 
-cannot be called when system is paused or shutdown
+only the account owner or operator can deposit a long oToken, cannot be called when system is partiallyPaused or fullyPaused
 
 #### Parameters:
 
@@ -408,7 +424,7 @@ cannot be called when system is paused or shutdown
 
 withdraw a long oToken from a vault
 
-only the account owner or operator can withdraw a long oToken from a vault, cannot be called when system is paused or shutdown
+only the account owner or operator can withdraw a long oToken, cannot be called when system is partiallyPaused or fullyPaused
 
 #### Parameters:
 
@@ -418,7 +434,7 @@ only the account owner or operator can withdraw a long oToken from a vault, cann
 
 deposit a collateral asset into a vault
 
-cannot be called when the system is paused or shutdown
+only the account owner or operator can deposit collateral, cannot be called when system is partiallyPaused or fullyPaused
 
 #### Parameters:
 
@@ -428,7 +444,7 @@ cannot be called when the system is paused or shutdown
 
 withdraw a collateral asset from a vault
 
-only the account owner or operator can withdraw a collateral from a vault, cannot be called when system is paused or shutdown
+only the account owner or operator can withdraw collateral, cannot be called when system is partiallyPaused or fullyPaused
 
 #### Parameters:
 
@@ -436,9 +452,9 @@ only the account owner or operator can withdraw a collateral from a vault, canno
 
 ### Function `_mintOtoken(struct Actions.MintArgs _args) internal`
 
-mint short oTokens from a vault which creates an obligation recorded in a vault
+mint short oTokens from a vault which creates an obligation that is recorded in the vault
 
-only the account owner or operator can mint short oTokens from a vault, cannot be called when system is paused or shutdown
+only the account owner or operator can mint an oToken, cannot be called when system is partiallyPaused or fullyPaused
 
 #### Parameters:
 
@@ -446,9 +462,9 @@ only the account owner or operator can mint short oTokens from a vault, cannot b
 
 ### Function `_burnOtoken(struct Actions.BurnArgs _args) internal`
 
-burn oTokens to reduce or remove minted oToken obligation recorded in a vault
+burn oTokens to reduce or remove the minted oToken obligation recorded in a vault
 
-only the account owner or operator can burn oTokens for a vault, cannot be called when system is paused or shutdown
+only the account owner or operator can burn an oToken, cannot be called when system is partiallyPaused or fullyPaused
 
 #### Parameters:
 
@@ -458,7 +474,7 @@ only the account owner or operator can burn oTokens for a vault, cannot be calle
 
 redeem an oToken after expiry, receiving the payout of the oToken in the collateral asset
 
-cannot be called when system is paused
+cannot be called when system is fullyPaused
 
 #### Parameters:
 
@@ -466,9 +482,9 @@ cannot be called when system is paused
 
 ### Function `_settleVault(struct Actions.SettleVaultArgs _args) internal`
 
-settle a vault after expiry, removing the remaining collateral in a vault after both long and short oToken payouts have been removed
+settle a vault after expiry, removing the net proceeds/collateral after both long and short oToken payouts have settled
 
-deletes a vault of vaultId after remaining collateral is removed, cannot be called when system is paused
+deletes a vault of vaultId after net proceeds/collateral is removed, cannot be called when system is fullyPaused
 
 #### Parameters:
 
@@ -478,7 +494,7 @@ deletes a vault of vaultId after remaining collateral is removed, cannot be call
 
 execute arbitrary calls
 
-cannot be called when system is paused or shutdown
+cannot be called when system is partiallyPaused or fullyPaused
 
 #### Parameters:
 
@@ -486,7 +502,7 @@ cannot be called when system is paused or shutdown
 
 ### Function `_checkVaultId(address _accountOwner, uint256 _vaultId) → bool internal`
 
-check if a vault id is valid
+check if a vault id is valid for a given account owner address
 
 #### Parameters:
 
@@ -496,23 +512,9 @@ check if a vault id is valid
 
 #### Return Values:
 
-- true if the _vaultId is valid, otherwise it returns falue
+- True if the _vaultId is valid, False if not
 
 ### Function `_isNotEmpty(address[] _array) → bool internal`
-
-### Function `_getPayout(address _otoken, uint256 _amount) → uint256 internal`
-
-get the oToken's payout after expiry, in the collateral asset
-
-#### Parameters:
-
-- `_otoken`: oToken address
-
-- `_amount`: amount of the oToken to calculate the payout for, always represented in 1e18
-
-#### Return Values:
-
-- amount of collateral to pay out
 
 ### Function `_isCalleeWhitelisted(address _callee) → bool internal`
 
@@ -524,7 +526,7 @@ return if a callee address is whitelisted or not
 
 #### Return Values:
 
-- true if callee address is whitelisted, otherwise false
+- True if callee address is whitelisted, False if not
 
 ### Function `_refreshConfigInternal() internal`
 
@@ -564,9 +566,9 @@ emits an event when a short oToken is burned
 
 ### Event `Redeem(address otoken, address redeemer, address receiver, address collateralAsset, uint256 otokenBurned, uint256 payout)`
 
-emits an event when an oToken is redeemd
+emits an event when an oToken is redeemed
 
-### Event `VaultSettled(address otoken, address AccountOwner, address to, uint256 vaultId, uint256 payout)`
+### Event `VaultSettled(address AccountOwner, address to, uint256 vaultId, uint256 payout)`
 
 emits an event when a vault is settled
 
@@ -574,21 +576,21 @@ emits an event when a vault is settled
 
 emits an event when a call action is executed
 
-### Event `TerminatorUpdated(address oldTerminator, address newTerminator)`
+### Event `FullPauserUpdated(address oldFullPauser, address newFullPauser)`
 
-emits an event when the terminator address changes
+emits an event when the fullPauser address changes
 
-### Event `PauserUpdated(address oldPauser, address newPauser)`
+### Event `PartialPauserUpdated(address oldPartialPauser, address newPartialPauser)`
 
-emits an event when the pauser address changes
+emits an event when the partialPauser address changes
 
-### Event `SystemPaused(bool isActive)`
+### Event `SystemPartiallyPaused(bool isActive)`
 
-emits an event when the system paused status changes
+emits an event when the system partial paused status changes
 
-### Event `EmergencyShutdown(bool isActive)`
+### Event `SystemFullyPaused(bool isActive)`
 
-emits an event when the system emergency shutdown status changes
+emits an event when the system fully paused status changes
 
 ### Event `CallRestricted(bool isRestricted)`
 

@@ -48,147 +48,147 @@
 
 ### Function `getOtokenImpl() → address external`
 
-return otoken implementation address
+return Otoken implementation address
 
 #### Return Values:
 
-- otoken implementation address
+- Otoken implementation address
 
 ### Function `getOtokenFactory() → address external`
 
-return otoken factory address
+return oTokenFactory address
 
 #### Return Values:
 
-- otoken factory address
+- OtokenFactory address
 
 ### Function `getWhitelist() → address external`
 
-return whitelist address
+return Whitelist address
 
 #### Return Values:
 
-- whitelist address
+- Whitelist address
 
 ### Function `getController() → address external`
 
-return controller address
+return Controller address
 
 #### Return Values:
 
-- controller address
+- Controller address
 
 ### Function `getMarginPool() → address external`
 
-return pool address
+return MarginPool address
 
 #### Return Values:
 
-- pool address
+- MarginPool address
 
 ### Function `getMarginCalculator() → address external`
 
-return margin calculator address
+return MarginCalculator address
 
 #### Return Values:
 
-- margin calculator address
+- MarginCalculator address
 
 ### Function `getLiquidationManager() → address external`
 
-return liquidation manager address
+return LiquidationManager address
 
 #### Return Values:
 
-- liquidation manager address
+- LiquidationManager address
 
 ### Function `getOracle() → address external`
 
-return oracle address
+return Oracle address
 
 #### Return Values:
 
-- oracle address
+- Oracle address
 
 ### Function `setOtokenImpl(address _otokenImpl) external`
 
-set otoken implementation address
+set Otoken implementation address
 
-can only be called by addressbook owner
+can only be called by the addressbook owner
 
 #### Parameters:
 
-- `_otokenImpl`: otoken implementation address
+- `_otokenImpl`: Otoken implementation address
 
 ### Function `setOtokenFactory(address _otokenFactory) external`
 
-set otoken factory address
+set OtokenFactory address
 
-can only be called by addressbook owner
+can only be called by the addressbook owner
 
 #### Parameters:
 
-- `_otokenFactory`: otoken factory address
+- `_otokenFactory`: OtokenFactory address
 
 ### Function `setWhitelist(address _whitelist) external`
 
-set whitelist address
+set Whitelist address
 
-can only be called by addressbook owner
+can only be called by the addressbook owner
 
 #### Parameters:
 
-- `_whitelist`: whitelist address
+- `_whitelist`: Whitelist address
 
 ### Function `setController(address _controller) external`
 
-set controller address
+set Controller address
 
-can only be called by addressbook owner
+can only be called by the addressbook owner
 
 #### Parameters:
 
-- `_controller`: controller address
+- `_controller`: Controller address
 
 ### Function `setMarginPool(address _marginPool) external`
 
-set pool address
+set MarginPool address
 
-can only be called by addressbook owner
+can only be called by the addressbook owner
 
 #### Parameters:
 
-- `_marginPool`: pool address
+- `_marginPool`: MarginPool address
 
 ### Function `setMarginCalculator(address _marginCalculator) external`
 
-set margin calculator address
+set MarginCalculator address
 
-can only be called by addressbook owner
+can only be called by the addressbook owner
 
 #### Parameters:
 
-- `_marginCalculator`: margin calculator address
+- `_marginCalculator`: MarginCalculator address
 
 ### Function `setLiquidationManager(address _liquidationManager) external`
 
-set liquidation manager address
+set LiquidationManager address
 
-can only be called by addressbook owner
+can only be called by the addressbook owner
 
 #### Parameters:
 
-- `_liquidationManager`: liquidation manager address
+- `_liquidationManager`: LiquidationManager address
 
 ### Function `setOracle(address _oracle) external`
 
-set oracle address
+set Oracle address
 
-can only be called by addressbook owner
+can only be called by the addressbook owner
 
 #### Parameters:
 
-- `_oracle`: oracle address
+- `_oracle`: Oracle address
 
 ### Function `getAddress(bytes32 _key) → address public`
 
@@ -202,7 +202,7 @@ return an address for specific key
 
 set a specific address for a specific key
 
-can only be called by addressbook owner
+can only be called by the addressbook owner
 
 #### Parameters:
 
@@ -216,14 +216,14 @@ internal function to update the implementation of a specific component of the pr
 
 #### Parameters:
 
-- `_id`: the id of the contract to be updated
+- `_id`: id of the contract to be updated
 
-- `_newAddress`: the address of the new implementation*
+- `_newAddress`: address of the new implementation*
 
 ### Event `ProxyCreated(bytes32 id, address proxy)`
 
-event emitted when a new proxy get created
+emits an event when a new proxy is created
 
 ### Event `AddressAdded(bytes32 id, address add)`
 
-event emitted when a new address get added
+emits an event when a new address is added

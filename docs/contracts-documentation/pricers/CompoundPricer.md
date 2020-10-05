@@ -1,6 +1,6 @@
 # `CompoundPricer`
 
-A Pricer contract for Compound Asset.
+A Pricer contract for a Compound cToken
 
 ## Functions:
 
@@ -8,7 +8,7 @@ A Pricer contract for Compound Asset.
 
 - `getPrice() (external)`
 
-- `setExpiryPriceToOralce(uint256 _expiryTimestamp) (external)`
+- `setExpiryPriceInOracle(uint256 _expiryTimestamp) (external)`
 
 - `_underlyingPriceToCtokenPrice(uint256 _underlyingPrice) (internal)`
 
@@ -16,40 +16,42 @@ A Pricer contract for Compound Asset.
 
 #### Parameters:
 
-- `_cToken`: the asset type
+- `_cToken`: cToken asset
 
-- `_underlying`: the underlying asset for this cToken
+- `_underlying`: underlying asset for this cToken
 
-- `_underlyingPricer`: the pricer for cToken's underlying
+- `_underlyingPricer`: pricer for cToken's underlying
 
-- `_oracle`: the Opyn Oracle contract address.
+- `_oracle`: Opyn Oracle contract address
 
 ### Function `getPrice() → uint256 external`
 
-get live price for the asset.
+get the live price for the asset
 
-overides the getPrice function in OpynPricerInterface.
+overrides the getPrice function in OpynPricerInterface
 
 #### Return Values:
 
-- price of 1e8 cToken worth in USD, scaled by 1e18.
+- price of 1e8 cToken in USD, scaled by 1e8
 
-### Function `setExpiryPriceToOralce(uint256 _expiryTimestamp) external`
+### Function `setExpiryPriceInOracle(uint256 _expiryTimestamp) external`
 
-Set the expiry price to the oracle
+set the expiry price in the oracle
+
+requires that the underlying price has been set before setting a cToken price
 
 #### Parameters:
 
-- `_expiryTimestamp`: the expiry want to send
+- `_expiryTimestamp`: expiry to set a price for
 
 ### Function `_underlyingPriceToCtokenPrice(uint256 _underlyingPrice) → uint256 internal`
 
-convert underlying price to cToken price.
+convert underlying price to cToken price with the cToken to underlying exchange rate
 
 #### Parameters:
 
-- `_underlyingPrice`: price of 1 underlying token (1e6 USDC, 1e18 WETH) in USD, scled by 1e18
+- `_underlyingPrice`: price of 1 underlying token (ie 1e6 USDC, 1e18 WETH) in USD, scaled by 1e8
 
 #### Return Values:
 
-- net worth of 1e8 cToken in USD, scaled by 1e18.
+- price of 1e8 cToken in USD, scaled by 1e8

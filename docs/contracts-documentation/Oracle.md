@@ -1,6 +1,8 @@
 # `Oracle`
 
-The Oracle module provide the system with on-chain prices
+The Oracle module sets, retrieves, and stores USD prices (USD per asset) for underlying, collateral, and strike assets
+
+manages pricers that are used for different assets
 
 ## Functions:
 
@@ -48,41 +50,41 @@ The Oracle module provide the system with on-chain prices
 
 ### Function `getPrice(address _asset) → uint256 external`
 
-get the live price from oracle
+get a live asset price from the asset's pricer contract
 
 #### Parameters:
 
-- `_asset`: the asset address
+- `_asset`: asset address
 
 #### Return Values:
 
-- price scaled in 1e18, denominated in USD
+- price scaled by 1e8, denominated in USD
 
-e.g. 173689000000000000000 => 175.689 USD
+e.g. 17368900000 => 175.689 USD
 
 ### Function `getExpiryPrice(address _asset, uint256 _expiryTimestamp) → uint256, bool external`
 
-get the asset price at specific expiry timestamp.
+get the asset price at specific expiry timestamp
 
 #### Parameters:
 
-- `_asset`: the asset want to get price at.
+- `_asset`: asset address
 
 - `_expiryTimestamp`: expiry timestamp
 
 #### Return Values:
 
-- price denominated in USD, scaled 10e18
+- price scaled by 1e8, denominated in USD
 
-- isFinalized if the price is finalized or not.
+- isFinalized True, if the price is finalized, False if not
 
 ### Function `getPricer(address _asset) → address external`
 
-get asset pricer
+get the pricer for an asset
 
 #### Parameters:
 
-- `_asset`: get the pricer for a specific asset.
+- `_asset`: asset address
 
 #### Return Values:
 
@@ -90,17 +92,19 @@ get asset pricer
 
 ### Function `getDisputer() → address external`
 
-get disputer address
+get the disputer address
 
 #### Return Values:
 
-- pricer address
+- disputer address
 
 ### Function `getPricerLockingPeriod(address _pricer) → uint256 external`
 
-get pricer locking period. A locking period is a period of time after expiry where no one can push price to oracle
+get a pricer's locking period
 
-during locking period, price can not be submitted to this contract
+locking period is the period of time after the expiry timestamp where a price can not be pushed
+
+during the locking period an expiry price can not be submitted to this contract
 
 #### Parameters:
 
@@ -112,15 +116,15 @@ during locking period, price can not be submitted to this contract
 
 ### Function `getPricerDisputePeriod(address _pricer) → uint256 external`
 
-get pricer dispute period
+get a pricer's dispute period
 
-during dispute period, the owner of this contract can dispute the submitted price and modify it.
+dispute period is the period of time after an expiry price has been pushed where a price can be disputed
 
-The dispute period start after submitting a price on-chain
+during the dispute period, the disputer can dispute the submitted price and modify it
 
 #### Parameters:
 
-- `_pricer`: oracle address
+- `_pricer`: pricer address
 
 #### Return Values:
 
@@ -128,7 +132,7 @@ The dispute period start after submitting a price on-chain
 
 ### Function `isLockingPeriodOver(address _asset, uint256 _expiryTimestamp) → bool public`
 
-check if locking period is over for setting the asset price for that timestamp
+check if the locking period is over for setting the asset price at a particular expiry timestamp
 
 #### Parameters:
 
@@ -138,39 +142,39 @@ check if locking period is over for setting the asset price for that timestamp
 
 #### Return Values:
 
-- True if locking period is over, otherwise false
+- True if locking period is over, False if not
 
 ### Function `isDisputePeriodOver(address _asset, uint256 _expiryTimestamp) → bool public`
 
-check if dispute period is over
+check if the dispute period is over
 
 #### Parameters:
 
-- `_asset`: assets to query
+- `_asset`: asset address
 
-- `_expiryTimestamp`: expiry timestamp of otoken
+- `_expiryTimestamp`: expiry timestamp
 
 #### Return Values:
 
-- True if dispute period is over, otherwise false
+- True if dispute period is over, False if not
 
 ### Function `setAssetPricer(address _asset, address _pricer) external`
 
-set pricer for an asset
+sets the pricer for an asset
 
-can only be called by owner
+can only be called by the owner
 
 #### Parameters:
 
-- `_asset`: asset
+- `_asset`: asset address
 
 - `_pricer`: pricer address
 
 ### Function `setLockingPeriod(address _pricer, uint256 _lockingPeriod) external`
 
-set pricer locking period
+sets the locking period for a pricer
 
-this function can only be called by owner
+can only be called by the owner
 
 #### Parameters:
 
@@ -180,31 +184,39 @@ this function can only be called by owner
 
 ### Function `setDisputePeriod(address _pricer, uint256 _disputePeriod) external`
 
-set oracle dispute period
+sets the dispute period for a pricer
 
-can only be called by owner
+can only be called by the owner
+
+for a composite pricer (ie CompoundPricer) that depends on or calls other pricers, ensure
+
+that the dispute period for the composite pricer is longer than the dispute period for the
+
+asset pricer that it calls to ensure safe usage as a dispute in the other pricer will cause
+
+the need for a dispute with the composite pricer's price
 
 #### Parameters:
 
-- `_pricer`: oracle address
+- `_pricer`: pricer address
 
 - `_disputePeriod`: dispute period
 
 ### Function `setDisputer(address _disputer) external`
 
-set the disputer role
+set the disputer address
 
-can only be called by owner
+can only be called by the owner
 
 #### Parameters:
 
-- `_disputer`: oracle address
+- `_disputer`: disputer address
 
 ### Function `disputeExpiryPrice(address _asset, uint256 _expiryTimestamp, uint256 _price) external`
 
-dispute an asset price by owner during dispute period
+dispute an asset price during the dispute period
 
-only owner can dispute a price during the dispute period, by setting a new one.
+only the owner can dispute a price during the dispute period, by setting a new one
 
 #### Parameters:
 
@@ -216,9 +228,9 @@ only owner can dispute a price during the dispute period, by setting a new one.
 
 ### Function `setExpiryPrice(address _asset, uint256 _expiryTimestamp, uint256 _price) external`
 
-submit expiry price to the oracle, can only be set from the pricer.
+submits the expiry price to the oracle, can only be set from the pricer
 
-asset price can only be set after locking period is over and before starting dispute period
+asset price can only be set after the locking period is over and before the dispute period has started
 
 #### Parameters:
 
@@ -226,28 +238,28 @@ asset price can only be set after locking period is over and before starting dis
 
 - `_expiryTimestamp`: expiry timestamp
 
-- `_price`: the asset price at expiry
+- `_price`: asset price at expiry
 
 ### Event `DisputerUpdated(address newDisputer)`
 
-emits an event when disputer is updated
+emits an event when the disputer is updated
 
 ### Event `PricerUpdated(address asset, address pricer)`
 
-emits an event when an pricer updated for a specific asset
+emits an event when the pricer is updated for an asset
 
 ### Event `PricerLockingPeriodUpdated(address pricer, uint256 lockingPeriod)`
 
-emits an event when a locking period updated for a specific oracle
+emits an event when the locking period is updated for a pricer
 
 ### Event `PricerDisputePeriodUpdated(address pricer, uint256 disputePeriod)`
 
-emits an event when a dispute period updated for a specific oracle
+emits an event when the dispute period is updated for a pricer
 
 ### Event `ExpiryPriceUpdated(address asset, uint256 expirtyTimestamp, uint256 price, uint256 onchainTimestamp)`
 
-emits an event when price is updated for a specific asset
+emits an event when an expiry price is updated for a specific asset
 
 ### Event `ExpiryPriceDisputed(address asset, uint256 expiryTimestamp, uint256 disputedPrice, uint256 newPrice, uint256 disputeTimestamp)`
 
-emits an event when owner dispute a asset price during dispute period
+emits an event when the disputer disputes a price during the dispute period

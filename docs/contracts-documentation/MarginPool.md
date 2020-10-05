@@ -1,6 +1,6 @@
 # `MarginPool`
 
-contract that hold all protocol funds
+Contract that holds all protocol funds
 
 ## Modifiers:
 
@@ -14,13 +14,13 @@ contract that hold all protocol funds
 
 - `transferToPool(address _asset, address _user, uint256 _amount) (public)`
 
-- `transferToUser(address _asset, address payable _user, uint256 _amount) (public)`
+- `transferToUser(address _asset, address _user, uint256 _amount) (public)`
 
 - `getStoredBalance(address _asset) (external)`
 
 - `batchTransferToPool(address[] _asset, address[] _user, uint256[] _amount) (external)`
 
-- `batchTransferToUser(address[] _asset, address payable[] _user, uint256[] _amount) (external)`
+- `batchTransferToUser(address[] _asset, address[] _user, uint256[] _amount) (external)`
 
 - `farm(address _asset, address _receiver, uint256 _amount) (external)`
 
@@ -46,43 +46,35 @@ contructor
 
 #### Parameters:
 
-- `_addressBook`: adressbook module
+- `_addressBook`: AddressBook module
 
 ### Function `transferToPool(address _asset, address _user, uint256 _amount) public`
 
-transfers asset from user to pool
-
-all tokens are scaled to have 1e18 precision in contracts, but are scaled to native
-
-token decimals in Controller before being passed to MarginPool
+transfers an asset from a user to the pool
 
 #### Parameters:
 
-- `_asset`: address of asset to transfer
+- `_asset`: address of the asset to transfer
 
-- `_user`: address of user to transfer assets from
+- `_user`: address of the user to transfer assets from
 
-- `_amount`: amount of token to transfer from _user, scaled to 1e18 of precision
+- `_amount`: amount of the token to transfer from _user
 
-### Function `transferToUser(address _asset, address payable _user, uint256 _amount) public`
+### Function `transferToUser(address _asset, address _user, uint256 _amount) public`
 
-transfers asset from pool to user
-
-all tokens are scaled to have 1e18 precision in contracts, but are scaled to native
-
-token decimals in Controller before being passed to MarginPool
+transfers an asset from the pool to a user
 
 #### Parameters:
 
-- `_asset`: address of asset to transfer
+- `_asset`: address of the asset to transfer
 
-- `_user`: address of user to transfer assets to
+- `_user`: address of the user to transfer assets to
 
-- `_amount`: amount of token to transfer to _user, scaled to 1e18 of precision
+- `_amount`: amount of the token to transfer to _user
 
 ### Function `getStoredBalance(address _asset) → uint256 external`
 
-get asset stored balance
+get the stored balance of an asset
 
 #### Parameters:
 
@@ -94,41 +86,33 @@ get asset stored balance
 
 ### Function `batchTransferToPool(address[] _asset, address[] _user, uint256[] _amount) external`
 
-transfers multiple assets from users to pool
-
-all tokens are scaled to have 1e18 precision in contracts, but are scaled to native
-
-token decimals in Controller before being passed to MarginPool
+transfers multiple assets from users to the pool
 
 #### Parameters:
 
-- `_asset`: addresses of assets to transfer
+- `_asset`: addresses of the assets to transfer
 
-- `_user`: addresses of users to transfer assets to
+- `_user`: addresses of the users to transfer assets to
 
-- `_amount`: amount of each token to transfer to _user, scaled to 1e18 of precision
+- `_amount`: amount of each token to transfer to pool
 
-### Function `batchTransferToUser(address[] _asset, address payable[] _user, uint256[] _amount) external`
+### Function `batchTransferToUser(address[] _asset, address[] _user, uint256[] _amount) external`
 
-transfers multiple assets from pool to users
-
-all tokens are scaled to have 1e18 precision in contracts, but are scaled to native
-
-token decimals in Controller before being passed to MarginPool
+transfers multiple assets from the pool to users
 
 #### Parameters:
 
-- `_asset`: addresses of assets to transfer
+- `_asset`: addresses of the assets to transfer
 
-- `_user`: addresses of users to transfer assets to
+- `_user`: addresses of the users to transfer assets to
 
-- `_amount`: amount of each token to transfer to _user, scaled to 1e18 of precision
+- `_amount`: amount of each token to transfer to _user
 
 ### Function `farm(address _asset, address _receiver, uint256 _amount) external`
 
-function to collect excess balance
+function to collect the excess balance of a particular asset
 
-can only be called by farmer address
+can only be called by the farmer address
 
 #### Parameters:
 
@@ -136,7 +120,7 @@ can only be called by farmer address
 
 - `_receiver`: receiver address
 
-- `_amount`: amount to harvest
+- `_amount`: amount to remove from pool
 
 ### Function `setFarmer(address _farmer) external`
 
@@ -154,4 +138,4 @@ emit event after updating the farmer address
 
 ### Event `AssetFarmed(address asset, address receiver, uint256 _amount)`
 
-emit event when an asset get harvested
+emit event when an asset gets harvested from the pool

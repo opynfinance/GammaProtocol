@@ -1,5 +1,7 @@
 # `SignedConverter`
 
+A library to convert an unsigned integer to signed integer or signed integer to unsigned integer.
+
 ## Functions:
 
 - `uintToInt(uint256 a) (internal)`
@@ -8,24 +10,24 @@
 
 ### Function `uintToInt(uint256 a) → int256 internal`
 
-convert an unsigned integer to signed integer
+convert an unsigned integer to a signed integer
 
 #### Parameters:
 
-- `a`: uint to convert into a signed integer.
+- `a`: uint to convert into a signed integer
 
 #### Return Values:
 
-- the converted signed integer.
+- converted signed integer
 
 ### Function `intToUint(int256 a) → uint256 internal`
 
-convert a signed integer to unsigned integer
+convert a signed integer to an unsigned integer
 
 #### Parameters:
 
-- `a`: int to convert into an unsigned integer.
+- `a`: int to convert into an unsigned integer
 
 #### Return Values:
 
-- the converted unsigned integer.
+- converted unsigned integer
