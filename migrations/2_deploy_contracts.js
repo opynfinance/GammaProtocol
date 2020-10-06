@@ -1,19 +1,19 @@
 // import library
-const MarginVault = artifacts.require("MarginVault")
+const MarginVault = artifacts.require('MarginVault')
 // import contract
-const OtokenFactory = artifacts.require("OtokenFactory")
-const Otoken = artifacts.require("Otoken")
-const Whitelist = artifacts.require("Whitelist")
-const Oracle = artifacts.require("Oracle")
-const MarginPool = artifacts.require("MarginPool")
-const MarginCalculator = artifacts.require("MarginCalculator")
-const AddressBook = artifacts.require("AddressBook")
-const Controller = artifacts.require("Controller")
+const OtokenFactory = artifacts.require('OtokenFactory')
+const Otoken = artifacts.require('Otoken')
+const Whitelist = artifacts.require('Whitelist')
+const Oracle = artifacts.require('Oracle')
+const MarginPool = artifacts.require('MarginPool')
+const MarginCalculator = artifacts.require('MarginCalculator')
+const AddressBook = artifacts.require('AddressBook')
+const Controller = artifacts.require('Controller')
 
 module.exports = async function(deployer, network, accounts) {
-  const [deployerAddress] = accounts;
+  const [deployerAddress] = accounts
 
-  if(network == "mainnet") {
+  if (network == 'mainnet') {
     // deploy MarginVault library
     await deployer.deploy(MarginVault, {from: deployerAddress})
 
@@ -33,7 +33,7 @@ module.exports = async function(deployer, network, accounts) {
     const whitelist = await Whitelist.deployed()
     await addressbook.setWhitelist(whitelist.address, {from: deployerAddress})
     // deploy Oracle module & set address
-    await deployer.deploy(Oracle, {from : deployerAddress})
+    await deployer.deploy(Oracle, {from: deployerAddress})
     const oracle = await Oracle.deployed()
     await addressbook.setOracle(oracle.address, {from: deployerAddress})
     // deploy MarginPool module & set address
@@ -49,7 +49,7 @@ module.exports = async function(deployer, network, accounts) {
     await deployer.deploy(Controller, {from: deployerAddress})
     const controller = await Controller.deployed()
     await addressbook.setController(controller.address)
-  } else if (network == "rinkeby") {
+  } else if (network == 'rinkeby') {
     // deploy MarginVault library
     await deployer.deploy(MarginVault, {from: deployerAddress})
 
@@ -69,7 +69,7 @@ module.exports = async function(deployer, network, accounts) {
     const whitelist = await Whitelist.deployed()
     await addressbook.setWhitelist(whitelist.address, {from: deployerAddress})
     // deploy Oracle module & set address
-    await deployer.deploy(Oracle, {from : deployerAddress})
+    await deployer.deploy(Oracle, {from: deployerAddress})
     const oracle = await Oracle.deployed()
     await addressbook.setOracle(oracle.address, {from: deployerAddress})
     // deploy MarginPool module & set address
@@ -86,5 +86,4 @@ module.exports = async function(deployer, network, accounts) {
     const controller = await Controller.deployed()
     await addressbook.setController(controller.address)
   }
-
 }

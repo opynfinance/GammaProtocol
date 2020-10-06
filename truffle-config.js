@@ -1,29 +1,39 @@
 require('ts-node/register')
 require('dotenv').config()
 
-const HDWalletProvider = require('@truffle/hdwallet-provider');
+const HDWalletProvider = require('@truffle/hdwallet-provider')
 
-const fs = require('fs');
-const mnemonic = fs.existsSync(".secret") ? fs.readFileSync(".secret").toString().trim() : "put mnemonic into .secret file, don't paste it here";             // deployer wallet mnemonic
-const key = fs.existsSync(".infuraKey") ? fs.readFileSync(".infuraKey").toString().trim() : "put infura key inside a .infuraKey file, don't paste it here";   // infura key
+const fs = require('fs')
+const mnemonic = fs.existsSync('.secret')
+  ? fs
+      .readFileSync('.secret')
+      .toString()
+      .trim()
+  : "put mnemonic into .secret file, don't paste it here" // deployer wallet mnemonic
+const key = fs.existsSync('.infuraKey')
+  ? fs
+      .readFileSync('.infuraKey')
+      .toString()
+      .trim()
+  : "put infura key inside a .infuraKey file, don't paste it here" // infura key
 
 module.exports = {
   networks: {
     development: {
-      host: '127.0.0.1', 
-      port: 8545, 
-      network_id: '*', 
+      host: '127.0.0.1',
+      port: 8545,
+      network_id: '*',
     },
     rinkeby: {
       provider: () => new HDWalletProvider(mnemonic, `https://rinkeby.infura.io/v3/${key}`),
-      network_id: 4,       
-      timeoutBlocks: 2000,  
-      skipDryRun: true, 
-      gasPrice: 100000000000
+      network_id: 4,
+      timeoutBlocks: 2000,
+      skipDryRun: true,
+      gasPrice: 100000000000,
     },
     kovan: {
       provider: () => {
-        return new HDWalletProvider(mnemonic, `https://kovan.infura.io/v3/${key}`);
+        return new HDWalletProvider(mnemonic, `https://kovan.infura.io/v3/${key}`)
       },
       network_id: 42,
       gas: 6700000,
@@ -32,11 +42,11 @@ module.exports = {
       provider: () => new HDWalletProvider(mnemonic, `https://mainnet.infura.io/v3/${key}`),
       network_id: 1,
       chain_id: 1,
-      confirmations: 2,   
-      timeoutBlocks: 50,  
+      confirmations: 2,
+      timeoutBlocks: 50,
       skipDryRun: false,
-      gasPrice: 400000000000
-    }
+      gasPrice: 400000000000,
+    },
   },
 
   mocha: {
