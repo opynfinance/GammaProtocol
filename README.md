@@ -7,7 +7,7 @@ The oTokens created by Gamma are cash settled European option, means all the opt
 
 ## Documentation
 
-Our docs site is [here](https://opyn.gitbook.io/opyn/). It contains tutorials, explainers, and smart contract documentation. If you'd like to view these docs on github instead, check out [the docs folder](/docs) in the docs repo:
+Our docs site is [here](https://opyn.gitbook.io/opyn-v2/get-started/getting-started/). It contains tutorials, explainers, and smart contract documentation. If you'd like to view these docs on github instead, check out [the docs folder](/docs) in the docs repo:
 
 - [Smart contracts documentation](SUMMARY.md)
 - [UML diagrams](/docs/uml)
