@@ -13,6 +13,9 @@ workflows:
       - build:
           requires:
             - checkout_and_install
+      - certora:
+          requires:
+            - checkout_and_install
       - size-check:
           requires:
             - build
@@ -88,6 +91,30 @@ jobs:
           paths:
             - ~/gammaprotocol
   
+  certora:
+    working_directory: ~/gammaprotocol
+    docker:
+      - image: circleci/openjdk:11-jdk-node
+    steps:
+      - restore_cache:
+          key: gamma-{{ .Environment.CIRCLE_SHA1 }}
+      - run:
+        name: Certora dependencies
+        command: |
+          echo "export PATH=$PATH:~/.local/bin" >> $BASH_ENV
+          sudo apt-get update || sudo apt-get update
+          sudo apt-get install -y software-properties-common
+          sudo apt-get install python3-pip
+          pip3 install certora-cli-beta
+          wget https://github.com/ethereum/solidity/releases/download/v0.6.10/solc-static-linux
+          chmod +x solc-static-linux
+          sudo mv solc-static-linux /usr/bin/solc
+      - run:
+          name: Test MarginVault
+          command: |
+            cd specs
+            ./runMarginVault.sh
+
   size-check:
     working_directory: ~/gammaprotocol
     docker:
