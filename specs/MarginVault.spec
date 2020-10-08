@@ -164,7 +164,7 @@ rule integrityOfAddShort(address shortOtoken, uint256 x, uint256 index)
 /**
 @title Additive addShort 
 */
-rule addativeAddShort(address shortOtoken, uint256 x, uint256 y, uint256 index)
+rule additiveAddShort(address shortOtoken, uint256 x, uint256 y, uint256 index)
 {
 	requireInvariant validVault();
 	// require index < MAXINT(); // no violation when limiting index
