@@ -108,8 +108,14 @@ jobs:
             pip3 install certora-cli-beta
             wget https://github.com/ethereum/solidity/releases/download/v0.6.10/solc-static-linux
             chmod +x solc-static-linux
-            sudo mv solc-static-linux /usr/bin/solc6.10
+            sudo mv solc-static-linux /usr/bin/solc
             chmod +x specs/*.sh
+      - run:
+          name: Test Whitelist privileged ops
+          command: |
+            cd specs
+            ./runPrivilegedWhitelist.sh
+
       - run:
           name: Test MarginVault
           command: |
