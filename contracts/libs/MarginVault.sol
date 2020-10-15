@@ -108,7 +108,7 @@ library MarginVault {
 
         // valid indexes in any array are between 0 and array.length - 1.
         // if adding an amount to an preexisting short oToken, check that _index is in the range of 0->length-1
-        if ((_index >= _vault.longOtokens.length) && ((_index >= _vault.longAmounts.length))) {
+        if ((_index == _vault.longOtokens.length) && ((_index == _vault.longAmounts.length))) {
             _vault.longOtokens.push(_longOtoken);
             _vault.longAmounts.push(_amount);
         } else {
@@ -165,7 +165,7 @@ library MarginVault {
 
         // valid indexes in any array are between 0 and array.length - 1.
         // if adding an amount to an preexisting short oToken, check that _index is in the range of 0->length-1
-        if ((_index >= _vault.collateralAssets.length) && ((_index >= _vault.collateralAmounts.length))) {
+        if ((_index == _vault.collateralAssets.length) && ((_index == _vault.collateralAmounts.length))) {
             _vault.collateralAssets.push(_collateralAsset);
             _vault.collateralAmounts.push(_amount);
         } else {
