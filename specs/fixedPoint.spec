@@ -21,13 +21,7 @@ description "test addition"
 rule testAddition(uint256 a, uint256 b)
 description "test addition" 
 {
-<<<<<<< HEAD
     uint256 c = sinvoke testAdd(a, b);
 
     assert a + b == c, "failed addition test";
-=======
-    uint256 c = a + b;
-    uint256 cScaled = sinvoke testAdd(a, b);
-    assert c == cScaled, "failed addition test";
->>>>>>> f51e7a005146440d4809177a6fd35e61840bfbc7
 }
