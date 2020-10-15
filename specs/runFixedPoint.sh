@@ -1,0 +1,1 @@
+certoraRun ./FixedPointHarness.sol --verify FixedPointHarness:./fixedPoint.spec --path ../../

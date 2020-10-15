@@ -1,0 +1,462 @@
+{
+    "Whitelist_00000000ce4604a0000000000000000000000000": {
+        "contracts": [
+            {
+                "address": "00000000ce4604a0000000000000000000000000",
+                "bytecode": "608060405234801561001057600080fd5b50600436106101005760003560e01c8063a2ae545a11610097578063ec7127b611610066578063ec7127b61461052d578063f2fde38b14610571578063f5887cdd146105b5578063f9839d89146105ff57610100565b8063a2ae545a146103b9578063a34626c414610415578063a6dfe83f14610459578063ebd31e8e146104e957610100565b8063715018a6116100d3578063715018a61461029157806379df1e441461029b57806382d90ebf146102df5780638da5cb5b1461036f57610100565b806311946b981461010557806315f73b01146101615780632383be4e146101a5578063401a83cf146101e9575b600080fd5b6101476004803603602081101561011b57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff16906020019092919050505061065b565b604051808215151515815260200191505060405180910390f35b6101a36004803603602081101561017757600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff1690602001909291905050506106b1565b005b6101e7600480360360208110156101bb57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050610818565b005b610277600480360360808110156101ff57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190803573ffffffffffffffffffffffffffffffffffffffff169060200190929190803573ffffffffffffffffffffffffffffffffffffffff16906020019092919080351515906020019092919050505061097f565b604051808215151515815260200191505060405180910390f35b610299610a77565b005b6102dd600480360360208110156102b157600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050610bff565b005b61036d600480360360808110156102f557600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190803573ffffffffffffffffffffffffffffffffffffffff169060200190929190803573ffffffffffffffffffffffffffffffffffffffff169060200190929190803515159060200190929190505050610d66565b005b610377610fb5565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b6103fb600480360360208110156103cf57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050610fde565b604051808215151515815260200191505060405180910390f35b6104576004803603602081101561042b57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050611034565b005b6104e76004803603608081101561046f57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190803573ffffffffffffffffffffffffffffffffffffffff169060200190929190803573ffffffffffffffffffffffffffffffffffffffff16906020019092919080351515906020019092919050505061119b565b005b61052b600480360360208110156104ff57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff1690602001909291905050506113ea565b005b61056f6004803603602081101561054357600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050611551565b005b6105b36004803603602081101561058757600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050611715565b005b6105bd611922565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b6106416004803603602081101561061557600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050611948565b604051808215151515815260200191505060405180910390f35b6000600460008373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060009054906101000a900460ff169050919050565b6106b961199e565b73ffffffffffffffffffffffffffffffffffffffff166000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff161461077a576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260208152602001807f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657281525060200191505060405180910390fd5b6000600360008373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060006101000a81548160ff0219169083151502179055508073ffffffffffffffffffffffffffffffffffffffff167f2e27eeed3fdce92fcbb383357973ca18ad411294e3cb4f9c07a8665aee9bcf1860405160405180910390a250565b61082061199e565b73ffffffffffffffffffffffffffffffffffffffff166000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16146108e1576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260208152602001807f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657281525060200191505060405180910390fd5b6001600560008373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060006101000a81548160ff0219169083151502179055508073ffffffffffffffffffffffffffffffffffffffff167f9334f1cf560b8678d242a97ff8aa0f60f61c40b3b7e3bd1a1b6759bb0cec6b9e60405160405180910390a250565b60008085858585604051602001808573ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020018473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020018373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001821515151581526020019450505050506040516020818303038152906040528051906020012090506002600082815260200190815260200160002060009054906101000a900460ff16915050949350505050565b610a7f61199e565b73ffffffffffffffffffffffffffffffffffffffff166000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1614610b40576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260208152602001807f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657281525060200191505060405180910390fd5b600073ffffffffffffffffffffffffffffffffffffffff166000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e060405160405180910390a360008060006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550565b610c0761199e565b73ffffffffffffffffffffffffffffffffffffffff166000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1614610cc8576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260208152602001807f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657281525060200191505060405180910390fd5b6000600460008373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060006101000a81548160ff0219169083151502179055508073ffffffffffffffffffffffffffffffffffffffff167fdb9b6d848ff0a15fae4f0c0424b4bb6ddd97ac1d06b2d160ba86fc2832de581460405160405180910390a250565b610d6e61199e565b73ffffffffffffffffffffffffffffffffffffffff166000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1614610e2f576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260208152602001807f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657281525060200191505060405180910390fd5b600084848484604051602001808573ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020018473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020018373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020018215151515815260200194505050505060405160208183030381529060405280519060200120905060016002600083815260200190815260200160002060006101000a81548160ff0219169083151502179055508273ffffffffffffffffffffffffffffffffffffffff168473ffffffffffffffffffffffffffffffffffffffff168673ffffffffffffffffffffffffffffffffffffffff167f0f70a67bc35edde2b5599b6d163651e02f760143df04f95b4ef233299531bf21848660405180838152602001821515151581526020019250505060405180910390a45050505050565b60008060009054906101000a900473ffffffffffffffffffffffffffffffffffffffff16905090565b6000600560008373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060009054906101000a900460ff169050919050565b61103c61199e565b73ffffffffffffffffffffffffffffffffffffffff166000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16146110fd576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260208152602001807f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657281525060200191505060405180910390fd5b6001600360008373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060006101000a81548160ff0219169083151502179055508073ffffffffffffffffffffffffffffffffffffffff167f38c11947f16670fa95ddb76444c21a13a0be4f0132d147eb6245c4b94ea889fa60405160405180910390a250565b6111a361199e565b73ffffffffffffffffffffffffffffffffffffffff166000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1614611264576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260208152602001807f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657281525060200191505060405180910390fd5b600084848484604051602001808573ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020018473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020018373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020018215151515815260200194505050505060405160208183030381529060405280519060200120905060006002600083815260200190815260200160002060006101000a81548160ff0219169083151502179055508273ffffffffffffffffffffffffffffffffffffffff168473ffffffffffffffffffffffffffffffffffffffff168673ffffffffffffffffffffffffffffffffffffffff167fa1ddf2a4744cc5c7c0dbe14996f16cb2d8564ef718f45625629e8a0497b9779a848660405180838152602001821515151581526020019250505060405180910390a45050505050565b6113f261199e565b73ffffffffffffffffffffffffffffffffffffffff166000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16146114b3576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260208152602001807f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657281525060200191505060405180910390fd5b6000600560008373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060006101000a81548160ff0219169083151502179055508073ffffffffffffffffffffffffffffffffffffffff167f1b04f3cb09a85dced592e37ae08b2a135757683e30116221003f6620de94d40060405160405180910390a250565b600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16631ffaf0db6040518163ffffffff1660e01b815260040160206040518083038186803b1580156115b957600080fd5b505afa1580156115cd573d6000803e3d6000fd5b505050506040513d60208110156115e357600080fd5b810190808051906020019092919050505073ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614611677576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260268152602001806119cd6026913960400191505060405180910390fd5b6001600460008373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060006101000a81548160ff0219169083151502179055508073ffffffffffffffffffffffffffffffffffffffff167fafbb5b30329d7def9553a137626d5bc919fda8f5d1d1b5a64aa6123445b9415b60405160405180910390a250565b61171d61199e565b73ffffffffffffffffffffffffffffffffffffffff166000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16146117de576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260208152602001807f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657281525060200191505060405180910390fd5b600073ffffffffffffffffffffffffffffffffffffffff168173ffffffffffffffffffffffffffffffffffffffff161415611864576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260268152602001806119a76026913960400191505060405180910390fd5b8073ffffffffffffffffffffffffffffffffffffffff166000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e060405160405180910390a3806000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff16021790555050565b600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b6000600360008373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060009054906101000a900460ff169050919050565b60003390509056fe4f776e61626c653a206e6577206f776e657220697320746865207a65726f206164647265737357686974656c6973743a2053656e646572206973206e6f74204f746f6b656e466163746f7279a26469706673582212202386cd25f5cd0f4727ba904a1f59d165f03a56a0f2ae21fbd79107fe1e232b8e64736f6c634300060a0033",
+                "file": "Whitelist.sol_0/0_Whitelist.sol",
+                "immutables": [],
+                "linkCandidates": {},
+                "methods": [
+                    {
+                        "args": [],
+                        "fullArgs": [],
+                        "isABI": true,
+                        "name": "addressBook",
+                        "notpayable": true,
+                        "returns": [
+                            "{\"type\": \"address\"}"
+                        ],
+                        "sighash": "f5887cdd",
+                        "stateMutability": {
+                            "keyword": "view"
+                        }
+                    },
+                    {
+                        "args": [
+                            "address"
+                        ],
+                        "fullArgs": [
+                            {
+                                "components": [],
+                                "type": "address"
+                            }
+                        ],
+                        "isABI": true,
+                        "name": "blacklistCallee",
+                        "notpayable": true,
+                        "returns": [],
+                        "sighash": "ebd31e8e",
+                        "stateMutability": {
+                            "keyword": "nonpayable"
+                        }
+                    },
+                    {
+                        "args": [
+                            "address"
+                        ],
+                        "fullArgs": [
+                            {
+                                "components": [],
+                                "type": "address"
+                            }
+                        ],
+                        "isABI": true,
+                        "name": "blacklistCollateral",
+                        "notpayable": true,
+                        "returns": [],
+                        "sighash": "15f73b01",
+                        "stateMutability": {
+                            "keyword": "nonpayable"
+                        }
+                    },
+                    {
+                        "args": [
+                            "address"
+                        ],
+                        "fullArgs": [
+                            {
+                                "components": [],
+                                "type": "address"
+                            }
+                        ],
+                        "isABI": true,
+                        "name": "blacklistOtoken",
+                        "notpayable": true,
+                        "returns": [],
+                        "sighash": "79df1e44",
+                        "stateMutability": {
+                            "keyword": "nonpayable"
+                        }
+                    },
+                    {
+                        "args": [
+                            "address",
+                            "address",
+                            "address",
+                            "bool"
+                        ],
+                        "fullArgs": [
+                            {
+                                "components": [],
+                                "type": "address"
+                            },
+                            {
+                                "components": [],
+                                "type": "address"
+                            },
+                            {
+                                "components": [],
+                                "type": "address"
+                            },
+                            {
+                                "components": [],
+                                "type": "bool"
+                            }
+                        ],
+                        "isABI": true,
+                        "name": "blacklistProduct",
+                        "notpayable": true,
+                        "returns": [],
+                        "sighash": "a6dfe83f",
+                        "stateMutability": {
+                            "keyword": "nonpayable"
+                        }
+                    },
+                    {
+                        "args": [
+                            "address"
+                        ],
+                        "fullArgs": [
+                            {
+                                "components": [],
+                                "type": "address"
+                            }
+                        ],
+                        "isABI": true,
+                        "name": "isWhitelistedCallee",
+                        "notpayable": true,
+                        "returns": [
+                            "{\"type\": \"bool\"}"
+                        ],
+                        "sighash": "a2ae545a",
+                        "stateMutability": {
+                            "keyword": "view"
+                        }
+                    },
+                    {
+                        "args": [
+                            "address"
+                        ],
+                        "fullArgs": [
+                            {
+                                "components": [],
+                                "type": "address"
+                            }
+                        ],
+                        "isABI": true,
+                        "name": "isWhitelistedCollateral",
+                        "notpayable": true,
+                        "returns": [
+                            "{\"type\": \"bool\"}"
+                        ],
+                        "sighash": "f9839d89",
+                        "stateMutability": {
+                            "keyword": "view"
+                        }
+                    },
+                    {
+                        "args": [
+                            "address"
+                        ],
+                        "fullArgs": [
+                            {
+                                "components": [],
+                                "type": "address"
+                            }
+                        ],
+                        "isABI": true,
+                        "name": "isWhitelistedOtoken",
+                        "notpayable": true,
+                        "returns": [
+                            "{\"type\": \"bool\"}"
+                        ],
+                        "sighash": "11946b98",
+                        "stateMutability": {
+                            "keyword": "view"
+                        }
+                    },
+                    {
+                        "args": [
+                            "address",
+                            "address",
+                            "address",
+                            "bool"
+                        ],
+                        "fullArgs": [
+                            {
+                                "components": [],
+                                "type": "address"
+                            },
+                            {
+                                "components": [],
+                                "type": "address"
+                            },
+                            {
+                                "components": [],
+                                "type": "address"
+                            },
+                            {
+                                "components": [],
+                                "type": "bool"
+                            }
+                        ],
+                        "isABI": true,
+                        "name": "isWhitelistedProduct",
+                        "notpayable": true,
+                        "returns": [
+                            "{\"type\": \"bool\"}"
+                        ],
+                        "sighash": "401a83cf",
+                        "stateMutability": {
+                            "keyword": "view"
+                        }
+                    },
+                    {
+                        "args": [],
+                        "fullArgs": [],
+                        "isABI": true,
+                        "name": "owner",
+                        "notpayable": true,
+                        "returns": [
+                            "{\"type\": \"address\"}"
+                        ],
+                        "sighash": "8da5cb5b",
+                        "stateMutability": {
+                            "keyword": "view"
+                        }
+                    },
+                    {
+                        "args": [],
+                        "fullArgs": [],
+                        "isABI": true,
+                        "name": "renounceOwnership",
+                        "notpayable": true,
+                        "returns": [],
+                        "sighash": "715018a6",
+                        "stateMutability": {
+                            "keyword": "nonpayable"
+                        }
+                    },
+                    {
+                        "args": [
+                            "address"
+                        ],
+                        "fullArgs": [
+                            {
+                                "components": [],
+                                "type": "address"
+                            }
+                        ],
+                        "isABI": true,
+                        "name": "transferOwnership",
+                        "notpayable": true,
+                        "returns": [],
+                        "sighash": "f2fde38b",
+                        "stateMutability": {
+                            "keyword": "nonpayable"
+                        }
+                    },
+                    {
+                        "args": [
+                            "address"
+                        ],
+                        "fullArgs": [
+                            {
+                                "components": [],
+                                "type": "address"
+                            }
+                        ],
+                        "isABI": true,
+                        "name": "whitelistCollateral",
+                        "notpayable": true,
+                        "returns": [],
+                        "sighash": "a34626c4",
+                        "stateMutability": {
+                            "keyword": "nonpayable"
+                        }
+                    },
+                    {
+                        "args": [
+                            "address"
+                        ],
+                        "fullArgs": [
+                            {
+                                "components": [],
+                                "type": "address"
+                            }
+                        ],
+                        "isABI": true,
+                        "name": "whitelistOtoken",
+                        "notpayable": true,
+                        "returns": [],
+                        "sighash": "ec7127b6",
+                        "stateMutability": {
+                            "keyword": "nonpayable"
+                        }
+                    },
+                    {
+                        "args": [
+                            "address",
+                            "address",
+                            "address",
+                            "bool"
+                        ],
+                        "fullArgs": [
+                            {
+                                "components": [],
+                                "type": "address"
+                            },
+                            {
+                                "components": [],
+                                "type": "address"
+                            },
+                            {
+                                "components": [],
+                                "type": "address"
+                            },
+                            {
+                                "components": [],
+                                "type": "bool"
+                            }
+                        ],
+                        "isABI": true,
+                        "name": "whitelistProduct",
+                        "notpayable": true,
+                        "returns": [],
+                        "sighash": "82d90ebf",
+                        "stateMutability": {
+                            "keyword": "nonpayable"
+                        }
+                    },
+                    {
+                        "args": [
+                            "address"
+                        ],
+                        "fullArgs": [
+                            {
+                                "components": [],
+                                "type": "address"
+                            }
+                        ],
+                        "isABI": true,
+                        "name": "whitelisteCallee",
+                        "notpayable": true,
+                        "returns": [],
+                        "sighash": "2383be4e",
+                        "stateMutability": {
+                            "keyword": "nonpayable"
+                        }
+                    }
+                ],
+                "name": "Whitelist",
+                "original_file": "/Users/aparnakrishnan/Desktop/Opyn/OpynV2/contracts/Whitelist.sol",
+                "srcmap": "340:8303:0:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;4225:125;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;7044:178;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;;8133:154;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;;3366:321;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;1684:145:3;;;:::i;:::-;;7758:175:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;;5184:397;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;;1061:77:3;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;4556:125:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;6674:177;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;;6083:398;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;;8487:154;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;;7415:176;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;;1978:240:3;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;;419:26:0;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;3918:141;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;4225:125;4294:4;4317:17;:26;4335:7;4317:26;;;;;;;;;;;;;;;;;;;;;;;;;4310:33;;4225:125;;;:::o;7044:178::-;1275:12:3;:10;:12::i;:::-;1265:22;;:6;;;;;;;;;;;:22;;;1257:67;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;7160:5:0::1;7123:21;:34;7145:11;7123:34;;;;;;;;;;;;;;;;:42;;;;;;;;;;;;;;;;;;7203:11;7181:34;;;;;;;;;;;;7044:178:::0;:::o;8133:154::-;1275:12:3;:10;:12::i;:::-;1265:22;;:6;;;;;;;;;;;:22;;;1257:67;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;8234:4:0::1;8205:17;:26;8223:7;8205:26;;;;;;;;;;;;;;;;:33;;;;;;;;;;;;;;;;;;8272:7;8254:26;;;;;;;;;;;;8133:154:::0;:::o;3366:321::-;3529:4;3545:19;3588:11;3601:7;3610:11;3623:6;3577:53;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;3567:64;;;;;;3545:86;;3649:18;:31;3668:11;3649:31;;;;;;;;;;;;;;;;;;;;;3642:38;;;3366:321;;;;;;:::o;1684:145:3:-;1275:12;:10;:12::i;:::-;1265:22;;:6;;;;;;;;;;;:22;;;1257:67;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1790:1:::1;1753:40;;1774:6;::::0;::::1;;;;;;;;;1753:40;;;;;;;;;;;;1820:1;1803:6:::0;::::1;:19;;;;;;;;;;;;;;;;;;1684:145::o:0;7758:175:0:-;1275:12:3;:10;:12::i;:::-;1265:22;;:6;;;;;;;;;;;:22;;;1257:67;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;7872:5:0::1;7836:17;:33;7854:14;7836:33;;;;;;;;;;;;;;;;:41;;;;;;;;;;;;;;;;;;7911:14;7893:33;;;;;;;;;;;;7758:175:::0;:::o;5184:397::-;1275:12:3;:10;:12::i;:::-;1265:22;;:6;;;;;;;;;;;:22;;;1257:67;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;5349:19:0::1;5392:11;5405:7;5414:11;5427:6;5381:53;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;5371:64;;;;;;5349:86;;5480:4;5446:18;:31;5465:11;5446:31;;;;;;;;;;;;:38;;;;;;;;;;;;;;;;;;5554:11;5500:74;;5545:7;5500:74;;5532:11;5500:74;;;5519:11;5567:6;5500:74;;;;;;;;;;;;;;;;;;;;;;;;;;;;1334:1:3;5184:397:0::0;;;;:::o;1061:77:3:-;1099:7;1125:6;;;;;;;;;;;1118:13;;1061:77;:::o;4556:125:0:-;4625:4;4648:17;:26;4666:7;4648:26;;;;;;;;;;;;;;;;;;;;;;;;;4641:33;;4556:125;;;:::o;6674:177::-;1275:12:3;:10;:12::i;:::-;1265:22;;:6;;;;;;;;;;;:22;;;1257:67;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;6790:4:0::1;6753:21;:34;6775:11;6753:34;;;;;;;;;;;;;;;;:41;;;;;;;;;;;;;;;;;;6832:11;6810:34;;;;;;;;;;;;6674:177:::0;:::o;6083:398::-;1275:12:3;:10;:12::i;:::-;1265:22;;:6;;;;;;;;;;;:22;;;1257:67;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;6248:19:0::1;6291:11;6304:7;6313:11;6326:6;6280:53;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;6270:64;;;;;;6248:86;;6379:5;6345:18;:31;6364:11;6345:31;;;;;;;;;;;;:39;;;;;;;;;;;;;;;;;;6454:11;6400:74;;6445:7;6400:74;;6432:11;6400:74;;;6419:11;6467:6;6400:74;;;;;;;;;;;;;;;;;;;;;;;;;;;;1334:1:3;6083:398:0::0;;;;:::o;8487:154::-;1275:12:3;:10;:12::i;:::-;1265:22;;:6;;;;;;;;;;;:22;;;1257:67;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;8587:5:0::1;8558:17;:26;8576:7;8558:26;;;;;;;;;;;;;;;;:34;;;;;;;;;;;;;;;;;;8626:7;8608:26;;;;;;;;;;;;8487:154:::0;:::o;7415:176::-;2749:11;;;;;;;;;;;2728:50;;;:52;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;2714:66;;:10;:66;;;2693:151;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;7531:4:::1;7495:17;:33;7513:14;7495:33;;;;;;;;;;;;;;;;:40;;;;;;;;;;;;;;;;;;7569:14;7551:33;;;;;;;;;;;;7415:176:::0;:::o;1978:240:3:-;1275:12;:10;:12::i;:::-;1265:22;;:6;;;;;;;;;;;:22;;;1257:67;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;2086:1:::1;2066:22;;:8;:22;;;;2058:73;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;2175:8;2146:38;;2167:6;::::0;::::1;;;;;;;;;2146:38;;;;;;;;;;;;2203:8;2194:6;::::0;:17:::1;;;;;;;;;;;;;;;;;;1978:240:::0;:::o;419:26:0:-;;;;;;;;;;;;;:::o;3918:141::-;3995:4;4018:21;:34;4040:11;4018:34;;;;;;;;;;;;;;;;;;;;;;;;;4011:41;;3918:141;;;:::o;590:104:2:-;643:15;677:10;670:17;;590:104;:::o",
+                "storageLayout": {
+                    "storage": [
+                        {
+                            "astId": 495,
+                            "contract": "/Users/aparnakrishnan/Desktop/Opyn/OpynV2/contracts/Whitelist.sol:Whitelist",
+                            "label": "_owner",
+                            "offset": 0,
+                            "slot": "0",
+                            "type": "t_address"
+                        },
+                        {
+                            "astId": 9,
+                            "contract": "/Users/aparnakrishnan/Desktop/Opyn/OpynV2/contracts/Whitelist.sol:Whitelist",
+                            "label": "addressBook",
+                            "offset": 0,
+                            "slot": "1",
+                            "type": "t_address"
+                        },
+                        {
+                            "astId": 14,
+                            "contract": "/Users/aparnakrishnan/Desktop/Opyn/OpynV2/contracts/Whitelist.sol:Whitelist",
+                            "label": "whitelistedProduct",
+                            "offset": 0,
+                            "slot": "2",
+                            "type": "t_mapping(t_bytes32,t_bool)"
+                        },
+                        {
+                            "astId": 19,
+                            "contract": "/Users/aparnakrishnan/Desktop/Opyn/OpynV2/contracts/Whitelist.sol:Whitelist",
+                            "label": "whitelistedCollateral",
+                            "offset": 0,
+                            "slot": "3",
+                            "type": "t_mapping(t_address,t_bool)"
+                        },
+                        {
+                            "astId": 24,
+                            "contract": "/Users/aparnakrishnan/Desktop/Opyn/OpynV2/contracts/Whitelist.sol:Whitelist",
+                            "label": "whitelistedOtoken",
+                            "offset": 0,
+                            "slot": "4",
+                            "type": "t_mapping(t_address,t_bool)"
+                        },
+                        {
+                            "astId": 29,
+                            "contract": "/Users/aparnakrishnan/Desktop/Opyn/OpynV2/contracts/Whitelist.sol:Whitelist",
+                            "label": "whitelistedCallee",
+                            "offset": 0,
+                            "slot": "5",
+                            "type": "t_mapping(t_address,t_bool)"
+                        }
+                    ],
+                    "types": {
+                        "t_address": {
+                            "encoding": "inplace",
+                            "label": "address",
+                            "numberOfBytes": "20"
+                        },
+                        "t_bool": {
+                            "encoding": "inplace",
+                            "label": "bool",
+                            "numberOfBytes": "1"
+                        },
+                        "t_bytes32": {
+                            "encoding": "inplace",
+                            "label": "bytes32",
+                            "numberOfBytes": "32"
+                        },
+                        "t_mapping(t_address,t_bool)": {
+                            "encoding": "mapping",
+                            "key": "t_address",
+                            "label": "mapping(address => bool)",
+                            "numberOfBytes": "32",
+                            "value": "t_bool"
+                        },
+                        "t_mapping(t_bytes32,t_bool)": {
+                            "encoding": "mapping",
+                            "key": "t_bytes32",
+                            "label": "mapping(bytes32 => bool)",
+                            "numberOfBytes": "32",
+                            "value": "t_bool"
+                        }
+                    }
+                },
+                "varmap": ""
+            }
+        ],
+        "generated_with": "/usr/local/bin/certoraRun ../../contracts/Whitelist.sol --verify Whitelist:../Privileged.spec --solc solc --settings -b=4 --path ../../ --staging",
+        "library_addresses": [],
+        "original_srclist": {
+            "0": "/Users/aparnakrishnan/Desktop/Opyn/OpynV2/contracts/Whitelist.sol",
+            "1": "/Users/aparnakrishnan/Desktop/Opyn/OpynV2/contracts/interfaces/AddressBookInterface.sol",
+            "2": "/Users/aparnakrishnan/Desktop/Opyn/OpynV2/contracts/packages/oz/Context.sol",
+            "3": "/Users/aparnakrishnan/Desktop/Opyn/OpynV2/contracts/packages/oz/Ownable.sol"
+        },
+        "primary_contract": "Whitelist",
+        "primary_contract_address": "00000000ce4604a0000000000000000000000000",
+        "sdc_name": "Whitelist.sol_0",
+        "sdc_origin_file": "../../contracts/Whitelist.sol",
+        "srclist": {
+            "0": "Whitelist.sol_0/0_Whitelist.sol",
+            "1": "Whitelist.sol_0/1_AddressBookInterface.sol",
+            "2": "Whitelist.sol_0/2_Context.sol",
+            "3": "Whitelist.sol_0/3_Ownable.sol"
+        },
+        "state": {},
+        "structLinkingInfo": {}
+    }
+}

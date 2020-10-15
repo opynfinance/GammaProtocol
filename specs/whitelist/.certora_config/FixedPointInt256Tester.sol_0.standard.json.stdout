@@ -1,0 +1,1 @@
+{"errors":[{"component":"general","formattedMessage":"Cannot import url (\"/Users/aparnakrishnan/Desktop/Opyn/OpynV2/specs/whitelist/FixedPointInt256Tester.sol\"): File not found.","message":"Cannot import url (\"/Users/aparnakrishnan/Desktop/Opyn/OpynV2/specs/whitelist/FixedPointInt256Tester.sol\"): File not found.","severity":"error","type":"IOError"}],"sources":{}}

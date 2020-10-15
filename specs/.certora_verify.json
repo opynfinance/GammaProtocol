@@ -1,0 +1,7 @@
+[
+    {
+        "primary_contract": "FixedPointHarness",
+        "specfile": ".certora_config/0_fixedPoint.spec",
+        "type": "spec"
+    }
+]
