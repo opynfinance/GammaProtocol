@@ -26,8 +26,9 @@ rule testSubtraction(uint256 a, uint256 b)
 description "test subtraction" 
 {
     uint256 c = sinvoke testSub(a, b);
+    require a >= b; 
 
-    assert a - b == c, "failed subtraction test";
+    assert (a >= b && a - b == c) || (b - a == c), "failed subtraction test";
 }
 
 rule testMultiplication(uint256 a, uint256 b)
