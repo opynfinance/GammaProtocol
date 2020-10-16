@@ -6,3 +6,7 @@ coverage.json
 gasReporterOutput.json
 .secret
 .infuraKey
+.certora_build.json
+.certora_config/
+.certora_verify
+.last_confs

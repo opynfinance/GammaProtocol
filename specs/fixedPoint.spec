@@ -1,6 +1,7 @@
 methods {
     testAdd (uint256, uint256) returns uint256 envfree
     testSub (uint256, uint256) returns uint256 envfree
+    testMul (uint256, uint256) returns uint256 envfree
     testFPI (uint256) returns uint256 envfree
 }
 
@@ -11,14 +12,6 @@ description "test fpi"
 {
     uint256 c = sinvoke testFPI(a);
     assert a == c, "failed conversion test";
-}
-
-rule testAdditionByZero(uint256 a)
-description "test addition" 
-{
-    uint256 c = sinvoke testAdd(a, 0);
-
-    assert c == a, "failed addition by zero test";
 }
 
 rule testAddition(uint256 a, uint256 b)
@@ -32,8 +25,15 @@ description "test addition"
 rule testSubtraction(uint256 a, uint256 b)
 description "test subtraction" 
 {
-    require a >= b;
     uint256 c = sinvoke testSub(a, b);
 
     assert a - b == c, "failed subtraction test";
+}
+
+rule testMultiplication(uint256 a, uint256 b)
+description "test multiplication" 
+{
+    uint256 c = sinvoke testMul(a, b);
+
+    assert a * b == c, "failed multiplication test";
 }
