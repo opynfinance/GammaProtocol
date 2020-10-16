@@ -276,7 +276,7 @@ contract('MarginVault', ([deployer, controller]) => {
       const vaultCounter = new BigNumber(0)
 
       await expectRevert(
-        marginVaultTester.testAddLong(vaultCounter, weth.address, 10, 4),
+        marginVaultTester.testAddCollateral(vaultCounter, weth.address, 10, 4),
         'MarginVault: invalid collateral token index',
       )
     })
