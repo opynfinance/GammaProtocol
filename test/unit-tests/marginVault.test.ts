@@ -88,12 +88,12 @@ contract('MarginVault', ([deployer, controller]) => {
       assert.equal(vault.shortAmounts[vault.shortAmounts.length - 1], new BigNumber(23))
     })
 
-    it('should revert if trying to add wrong otoken to an index', async () => {
+    it('should revert if trying to add wrong short otoken to an index', async () => {
       const vaultCounter = new BigNumber(0)
 
       await expectRevert(
         marginVaultTester.testAddShort(vaultCounter, otoken.address, 10, 1),
-        'MarginVault: invalid short otoken position',
+        'MarginVault: short otoken address mismatch',
       )
     })
   })
@@ -187,14 +187,14 @@ contract('MarginVault', ([deployer, controller]) => {
       assert.equal(vault.longAmounts[index], new BigNumber(20))
     })
 
-    it('should revert if trying to add wrong otoken to an index', async () => {
+    it('should revert if trying to add wrong long otoken to an index', async () => {
       const index = 1
       const amount = 10
       const vaultCounter = new BigNumber(0)
 
       await expectRevert(
         marginVaultTester.testAddLong(vaultCounter, otoken.address, amount, index),
-        'MarginVault: invalid long otoken position',
+        'MarginVault: long otoken address mismatch',
       )
     })
   })
@@ -298,7 +298,7 @@ contract('MarginVault', ([deployer, controller]) => {
 
       await expectRevert(
         marginVaultTester.testAddCollateral(vaultCounter, usdc.address, changeAmt, index),
-        'MarginVault: invalid collateral token position',
+        'MarginVault: collateral token address mismatch',
       )
     })
 
@@ -326,7 +326,7 @@ contract('MarginVault', ([deployer, controller]) => {
 
       await expectRevert(
         marginVaultTester.testAddCollateral(vaultCounter, otoken.address, changeAmt, index),
-        'MarginVault: invalid collateral token position',
+        'MarginVault: collateral token address mismatch',
       )
     })
   })

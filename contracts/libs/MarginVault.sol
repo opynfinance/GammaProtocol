@@ -56,7 +56,7 @@ library MarginVault {
             _vault.shortAmounts.push(_amount);
         } else {
             require(
-                (_index == _vault.shortOtokens.length) && (_index == _vault.shortAmounts.length),
+                (_index < _vault.shortOtokens.length) && (_index < _vault.shortAmounts.length),
                 "MarginVault: invalid short otoken index"
             );
             require(
@@ -117,7 +117,7 @@ library MarginVault {
             _vault.longAmounts.push(_amount);
         } else {
             require(
-                (_index == _vault.longOtokens.length) && (_index == _vault.longAmounts.length),
+                (_index < _vault.longOtokens.length) && (_index < _vault.longAmounts.length),
                 "MarginVault: invalid long otoken index"
             );
             require(
