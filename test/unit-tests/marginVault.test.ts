@@ -55,6 +55,15 @@ contract('MarginVault', ([deployer, controller]) => {
   })
 
   describe('Add short', async () => {
+    it('should revert if trying to add short otoken with index greater than short otoken array length', async () => {
+      const vaultCounter = new BigNumber(0)
+
+      await expectRevert(
+        marginVaultTester.testAddShort(vaultCounter, otoken.address, 10, 4),
+        'MarginVault: invalid short otoken index',
+      )
+    })
+
     it('should add short otokens', async () => {
       const vaultCounter = new BigNumber(0)
 
@@ -157,6 +166,15 @@ contract('MarginVault', ([deployer, controller]) => {
   })
 
   describe('Add long', () => {
+    it('should revert if trying to add long otoken with index greater than long otoken array length', async () => {
+      const vaultCounter = new BigNumber(0)
+
+      await expectRevert(
+        marginVaultTester.testAddLong(vaultCounter, otoken.address, 10, 4),
+        'MarginVault: invalid long otoken index',
+      )
+    })
+
     it('should add long otokens', async () => {
       const index = 0
       const amount = 10
@@ -254,6 +272,15 @@ contract('MarginVault', ([deployer, controller]) => {
   })
 
   describe('Add collateral', () => {
+    it('should revert if trying to add collateral asset with index greater than collateral asset array length', async () => {
+      const vaultCounter = new BigNumber(0)
+
+      await expectRevert(
+        marginVaultTester.testAddLong(vaultCounter, weth.address, 10, 4),
+        'MarginVault: invalid collateral token index',
+      )
+    })
+
     it('should add weth collateral', async () => {
       const index = 0
       const amount = 10
