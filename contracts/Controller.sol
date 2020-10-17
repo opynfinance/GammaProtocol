@@ -136,9 +136,9 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /// @notice emits an event when the partialPauser address changes
     event PartialPauserUpdated(address indexed oldPartialPauser, address indexed newPartialPauser);
     /// @notice emits an event when the system partial paused status changes
-    event SystemPartiallyPaused(bool isActive);
+    event SystemPartiallyPaused(bool isPaused);
     /// @notice emits an event when the system fully paused status changes
-    event SystemFullyPaused(bool isActive);
+    event SystemFullyPaused(bool isPaused);
     /// @notice emits an event when the call action restriction changes
     event CallRestricted(bool isRestricted);
 
