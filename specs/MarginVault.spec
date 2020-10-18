@@ -83,6 +83,7 @@ rule successOfAddCollateral(address asset, uint256 x, uint256 index)
 	requireInvariant validVault();
 	require x > 0;
 	require index < MAXINT();
+	require index <= collateralAmountLength();
 	if (index < collateralAmountLength()) {
 		require asset == getCollateralAsset(index);
 		require getCollateralAmount(index) + x < MAXINT();
