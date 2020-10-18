@@ -116,7 +116,7 @@ rule integrityOfAddCollateral(address asset, uint256 x, uint256 index)
 rule additiveAddCollateral(address asset, uint256 x, uint256 y, uint256 index)
 {
 		requireInvariant validVault();
-    	// require index < MAXINT(); // no violation when limiting index
+    	require index < MAXINT(); // no violation when limiting index
     	require x > 0 && y > 0 ;
     	uint256 t = x + y ;
         require( t >= x && t >= y); //no overflow
@@ -167,7 +167,7 @@ rule integrityOfAddShort(address shortOtoken, uint256 x, uint256 index)
 rule additiveAddShort(address shortOtoken, uint256 x, uint256 y, uint256 index)
 {
 	requireInvariant validVault();
-	// require index < MAXINT(); // no violation when limiting index
+	require index < MAXINT(); // no violation when limiting index
 	require x > 0 && y > 0 ;
 	uint256 t = x + y ;
     require( t >= x && t >= y); //no overflow
@@ -215,7 +215,7 @@ rule integrityOfAddLong(address longOtoken, uint256 x, uint256 index)
 rule additiveAddLong(address longOtoken, uint256 x, uint256 y, uint256 index)
 {
 	requireInvariant validVault();
-	// require index < MAXINT(); // no violation when limiting index
+	require index < MAXINT(); // no violation when limiting index
 	require x > 0 && y > 0 ;
 	uint256 t = x + y ;
     require( t >= x && t >= y); //no overflow
