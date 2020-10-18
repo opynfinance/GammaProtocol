@@ -83,13 +83,22 @@ rule successOfAddCollateral(address asset, uint256 x, uint256 index)
 	requireInvariant validVault();
 	require x > 0;
 	require index < MAXINT();
-	require index <= collateralAmountLength();
+	// require index <= collateralAmountLength();
 	if (index < collateralAmountLength()) {
 		require asset == getCollateralAsset(index);
 		require getCollateralAmount(index) + x < MAXINT();
+
+		invoke addCollateral(asset, x, index);
+		assert !lastReverted, "addCollateral may revert when precondition holds";
 	}
-	invoke addCollateral(asset, x, index);
-	assert !lastReverted, "addCollateral may revert when precondition holds";
+	else if ((index == collateralAmountLength())) {
+		invoke addCollateral(asset, x, index);
+		assert !lastReverted, "addCollateral may revert when precondition holds";
+	}
+	else {
+		invoke addCollateral(asset, x, index);
+		assert lastReverted, "addCollateral may not revert when precondition not holds";
+	}
 }
 
 
