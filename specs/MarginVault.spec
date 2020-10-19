@@ -28,7 +28,7 @@ methods {
 }
 
 definition MAXINT() returns uint256 = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
-definition ADDRESSZERO() return address = address(0);
+definition ADDRESSZERO() return address = 0;
 
 /**
 @title Valid state of a vault
