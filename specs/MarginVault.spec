@@ -28,6 +28,7 @@ methods {
 }
 
 definition MAXINT() returns uint256 = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
+definition ADDRESSZERO() return address = 0;
 
 /**
 @title Valid state of a vault
@@ -81,14 +82,25 @@ rule changeToOneEntity(uint256 shortIndex, uint256 longIndex, uint256 collateral
 rule successOfAddCollateral(address asset, uint256 x, uint256 index)
 {
 	requireInvariant validVault();
+	require asset != ADDRESSZERO();
 	require x > 0;
 	require index < MAXINT();
+	// require index <= collateralAmountLength();
 	if (index < collateralAmountLength()) {
 		require asset == getCollateralAsset(index);
 		require getCollateralAmount(index) + x < MAXINT();
+
+		invoke addCollateral(asset, x, index);
+		assert !lastReverted, "addCollateral may revert when precondition holds";
 	}
-	invoke addCollateral(asset, x, index);
-	assert !lastReverted, "addCollateral may revert when precondition holds";
+	else if ((index == collateralAmountLength())) {
+		invoke addCollateral(asset, x, index);
+		assert !lastReverted, "addCollateral may revert when precondition holds";
+	}
+	else {
+		invoke addCollateral(asset, x, index);
+		assert lastReverted, "addCollateral may not revert when precondition not holds";
+	}
 }
 
 
@@ -102,6 +114,7 @@ rule successOfAddCollateral(address asset, uint256 x, uint256 index)
 rule integrityOfAddCollateral(address asset, uint256 x, uint256 index)
 {
 	requireInvariant validVault();
+	require asset != ADDRESSZERO();
 	uint256 collateralBefore = totalCollateral();
 	sinvoke addCollateral(asset, x, index);
 	assert totalCollateral() == collateralBefore + x, "integirty break of addCollateral";
@@ -116,7 +129,8 @@ rule integrityOfAddCollateral(address asset, uint256 x, uint256 index)
 rule additiveAddCollateral(address asset, uint256 x, uint256 y, uint256 index)
 {
 		requireInvariant validVault();
-    	// require index < MAXINT(); // no violation when limiting index
+		require asset != ADDRESSZERO();
+    	require index < MAXINT(); // no violation when limiting index
     	require x > 0 && y > 0 ;
     	uint256 t = x + y ;
         require( t >= x && t >= y); //no overflow
@@ -155,6 +169,7 @@ rule inverseAddRemoveCollateral(address asset, uint256 x, uint256 index)
 rule integrityOfAddShort(address shortOtoken, uint256 x, uint256 index)
 {
 	requireInvariant validVault();
+	require asset != ADDRESSZERO();
 	uint256 shortAmountBefore = totalShortAmount();
 	sinvoke addShort(shortOtoken, x, index);
 	assert  totalShortAmount() == shortAmountBefore + x &&
@@ -167,7 +182,8 @@ rule integrityOfAddShort(address shortOtoken, uint256 x, uint256 index)
 rule additiveAddShort(address shortOtoken, uint256 x, uint256 y, uint256 index)
 {
 	requireInvariant validVault();
-	// require index < MAXINT(); // no violation when limiting index
+	require asset != ADDRESSZERO();
+	require index < MAXINT(); // no violation when limiting index
 	require x > 0 && y > 0 ;
 	uint256 t = x + y ;
     require( t >= x && t >= y); //no overflow
@@ -203,6 +219,7 @@ rule inverseAddRemoveShort(address shortOtoken, uint256 x, uint256 index)
 rule integrityOfAddLong(address longOtoken, uint256 x, uint256 index)
 {
 	requireInvariant validVault();
+	require asset != ADDRESSZERO();
 	uint256 longAmountBefore = totalLongAmount();
 	sinvoke addLong(longOtoken, x, index);
 	assert totalLongAmount() == longAmountBefore + x &&
@@ -215,7 +232,8 @@ rule integrityOfAddLong(address longOtoken, uint256 x, uint256 index)
 rule additiveAddLong(address longOtoken, uint256 x, uint256 y, uint256 index)
 {
 	requireInvariant validVault();
-	// require index < MAXINT(); // no violation when limiting index
+	require asset != ADDRESSZERO();
+	require index < MAXINT(); // no violation when limiting index
 	require x > 0 && y > 0 ;
 	uint256 t = x + y ;
     require( t >= x && t >= y); //no overflow
