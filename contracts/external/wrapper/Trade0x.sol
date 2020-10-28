@@ -46,5 +46,8 @@ contract Trade0x is CalleeInterface {
         ERC20Interface(takerAsset).safeApprove(address(assetProxy), totalTakerAssetAmount);
 
         exchange.fillOrder{value: msg.value}(order, takerAssetFillAmount, signature);
+
+        // transfer any excess fee back to user
+        _sender.transfer(address(this).balance);
     }
 }
