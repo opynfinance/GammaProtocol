@@ -28,9 +28,9 @@ contract FlashWrap is CalleeInterface {
 
     function callFunction(
         address payable _sender,
-        address _vaultOwner,
-        uint256 _vaultId,
-        bytes memory _data
+        address, /* _vaultOwner */
+        uint256, /* _vaultId */
+        bytes memory /* _data */
     ) external override payable {
         uint256 amount = msg.value;
 
