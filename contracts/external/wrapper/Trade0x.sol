@@ -28,11 +28,6 @@ contract Trade0x is CalleeInterface {
     event Trade0xBatch(address indexed to, uint256 amount);
     event UnwrappedETH(address to, uint256 amount);
 
-    address public testTakerAsset;
-    address public testMakerAsset;
-    uint256 public testFillAmount;
-    bytes public testSig;
-
     function callFunction(
         address payable _sender,
         address, /* _vaultOwner */
@@ -45,17 +40,14 @@ contract Trade0x is CalleeInterface {
         );
 
         address makerAsset = decodeERC20Asset(order.makerAssetData);
-        testMakerAsset = makerAsset;
-
         address takerAsset = decodeERC20Asset(order.takerAssetData);
-        testTakerAsset = takerAsset;
 
         ERC20Interface(takerAsset).safeTransferFrom(_sender, address(this), takerAssetFillAmount);
 
         // approve the proxy if not done before
         uint256 allowance = ERC20Interface(takerAsset).allowance(address(this), assetProxy);
         if (allowance < takerAssetFillAmount) {
-            ERC20Interface(takerAsset).safeApprove(assetProxy, uint256(-8));
+            ERC20Interface(takerAsset).safeApprove(assetProxy, uint256(-1));
         }
 
         exchange.fillOrder{value: msg.value}(order, takerAssetFillAmount, signature);
