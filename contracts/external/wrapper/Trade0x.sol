@@ -20,9 +20,15 @@ contract Trade0x is CalleeInterface {
     IZeroXExchange public exchange;
     address public assetProxy;
 
-    constructor(address _exchange, address _assetProxy) public {
+    constructor(
+        address _exchange,
+        address _assetProxy,
+        address _weth,
+        address _stakingContract
+    ) public {
         exchange = IZeroXExchange(_exchange);
         assetProxy = _assetProxy;
+        ERC20Interface(_weth).safeApprove(_stakingContract, uint256(-1));
     }
 
     event Trade0xBatch(address indexed to, uint256 amount);
@@ -34,6 +40,10 @@ contract Trade0x is CalleeInterface {
         uint256, /* _vaultId, */
         bytes memory _data
     ) external override payable {
+        // todo1: can only be called by controller.
+
+        // todo2: can only be used to trade oTokens
+
         (IZeroXExchange.Order memory order, uint256 takerAssetFillAmount, bytes memory signature) = abi.decode(
             _data,
             (IZeroXExchange.Order, uint256, bytes)
@@ -47,10 +57,10 @@ contract Trade0x is CalleeInterface {
         // approve the proxy if not done before
         uint256 allowance = ERC20Interface(takerAsset).allowance(address(this), assetProxy);
         if (allowance < takerAssetFillAmount) {
-            ERC20Interface(takerAsset).safeApprove(assetProxy, uint256(-1));
+            ERC20Interface(takerAsset).safeApprove(assetProxy, takerAssetFillAmount);
         }
 
-        exchange.fillOrder{value: msg.value}(order, takerAssetFillAmount, signature);
+        exchange.fillOrder(order, takerAssetFillAmount, signature);
 
         // transfer token to sender
         uint256 balance = ERC20Interface(makerAsset).balanceOf(address(this));
