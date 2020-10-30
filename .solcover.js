@@ -8,6 +8,7 @@ module.exports = {
     'Migrations.sol',
     'mocks/',
     'packages/',
+    'external/wrapper/Trade0x.sol',
     'external/canonical-weth'
   ]
 }
