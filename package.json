@@ -57,7 +57,7 @@
     "test:unit": "truffle test ./test/unit-tests/*.ts",
     "test:integration": "truffle test ./test/integration-tests/*.ts",
     "test:testing-engine": "truffle test ./test/test-engine/*.ts",
-    "coverage": "truffle run coverage",
+    "coverage": "truffle run coverage  --file \"test/*.test.ts\"",
     "contract-size": "truffle run contract-size --checkMaxSize",
     "generate:doc": "npm run generate:doc:control-flow & npm run generate:doc:uml",
     "generate:doc:control-flow": "npm run doc:control-flow & npm run doc:control-flow:high-level & npm run doc:control-flow:controller & npm run doc:control-flow:pool & npm run doc:control-flow:oracle & npm run doc:control-flow:pricer & npm run doc:control-flow:otoken & npm run doc:control-flow:factory & npm run doc:control-flow:whitelist & npm run doc:control-flow:addressbook ",
