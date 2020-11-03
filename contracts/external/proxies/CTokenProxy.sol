@@ -14,7 +14,7 @@ import {CTokenInterface} from "../../interfaces/CTokenInterface.sol";
 /**
  * @title CTokenProxy
  * @author Opyn Team
- * @dev Contract for wrapping/unwrapping cToken before minting options
+ * @dev Contract for wrapping cToken before minting options
  */
 contract CTokenProxy is ReentrancyGuard {
     using SafeERC20 for ERC20Interface;
@@ -29,9 +29,12 @@ contract CTokenProxy is ReentrancyGuard {
     }
 
     /**
-     * @notice execute a number of actions
-     * @dev a wrapper for the Controller operate function, to wrap uderlying to CToken beginning and
+     * @notice execute a number of actions after minting some cTokens
+     * @dev a wrapper for the Controller operate function, to wrap uderlying to cToken before the excution.
      * @param _actions array of actions arguments
+     * @param _underlying underlying asset
+     * @param _cToken the cToken to mint
+     * @param _amountUnderlying the amount of underlying to supply to Compound
      */
     function operate(
         Actions.ActionArgs[] memory _actions,
