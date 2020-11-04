@@ -7,13 +7,14 @@ import {
   WETH9Instance,
 } from '../../build/types/truffle-types'
 
+import {createTokenAmount} from '../utils'
+
 const TradeCallee = artifacts.require('Trade0x')
 const ERC20 = artifacts.require('MockERC20')
-// const Exchange = artifacts.require('IZeroXExchange')
-const WETH = artifacts.require('WETH9')
-//
 
-const user = '0x108A62856C9d3d8EC98a491Dc7b507bB7d4618cf'
+const {balance} = require('@openzeppelin/test-helpers')
+// unlock this address to get its USDC
+const usdcWhale = '0xbe0eb53f46cd790cd13851d5eff43d12404d33e8'
 
 const EXCHANGE_ADDR = '0x61935cbdd02287b511119ddb11aeb42f1593b7ef'
 const ERC20PROXY_ADDR = '0x95e6f48254609a6ee006f7d493c8e5fb97094cef'
@@ -49,7 +50,7 @@ const signature =
 
 const fillAmount = '1000000'
 
-contract('Callee contract test', async ([deployer, controller]) => {
+contract('Callee contract test', async ([deployer, user, controller]) => {
   let callee: Trade0xInstance
   // let exchange: IZeroXExchangeInstance
   let usdc: MockERC20Instance
@@ -59,25 +60,15 @@ contract('Callee contract test', async ([deployer, controller]) => {
   before('setup transfer account asset', async () => {
     // setup contracts
     // exchange = await Exchange.at(EXCHANGE_ADDR)
-    callee = await TradeCallee.new(EXCHANGE_ADDR, ERC20PROXY_ADDR, WETHAddress, STAKING_ADDR, {from: deployer})
-
-    // fund callee contract with some WETH.
-    weth = await WETH.at(WETHAddress)
-    const fundAmount = web3.utils.toWei('5', 'ether')
-    await weth.deposit({value: fundAmount, from: deployer})
-    await weth.transfer(callee.address, fundAmount, {from: deployer})
-    const wethBalanceInCallee = await weth.balanceOf(callee.address)
-    assert.equal(wethBalanceInCallee.toString(), fundAmount)
-
-    // check the weth allowance is set correctly
-    const allowance = await weth.allowance(callee.address, STAKING_ADDR)
-    assert.equal(allowance.toString(), '115792089237316195423570985008687907853269984665640564039457584007913129639935')
+    callee = await TradeCallee.new(EXCHANGE_ADDR, ERC20PROXY_ADDR, {from: deployer})
 
     const proxy = await callee.assetProxy()
     assert.equal(proxy.toLowerCase(), ERC20PROXY_ADDR.toLowerCase())
 
     usdc = await ERC20.at(USDCAddress)
 
+    // get 10000 USDC from the whale ;)
+    await usdc.transfer(user, createTokenAmount(10000, 6), {from: usdcWhale})
     // user need to approve callee function
     await usdc.approve(callee.address, fillAmount, {from: user})
 
@@ -120,14 +111,19 @@ contract('Callee contract test', async ([deployer, controller]) => {
     const cTokenBalanceBefore = new BigNumber(await cToken.balanceOf(user))
 
     // pay protocol fee in ETH.
-    // const gasPriceGWei = '50'
-    // const gasPriceWei = web3.utils.toWei(gasPriceGWei, 'gwei')
-    // const value = web3.utils.toWei(new BigNumber(gasPriceGWei).times(0.00015).toString(), 'ether')
+    const gasPriceGWei = '50'
+    const gasPriceWei = web3.utils.toWei(gasPriceGWei, 'gwei')
+    // protocol require 70000 * gas price per fill. We're paying a bit more here
+    const value = new BigNumber(gasPriceWei).times(80000).toString()
 
+    const tracker = await balance.tracker(user, 'gwei')
     await callee.callFunction(user, ZERO_ADDR, 0, data, {
       from: controller,
-      // gasPrice: gasPriceWei,
+      value,
+      gasPrice: gasPriceWei,
     })
+    // the function should refund 10000 * 50 gwei back to _sender
+    assert.equal((await tracker.delta()).toString(), '500000')
 
     const usdcBalanceAfter = new BigNumber(await usdc.balanceOf(user))
     assert.equal(usdcBalanceBefore.minus(usdcBalanceAfter).toString(), fillAmount)
