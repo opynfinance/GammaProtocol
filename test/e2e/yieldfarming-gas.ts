@@ -14,6 +14,7 @@ import {
   CTokenInterfaceInstance,
   CTokenProxyInstance,
   OracleInstance,
+  ComptrollerInstance,
 } from '../../build/types/truffle-types'
 import {createTokenAmount, createValidExpiry} from '../utils'
 const {time} = require('@openzeppelin/test-helpers')
@@ -21,6 +22,7 @@ const {time} = require('@openzeppelin/test-helpers')
 const ERC20 = artifacts.require('MockERC20')
 const WETH = artifacts.require('WETH9')
 const Controller = artifacts.require('Controller')
+const Comptroller = artifacts.require('Comptroller')
 const CTokenProxy = artifacts.require('CTokenProxy')
 const AddressBook = artifacts.require('AddressBook.sol')
 const Oracle = artifacts.require('Oracle.sol')
@@ -41,6 +43,8 @@ const usdcWhale = '0xbe0eb53f46cd790cd13851d5eff43d12404d33e8'
 const USDCAddress = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
 const cUSDCAddress = '0x39aa39c021dfbae8fac545936693ac917d5e7563'
 const WETHAddress = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+const ComptrollerAddress = '0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b'
+const COMPAddress = '0xc00e94cb662c3520282e6f5717214004a7f26888'
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
 enum ActionType {
@@ -59,8 +63,11 @@ enum ActionType {
 contract('CToken Proxy test', async ([user]) => {
   // let exchange: IZeroXExchangeInstance
   let usdc: MockERC20Instance
+  let comp: MockERC20Instance
   let weth: WETH9Instance
   let cusdc: CTokenInterfaceInstance
+
+  let comptroller: ComptrollerInstance
 
   let cTokenProxyOperator: CTokenProxyInstance
 
@@ -84,11 +91,13 @@ contract('CToken Proxy test', async ([user]) => {
 
   before('setup contracts', async () => {
     const now = (await time.latest()).toNumber()
-    expiry = createValidExpiry(now, 30)
+    expiry = createValidExpiry(now, 300)
 
     usdc = await ERC20.at(USDCAddress)
+    comp = await ERC20.at(COMPAddress)
     weth = await WETH.at(WETHAddress)
     cusdc = await CTokenInterface.at(cUSDCAddress)
+    comptroller = await Comptroller.at(ComptrollerAddress)
 
     // initiate addressbook first.
     addressBook = await AddressBook.new()
@@ -157,7 +166,7 @@ contract('CToken Proxy test', async ([user]) => {
     ethCusdcPut = await Otoken.at(cusdcPutAddr)
 
     // transfer USDC to user
-    await usdc.transfer(user, createTokenAmount(90000, 6), {from: usdcWhale})
+    await usdc.transfer(user, createTokenAmount(200000, 6), {from: usdcWhale})
   })
 
   it('mint 100 usdc collateral option', async () => {
@@ -251,5 +260,16 @@ contract('CToken Proxy test', async ([user]) => {
     const gasUsed = receipt.receipt.gasUsed
     // eslint-disable-next-line
     console.log(`Gas cost for minting cToken collateral option: ${gasUsed}`) // gasUsed 492645
+  })
+
+  it('should be able to claim some COMP in or marginPool', async () => {
+    await time.increase(60 * 60 * 24 * 50)
+
+    const poolCompBalanceBefore = await comp.balanceOf(marginPool.address)
+
+    await comptroller.claimComp(marginPool.address)
+    const poolCompBalanceAfter = await comp.balanceOf(marginPool.address)
+
+    assert.isTrue(poolCompBalanceAfter.gt(poolCompBalanceBefore))
   })
 })
