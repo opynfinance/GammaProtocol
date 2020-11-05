@@ -3317,7 +3317,7 @@ contract(
 
         await expectRevert(
           controllerProxy.operate(actionArgs, {from: accountOwner1}),
-          "Can't settle vault with no otoken",
+          "Controller: Can't settle vault with no otoken",
         )
       })
 
