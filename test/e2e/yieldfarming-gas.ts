@@ -14,8 +14,8 @@ import {
   CTokenInterfaceInstance,
   CTokenProxyInstance,
   OracleInstance,
-  ComptrollerInstance,
 } from '../../build/types/truffle-types'
+import BigNumber from 'bignumber.js'
 import {createTokenAmount, createValidExpiry} from '../utils'
 const {time} = require('@openzeppelin/test-helpers')
 
@@ -67,8 +67,6 @@ contract('CToken Proxy test', async ([user]) => {
   let weth: WETH9Instance
   let cusdc: CTokenInterfaceInstance
 
-  let comptroller: ComptrollerInstance
-
   let cTokenProxyOperator: CTokenProxyInstance
 
   let addressBook: AddressBookInstance
@@ -91,13 +89,12 @@ contract('CToken Proxy test', async ([user]) => {
 
   before('setup contracts', async () => {
     const now = (await time.latest()).toNumber()
-    expiry = createValidExpiry(now, 300)
+    expiry = createValidExpiry(now, 300) // 300 days from now
 
     usdc = await ERC20.at(USDCAddress)
     comp = await ERC20.at(COMPAddress)
     weth = await WETH.at(WETHAddress)
     cusdc = await CTokenInterface.at(cUSDCAddress)
-    comptroller = await Comptroller.at(ComptrollerAddress)
 
     // initiate addressbook first.
     addressBook = await AddressBook.new()
@@ -166,7 +163,7 @@ contract('CToken Proxy test', async ([user]) => {
     ethCusdcPut = await Otoken.at(cusdcPutAddr)
 
     // transfer USDC to user
-    await usdc.transfer(user, createTokenAmount(200000, 6), {from: usdcWhale})
+    await usdc.transfer(user, createTokenAmount(20000000, 6), {from: usdcWhale})
   })
 
   it('mint 100 usdc collateral option', async () => {
@@ -211,13 +208,13 @@ contract('CToken Proxy test', async ([user]) => {
     const receipt = await controllerProxy.operate(actionArgsAccountOwner2, {from: user})
     const gasUsed = receipt.receipt.gasUsed
     // eslint-disable-next-line
-    console.log(`Gas cost for minting normal put option: ${gasUsed}`)
+    console.log(`\tGas cost for minting normal put option: ${gasUsed}`)
   })
 
-  it('mint 100 cusdc collateral option', async () => {
-    const usdcAmount = createTokenAmount(30001, 6)
+  it('mint 20000 cusdc collateral option', async () => {
+    const usdcAmount = createTokenAmount(6000003, 6)
 
-    const oTokenAmount = createTokenAmount(100)
+    const oTokenAmount = createTokenAmount(20000)
 
     // add operator
     await controllerProxy.setOperator(cTokenProxyOperator.address, true)
@@ -259,17 +256,62 @@ contract('CToken Proxy test', async ([user]) => {
     const receipt = await cTokenProxyOperator.operate(actionArg, USDCAddress, cUSDCAddress, usdcAmount, {from: user})
     const gasUsed = receipt.receipt.gasUsed
     // eslint-disable-next-line
-    console.log(`Gas cost for minting cToken collateral option: ${gasUsed}`) // gasUsed 492645
+    console.log(`\tGas cost for minting cToken collateral option: ${gasUsed}`) // gasUsed 492645
   })
 
-  it('should be able to claim some COMP in or marginPool', async () => {
-    await time.increase(60 * 60 * 24 * 50)
+  it('mint another 20000 cusdc collateral option', async () => {
+    await time.increase(60 * 60 * 24 * 100)
+    const usdcAmount = createTokenAmount(6000005, 6)
+
+    const oTokenAmount = createTokenAmount(20000)
+
+    await usdc.approve(cTokenProxyOperator.address, usdcAmount)
 
     const poolCompBalanceBefore = await comp.balanceOf(marginPool.address)
 
-    await comptroller.claimComp(marginPool.address)
+    const actionArg = [
+      {
+        actionType: ActionType.OpenVault,
+        owner: user,
+        secondAddress: ZERO_ADDR,
+        asset: ZERO_ADDR,
+        vaultId: 3,
+        amount: '0',
+        index: '0',
+        data: ZERO_ADDR,
+      },
+      {
+        actionType: ActionType.MintShortOption,
+        owner: user,
+        secondAddress: user, // mint to user's wallet
+        asset: ethCusdcPut.address,
+        vaultId: 3,
+        amount: oTokenAmount,
+        index: '0',
+        data: ZERO_ADDR,
+      },
+      {
+        actionType: ActionType.DepositCollateral,
+        owner: user,
+        secondAddress: cTokenProxyOperator.address,
+        asset: cusdc.address,
+        vaultId: 3,
+        amount: 0, // the operator will overwrite this
+        index: '0',
+        data: ZERO_ADDR,
+      },
+    ]
+
+    const receipt = await cTokenProxyOperator.operate(actionArg, USDCAddress, cUSDCAddress, usdcAmount, {from: user})
+    const gasUsed = receipt.receipt.gasUsed
+
+    // await comptroller.claimComp(marginPool.address)
     const poolCompBalanceAfter = await comp.balanceOf(marginPool.address)
+    // eslint-disable-next-line
+    console.log(`\tCOMP Distributed`, new BigNumber(poolCompBalanceAfter.toString()).div(new BigNumber(1e18)).toString())
 
     assert.isTrue(poolCompBalanceAfter.gt(poolCompBalanceBefore))
+    // eslint-disable-next-line
+    console.log(`\tGas cost for minting cToken collateral option: ${gasUsed}`) // gasUsed 492645
   })
 })
