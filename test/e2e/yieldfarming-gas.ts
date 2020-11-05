@@ -22,7 +22,6 @@ const {time} = require('@openzeppelin/test-helpers')
 const ERC20 = artifacts.require('MockERC20')
 const WETH = artifacts.require('WETH9')
 const Controller = artifacts.require('Controller')
-const Comptroller = artifacts.require('Comptroller')
 const CTokenProxy = artifacts.require('CTokenProxy')
 const AddressBook = artifacts.require('AddressBook.sol')
 const Oracle = artifacts.require('Oracle.sol')
@@ -43,7 +42,6 @@ const usdcWhale = '0xbe0eb53f46cd790cd13851d5eff43d12404d33e8'
 const USDCAddress = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
 const cUSDCAddress = '0x39aa39c021dfbae8fac545936693ac917d5e7563'
 const WETHAddress = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-const ComptrollerAddress = '0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b'
 const COMPAddress = '0xc00e94cb662c3520282e6f5717214004a7f26888'
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
