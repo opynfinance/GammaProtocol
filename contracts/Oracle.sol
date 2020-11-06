@@ -46,7 +46,7 @@ contract Oracle is Ownable {
     /// @notice emits an event when an expiry price is updated for a specific asset
     event ExpiryPriceUpdated(
         address indexed asset,
-        uint256 indexed expirtyTimestamp,
+        uint256 indexed expiryTimestamp,
         uint256 price,
         uint256 onchainTimestamp
     );

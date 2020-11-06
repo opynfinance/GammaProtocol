@@ -122,7 +122,13 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         uint256 payout
     );
     /// @notice emits an event when a vault is settled
-    event VaultSettled(address indexed AccountOwner, address indexed to, uint256 vaultId, uint256 payout);
+    event VaultSettled(
+        address indexed AccountOwner,
+        address indexed to,
+        address indexed otoken,
+        uint256 vaultId,
+        uint256 payout
+    );
     /// @notice emits an event when a call action is executed
     event CallExecuted(
         address indexed from,
@@ -730,7 +736,10 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         MarginVault.Vault memory vault = getVault(_args.owner, _args.vaultId);
 
-        require(_isNotEmpty(vault.shortOtokens) || _isNotEmpty(vault.longOtokens), "Can't settle vault with no otoken");
+        require(
+            _isNotEmpty(vault.shortOtokens) || _isNotEmpty(vault.longOtokens),
+            "Controller: Can't settle vault with no otoken"
+        );
 
         OtokenInterface otoken = _isNotEmpty(vault.shortOtokens)
             ? OtokenInterface(vault.shortOtokens[0])
@@ -751,7 +760,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         pool.transferToUser(otoken.collateralAsset(), _args.to, payout);
 
-        emit VaultSettled(_args.owner, _args.to, _args.vaultId, payout);
+        emit VaultSettled(_args.owner, _args.to, address(otoken), _args.vaultId, payout);
     }
 
     /**
