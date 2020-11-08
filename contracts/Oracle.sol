@@ -163,7 +163,7 @@ contract Oracle is Ownable {
         require(_pricer != address(0), "Oracle: cannot set pricer to address(0)");
         assetPricer[_asset] = _pricer;
 
-        emit PricerUpdated(_asset, _asset);
+        emit PricerUpdated(_asset, _pricer);
     }
 
     /**
