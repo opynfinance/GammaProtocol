@@ -44,16 +44,20 @@ contract YTokenProxy is ReentrancyGuard {
     ) external payable nonReentrant {
         ERC20Interface underlying = ERC20Interface(_underlying);
         YTokenInterface yToken = YTokenInterface(_yToken);
-        // pull token from user
-        underlying.safeTransferFrom(msg.sender, address(this), _amountUnderlying);
-        // mint yToken
-        underlying.safeApprove(_yToken, _amountUnderlying);
-        yToken.deposit(_amountUnderlying);
 
-        uint256 allowance = yToken.allowance(address(this), marginPool);
-        uint256 yTokenBalance = yToken.balanceOf(address(this));
-        if (allowance < yTokenBalance) {
-            yToken.safeApprove(marginPool, uint256(-1));
+        uint256 yTokenBalance = 0;
+        if (_amountUnderlying > 0) {
+            // pull token from user
+            underlying.safeTransferFrom(msg.sender, address(this), _amountUnderlying);
+            // mint yToken
+            underlying.safeApprove(_yToken, _amountUnderlying);
+            yToken.deposit(_amountUnderlying);
+
+            uint256 allowance = yToken.allowance(address(this), marginPool);
+            yTokenBalance = yToken.balanceOf(address(this));
+            if (allowance < yTokenBalance) {
+                yToken.safeApprove(marginPool, uint256(-1));
+            }
         }
 
         // verify sender
@@ -75,5 +79,12 @@ contract YTokenProxy is ReentrancyGuard {
         }
 
         controller.operate(_actions);
+
+        uint256 yTokenBalanceAfter = yToken.balanceOf(address(this));
+        if (yTokenBalanceAfter > 0) {
+            yToken.withdraw(yTokenBalanceAfter);
+            uint256 underlyingBalance = underlying.balanceOf(address(this));
+            underlying.safeTransfer(msg.sender, underlyingBalance);
+        }
     }
 }

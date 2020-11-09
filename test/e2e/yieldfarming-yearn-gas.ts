@@ -15,7 +15,7 @@ import {
   YTokenInterfaceInstance,
   YTokenPricerInstance,
 } from '../../build/types/truffle-types'
-import BigNumber from 'bignumber.js'
+
 import {createTokenAmount, createValidExpiry} from '../utils'
 const {time} = require('@openzeppelin/test-helpers')
 
@@ -43,6 +43,7 @@ const USDCAddress = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
 const yUSDCAddress = '0xd6ad7a6750a7593e092a9b218d66c0a814a3436e'
 const WETHAddress = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
+const MAX_UINT256 = '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
 
 enum ActionType {
   OpenVault,
@@ -78,7 +79,7 @@ contract('YToken Proxy test', async ([user]) => {
   let expiry: number
 
   let ethUsdPut: OtokenInstance
-  let ethCusdcPut: OtokenInstance
+  let ethYusdcPut: OtokenInstance
 
   let usdcPricer: USDCPricerInstance
   let yusdcPricer: YTokenPricerInstance
@@ -155,7 +156,7 @@ contract('YToken Proxy test', async ([user]) => {
       true,
     )
 
-    ethCusdcPut = await Otoken.at(yusdcPutAddr)
+    ethYusdcPut = await Otoken.at(yusdcPutAddr)
 
     // transfer USDC to user
     await usdc.transfer(user, createTokenAmount(20000000, 6), {from: usdcWhale})
@@ -231,7 +232,7 @@ contract('YToken Proxy test', async ([user]) => {
         actionType: ActionType.MintShortOption,
         owner: user,
         secondAddress: user, // mint to user's wallet
-        asset: ethCusdcPut.address,
+        asset: ethYusdcPut.address,
         vaultId: 2,
         amount: oTokenAmount,
         index: '0',
@@ -252,5 +253,42 @@ contract('YToken Proxy test', async ([user]) => {
     const gasUsed = receipt.receipt.gasUsed
     // eslint-disable-next-line
     console.log(`\tGas cost for minting yToken collateral option: ${gasUsed}`) // gasUsed 480373
+  })
+
+  it('burn and withdraw ausdc collateral option', async () => {
+    // const usdcAmount = createTokenAmount(6000003, 6)
+    await time.increase(60 * 60 * 24 * 100)
+    const oTokenAmount = createTokenAmount(20000)
+
+    const oToken = await ERC20.at(ethYusdcPut.address)
+    const amountYTokenInVault = (await controllerProxy.getVault(user, 2)).collateralAmounts[0]
+    await oToken.approve(marginPool.address, MAX_UINT256, {from: user})
+
+    const actionArg = [
+      {
+        actionType: ActionType.BurnShortOption,
+        owner: user,
+        secondAddress: user, // mint to user's wallet
+        asset: ethYusdcPut.address,
+        vaultId: 2,
+        amount: oTokenAmount,
+        index: '0',
+        data: ZERO_ADDR,
+      },
+      {
+        actionType: ActionType.WithdrawCollateral,
+        owner: user,
+        secondAddress: yTokenProxyOperator.address,
+        asset: yusdc.address,
+        vaultId: 2,
+        amount: amountYTokenInVault,
+        index: '0',
+        data: ZERO_ADDR,
+      },
+    ]
+    const receipt = await yTokenProxyOperator.operate(actionArg, USDCAddress, yUSDCAddress, 0, {from: user})
+    const gasUsed = receipt.receipt.gasUsed
+    // eslint-disable-next-line
+    console.log(`\tGas cost for withdraw aToken collateral option: ${gasUsed}`) // gasUsed 312533
   })
 })
