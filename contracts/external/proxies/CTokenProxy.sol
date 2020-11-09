@@ -44,16 +44,19 @@ contract CTokenProxy is ReentrancyGuard {
     ) external payable nonReentrant {
         ERC20Interface underlying = ERC20Interface(_underlying);
         CTokenInterface cToken = CTokenInterface(_cToken);
-        // pull token from user
-        underlying.safeTransferFrom(msg.sender, address(this), _amountUnderlying);
-        // mint cToken
-        underlying.safeApprove(_cToken, _amountUnderlying);
-        cToken.mint(_amountUnderlying);
 
-        uint256 allowance = cToken.allowance(address(this), marginPool);
-        uint256 cTokenBalance = cToken.balanceOf(address(this));
-        if (allowance < cTokenBalance) {
-            cToken.safeApprove(marginPool, uint256(-1));
+        // if depositing token: pull token from user
+        uint256 cTokenBalance = 0;
+        if (_amountUnderlying > 0) {
+            underlying.safeTransferFrom(msg.sender, address(this), _amountUnderlying);
+            // mint cToken
+            underlying.safeApprove(_cToken, _amountUnderlying);
+            cToken.mint(_amountUnderlying);
+            cTokenBalance = cToken.balanceOf(address(this));
+            uint256 allowance = cToken.allowance(address(this), marginPool);
+            if (allowance < cTokenBalance) {
+                cToken.safeApprove(marginPool, uint256(-1));
+            }
         }
 
         // verify sender
@@ -75,5 +78,13 @@ contract CTokenProxy is ReentrancyGuard {
         }
 
         controller.operate(_actions);
+
+        // if it's withdraw, may have some cToken left in this contract
+        uint256 cTokenBalanceAfter = cToken.balanceOf(address(this));
+        if (cTokenBalanceAfter > 0) {
+            require(cToken.redeem(cTokenBalanceAfter) == 0, "CTokenPricer: Redeem Failed");
+            uint256 underlyingBalance = underlying.balanceOf(address(this));
+            underlying.safeTransfer(msg.sender, underlyingBalance);
+        }
     }
 }

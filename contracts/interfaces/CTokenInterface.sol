@@ -21,4 +21,6 @@ interface CTokenInterface is ERC20Interface {
      * RETURN: 0 on success, otherwise an Error code
      */
     function mint(uint256 _mintAmount) external returns (uint256);
+
+    function redeem(uint256 redeemTokens) external returns (uint256);
 }

@@ -44,6 +44,7 @@ const cUSDCAddress = '0x39aa39c021dfbae8fac545936693ac917d5e7563'
 const WETHAddress = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
 const COMPAddress = '0xc00e94cb662c3520282e6f5717214004a7f26888'
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
+const MAX_UINT256 = '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
 
 enum ActionType {
   OpenVault,
@@ -209,6 +210,41 @@ contract('CToken Proxy test', async ([user]) => {
     console.log(`\tGas cost for minting normal put option: ${gasUsed}`)
   })
 
+  it('burn and withdraw usdc collateral option', async () => {
+    const oTokenAmount = createTokenAmount(100)
+    const usdcAmount = createTokenAmount(30000, 6)
+
+    const oToken = await ERC20.at(ethUsdPut.address)
+    await oToken.approve(marginPool.address, MAX_UINT256, {from: user})
+
+    const actionArg = [
+      {
+        actionType: ActionType.BurnShortOption,
+        owner: user,
+        secondAddress: user, // mint to user's wallet
+        asset: ethUsdPut.address,
+        vaultId: 1,
+        amount: oTokenAmount,
+        index: '0',
+        data: ZERO_ADDR,
+      },
+      {
+        actionType: ActionType.WithdrawCollateral,
+        owner: user,
+        secondAddress: user,
+        asset: usdc.address,
+        vaultId: 1,
+        amount: usdcAmount, // the operator will overwrite this
+        index: '0',
+        data: ZERO_ADDR,
+      },
+    ]
+    const receipt = await controllerProxy.operate(actionArg, {from: user})
+    const gasUsed = receipt.receipt.gasUsed
+    // eslint-disable-next-line
+    console.log(`\tGas cost for withdrawing collateral: ${gasUsed}`) // gasUsed 126269
+  })
+
   it('mint 20000 cusdc collateral option', async () => {
     const usdcAmount = createTokenAmount(6000003, 6)
 
@@ -257,12 +293,47 @@ contract('CToken Proxy test', async ([user]) => {
     console.log(`\tGas cost for minting cToken collateral option: ${gasUsed}`) // gasUsed 492645
   })
 
+  // it('burn and withdraw cusdc collateral option', async () => {
+  //   // const usdcAmount = createTokenAmount(6000003, 6)
+  //   await time.increase(60 * 60 * 24 * 100)
+  //   const oTokenAmount = createTokenAmount(20000)
+
+  //   const oToken = await ERC20.at(ethCusdcPut.address)
+  //   const amountCTokenInVault = (await controllerProxy.getVault(user, 2)).collateralAmounts[0]
+  //   await oToken.approve(marginPool.address, MAX_UINT256, {from: user})
+
+  //   const actionArg = [
+  //     {
+  //       actionType: ActionType.BurnShortOption,
+  //       owner: user,
+  //       secondAddress: user, // mint to user's wallet
+  //       asset: ethCusdcPut.address,
+  //       vaultId: 2,
+  //       amount: oTokenAmount,
+  //       index: '0',
+  //       data: ZERO_ADDR,
+  //     },
+  //     {
+  //       actionType: ActionType.WithdrawCollateral,
+  //       owner: user,
+  //       secondAddress: cTokenProxyOperator.address,
+  //       asset: cusdc.address,
+  //       vaultId: 2,
+  //       amount: amountCTokenInVault,
+  //       index: '0',
+  //       data: ZERO_ADDR,
+  //     },
+  //   ]
+  //   const receipt = await cTokenProxyOperator.operate(actionArg, USDCAddress, cUSDCAddress, 0, {from: user})
+  //   const gasUsed = receipt.receipt.gasUsed
+  //   // eslint-disable-next-line
+  //   console.log(`\tGas cost for withdraw cToken collateral option: ${gasUsed}`) // gasUsed 312533
+  // })
+
   it('mint another 20000 cusdc collateral option', async () => {
-    await time.increase(60 * 60 * 24 * 100)
     const usdcAmount = createTokenAmount(6000005, 6)
-
     const oTokenAmount = createTokenAmount(20000)
-
+    await time.increase(60 * 60 * 24 * 100)
     await usdc.approve(cTokenProxyOperator.address, usdcAmount)
 
     const poolCompBalanceBefore = await comp.balanceOf(marginPool.address)
