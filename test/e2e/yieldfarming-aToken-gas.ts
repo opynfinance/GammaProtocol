@@ -11,9 +11,8 @@ import {
   WhitelistInstance,
   OtokenInstance,
   OtokenFactoryInstance,
-  CTokenInterfaceInstance,
-  CTokenProxyInstance,
   OracleInstance,
+  ATokenProxyInstance,
 } from '../../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 import {createTokenAmount, createValidExpiry} from '../utils'
@@ -22,7 +21,7 @@ const {time} = require('@openzeppelin/test-helpers')
 const ERC20 = artifacts.require('MockERC20')
 const WETH = artifacts.require('WETH9')
 const Controller = artifacts.require('Controller')
-const CTokenProxy = artifacts.require('CTokenProxy')
+const ATokenProxy = artifacts.require('ATokenProxy')
 const AddressBook = artifacts.require('AddressBook.sol')
 const Oracle = artifacts.require('Oracle.sol')
 const Otoken = artifacts.require('Otoken.sol')
@@ -33,18 +32,16 @@ const MarginPool = artifacts.require('MarginPool.sol')
 const MarginVault = artifacts.require('MarginVault.sol')
 const OTokenFactory = artifacts.require('OtokenFactory.sol')
 
-const USDCPricer = artifacts.require('USDCPricer.sol')
-const CompoundPricer = artifacts.require('CompoundPricer.sol')
+const USDCPricer = artifacts.require('USDCPricer')
+const ATokenPricer = artifacts.require('ATokenPricer')
 
 // unlock this address to get its USDC
 const usdcWhale = '0xbe0eb53f46cd790cd13851d5eff43d12404d33e8'
 
 const USDCAddress = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
-const cUSDCAddress = '0x39aa39c021dfbae8fac545936693ac917d5e7563'
+const aUSDCAddress = '0x9bA00D6856a4eDF4665BcA2C2309936572473B7E'
 const WETHAddress = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-const COMPAddress = '0xc00e94cb662c3520282e6f5717214004a7f26888'
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
-const MAX_UINT256 = '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
 
 enum ActionType {
   OpenVault,
@@ -62,11 +59,10 @@ enum ActionType {
 contract('CToken Proxy test', async ([user]) => {
   // let exchange: IZeroXExchangeInstance
   let usdc: MockERC20Instance
-  let comp: MockERC20Instance
   let weth: WETH9Instance
-  let cusdc: CTokenInterfaceInstance
+  let ausdc: MockERC20Instance
 
-  let cTokenProxyOperator: CTokenProxyInstance
+  let aTokenProxyOperator: ATokenProxyInstance
 
   let addressBook: AddressBookInstance
   let calculator: MarginCalculatorInstance
@@ -91,9 +87,8 @@ contract('CToken Proxy test', async ([user]) => {
     expiry = createValidExpiry(now, 300) // 300 days from now
 
     usdc = await ERC20.at(USDCAddress)
-    comp = await ERC20.at(COMPAddress)
     weth = await WETH.at(WETHAddress)
-    cusdc = await CTokenInterface.at(cUSDCAddress)
+    ausdc = await CTokenInterface.at(aUSDCAddress)
 
     // initiate addressbook first.
     addressBook = await AddressBook.new()
@@ -103,21 +98,22 @@ contract('CToken Proxy test', async ([user]) => {
     const lib = await MarginVault.new()
     await Controller.link('MarginVault', lib.address)
     controllerImplementation = await Controller.new(addressBook.address)
-    oracle = await Oracle.new(addressBook.address)
 
+    // setup pricers
+    oracle = await Oracle.new(addressBook.address)
     usdcPricer = await USDCPricer.new(usdc.address, oracle.address)
     await oracle.setAssetPricer(usdc.address, usdcPricer.address)
-    cusdcPricer = await CompoundPricer.new(cusdc.address, usdc.address, usdcPricer.address, oracle.address)
-    await oracle.setAssetPricer(cusdc.address, cusdcPricer.address)
+    cusdcPricer = await ATokenPricer.new(ausdc.address, usdc.address, usdcPricer.address, oracle.address)
+    await oracle.setAssetPricer(ausdc.address, cusdcPricer.address)
 
     whitelist = await Whitelist.new(addressBook.address)
 
     await whitelist.whitelistCollateral(USDCAddress)
-    await whitelist.whitelistCollateral(cUSDCAddress)
+    await whitelist.whitelistCollateral(aUSDCAddress)
 
     // whitelist eth-usdc and eth-cusdc puts.
     whitelist.whitelistProduct(weth.address, usdc.address, usdc.address, true)
-    whitelist.whitelistProduct(weth.address, usdc.address, cusdc.address, true)
+    whitelist.whitelistProduct(weth.address, usdc.address, ausdc.address, true)
     // setup otoken
     otokenImplementation = await Otoken.new()
     otokenFactory = await OTokenFactory.new(addressBook.address)
@@ -133,8 +129,8 @@ contract('CToken Proxy test', async ([user]) => {
     const controllerProxyAddress = await addressBook.getController()
     controllerProxy = await Controller.at(controllerProxyAddress)
 
-    // deploy proxy (operator)
-    cTokenProxyOperator = await CTokenProxy.new(controllerProxyAddress, marginPool.address)
+    // deploy operator contract
+    aTokenProxyOperator = await ATokenProxy.new(controllerProxyAddress, marginPool.address)
 
     // deploy usd collateral optoin
     await otokenFactory.createOtoken(weth.address, usdc.address, usdc.address, createTokenAmount(300), expiry, true)
@@ -149,11 +145,11 @@ contract('CToken Proxy test', async ([user]) => {
     ethUsdPut = await Otoken.at(usdcPutAddr)
 
     // deploy cusdc collateral option
-    await otokenFactory.createOtoken(weth.address, usdc.address, cusdc.address, createTokenAmount(300), expiry, true)
+    await otokenFactory.createOtoken(weth.address, usdc.address, ausdc.address, createTokenAmount(300), expiry, true)
     const cusdcPutAddr = await otokenFactory.getOtoken(
       weth.address,
       usdc.address,
-      cusdc.address,
+      ausdc.address,
       createTokenAmount(300),
       expiry,
       true,
@@ -203,57 +199,22 @@ contract('CToken Proxy test', async ([user]) => {
         data: ZERO_ADDR,
       },
     ]
-    // gasUsed 250755
+    // gasUsed 250827
     const receipt = await controllerProxy.operate(actionArgsAccountOwner2, {from: user})
     const gasUsed = receipt.receipt.gasUsed
     // eslint-disable-next-line
     console.log(`\tGas cost for minting normal put option: ${gasUsed}`)
   })
 
-  it('burn and withdraw usdc collateral option', async () => {
-    const oTokenAmount = createTokenAmount(100)
-    const usdcAmount = createTokenAmount(30000, 6)
-
-    const oToken = await ERC20.at(ethUsdPut.address)
-    await oToken.approve(marginPool.address, MAX_UINT256, {from: user})
-
-    const actionArg = [
-      {
-        actionType: ActionType.BurnShortOption,
-        owner: user,
-        secondAddress: user, // mint to user's wallet
-        asset: ethUsdPut.address,
-        vaultId: 1,
-        amount: oTokenAmount,
-        index: '0',
-        data: ZERO_ADDR,
-      },
-      {
-        actionType: ActionType.WithdrawCollateral,
-        owner: user,
-        secondAddress: user,
-        asset: usdc.address,
-        vaultId: 1,
-        amount: usdcAmount, // the operator will overwrite this
-        index: '0',
-        data: ZERO_ADDR,
-      },
-    ]
-    const receipt = await controllerProxy.operate(actionArg, {from: user})
-    const gasUsed = receipt.receipt.gasUsed
-    // eslint-disable-next-line
-    console.log(`\tGas cost for withdrawing collateral: ${gasUsed}`) // gasUsed 126269
-  })
-
-  it('mint 20000 cusdc collateral option', async () => {
-    const usdcAmount = createTokenAmount(6000003, 6)
+  it('mint 20000 ausdc collateral option', async () => {
+    const usdcAmount = createTokenAmount(6000000, 6)
 
     const oTokenAmount = createTokenAmount(20000)
 
     // add operator
-    await controllerProxy.setOperator(cTokenProxyOperator.address, true)
+    await controllerProxy.setOperator(aTokenProxyOperator.address, true)
     // approve operator to move usdc
-    await usdc.approve(cTokenProxyOperator.address, usdcAmount)
+    await usdc.approve(aTokenProxyOperator.address, usdcAmount)
 
     const actionArg = [
       {
@@ -279,108 +240,17 @@ contract('CToken Proxy test', async ([user]) => {
       {
         actionType: ActionType.DepositCollateral,
         owner: user,
-        secondAddress: cTokenProxyOperator.address,
-        asset: cusdc.address,
+        secondAddress: aTokenProxyOperator.address,
+        asset: ausdc.address,
         vaultId: 2,
-        amount: 0, // the operator will overwrite this
+        amount: usdcAmount,
         index: '0',
         data: ZERO_ADDR,
       },
     ]
-    const receipt = await cTokenProxyOperator.operate(actionArg, USDCAddress, cUSDCAddress, usdcAmount, {from: user})
+    const receipt = await aTokenProxyOperator.operate(actionArg, USDCAddress, aUSDCAddress, usdcAmount, {from: user})
     const gasUsed = receipt.receipt.gasUsed
     // eslint-disable-next-line
-    console.log(`\tGas cost for minting cToken collateral option: ${gasUsed}`) // gasUsed 492645
-  })
-
-  // it('burn and withdraw cusdc collateral option', async () => {
-  //   // const usdcAmount = createTokenAmount(6000003, 6)
-  //   await time.increase(60 * 60 * 24 * 100)
-  //   const oTokenAmount = createTokenAmount(20000)
-
-  //   const oToken = await ERC20.at(ethCusdcPut.address)
-  //   const amountCTokenInVault = (await controllerProxy.getVault(user, 2)).collateralAmounts[0]
-  //   await oToken.approve(marginPool.address, MAX_UINT256, {from: user})
-
-  //   const actionArg = [
-  //     {
-  //       actionType: ActionType.BurnShortOption,
-  //       owner: user,
-  //       secondAddress: user, // mint to user's wallet
-  //       asset: ethCusdcPut.address,
-  //       vaultId: 2,
-  //       amount: oTokenAmount,
-  //       index: '0',
-  //       data: ZERO_ADDR,
-  //     },
-  //     {
-  //       actionType: ActionType.WithdrawCollateral,
-  //       owner: user,
-  //       secondAddress: cTokenProxyOperator.address,
-  //       asset: cusdc.address,
-  //       vaultId: 2,
-  //       amount: amountCTokenInVault,
-  //       index: '0',
-  //       data: ZERO_ADDR,
-  //     },
-  //   ]
-  //   const receipt = await cTokenProxyOperator.operate(actionArg, USDCAddress, cUSDCAddress, 0, {from: user})
-  //   const gasUsed = receipt.receipt.gasUsed
-  //   // eslint-disable-next-line
-  //   console.log(`\tGas cost for withdraw cToken collateral option: ${gasUsed}`) // gasUsed 312533
-  // })
-
-  it('mint another 20000 cusdc collateral option', async () => {
-    const usdcAmount = createTokenAmount(6000005, 6)
-    const oTokenAmount = createTokenAmount(20000)
-    await time.increase(60 * 60 * 24 * 100)
-    await usdc.approve(cTokenProxyOperator.address, usdcAmount)
-
-    const poolCompBalanceBefore = await comp.balanceOf(marginPool.address)
-
-    const actionArg = [
-      {
-        actionType: ActionType.OpenVault,
-        owner: user,
-        secondAddress: ZERO_ADDR,
-        asset: ZERO_ADDR,
-        vaultId: 3,
-        amount: '0',
-        index: '0',
-        data: ZERO_ADDR,
-      },
-      {
-        actionType: ActionType.MintShortOption,
-        owner: user,
-        secondAddress: user, // mint to user's wallet
-        asset: ethCusdcPut.address,
-        vaultId: 3,
-        amount: oTokenAmount,
-        index: '0',
-        data: ZERO_ADDR,
-      },
-      {
-        actionType: ActionType.DepositCollateral,
-        owner: user,
-        secondAddress: cTokenProxyOperator.address,
-        asset: cusdc.address,
-        vaultId: 3,
-        amount: 0, // the operator will overwrite this
-        index: '0',
-        data: ZERO_ADDR,
-      },
-    ]
-
-    const receipt = await cTokenProxyOperator.operate(actionArg, USDCAddress, cUSDCAddress, usdcAmount, {from: user})
-    const gasUsed = receipt.receipt.gasUsed
-
-    // await comptroller.claimComp(marginPool.address)
-    const poolCompBalanceAfter = await comp.balanceOf(marginPool.address)
-    // eslint-disable-next-line
-    console.log(`\tCOMP Distributed`, new BigNumber(poolCompBalanceAfter.toString()).div(new BigNumber(1e18)).toString())
-
-    assert.isTrue(poolCompBalanceAfter.gt(poolCompBalanceBefore))
-    // eslint-disable-next-line
-    console.log(`\tGas cost for minting cToken collateral option: ${gasUsed}`) // gasUsed 492645
+    console.log(`\tGas cost for minting aToken collateral option: ${gasUsed}`) // gasUsed 925497
   })
 })
