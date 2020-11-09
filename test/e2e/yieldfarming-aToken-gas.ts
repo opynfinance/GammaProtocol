@@ -4,7 +4,6 @@ import {
   WETH9Instance,
   ControllerInstance,
   USDCPricerInstance,
-  CompoundPricerInstance,
   AddressBookInstance,
   MarginCalculatorInstance,
   MarginPoolInstance,
@@ -13,8 +12,8 @@ import {
   OtokenFactoryInstance,
   OracleInstance,
   ATokenProxyInstance,
+  ATokenPricerInstance,
 } from '../../build/types/truffle-types'
-import BigNumber from 'bignumber.js'
 import {createTokenAmount, createValidExpiry} from '../utils'
 const {time} = require('@openzeppelin/test-helpers')
 
@@ -25,7 +24,7 @@ const ATokenProxy = artifacts.require('ATokenProxy')
 const AddressBook = artifacts.require('AddressBook.sol')
 const Oracle = artifacts.require('Oracle.sol')
 const Otoken = artifacts.require('Otoken.sol')
-const CTokenInterface = artifacts.require('CTokenInterface')
+const ATokenInterface = artifacts.require('ATokenInterface')
 const MarginCalculator = artifacts.require('MarginCalculator.sol')
 const Whitelist = artifacts.require('Whitelist.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
@@ -42,6 +41,7 @@ const USDCAddress = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
 const aUSDCAddress = '0x9bA00D6856a4eDF4665BcA2C2309936572473B7E'
 const WETHAddress = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
+const MAX_UINT256 = '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
 
 enum ActionType {
   OpenVault,
@@ -56,7 +56,7 @@ enum ActionType {
   Call,
 }
 
-contract('CToken Proxy test', async ([user]) => {
+contract('AToken Proxy test', async ([user]) => {
   // let exchange: IZeroXExchangeInstance
   let usdc: MockERC20Instance
   let weth: WETH9Instance
@@ -77,10 +77,10 @@ contract('CToken Proxy test', async ([user]) => {
   let expiry: number
 
   let ethUsdPut: OtokenInstance
-  let ethCusdcPut: OtokenInstance
+  let ethAusdcPut: OtokenInstance
 
   let usdcPricer: USDCPricerInstance
-  let cusdcPricer: CompoundPricerInstance
+  let ausdcPricer: ATokenPricerInstance
 
   before('setup contracts', async () => {
     const now = (await time.latest()).toNumber()
@@ -88,7 +88,7 @@ contract('CToken Proxy test', async ([user]) => {
 
     usdc = await ERC20.at(USDCAddress)
     weth = await WETH.at(WETHAddress)
-    ausdc = await CTokenInterface.at(aUSDCAddress)
+    ausdc = await ATokenInterface.at(aUSDCAddress)
 
     // initiate addressbook first.
     addressBook = await AddressBook.new()
@@ -103,8 +103,8 @@ contract('CToken Proxy test', async ([user]) => {
     oracle = await Oracle.new(addressBook.address)
     usdcPricer = await USDCPricer.new(usdc.address, oracle.address)
     await oracle.setAssetPricer(usdc.address, usdcPricer.address)
-    cusdcPricer = await ATokenPricer.new(ausdc.address, usdc.address, usdcPricer.address, oracle.address)
-    await oracle.setAssetPricer(ausdc.address, cusdcPricer.address)
+    ausdcPricer = await ATokenPricer.new(ausdc.address, usdc.address, usdcPricer.address, oracle.address)
+    await oracle.setAssetPricer(ausdc.address, ausdcPricer.address)
 
     whitelist = await Whitelist.new(addressBook.address)
 
@@ -155,7 +155,7 @@ contract('CToken Proxy test', async ([user]) => {
       true,
     )
 
-    ethCusdcPut = await Otoken.at(cusdcPutAddr)
+    ethAusdcPut = await Otoken.at(cusdcPutAddr)
 
     // transfer USDC to user
     await usdc.transfer(user, createTokenAmount(20000000, 6), {from: usdcWhale})
@@ -231,7 +231,7 @@ contract('CToken Proxy test', async ([user]) => {
         actionType: ActionType.MintShortOption,
         owner: user,
         secondAddress: user, // mint to user's wallet
-        asset: ethCusdcPut.address,
+        asset: ethAusdcPut.address,
         vaultId: 2,
         amount: oTokenAmount,
         index: '0',
@@ -252,5 +252,42 @@ contract('CToken Proxy test', async ([user]) => {
     const gasUsed = receipt.receipt.gasUsed
     // eslint-disable-next-line
     console.log(`\tGas cost for minting aToken collateral option: ${gasUsed}`) // gasUsed 925497
+  })
+
+  it('burn and withdraw ausdc collateral option', async () => {
+    // const usdcAmount = createTokenAmount(6000003, 6)
+    await time.increase(60 * 60 * 24 * 100)
+    const oTokenAmount = createTokenAmount(20000)
+
+    const oToken = await ERC20.at(ethAusdcPut.address)
+    const amountATokenInVault = (await controllerProxy.getVault(user, 2)).collateralAmounts[0]
+    await oToken.approve(marginPool.address, MAX_UINT256, {from: user})
+
+    const actionArg = [
+      {
+        actionType: ActionType.BurnShortOption,
+        owner: user,
+        secondAddress: user, // mint to user's wallet
+        asset: ethAusdcPut.address,
+        vaultId: 2,
+        amount: oTokenAmount,
+        index: '0',
+        data: ZERO_ADDR,
+      },
+      {
+        actionType: ActionType.WithdrawCollateral,
+        owner: user,
+        secondAddress: aTokenProxyOperator.address,
+        asset: ausdc.address,
+        vaultId: 2,
+        amount: amountATokenInVault,
+        index: '0',
+        data: ZERO_ADDR,
+      },
+    ]
+    const receipt = await aTokenProxyOperator.operate(actionArg, USDCAddress, aUSDCAddress, 0, {from: user})
+    const gasUsed = receipt.receipt.gasUsed
+    // eslint-disable-next-line
+    console.log(`\tGas cost for withdraw aToken collateral option: ${gasUsed}`) // gasUsed 312533
   })
 })

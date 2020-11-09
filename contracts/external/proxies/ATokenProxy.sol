@@ -7,6 +7,7 @@ pragma experimental ABIEncoderV2;
 import {ReentrancyGuard} from "../../packages/oz/ReentrancyGuard.sol";
 import {SafeERC20} from "../../packages/oz/SafeERC20.sol";
 import {ERC20Interface} from "../../interfaces/ERC20Interface.sol";
+import {ATokenInterface} from "../../interfaces/ATokenInterface.sol";
 import {Actions} from "../../libs/Actions.sol";
 import {Controller} from "../../Controller.sol";
 import {AaveLendingPoolInterface} from "../../interfaces/AaveLendingPoolInterface.sol";
@@ -18,6 +19,7 @@ import {AaveLendingPoolInterface} from "../../interfaces/AaveLendingPoolInterfac
  */
 contract ATokenProxy is ReentrancyGuard {
     using SafeERC20 for ERC20Interface;
+    using SafeERC20 for ATokenInterface;
 
     Controller public controller;
     address public marginPool;
@@ -44,19 +46,22 @@ contract ATokenProxy is ReentrancyGuard {
         uint256 _amountUnderlying
     ) external payable nonReentrant {
         ERC20Interface underlying = ERC20Interface(_underlying);
-        ERC20Interface aToken = ERC20Interface(_aToken);
-        // pull token from user
-        underlying.safeTransferFrom(msg.sender, address(this), _amountUnderlying);
-        // mint aToken
-        underlying.safeApprove(0x3dfd23A6c5E8BbcFc9581d2E864a68feb6a076d3, _amountUnderlying);
+        ATokenInterface aToken = ATokenInterface(_aToken);
 
-        /// Deposit method call, get aToken
-        lendingPool.deposit(_underlying, _amountUnderlying, 0);
+        // if depositing token: pull token from user
+        if (_amountUnderlying > 0) {
+            underlying.safeTransferFrom(msg.sender, address(this), _amountUnderlying);
+            // mint aToken
+            underlying.safeApprove(0x3dfd23A6c5E8BbcFc9581d2E864a68feb6a076d3, _amountUnderlying);
 
-        uint256 allowance = aToken.allowance(address(this), marginPool);
-        uint256 aTokenBalance = aToken.balanceOf(address(this));
-        if (allowance < aTokenBalance) {
-            aToken.safeApprove(marginPool, uint256(-1));
+            /// Deposit method call, get aToken
+            lendingPool.deposit(_underlying, _amountUnderlying, 0);
+
+            uint256 allowance = aToken.allowance(address(this), marginPool);
+            uint256 aTokenBalance = aToken.balanceOf(address(this));
+            if (allowance < aTokenBalance) {
+                aToken.safeApprove(marginPool, uint256(-1));
+            }
         }
 
         // verify sender
@@ -73,5 +78,12 @@ contract ATokenProxy is ReentrancyGuard {
         }
 
         controller.operate(_actions);
+
+        uint256 aTokenBalanceAfter = aToken.balanceOf(address(this));
+        if (aTokenBalanceAfter > 0) {
+            aToken.redeem(aTokenBalanceAfter);
+            uint256 underlyingBalance = underlying.balanceOf(address(this));
+            underlying.safeTransfer(msg.sender, underlyingBalance);
+        }
     }
 }
