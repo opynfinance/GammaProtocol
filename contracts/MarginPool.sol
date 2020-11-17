@@ -35,6 +35,10 @@ contract MarginPool is Ownable {
         addressBook = _addressBook;
     }
 
+    /// @notice emits an event when marginpool receive funds from controller
+    event TransferToPool(address indexed asset, address indexed user, uint256 amount);
+    /// @notice emits an event when marginpool transfer funds to controller
+    event TransferToUser(address indexed asset, address indexed user, uint256 amount);
     /// @notice emit event after updating the farmer address
     event FarmerUpdated(address indexed oldAddress, address indexed newAddress);
     /// @notice emit event when an asset gets harvested from the pool
@@ -78,6 +82,7 @@ contract MarginPool is Ownable {
 
         // transfer _asset _amount from _user to pool
         ERC20Interface(_asset).safeTransferFrom(_user, address(this), _amount);
+        emit TransferToPool(_asset, _user, _amount);
     }
 
     /**
@@ -95,6 +100,7 @@ contract MarginPool is Ownable {
 
         // transfer _asset _amount from pool to _user
         ERC20Interface(_asset).safeTransfer(_user, _amount);
+        emit TransferToUser(_asset, _user, _amount);
     }
 
     /**
