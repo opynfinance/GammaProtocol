@@ -25,6 +25,9 @@ contract OtokenFactory is OtokenSpawner {
     /// @dev mapping from parameters hash to its deployed address
     mapping(bytes32 => address) private idToAddress;
 
+    /// @dev max expiry that BokkyPooBahsDateTimeLibrary can handle. (2345/12/31)
+    uint256 private MAX_EXPIRY = 11865398400;
+
     constructor(address _addressBook) public {
         addressBook = _addressBook;
     }
@@ -61,7 +64,8 @@ contract OtokenFactory is OtokenSpawner {
         bool _isPut
     ) external returns (address) {
         require(_expiry > now, "OtokenFactory: Can't create expired option");
-        require(_expiry < 11865398400, "OtokenFactory: Can't create option with expiry > 2345/12/31");
+        require(_expiry < MAX_EXPIRY, "OtokenFactory: Can't create option with expiry > 2345/12/31");
+        // 8 Hour in sec: 3600 * 8 = 28800
         require(_expiry.sub(28800).mod(86400) == 0, "OtokenFactory: Option has to expire 08:00 UTC");
         bytes32 id = _getOptionId(_underlyingAsset, _strikeAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
         require(idToAddress[id] == address(0), "OtokenFactory: Option already created");
