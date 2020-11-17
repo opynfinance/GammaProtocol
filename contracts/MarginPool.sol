@@ -42,7 +42,7 @@ contract MarginPool is Ownable {
     /// @notice emit event after updating the farmer address
     event FarmerUpdated(address indexed oldAddress, address indexed newAddress);
     /// @notice emit event when an asset gets harvested from the pool
-    event AssetFarmed(address indexed asset, address indexed receiver, uint256 _amount);
+    event AssetFarmed(address indexed asset, address indexed receiver, uint256 amount);
 
     /**
      * @notice check if the sender is the Controller module
