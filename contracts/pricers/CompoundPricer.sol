@@ -78,8 +78,8 @@ contract CompoundPricer is OpynPricerInterface {
      * @return price of 1e8 cToken in USD, scaled by 1e8
      */
     function _underlyingPriceToCtokenPrice(uint256 _underlyingPrice) internal view returns (uint256) {
-        uint256 underlyingDecimals = underlying.decimals();
-        uint256 cTokenDecimals = cToken.decimals();
+        uint256 underlyingDecimals = uint256(underlying.decimals());
+        uint256 cTokenDecimals = uint256(cToken.decimals());
         uint256 exchangeRate = cToken.exchangeRateStored();
         return exchangeRate.mul(_underlyingPrice).mul(10**(cTokenDecimals)).div(10**(underlyingDecimals.add(18)));
     }
