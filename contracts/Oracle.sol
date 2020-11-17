@@ -38,7 +38,7 @@ contract Oracle is Ownable {
     /// @notice emits an event when the disputer is updated
     event DisputerUpdated(address indexed newDisputer);
     /// @notice emits an event when the pricer is updated for an asset
-    event PricerUpdated(address asset, address pricer);
+    event PricerUpdated(address indexed asset, address indexed pricer);
     /// @notice emits an event when the locking period is updated for a pricer
     event PricerLockingPeriodUpdated(address indexed pricer, uint256 lockingPeriod);
     /// @notice emits an event when the dispute period is updated for a pricer

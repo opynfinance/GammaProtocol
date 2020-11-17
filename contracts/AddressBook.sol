@@ -32,9 +32,9 @@ contract AddressBook is Ownable {
     mapping(bytes32 => address) private addresses;
 
     /// @notice emits an event when a new proxy is created
-    event ProxyCreated(bytes32 id, address proxy);
+    event ProxyCreated(bytes32 indexed id, address indexed proxy);
     /// @notice emits an event when a new address is added
-    event AddressAdded(bytes32 id, address add);
+    event AddressAdded(bytes32 indexed id, address indexed add);
 
     /**
      * @notice return Otoken implementation address
