@@ -3892,10 +3892,18 @@ contract(
         await expectRevert(controllerProxy.setCallRestriction(true, {from: random}), 'Ownable: caller is not the owner')
       })
 
+      it('should revert deactivating call action restriction when it is already deactivated', async () => {
+        await expectRevert(controllerProxy.setCallRestriction(false, {from: owner}), 'Controller: invalid input')
+      })
+
       it('should activate call action restriction from owner', async () => {
         await controllerProxy.setCallRestriction(true, {from: owner})
 
         assert.equal(await controllerProxy.callRestricted(), true, 'Call action restriction activation failed')
+      })
+
+      it('should revert activating call action restriction when it is already activated', async () => {
+        await expectRevert(controllerProxy.setCallRestriction(true, {from: owner}), 'Controller: invalid input')
       })
 
       it('should revert calling any arbitrary address when call restriction is activated', async () => {
@@ -4030,6 +4038,13 @@ contract(
         )
       })
 
+      it('should revert partially un-pausing an already running paused system', async () => {
+        await expectRevert(
+          controllerProxy.setSystemPartiallyPaused(false, {from: partialPauser}),
+          'Controller: invalid input',
+        )
+      })
+
       it('should pause system', async () => {
         const stateBefore = await controllerProxy.systemPartiallyPaused()
         assert.equal(stateBefore, false, 'System already paused')
@@ -4038,6 +4053,13 @@ contract(
 
         const stateAfter = await controllerProxy.systemPartiallyPaused()
         assert.equal(stateAfter, true, 'System not paused')
+      })
+
+      it('should revert partially pausing an already patially paused system', async () => {
+        await expectRevert(
+          controllerProxy.setSystemPartiallyPaused(true, {from: partialPauser}),
+          'Controller: invalid input',
+        )
       })
 
       it('should revert opening a vault when system is partially paused', async () => {
@@ -4335,6 +4357,10 @@ contract(
         )
       })
 
+      it('should revert fully un-pausing an already running system', async () => {
+        await expectRevert(controllerProxy.setSystemFullyPaused(false, {from: fullPauser}), 'Controller: invalid input')
+      })
+
       it('should trigger full pause', async () => {
         const stateBefore = await controllerProxy.systemFullyPaused()
         assert.equal(stateBefore, false, 'System already in full pause state')
@@ -4343,6 +4369,10 @@ contract(
 
         const stateAfter = await controllerProxy.systemFullyPaused()
         assert.equal(stateAfter, true, 'System not in full pause state')
+      })
+
+      it('should revert fully pausing an already fully paused system', async () => {
+        await expectRevert(controllerProxy.setSystemFullyPaused(true, {from: fullPauser}), 'Controller: invalid input')
       })
 
       it('should revert opening a vault when system is in full pause state', async () => {
