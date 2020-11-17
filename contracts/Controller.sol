@@ -256,6 +256,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _partiallyPaused new boolean value to set systemPartiallyPaused to
      */
     function setSystemPartiallyPaused(bool _partiallyPaused) external onlyPartialPauser {
+        require(systemPartiallyPaused != _partiallyPaused, "Controller: invalid input");
+
         systemPartiallyPaused = _partiallyPaused;
 
         emit SystemPartiallyPaused(systemPartiallyPaused);
@@ -267,6 +269,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _fullyPaused new boolean value to set systemFullyPaused to
      */
     function setSystemFullyPaused(bool _fullyPaused) external onlyFullPauser {
+        require(systemFullyPaused != _fullyPaused, "Controller: invalid input");
+
         systemFullyPaused = _fullyPaused;
 
         emit SystemFullyPaused(systemFullyPaused);
@@ -305,6 +309,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _isRestricted new call restriction state
      */
     function setCallRestriction(bool _isRestricted) external onlyOwner {
+        require(callRestricted != _isRestricted, "Controller: invalid input");
+
         callRestricted = _isRestricted;
 
         emit CallRestricted(callRestricted);
@@ -317,6 +323,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _isOperator new boolean value that expresses if the sender is giving or revoking privileges for _operator
      */
     function setOperator(address _operator, bool _isOperator) external {
+        require(operators[msg.sender][_operator] != _isOperator, "Controller: invalid input");
+
         operators[msg.sender][_operator] = _isOperator;
 
         emit AccountOperatorUpdated(msg.sender, _operator, _isOperator);
