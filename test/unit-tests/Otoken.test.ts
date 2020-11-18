@@ -46,7 +46,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
 
     it('should initilized the put option with valid name / symbol', async () => {
       assert.equal(await otoken.name(), `WETHUSDC 25-September-2020 200Put USDC Collateral`)
-      assert.equal(await otoken.symbol(), `oWETHUSDC-25SEP20-200P`)
+      assert.equal(await otoken.symbol(), `oWETHUSDCUSDC-25SEP20-200P`)
       assert.equal((await otoken.decimals()).toNumber(), 8)
     })
 
@@ -70,7 +70,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
         from: deployer,
       })
       assert.equal(await callOption.name(), `WETHUSDC 25-September-2020 200Call WETH Collateral`)
-      assert.equal(await callOption.symbol(), `oWETHUSDC-25SEP20-200C`)
+      assert.equal(await callOption.symbol(), `oWETHUSDCUSDC-25SEP20-200C`)
     })
 
     it('should set the right name and symbol for option with strikePrice < 1', async () => {
@@ -81,7 +81,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
         from: deployer,
       })
       assert.equal(await o1.name(), `WETHUSDC 25-September-2020 0.5Put USDC Collateral`)
-      assert.equal(await o1.symbol(), `oWETHUSDC-25SEP20-0.5P`)
+      assert.equal(await o1.symbol(), `oWETHUSDCUSDC-25SEP20-0.5P`)
     })
 
     it('should set the right name and symbol for option with strikePrice < 1, with 8 decimals', async () => {
@@ -92,7 +92,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
         from: deployer,
       })
       assert.equal(await o2.name(), `WETHUSDC 25-September-2020 0.00010052Put USDC Collateral`)
-      assert.equal(await o2.symbol(), `oWETHUSDC-25SEP20-0.00010052P`)
+      assert.equal(await o2.symbol(), `oWETHUSDCUSDC-25SEP20-0.00010052P`)
     })
 
     it('should set the right name and symbol for option with strikePrice < 1, with starting and trailing zeroes.', async () => {
@@ -102,7 +102,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
         from: deployer,
       })
       assert.equal(await o3.name(), `WETHUSDC 25-September-2020 0.0729Put USDC Collateral`)
-      assert.equal(await o3.symbol(), `oWETHUSDC-25SEP20-0.0729P`)
+      assert.equal(await o3.symbol(), `oWETHUSDCUSDC-25SEP20-0.0729P`)
     })
 
     it('should set the right name for option with strikePrice 0', async () => {
@@ -112,7 +112,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
         from: deployer,
       })
       assert.equal(await oToken.name(), `WETHUSDC 25-September-2020 0Put USDC Collateral`)
-      assert.equal(await oToken.symbol(), `oWETHUSDC-25SEP20-0P`)
+      assert.equal(await oToken.symbol(), `oWETHUSDCUSDC-25SEP20-0P`)
     })
 
     it('should set the right name for non-eth options', async () => {
@@ -122,7 +122,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
         from: deployer,
       })
       assert.equal(await putOption.name(), `WETHUSDC 25-September-2020 200Put USDC Collateral`)
-      assert.equal(await putOption.symbol(), `oWETHUSDC-25SEP20-200P`)
+      assert.equal(await putOption.symbol(), `oWETHUSDCUSDC-25SEP20-200P`)
     })
 
     it('should revert when init asset with non-erc20 address', async () => {
@@ -141,7 +141,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
         from: deployer,
       })
       assert.equal(await otoken.name(), `WETHUSDC 01-January-1970 200Put USDC Collateral`)
-      assert.equal(await otoken.symbol(), `oWETHUSDC-01JAN70-200P`)
+      assert.equal(await otoken.symbol(), `oWETHUSDCUSDC-01JAN70-200P`)
     })
 
     it('should set the right name for options expiry on 2345/12/31', async () => {
@@ -152,7 +152,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
         from: deployer,
       })
       assert.equal(await otoken.name(), `WETHUSDC 31-December-2345 200Put USDC Collateral`)
-      assert.equal(await otoken.symbol(), `oWETHUSDC-31DEC45-200P`)
+      assert.equal(await otoken.symbol(), `oWETHUSDCUSDC-31DEC45-200P`)
     })
 
     it('should set the right symbol for year 220x ', async () => {
@@ -161,7 +161,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
       await otoken.init(addressBookAddr, weth.address, usdc.address, usdc.address, strikePrice, expiry, true, {
         from: deployer,
       })
-      assert.equal(await otoken.symbol(), 'oWETHUSDC-29JUL09-200P')
+      assert.equal(await otoken.symbol(), 'oWETHUSDCUSDC-29JUL09-200P')
       assert.equal(await otoken.name(), 'WETHUSDC 29-July-2209 200Put USDC Collateral')
     })
 
@@ -172,7 +172,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
         from: deployer,
       })
       assert.equal(await January.name(), 'WETHUSDC 01-January-2030 200Put USDC Collateral')
-      assert.equal(await January.symbol(), 'oWETHUSDC-01JAN30-200P')
+      assert.equal(await January.symbol(), 'oWETHUSDCUSDC-01JAN30-200P')
 
       const February = await Otoken.new()
       await February.init(addressBookAddr, weth.address, usdc.address, usdc.address, strikePrice, 1896134400, isPut, {
@@ -258,7 +258,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
         from: deployer,
       })
       assert.equal(await testOtoken.name(), `WETHUSDC 25-September-2020 0Put USDC Collateral`)
-      assert.equal(await testOtoken.symbol(), `oWETHUSDC-25SEP20-0P`)
+      assert.equal(await testOtoken.symbol(), `oWETHUSDCUSDC-25SEP20-0P`)
     })
   })
 
