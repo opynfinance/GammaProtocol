@@ -158,6 +158,13 @@ contract(
         )
       })
 
+      it('should revert when set an already operator', async () => {
+        await expectRevert(
+          controllerProxy.setOperator(accountOperator1, true, {from: accountOwner1}),
+          'Controller: invalid input',
+        )
+      })
+
       it('should be able to remove operator', async () => {
         await controllerProxy.setOperator(accountOperator1, false, {from: accountOwner1})
 
@@ -165,6 +172,13 @@ contract(
           await controllerProxy.isOperator(accountOwner1, accountOperator1),
           false,
           'Operator address mismatch',
+        )
+      })
+
+      it('should revert when removing an already removed operator', async () => {
+        await expectRevert(
+          controllerProxy.setOperator(accountOperator1, false, {from: accountOwner1}),
+          'Controller: invalid input',
         )
       })
     })
