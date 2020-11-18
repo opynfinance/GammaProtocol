@@ -283,6 +283,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     function setFullPauser(address _fullPauser) external onlyOwner {
         require(_fullPauser != address(0), "Controller: fullPauser cannot be set to address zero");
+        require(fullPauser != _fullPauser, "Controller: invalid input");
 
         emit FullPauserUpdated(fullPauser, _fullPauser);
 
@@ -296,6 +297,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     function setPartialPauser(address _partialPauser) external onlyOwner {
         require(_partialPauser != address(0), "Controller: partialPauser cannot be set to address zero");
+        require(partialPauser != _partialPauser, "Controller: invalid input");
 
         emit PartialPauserUpdated(partialPauser, _partialPauser);
 

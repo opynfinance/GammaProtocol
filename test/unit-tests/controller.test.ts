@@ -4045,6 +4045,13 @@ contract(
         assert.equal(await controllerProxy.partialPauser(), partialPauser, 'partialPauser address mismatch')
       })
 
+      it('should revert set partialPauser address to the same previous address', async () => {
+        await expectRevert(
+          controllerProxy.setPartialPauser(await controllerProxy.partialPauser(), {from: owner}),
+          'Controller: invalid input',
+        )
+      })
+
       it('should revert when pausing the system from address other than partialPauser', async () => {
         await expectRevert(
           controllerProxy.setSystemPartiallyPaused(true, {from: random}),
@@ -4362,6 +4369,13 @@ contract(
       it('should set fullPauser address', async () => {
         await controllerProxy.setFullPauser(fullPauser, {from: owner})
         assert.equal(await controllerProxy.fullPauser(), fullPauser, 'fullPauser address mismatch')
+      })
+
+      it('should revert set fullPauser address to the same previous address', async () => {
+        await expectRevert(
+          controllerProxy.setFullPauser(await controllerProxy.fullPauser(), {from: owner}),
+          'Controller: invalid input',
+        )
       })
 
       it('should revert when triggering full pause from address other than fullPauser', async () => {
