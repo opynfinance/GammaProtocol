@@ -26,7 +26,7 @@ contract OtokenFactory is OtokenSpawner {
     mapping(bytes32 => address) private idToAddress;
 
     /// @dev max expiry that BokkyPooBahsDateTimeLibrary can handle. (2345/12/31)
-    uint256 private MAX_EXPIRY = 11865398400;
+    uint256 private constant MAX_EXPIRY = 11865398400;
 
     constructor(address _addressBook) public {
         addressBook = _addressBook;
