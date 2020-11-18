@@ -12,21 +12,21 @@ import {OwnedUpgradeabilityProxy} from "./packages/oz/upgradeability/OwnedUpgrad
  */
 contract AddressBook is Ownable {
     /// @dev Otoken implementation key
-    bytes32 private constant OTOKEN_IMPL = "OTOKEN_IMPL";
+    bytes32 public constant OTOKEN_IMPL = keccak256("OTOKEN_IMPL");
     /// @dev OtokenFactory key
-    bytes32 private constant OTOKEN_FACTORY = "OTOKEN_FACTORY";
+    bytes32 private constant OTOKEN_FACTORY = keccak256("OTOKEN_FACTORY");
     /// @dev Whitelist key
-    bytes32 private constant WHITELIST = "WHITELIST";
+    bytes32 private constant WHITELIST = keccak256("WHITELIST");
     /// @dev Controller key
-    bytes32 private constant CONTROLLER = "CONTROLLER";
+    bytes32 private constant CONTROLLER = keccak256("CONTROLLER");
     /// @dev MarginPool key
-    bytes32 private constant MARGIN_POOL = "MARGIN_POOL";
+    bytes32 private constant MARGIN_POOL = keccak256("MARGIN_POOL");
     /// @dev MarginCalculator key
-    bytes32 private constant MARGIN_CALCULATOR = "MARGIN_CALCULATOR";
+    bytes32 private constant MARGIN_CALCULATOR = keccak256("MARGIN_CALCULATOR");
     /// @dev LiquidationManager key
-    bytes32 private constant LIQUIDATION_MANAGER = "LIQUIDATION_MANAGER";
+    bytes32 private constant LIQUIDATION_MANAGER = keccak256("LIQUIDATION_MANAGER");
     /// @dev Oracle key
-    bytes32 private constant ORACLE = "ORACLE";
+    bytes32 private constant ORACLE = keccak256("ORACLE");
 
     /// @dev mapping between key and address
     mapping(bytes32 => address) private addresses;
