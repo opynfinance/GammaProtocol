@@ -431,7 +431,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     function hasExpired(address _otoken) external view returns (bool) {
         uint256 otokenExpiryTimestamp = OtokenInterface(_otoken).expiryTimestamp();
 
-        return now > otokenExpiryTimestamp;
+        return now >= otokenExpiryTimestamp;
     }
 
     /**
@@ -713,7 +713,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     function _redeem(Actions.RedeemArgs memory _args) internal {
         OtokenInterface otoken = OtokenInterface(_args.otoken);
 
-        require(now > otoken.expiryTimestamp(), "Controller: can not redeem un-expired otoken");
+        require(now >= otoken.expiryTimestamp(), "Controller: can not redeem un-expired otoken");
 
         require(isSettlementAllowed(_args.otoken), "Controller: asset prices not finalized yet");
 
@@ -745,7 +745,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             ? OtokenInterface(vault.shortOtokens[0])
             : OtokenInterface(vault.longOtokens[0]);
 
-        require(now > otoken.expiryTimestamp(), "Controller: can not settle vault with un-expired otoken");
+        require(now >= otoken.expiryTimestamp(), "Controller: can not settle vault with un-expired otoken");
         require(isSettlementAllowed(address(otoken)), "Controller: asset prices not finalized yet");
 
         (uint256 payout, ) = calculator.getExcessCollateral(vault);
