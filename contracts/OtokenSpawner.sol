@@ -48,7 +48,7 @@ contract OtokenSpawner {
     function _computeAddress(address logicContract, bytes memory initializationCalldata)
         internal
         view
-        returns (address target)
+        returns (address)
     {
         // place the creation code and constructor args of the contract to spawn in memory
         bytes memory initCode = abi.encodePacked(
@@ -58,6 +58,6 @@ contract OtokenSpawner {
         // get target address using the constructed initialization code
         bytes32 initCodeHash = keccak256(initCode);
 
-        target = Create2.computeAddress(SALT, initCodeHash);
+        return Create2.computeAddress(SALT, initCodeHash);
     }
 }

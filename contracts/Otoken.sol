@@ -104,7 +104,7 @@ contract Otoken is ERC20Initializable {
      * @return tokenName (ex: ETHUSDC 05-September-2020 200 Put USDC Collateral)
      * @return tokenSymbol (ex: oETHUSDC-05SEP20-200P)
      */
-    function _getNameAndSymbol() internal view returns (string memory tokenName, string memory tokenSymbol) {
+    function _getNameAndSymbol() internal view returns (string memory, string memory) {
         string memory underlying = ERC20Initializable(underlyingAsset).symbol();
         string memory strike = ERC20Initializable(strikeAsset).symbol();
         string memory collateral = ERC20Initializable(collateralAsset).symbol();
@@ -120,7 +120,7 @@ contract Otoken is ERC20Initializable {
         (string memory monthSymbol, string memory monthFull) = _getMonth(month);
 
         // concatenated name string: ETHUSDC 05-September-2020 200 Put USDC Collateral
-        tokenName = string(
+        string tokenName = string(
             abi.encodePacked(
                 underlying,
                 strike,
@@ -140,7 +140,7 @@ contract Otoken is ERC20Initializable {
         );
 
         // concatenated symbol string: oETHUSDC-05SEP20-200P
-        tokenSymbol = string(
+        string tokenSymbol = string(
             abi.encodePacked(
                 "o",
                 underlying,
@@ -154,6 +154,8 @@ contract Otoken is ERC20Initializable {
                 typeSymbol
             )
         );
+
+        return (tokenName, tokenSymbol);
     }
 
     /**
@@ -202,7 +204,7 @@ contract Otoken is ERC20Initializable {
      * @return shortString a 1 character representation of option type (P or C)
      * @return longString a full length string of option type (Put or Call)
      */
-    function _getOptionType(bool _isPut) internal pure returns (string memory shortString, string memory longString) {
+    function _getOptionType(bool _isPut) internal pure returns (string memory, string memory) {
         if (_isPut) {
             return ("P", "Put");
         } else {
@@ -233,7 +235,7 @@ contract Otoken is ERC20Initializable {
      * @return shortString a 3 character representation of a month (ex: SEP, DEC, etc)
      * @return longString a full length string of a month (ex: September, December, etc)
      */
-    function _getMonth(uint256 _month) internal pure returns (string memory shortString, string memory longString) {
+    function _getMonth(uint256 _month) internal pure returns (string memory, string memory) {
         if (_month == 1) {
             return ("JAN", "January");
         } else if (_month == 2) {
