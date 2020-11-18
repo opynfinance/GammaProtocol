@@ -12,7 +12,7 @@ import {OwnedUpgradeabilityProxy} from "./packages/oz/upgradeability/OwnedUpgrad
  */
 contract AddressBook is Ownable {
     /// @dev Otoken implementation key
-    bytes32 public constant OTOKEN_IMPL = keccak256("OTOKEN_IMPL");
+    bytes32 private constant OTOKEN_IMPL = keccak256("OTOKEN_IMPL");
     /// @dev OtokenFactory key
     bytes32 private constant OTOKEN_FACTORY = keccak256("OTOKEN_FACTORY");
     /// @dev Whitelist key
