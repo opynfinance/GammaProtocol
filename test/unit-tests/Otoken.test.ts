@@ -70,7 +70,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
         from: deployer,
       })
       assert.equal(await callOption.name(), `WETHUSDC 25-September-2020 200Call WETH Collateral`)
-      assert.equal(await callOption.symbol(), `oWETHUSDCUSDC-25SEP20-200C`)
+      assert.equal(await callOption.symbol(), `oWETHUSDCWETH-25SEP20-200C`)
     })
 
     it('should set the right name and symbol for option with strikePrice < 1', async () => {
@@ -179,77 +179,77 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
         from: deployer,
       })
       assert.equal(await February.name(), 'WETHUSDC 01-February-2030 200Put USDC Collateral')
-      assert.equal(await February.symbol(), 'oWETHUSDC-01FEB30-200P')
+      assert.equal(await February.symbol(), 'oWETHUSDCUSDC-01FEB30-200P')
 
       const March = await Otoken.new()
       await March.init(addressBookAddr, weth.address, usdc.address, usdc.address, strikePrice, 1898553600, isPut, {
         from: deployer,
       })
       assert.equal(await March.name(), 'WETHUSDC 01-March-2030 200Put USDC Collateral')
-      assert.equal(await March.symbol(), 'oWETHUSDC-01MAR30-200P')
+      assert.equal(await March.symbol(), 'oWETHUSDCUSDC-01MAR30-200P')
 
       const April = await Otoken.new()
       await April.init(addressBookAddr, weth.address, usdc.address, usdc.address, strikePrice, 1901232000, isPut, {
         from: deployer,
       })
       assert.equal(await April.name(), 'WETHUSDC 01-April-2030 200Put USDC Collateral')
-      assert.equal(await April.symbol(), 'oWETHUSDC-01APR30-200P')
+      assert.equal(await April.symbol(), 'oWETHUSDCUSDC-01APR30-200P')
 
       const May = await Otoken.new()
       await May.init(addressBookAddr, weth.address, usdc.address, usdc.address, strikePrice, 1903824000, isPut, {
         from: deployer,
       })
       assert.equal(await May.name(), 'WETHUSDC 01-May-2030 200Put USDC Collateral')
-      assert.equal(await May.symbol(), 'oWETHUSDC-01MAY30-200P')
+      assert.equal(await May.symbol(), 'oWETHUSDCUSDC-01MAY30-200P')
 
       const June = await Otoken.new()
       await June.init(addressBookAddr, weth.address, usdc.address, usdc.address, strikePrice, 1906502400, isPut, {
         from: deployer,
       })
       assert.equal(await June.name(), 'WETHUSDC 01-June-2030 200Put USDC Collateral')
-      assert.equal(await June.symbol(), 'oWETHUSDC-01JUN30-200P')
+      assert.equal(await June.symbol(), 'oWETHUSDCUSDC-01JUN30-200P')
 
       const July = await Otoken.new()
       await July.init(addressBookAddr, weth.address, usdc.address, usdc.address, strikePrice, 1909094400, isPut, {
         from: deployer,
       })
       assert.equal(await July.name(), 'WETHUSDC 01-July-2030 200Put USDC Collateral')
-      assert.equal(await July.symbol(), 'oWETHUSDC-01JUL30-200P')
+      assert.equal(await July.symbol(), 'oWETHUSDCUSDC-01JUL30-200P')
 
       const August = await Otoken.new()
       await August.init(addressBookAddr, weth.address, usdc.address, usdc.address, strikePrice, 1911772800, isPut, {
         from: deployer,
       })
       assert.equal(await August.name(), 'WETHUSDC 01-August-2030 200Put USDC Collateral')
-      assert.equal(await August.symbol(), 'oWETHUSDC-01AUG30-200P')
+      assert.equal(await August.symbol(), 'oWETHUSDCUSDC-01AUG30-200P')
 
       const September = await Otoken.new()
       await September.init(addressBookAddr, weth.address, usdc.address, usdc.address, strikePrice, 1914451200, isPut, {
         from: deployer,
       })
       assert.equal(await September.name(), 'WETHUSDC 01-September-2030 200Put USDC Collateral')
-      assert.equal(await September.symbol(), 'oWETHUSDC-01SEP30-200P')
+      assert.equal(await September.symbol(), 'oWETHUSDCUSDC-01SEP30-200P')
 
       const October = await Otoken.new()
       await October.init(addressBookAddr, weth.address, usdc.address, usdc.address, strikePrice, 1917043200, isPut, {
         from: deployer,
       })
       assert.equal(await October.name(), 'WETHUSDC 01-October-2030 200Put USDC Collateral')
-      assert.equal(await October.symbol(), 'oWETHUSDC-01OCT30-200P')
+      assert.equal(await October.symbol(), 'oWETHUSDCUSDC-01OCT30-200P')
 
       const November = await Otoken.new()
       await November.init(addressBookAddr, weth.address, usdc.address, usdc.address, strikePrice, 1919721600, isPut, {
         from: deployer,
       })
       assert.equal(await November.name(), 'WETHUSDC 01-November-2030 200Put USDC Collateral')
-      assert.equal(await November.symbol(), 'oWETHUSDC-01NOV30-200P')
+      assert.equal(await November.symbol(), 'oWETHUSDCUSDC-01NOV30-200P')
 
       const December = await Otoken.new()
       await December.init(addressBookAddr, weth.address, usdc.address, usdc.address, strikePrice, 1922313600, isPut, {
         from: deployer,
       })
       assert.equal(await December.name(), 'WETHUSDC 01-December-2030 200Put USDC Collateral')
-      assert.equal(await December.symbol(), 'oWETHUSDC-01DEC30-200P')
+      assert.equal(await December.symbol(), 'oWETHUSDCUSDC-01DEC30-200P')
     })
 
     it('should display strikePrice as $0 in name and symbol when strikePrice < 10^18', async () => {
