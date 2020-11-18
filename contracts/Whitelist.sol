@@ -134,6 +134,8 @@ contract Whitelist is Ownable {
         address _collateral,
         bool _isPut
     ) external onlyOwner {
+        require(whitelistedCollateral[_collateral], "Whitelist: Collateral is not whitelisted");
+
         bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
 
         whitelistedProduct[productHash] = true;
