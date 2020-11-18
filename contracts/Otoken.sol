@@ -256,7 +256,7 @@ contract Otoken is ERC20Initializable {
             return ("OCT", "October");
         } else if (_month == 11) {
             return ("NOV", "November");
-        } else {
+        } else if (_month == 12) {
             return ("DEC", "December");
         }
     }

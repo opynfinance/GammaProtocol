@@ -503,8 +503,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
                 _redeem(Actions._parseRedeemArgs(action));
             } else if (actionType == Actions.ActionType.SettleVault) {
                 _settleVault(Actions._parseSettleVaultArgs(action));
-            } else {
-                // actionType == Actions.ActionType.Call
+            } else if (actionType == Actions.ActionType.Call) {
                 ethLeft = _call(Actions._parseCallArgs(action), ethLeft);
             }
         }
