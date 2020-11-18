@@ -113,8 +113,10 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
     })
   })
 
-  describe('Otoken Creation after whitelisting products', () => {
+  describe('Otoken Creation after whitelisting products and collateral', () => {
     before('Whitelist product from admin', async () => {
+      await whitelist.whitelistCollateral(usdc.address, {from: owner})
+      await whitelist.whitelistCollateral(dai.address, {from: owner})
       await whitelist.whitelistProduct(weth.address, usdc.address, usdc.address, isPut, {from: owner})
       await whitelist.whitelistProduct(weth.address, dai.address, dai.address, isPut, {from: owner})
     })
