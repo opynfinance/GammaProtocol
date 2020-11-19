@@ -31,11 +31,11 @@ contract OtokenFactory is OtokenSpawner {
 
     /// @notice emitted when the factory creates a new Option
     event OtokenCreated(
-        address indexed tokenAddress,
-        address indexed creator,
-        address underlying,
-        address strike,
-        address collateral,
+        address tokenAddress,
+        address creator,
+        address indexed underlying,
+        address indexed strike,
+        address indexed collateral,
         uint256 strikePrice,
         uint256 expiry,
         bool isPut
