@@ -221,6 +221,9 @@ contract Oracle is Ownable {
         require(!isDisputePeriodOver(_asset, _expiryTimestamp), "Oracle: dispute period over");
 
         Price storage priceToUpdate = storedPrice[_asset][_expiryTimestamp];
+
+        require(priceToUpdate.timestamp != 0, "Oracle: price to dispute does not exist");
+
         uint256 oldPrice = priceToUpdate.price;
         priceToUpdate.price = _price;
 
