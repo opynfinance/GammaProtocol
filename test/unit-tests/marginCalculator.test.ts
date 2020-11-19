@@ -839,9 +839,8 @@ contract('MarginCalculator', () => {
         assert.equal(netValue.toString(), expectedOutput.toString())
       })
 
-      it('(10) Short: 1 200 call, long: 1 200 call, collateral 0.5 weth => need 0.5 weth ', async () => {
+      it('(10) Short: 1 200 call, long: 1 200 call, collateral 0.5 weth => revert: cant have long = short ', async () => {
         const collateralAmount = createTokenAmount(0.5, wethDecimals)
-        const expectedAmount = collateralAmount
         const vault = createVault(
           eth200Call.address,
           eth200Call.address,
@@ -850,9 +849,10 @@ contract('MarginCalculator', () => {
           scaleNum(1),
           collateralAmount,
         )
-        const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
-        assert.equal(isExcess, true)
-        assert.equal(netValue.toString(), expectedAmount.toString())
+        await expectRevert(
+          calculator.getExcessCollateral(vault),
+          'MarginCalculator: long asset not marginable for short asset',
+        )
       })
 
       it('(11) Short: 4 100 call, long: 1 300 call => need 3 weth ', async () => {

@@ -46,7 +46,7 @@ contract Oracle is Ownable {
     /// @notice emits an event when an expiry price is updated for a specific asset
     event ExpiryPriceUpdated(
         address indexed asset,
-        uint256 indexed expirtyTimestamp,
+        uint256 indexed expiryTimestamp,
         uint256 price,
         uint256 onchainTimestamp
     );
@@ -163,7 +163,7 @@ contract Oracle is Ownable {
         require(_pricer != address(0), "Oracle: cannot set pricer to address(0)");
         assetPricer[_asset] = _pricer;
 
-        emit PricerUpdated(_asset, _asset);
+        emit PricerUpdated(_asset, _pricer);
     }
 
     /**
@@ -221,6 +221,9 @@ contract Oracle is Ownable {
         require(!isDisputePeriodOver(_asset, _expiryTimestamp), "Oracle: dispute period over");
 
         Price storage priceToUpdate = storedPrice[_asset][_expiryTimestamp];
+
+        require(priceToUpdate.timestamp != 0, "Oracle: price to dispute does not exist");
+
         uint256 oldPrice = priceToUpdate.price;
         priceToUpdate.price = _price;
 

@@ -222,6 +222,13 @@ contract('Oracle', ([owner, disputer, random, collateral, strike]) => {
       )
     })
 
+    it('should revert disputing price before it get pushed by pricer', async () => {
+      await expectRevert(
+        oracle.disputeExpiryPrice(weth.address, otokenExpiry.plus(10), disputePrice, {from: disputer}),
+        'Oracle: price to dispute does not exist',
+      )
+    })
+
     it('should dispute price during dispute period', async () => {
       await oracle.disputeExpiryPrice(weth.address, otokenExpiry, disputePrice, {from: disputer})
 

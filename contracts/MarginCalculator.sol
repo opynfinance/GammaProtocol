@@ -319,6 +319,7 @@ contract MarginCalculator {
         OtokenInterface short = OtokenInterface(_vault.shortOtokens[0]);
 
         return
+            _vault.longOtokens[0] != _vault.shortOtokens[0] &&
             long.underlyingAsset() == short.underlyingAsset() &&
             long.strikeAsset() == short.strikeAsset() &&
             long.collateralAsset() == short.collateralAsset() &&
