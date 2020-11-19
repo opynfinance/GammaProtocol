@@ -106,7 +106,7 @@ contract('Controller', ([owner, accountOwner1, receiverAddress]) => {
       assert.equal(await weth.balanceOf(accountOwner1), web3.utils.toWei('5', 'ether'), 'WETH balance mismatch')
     })
 
-    it('should unwrap WETH to ETH', async () => {
+    it('should swap WETH to receiver address', async () => {
       const amountToUnwrap = web3.utils.toWei('3', 'ether')
       const data = web3.eth.abi.encodeParameter(
         {
@@ -155,6 +155,43 @@ contract('Controller', ([owner, accountOwner1, receiverAddress]) => {
         'sender WETH balance mismatch',
       )
       assert.equal(receiverWethBalanceAfter.toString(), amountToUnwrap.toString(), 'receiver WETH balance mismatch')
+    })
+
+    it('should revert sending data with different lenth than the required one', async () => {
+      const amountToUnwrap = web3.utils.toWei('3', 'ether')
+      const data = web3.eth.abi.encodeParameter(
+        {
+          CallFunctionData: {
+            receiver: 'address',
+            amount: 'uint256',
+            other: 'uint256',
+          },
+        },
+        {
+          receiver: receiverAddress,
+          amount: amountToUnwrap,
+          other: 100,
+        },
+      )
+
+      const actionArgs = [
+        {
+          actionType: ActionType.Call,
+          owner: ZERO_ADDR,
+          secondAddress: flashUnwrap.address,
+          asset: ZERO_ADDR,
+          vaultId: '0',
+          amount: '0',
+          index: '0',
+          data: data,
+        },
+      ]
+
+      await weth.approve(flashUnwrap.address, amountToUnwrap, {from: accountOwner1})
+      await expectRevert(
+        controllerProxy.operate(actionArgs, {from: accountOwner1}),
+        'FlashUnwrap: cannot parse CallFunctionData',
+      )
     })
   })
 })
