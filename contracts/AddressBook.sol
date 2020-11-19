@@ -194,7 +194,7 @@ contract AddressBook is Ownable {
     }
 
     /**
-     * @dev internal function to update the implementation of a specific component of the protocol
+     * @dev function to update the implementation of a specific component of the protocol
      * @param _id id of the contract to be updated
      * @param _newAddress address of the new implementation
      **/
