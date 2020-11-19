@@ -226,7 +226,6 @@ contract Oracle is Ownable {
 
         uint256 oldPrice = priceToUpdate.price;
         priceToUpdate.price = _price;
-        priceToUpdate.timestamp = now;
 
         emit ExpiryPriceDisputed(_asset, _expiryTimestamp, oldPrice, _price, now);
     }
