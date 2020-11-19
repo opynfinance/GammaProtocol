@@ -136,7 +136,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
       })
       otoken1 = await Otoken.at(targetAddress1)
       assert.isTrue((await otoken1.name()).includes('200Put USDC Collateral'))
-      assert.isTrue((await otoken1.symbol()).includes('oWETHUSDCUSDC-'))
+      assert.isTrue((await otoken1.symbol()).includes('oWETHUSDC/USDC-'))
     })
 
     it('Should init otoken2 with correct name and symbol', async () => {
