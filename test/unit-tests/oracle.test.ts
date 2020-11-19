@@ -21,7 +21,7 @@ const Oracle = artifacts.require('Oracle.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
 contract('Oracle', ([owner, disputer, random, collateral, strike]) => {
-  // const batch = web3.utils.asciiToHex('ETHUSDCUSDC1596218762')
+  // const batch = web3.utils.asciiToHex('ETHUSDC/USDC1596218762')
   // mock a pricer
   let wethPricer: MockPricerInstance
   // AddressBook module
