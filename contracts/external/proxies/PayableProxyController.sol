@@ -10,6 +10,7 @@ import {SafeERC20} from "../../packages/oz/SafeERC20.sol";
 import {ERC20Interface} from "../../interfaces/ERC20Interface.sol";
 import {Actions} from "../../libs/Actions.sol";
 import {Controller} from "../../Controller.sol";
+import {Address} from "../../packages/oz/Address.sol";
 
 /**
  * @title PayableProxyController
@@ -70,7 +71,7 @@ contract PayableProxyController is ReentrancyGuard {
             require(sendEthTo != address(0), "PayableProxyController: cannot send ETH to address zero");
 
             weth.withdraw(remainingWeth);
-            sendEthTo.transfer(remainingWeth);
+            Address.sendValue(sendEthTo, remainingWeth);
         }
     }
 }
