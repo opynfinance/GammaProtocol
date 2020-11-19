@@ -7,7 +7,7 @@ import {
   AddressBookInstance,
   OwnedUpgradeabilityProxyInstance,
   WETH9Instance,
-  FlashWrapInstance,
+  FlashUnwrapInstance,
 } from '../../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 const {expectRevert} = require('@openzeppelin/test-helpers')
@@ -20,7 +20,7 @@ const MarginPool = artifacts.require('MarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
 const MarginVault = artifacts.require('MarginVault.sol')
 const WETH9 = artifacts.require('WETH9.sol')
-const FlashWrap = artifacts.require('FlashWrap.sol')
+const FlashUnwrap = artifacts.require('FlashUnwrap.sol')
 
 // address(0)
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
@@ -38,7 +38,7 @@ enum ActionType {
   Call,
 }
 
-contract('Controller', ([owner, accountOwner1]) => {
+contract('Controller', ([owner, accountOwner1, receiverAddress]) => {
   // Oracle module
   let oracle: MockOracleInstance
   // calculator module
@@ -55,7 +55,7 @@ contract('Controller', ([owner, accountOwner1]) => {
   // WETH token
   let weth: WETH9Instance
   // ETH wrapper contract
-  let flashWrap: FlashWrapInstance
+  let flashUnwrap: FlashUnwrapInstance
 
   before('Deployment', async () => {
     // addressbook deployment
@@ -96,32 +96,53 @@ contract('Controller', ([owner, accountOwner1]) => {
     // deploy WETH token
     weth = await WETH9.new()
     // deploy flash wrapper
-    flashWrap = await FlashWrap.new(weth.address)
+    flashUnwrap = await FlashUnwrap.new(weth.address)
   })
 
-  describe('Wrap ETH', () => {
-    it('should wrap ETH to WETH', async () => {
-      const amountToWrap = new BigNumber(web3.utils.toWei('2', 'ether'))
+  describe('Unwrap ETH', () => {
+    before(async () => {
+      weth.deposit({value: web3.utils.toWei('5', 'ether'), from: accountOwner1})
+
+      assert.equal(await weth.balanceOf(accountOwner1), web3.utils.toWei('5', 'ether'), 'WETH balance mismatch')
+    })
+
+    it('should unwrap WETH to ETH', async () => {
+      const amountToUnwrap = web3.utils.toWei('3', 'ether')
+      const data = web3.eth.abi.encodeParameter(
+        {
+          CallFunctionData: {
+            receiver: 'address',
+            amount: 'uint256',
+          },
+        },
+        {
+          receiver: receiverAddress,
+          amount: amountToUnwrap,
+        },
+      )
+
       const actionArgs = [
         {
           actionType: ActionType.Call,
           owner: ZERO_ADDR,
-          secondAddress: flashWrap.address,
+          secondAddress: flashUnwrap.address,
           asset: ZERO_ADDR,
           vaultId: '0',
-          amount: amountToWrap.toString(),
+          amount: '0',
           index: '0',
-          data: ZERO_ADDR,
+          data: data,
         },
       ]
 
       const senderWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
-      const contractWethBalanceBefore = new BigNumber(await weth.balanceOf(flashWrap.address))
+      const contractWethBalanceBefore = new BigNumber(await weth.balanceOf(flashUnwrap.address))
 
-      await controllerProxy.operate(actionArgs, {from: accountOwner1, value: web3.utils.toWei('2', 'ether')})
+      await weth.approve(flashUnwrap.address, amountToUnwrap, {from: accountOwner1})
+      await controllerProxy.operate(actionArgs, {from: accountOwner1})
 
       const senderWethBalanceAfter = new BigNumber(await weth.balanceOf(accountOwner1))
-      const contractWethBalanceAfter = new BigNumber(await weth.balanceOf(flashWrap.address))
+      const contractWethBalanceAfter = new BigNumber(await weth.balanceOf(flashUnwrap.address))
+      const receiverWethBalanceAfter = new BigNumber(await weth.balanceOf(receiverAddress))
 
       assert.equal(
         contractWethBalanceBefore.toString(),
@@ -129,39 +150,11 @@ contract('Controller', ([owner, accountOwner1]) => {
         'Flash swap contract WETH balance mismatch',
       )
       assert.equal(
-        senderWethBalanceAfter.minus(senderWethBalanceBefore).toString(),
-        amountToWrap.toString(),
+        senderWethBalanceBefore.minus(senderWethBalanceAfter).toString(),
+        amountToUnwrap.toString(),
         'sender WETH balance mismatch',
       )
-    })
-    it('should revert if total msg.value and action.value mismath', async () => {
-      const amountToWrap = new BigNumber(web3.utils.toWei('1', 'ether'))
-      const actionArgs = [
-        {
-          actionType: ActionType.Call,
-          owner: ZERO_ADDR,
-          secondAddress: flashWrap.address,
-          asset: ZERO_ADDR,
-          vaultId: '0',
-          amount: amountToWrap.toString(),
-          index: '0',
-          data: ZERO_ADDR,
-        },
-        {
-          actionType: ActionType.Call,
-          owner: ZERO_ADDR,
-          secondAddress: flashWrap.address,
-          asset: ZERO_ADDR,
-          vaultId: '0',
-          amount: amountToWrap.toString(),
-          index: '0',
-          data: ZERO_ADDR,
-        },
-      ]
-      await expectRevert(
-        controllerProxy.operate(actionArgs, {from: accountOwner1, value: web3.utils.toWei('1', 'ether')}),
-        'Controller: msg.value and CallArgs.value mismatch',
-      )
+      assert.equal(receiverWethBalanceAfter.toString(), amountToUnwrap.toString(), 'receiver WETH balance mismatch')
     })
   })
 })
