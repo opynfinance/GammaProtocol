@@ -30,7 +30,7 @@ The whitelist module keeps track of all valid oToken addresses, product hashes, 
 
 - `blacklistOtoken(address _otokenAddress) (external)`
 
-- `whitelisteCallee(address _callee) (external)`
+- `whitelistCallee(address _callee) (external)`
 
 - `blacklistCallee(address _callee) (external)`
 
@@ -196,7 +196,7 @@ can only be called from the owner address
 
 - `_otokenAddress`: oToken
 
-### Function `whitelisteCallee(address _callee) external`
+### Function `whitelistCallee(address _callee) external`
 
 allows the owner to whitelist a destination address for the call action
 

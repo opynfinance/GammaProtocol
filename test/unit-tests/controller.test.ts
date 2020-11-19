@@ -747,7 +747,7 @@ contract(
 
           await expectRevert(
             controllerProxy.operate(actionArgs, {from: accountOwner1}),
-            'MarginVault: long otoken address mismatch',
+            'MarginVault: invalid long otoken index',
           )
         })
 
@@ -1425,7 +1425,7 @@ contract(
 
           await expectRevert(
             controllerProxy.operate(actionArgs, {from: accountOwner1}),
-            'MarginVault: collateral token address mismatch',
+            'MarginVault: invalid collateral asset index',
           )
         })
 
@@ -2280,7 +2280,7 @@ contract(
 
           await expectRevert(
             controllerProxy.operate(actionArgs, {from: accountOwner1}),
-            'MarginVault: short otoken address mismatch',
+            'MarginVault: invalid short otoken index',
           )
         })
 
@@ -2301,14 +2301,14 @@ contract(
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: shortOtokenToBurn.toString(),
-              index: '1',
+              index: '0',
               data: ZERO_ADDR,
             },
           ]
 
           await expectRevert(
             controllerProxy.operate(actionArgs, {from: accountOperator1}),
-            'MarginVault: short otoken address mismatch',
+            'ERC20: burn amount exceeds balance',
           )
 
           // transfer back
@@ -3920,7 +3920,7 @@ contract(
 
       it('should call whitelisted callee address when restriction is activated', async () => {
         // whitelist callee
-        await whitelist.whitelisteCallee(callTester.address, {from: owner})
+        await whitelist.whitelistCallee(callTester.address, {from: owner})
 
         const actionArgs = [
           {

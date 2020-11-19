@@ -263,13 +263,11 @@ contract('Oracle', ([owner, disputer, random, collateral, strike]) => {
       await oracle.setDisputer(disputer, {from: owner})
     })
 
-    it('should set price correctly from disputer', async () => {
-      // setExpiryPrice is called from disputer
-      await oracle.setExpiryPrice(weth.address, otokenExpiry, assetPrice, {from: disputer})
-
-      const [price, isFinalized] = await oracle.getExpiryPrice(weth.address, otokenExpiry)
-      assert.equal(price.toString(), assetPrice.toString())
-      assert.equal(isFinalized, false)
+    it('should revert setting price from disputer address', async () => {
+      await expectRevert(
+        oracle.setExpiryPrice(weth.address, otokenExpiry, assetPrice, {from: disputer}),
+        'Oracle: caller is not authorized to set expiry price',
+      )
     })
   })
 })
