@@ -8,6 +8,8 @@ interface OracleInterface {
 
     function getExpiryPrice(address _asset, uint256 _expiryTimestamp) external view returns (uint256, bool);
 
+    function getDisputer() external view returns (address);
+
     function getPricer(address _asset) external view returns (address);
 
     function getPrice(address _asset) external view returns (uint256);
@@ -35,4 +37,6 @@ interface OracleInterface {
         uint256 _expiryTimestamp,
         uint256 _price
     ) external;
+
+    function setDisputer(address _disputer) external;
 }

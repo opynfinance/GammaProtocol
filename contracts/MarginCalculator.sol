@@ -87,8 +87,8 @@ contract MarginCalculator {
 
         FPI.FixedPointInt memory collateralAmount = ZERO;
         if (hasCollateral) {
-            uint256 colllateralDecimals = ERC20Interface(_vault.collateralAssets[0]).decimals();
-            collateralAmount = FPI.fromScaledUint(_vault.collateralAmounts[0], colllateralDecimals);
+            uint256 collateralDecimals = ERC20Interface(_vault.collateralAssets[0]).decimals();
+            collateralAmount = FPI.fromScaledUint(_vault.collateralAmounts[0], collateralDecimals);
         }
 
         // get required margin, denominated in collateral
