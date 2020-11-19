@@ -2692,6 +2692,7 @@ contract(
 
     describe('Redeem', () => {
       let shortOtoken: MockOtokenInstance
+      let fakeOtoken: MockOtokenInstance
 
       before(async () => {
         const expiryTime = new BigNumber(60 * 60 * 24) // after 1 day
@@ -2707,6 +2708,19 @@ contract(
           new BigNumber(await time.latest()).plus(expiryTime),
           true,
         )
+
+        fakeOtoken = await MockOtoken.new()
+        // init otoken
+        await fakeOtoken.init(
+          addressBook.address,
+          weth.address,
+          usdc.address,
+          usdc.address,
+          createTokenAmount(200),
+          new BigNumber(await time.latest()).plus(expiryTime),
+          true,
+        )
+
         // whitelist short otoken to be used in the protocol
         await whitelist.whitelistOtoken(shortOtoken.address, {from: owner})
         // open new vault, mintnaked short, sell it to holder 1
@@ -2750,8 +2764,28 @@ contract(
         // transfer minted short otoken to hodler`
         await shortOtoken.transfer(holder1, amountToMint.toString(), {from: accountOwner1})
       })
+      it('should revert exercising non-whitelisted otoken', async () => {
+        const shortAmountToBurn = new BigNumber('1')
+        const actionArgs = [
+          {
+            actionType: ActionType.Redeem,
+            owner: ZERO_ADDR,
+            secondAddress: holder1,
+            asset: fakeOtoken.address,
+            vaultId: '0',
+            amount: shortAmountToBurn.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
 
-      it('sshould revert exercising un-expired otoken', async () => {
+        await expectRevert(
+          controllerProxy.operate(actionArgs, {from: holder1}),
+          'Controller: otoken is not whitelisted to be redeemed',
+        )
+      })
+
+      it('should revert exercising un-expired otoken', async () => {
         const shortAmountToBurn = new BigNumber('1')
         const actionArgs = [
           {
