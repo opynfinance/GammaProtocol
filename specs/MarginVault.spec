@@ -169,7 +169,7 @@ rule inverseAddRemoveCollateral(address asset, uint256 x, uint256 index)
 rule integrityOfAddShort(address shortOtoken, uint256 x, uint256 index)
 {
 	requireInvariant validVault();
-	require asset != ADDRESSZERO();
+	require shortOtoken != ADDRESSZERO();
 	uint256 shortAmountBefore = totalShortAmount();
 	sinvoke addShort(shortOtoken, x, index);
 	assert  totalShortAmount() == shortAmountBefore + x &&
@@ -182,7 +182,7 @@ rule integrityOfAddShort(address shortOtoken, uint256 x, uint256 index)
 rule additiveAddShort(address shortOtoken, uint256 x, uint256 y, uint256 index)
 {
 	requireInvariant validVault();
-	require asset != ADDRESSZERO();
+	require shortOtoken != ADDRESSZERO();
 	require index < MAXINT(); // no violation when limiting index
 	require x > 0 && y > 0 ;
 	uint256 t = x + y ;
@@ -219,7 +219,7 @@ rule inverseAddRemoveShort(address shortOtoken, uint256 x, uint256 index)
 rule integrityOfAddLong(address longOtoken, uint256 x, uint256 index)
 {
 	requireInvariant validVault();
-	require asset != ADDRESSZERO();
+	require longOtoken != ADDRESSZERO();
 	uint256 longAmountBefore = totalLongAmount();
 	sinvoke addLong(longOtoken, x, index);
 	assert totalLongAmount() == longAmountBefore + x &&
@@ -232,7 +232,7 @@ rule integrityOfAddLong(address longOtoken, uint256 x, uint256 index)
 rule additiveAddLong(address longOtoken, uint256 x, uint256 y, uint256 index)
 {
 	requireInvariant validVault();
-	require asset != ADDRESSZERO();
+	require longOtoken != ADDRESSZERO();
 	require index < MAXINT(); // no violation when limiting index
 	require x > 0 && y > 0 ;
 	uint256 t = x + y ;
