@@ -113,8 +113,10 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
     })
   })
 
-  describe('Otoken Creation after whitelisting products', () => {
+  describe('Otoken Creation after whitelisting products and collateral', () => {
     before('Whitelist product from admin', async () => {
+      await whitelist.whitelistCollateral(usdc.address, {from: owner})
+      await whitelist.whitelistCollateral(dai.address, {from: owner})
       await whitelist.whitelistProduct(weth.address, usdc.address, usdc.address, isPut, {from: owner})
       await whitelist.whitelistProduct(weth.address, dai.address, dai.address, isPut, {from: owner})
     })
@@ -134,7 +136,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
       })
       otoken1 = await Otoken.at(targetAddress1)
       assert.isTrue((await otoken1.name()).includes('200Put USDC Collateral'))
-      assert.isTrue((await otoken1.symbol()).includes('oWETHUSDC-'))
+      assert.isTrue((await otoken1.symbol()).includes('oWETHUSDC/USDC-'))
     })
 
     it('Should init otoken2 with correct name and symbol', async () => {
