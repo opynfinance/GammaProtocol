@@ -44,7 +44,26 @@ invariant validEntityIndex(uint256 index)
 						(getLongAmount(index) > 0 <=> getLongOtoken(index) != 0) &&
 						(getShortAmount(index) > 0 <=> getShortOtoken(index) != 0) &&
 						(getCollateralAmount(index) > 0 <=> getCollateralAsset(index) != 0)
-
+{
+	preserved addLong(address asset, uint256 amt, uint256 _index)
+	{
+		requireInvariant validEntityIndex(_index);
+		requireInvariant validEntityIndex(index);
+		require asset != ADDRESSZERO();
+	}
+	preserved addShort(address asset, uint256 amt, uint256 _index)
+	{
+		requireInvariant validEntityIndex(_index);
+		requireInvariant validEntityIndex(index);
+		require asset != ADDRESSZERO();
+	}
+	preserved addCollateral(address asset, uint256 amt, uint256 _index)
+	{
+		requireInvariant validEntityIndex(_index);
+		requireInvariant validEntityIndex(index);
+		require asset != ADDRESSZERO();
+	}
+}
 
 /***
 @title Change to one entity 
