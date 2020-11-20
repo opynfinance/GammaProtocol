@@ -38,7 +38,7 @@ enum ActionType {
   Call,
 }
 
-contract('Controller', ([owner, accountOwner1, receiverAddress]) => {
+contract('Controller', ([owner, accountOwner1]) => {
   // Oracle module
   let oracle: MockOracleInstance
   // calculator module
@@ -111,12 +111,10 @@ contract('Controller', ([owner, accountOwner1, receiverAddress]) => {
       const data = web3.eth.abi.encodeParameter(
         {
           CallFunctionData: {
-            receiver: 'address',
             amount: 'uint256',
           },
         },
         {
-          receiver: receiverAddress,
           amount: amountToUnwrap,
         },
       )
@@ -142,7 +140,6 @@ contract('Controller', ([owner, accountOwner1, receiverAddress]) => {
 
       const senderWethBalanceAfter = new BigNumber(await weth.balanceOf(accountOwner1))
       const contractWethBalanceAfter = new BigNumber(await weth.balanceOf(flashUnwrap.address))
-      const receiverWethBalanceAfter = new BigNumber(await weth.balanceOf(receiverAddress))
 
       assert.equal(
         contractWethBalanceBefore.toString(),
@@ -154,7 +151,6 @@ contract('Controller', ([owner, accountOwner1, receiverAddress]) => {
         amountToUnwrap.toString(),
         'sender WETH balance mismatch',
       )
-      assert.equal(receiverWethBalanceAfter.toString(), amountToUnwrap.toString(), 'receiver WETH balance mismatch')
     })
 
     it('should revert sending data with different lenth than the required one', async () => {
@@ -162,13 +158,11 @@ contract('Controller', ([owner, accountOwner1, receiverAddress]) => {
       const data = web3.eth.abi.encodeParameter(
         {
           CallFunctionData: {
-            receiver: 'address',
             amount: 'uint256',
             other: 'uint256',
           },
         },
         {
-          receiver: receiverAddress,
           amount: amountToUnwrap,
           other: 100,
         },

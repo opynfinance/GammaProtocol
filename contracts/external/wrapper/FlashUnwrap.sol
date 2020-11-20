@@ -19,12 +19,11 @@ contract FlashUnwrap is CalleeInterface {
     using SafeERC20 for ERC20Interface;
 
     // Number of bytes in a CallFunctionData struct
-    uint256 private constant NUM_CALLFUNCTIONDATA_BYTES = 64;
+    uint256 private constant NUM_CALLFUNCTIONDATA_BYTES = 32;
 
     WETH9 public WETH;
 
     struct CallFunctionData {
-        address receiver;
         uint256 amount;
     }
 
@@ -35,7 +34,9 @@ contract FlashUnwrap is CalleeInterface {
     event WrappedETH(address indexed to, uint256 amount);
     event UnwrappedETH(address to, uint256 amount);
 
-    // flash swap
+    receive() external payable {}
+
+    // flash unwrap
     function callFunction(
         address payable _sender,
         address _vaultOwner,
@@ -46,10 +47,10 @@ contract FlashUnwrap is CalleeInterface {
 
         CallFunctionData memory cfd = abi.decode(_data, (CallFunctionData));
 
-        WETH.transferFrom(_sender, cfd.receiver, cfd.amount);
+        WETH.transferFrom(_sender, address(this), cfd.amount);
+        WETH.withdraw(cfd.amount);
 
-        // this one below, because of .transfer usage in WETH contract ?
-        // WETH.withdraw(cfd.amount);
+        _sender.transfer(cfd.amount);
 
         emit UnwrappedETH(_sender, cfd.amount);
     }
