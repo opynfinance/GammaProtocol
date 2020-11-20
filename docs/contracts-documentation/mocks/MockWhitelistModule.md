@@ -16,7 +16,7 @@
 
 - `isWhitelistedCallee(address _callee) (external)`
 
-- `whitelisteCallee(address _callee) (external)`
+- `whitelistCallee(address _callee) (external)`
 
 - `blacklistCallee(address _callee) (external)`
 
@@ -34,6 +34,6 @@
 
 ### Function `isWhitelistedCallee(address _callee) → bool external`
 
-### Function `whitelisteCallee(address _callee) external`
+### Function `whitelistCallee(address _callee) external`
 
 ### Function `blacklistCallee(address _callee) external`

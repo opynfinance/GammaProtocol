@@ -256,6 +256,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _partiallyPaused new boolean value to set systemPartiallyPaused to
      */
     function setSystemPartiallyPaused(bool _partiallyPaused) external onlyPartialPauser {
+        require(systemPartiallyPaused != _partiallyPaused, "Controller: invalid input");
+
         systemPartiallyPaused = _partiallyPaused;
 
         emit SystemPartiallyPaused(systemPartiallyPaused);
@@ -267,6 +269,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _fullyPaused new boolean value to set systemFullyPaused to
      */
     function setSystemFullyPaused(bool _fullyPaused) external onlyFullPauser {
+        require(systemFullyPaused != _fullyPaused, "Controller: invalid input");
+
         systemFullyPaused = _fullyPaused;
 
         emit SystemFullyPaused(systemFullyPaused);
@@ -279,6 +283,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     function setFullPauser(address _fullPauser) external onlyOwner {
         require(_fullPauser != address(0), "Controller: fullPauser cannot be set to address zero");
+        require(fullPauser != _fullPauser, "Controller: invalid input");
 
         emit FullPauserUpdated(fullPauser, _fullPauser);
 
@@ -292,6 +297,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     function setPartialPauser(address _partialPauser) external onlyOwner {
         require(_partialPauser != address(0), "Controller: partialPauser cannot be set to address zero");
+        require(partialPauser != _partialPauser, "Controller: invalid input");
 
         emit PartialPauserUpdated(partialPauser, _partialPauser);
 
@@ -305,6 +311,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _isRestricted new call restriction state
      */
     function setCallRestriction(bool _isRestricted) external onlyOwner {
+        require(callRestricted != _isRestricted, "Controller: invalid input");
+
         callRestricted = _isRestricted;
 
         emit CallRestricted(callRestricted);
@@ -317,6 +325,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _isOperator new boolean value that expresses if the sender is giving or revoking privileges for _operator
      */
     function setOperator(address _operator, bool _isOperator) external {
+        require(operators[msg.sender][_operator] != _isOperator, "Controller: invalid input");
+
         operators[msg.sender][_operator] = _isOperator;
 
         emit AccountOperatorUpdated(msg.sender, _operator, _isOperator);
@@ -431,7 +441,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     function hasExpired(address _otoken) external view returns (bool) {
         uint256 otokenExpiryTimestamp = OtokenInterface(_otoken).expiryTimestamp();
 
-        return now > otokenExpiryTimestamp;
+        return now >= otokenExpiryTimestamp;
     }
 
     /**
@@ -502,8 +512,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
                 _redeem(Actions._parseRedeemArgs(action));
             } else if (actionType == Actions.ActionType.SettleVault) {
                 _settleVault(Actions._parseSettleVaultArgs(action));
-            } else {
-                // actionType == Actions.ActionType.Call
+            } else if (actionType == Actions.ActionType.Call) {
                 _call(Actions._parseCallArgs(action));
             }
         }
@@ -712,7 +721,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     function _redeem(Actions.RedeemArgs memory _args) internal {
         OtokenInterface otoken = OtokenInterface(_args.otoken);
 
-        require(now > otoken.expiryTimestamp(), "Controller: can not redeem un-expired otoken");
+        require(now >= otoken.expiryTimestamp(), "Controller: can not redeem un-expired otoken");
 
         require(isSettlementAllowed(_args.otoken), "Controller: asset prices not finalized yet");
 
@@ -744,7 +753,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             ? OtokenInterface(vault.shortOtokens[0])
             : OtokenInterface(vault.longOtokens[0]);
 
-        require(now > otoken.expiryTimestamp(), "Controller: can not settle vault with un-expired otoken");
+        require(now >= otoken.expiryTimestamp(), "Controller: can not settle vault with un-expired otoken");
         require(isSettlementAllowed(address(otoken)), "Controller: asset prices not finalized yet");
 
         (uint256 payout, ) = calculator.getExcessCollateral(vault);

@@ -38,7 +38,7 @@ contract Oracle is Ownable {
     /// @notice emits an event when the disputer is updated
     event DisputerUpdated(address indexed newDisputer);
     /// @notice emits an event when the pricer is updated for an asset
-    event PricerUpdated(address asset, address pricer);
+    event PricerUpdated(address indexed asset, address indexed pricer);
     /// @notice emits an event when the locking period is updated for a pricer
     event PricerLockingPeriodUpdated(address indexed pricer, uint256 lockingPeriod);
     /// @notice emits an event when the dispute period is updated for a pricer
@@ -63,7 +63,7 @@ contract Oracle is Ownable {
      * @notice get a live asset price from the asset's pricer contract
      * @param _asset asset address
      * @return price scaled by 1e8, denominated in USD
-     * e.g. 17368900000 => 175.689 USD
+     * e.g. 17568900000 => 175.689 USD
      */
     function getPrice(address _asset) external view returns (uint256) {
         require(assetPricer[_asset] != address(0), "Oracle: Pricer for this asset not set");
@@ -207,7 +207,7 @@ contract Oracle is Ownable {
 
     /**
      * @notice dispute an asset price during the dispute period
-     * @dev only the owner can dispute a price during the dispute period, by setting a new one
+     * @dev only the disputer can dispute a price during the dispute period, by setting a new one
      * @param _asset asset address
      * @param _expiryTimestamp expiry timestamp
      * @param _price the correct price
@@ -221,6 +221,9 @@ contract Oracle is Ownable {
         require(!isDisputePeriodOver(_asset, _expiryTimestamp), "Oracle: dispute period over");
 
         Price storage priceToUpdate = storedPrice[_asset][_expiryTimestamp];
+
+        require(priceToUpdate.timestamp != 0, "Oracle: price to dispute does not exist");
+
         uint256 oldPrice = priceToUpdate.price;
         priceToUpdate.price = _price;
 
@@ -239,10 +242,7 @@ contract Oracle is Ownable {
         uint256 _expiryTimestamp,
         uint256 _price
     ) external {
-        require(
-            (msg.sender == assetPricer[_asset]) || (msg.sender == disputer),
-            "Oracle: caller is not authorized to set expiry price"
-        );
+        require(msg.sender == assetPricer[_asset], "Oracle: caller is not authorized to set expiry price");
         require(isLockingPeriodOver(_asset, _expiryTimestamp), "Oracle: locking period is not over yet");
         require(storedPrice[_asset][_expiryTimestamp].timestamp == 0, "Oracle: dispute period started");
 

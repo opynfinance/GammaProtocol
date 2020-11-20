@@ -23,7 +23,10 @@ contract MarginCalculator {
 
     address public addressBook;
 
+    /// @dev decimals used by strike price and oracle price
     uint256 internal constant BASE = 8;
+
+    /// @dev FixedPoint 0
     FPI.FixedPointInt internal ZERO = FPI.fromScaledUint(0, BASE);
 
     constructor(address _addressBook) public {
@@ -87,8 +90,8 @@ contract MarginCalculator {
 
         FPI.FixedPointInt memory collateralAmount = ZERO;
         if (hasCollateral) {
-            uint256 colllateralDecimals = ERC20Interface(_vault.collateralAssets[0]).decimals();
-            collateralAmount = FPI.fromScaledUint(_vault.collateralAmounts[0], colllateralDecimals);
+            uint256 collateralDecimals = ERC20Interface(_vault.collateralAssets[0]).decimals();
+            collateralAmount = FPI.fromScaledUint(_vault.collateralAmounts[0], collateralDecimals);
         }
 
         // get required margin, denominated in collateral

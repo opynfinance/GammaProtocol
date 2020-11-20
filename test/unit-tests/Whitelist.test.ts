@@ -191,11 +191,11 @@ contract('Whitelist', ([owner, otokenFactoryAddress, random, newOwner, callee]) 
 
   describe('Whitelist callee', () => {
     it('should revert whitelisting callee from non-owner address', async () => {
-      await expectRevert(whitelist.whitelisteCallee(callee, {from: random}), 'Ownable: caller is not the owner')
+      await expectRevert(whitelist.whitelistCallee(callee, {from: random}), 'Ownable: caller is not the owner')
     })
 
     it('should whitelist callee from owner address', async () => {
-      const whitelistTx = await whitelist.whitelisteCallee(callee, {from: owner})
+      const whitelistTx = await whitelist.whitelistCallee(callee, {from: owner})
 
       expectEvent(whitelistTx, 'CalleeWhitelisted')
 
