@@ -90,8 +90,8 @@ contract MarginCalculator {
 
         FPI.FixedPointInt memory collateralAmount = ZERO;
         if (hasCollateral) {
-            uint256 collateralDecimals = ERC20Interface(_vault.collateralAssets[0]).decimals();
-            collateralAmount = FPI.fromScaledUint(_vault.collateralAmounts[0], collateralDecimals);
+            uint256 colllateralDecimals = uint256(ERC20Interface(_vault.collateralAssets[0]).decimals());
+            collateralAmount = FPI.fromScaledUint(_vault.collateralAmounts[0], colllateralDecimals);
         }
 
         // get required margin, denominated in collateral
@@ -101,7 +101,7 @@ contract MarginCalculator {
         bool isExcess = excessCollateral.isGreaterThanOrEqual(ZERO);
 
         address otoken = hasLong ? _vault.longOtokens[0] : _vault.shortOtokens[0];
-        uint256 collateralDecimals = ERC20Interface(OtokenInterface(otoken).collateralAsset()).decimals();
+        uint256 collateralDecimals = uint256(ERC20Interface(OtokenInterface(otoken).collateralAsset()).decimals());
         // if is excess, truncate the tailing digits in excessCollateralExternal calculation
         uint256 excessCollateralExternal = excessCollateral.toScaledUint(collateralDecimals, isExcess);
         return (excessCollateralExternal, isExcess);
