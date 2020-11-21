@@ -16,7 +16,7 @@ const MockERC20 = artifacts.require('MockERC20.sol')
 // address(0)
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
-contract('ChainlinkPricer', ([owner, random]) => {
+contract('ChainlinkPricer', ([owner, bot, random]) => {
   let wethAggregator: MockChainlinkAggregatorInstance
   let oracle: MockOracleInstance
   let weth: MockERC20Instance
@@ -29,24 +29,36 @@ contract('ChainlinkPricer', ([owner, random]) => {
     wethAggregator = await MockChainlinkAggregator.new()
     weth = await MockERC20.new('WETH', 'WETH', 18)
     //
-    pricer = await ChainlinkPricer.new(weth.address, wethAggregator.address, oracle.address)
+    pricer = await ChainlinkPricer.new(bot, weth.address, wethAggregator.address, oracle.address)
   })
 
   describe('constructor', () => {
-    it('should set the asset correctly', async () => {
+    it('should set the config correctly', async () => {
       const asset = await pricer.asset()
       assert.equal(asset, weth.address)
+      const bot = await pricer.bot()
+      assert.equal(bot, bot)
+      const aggregator = await pricer.aggregator()
+      assert.equal(aggregator, wethAggregator.address)
+      const oracleModule = await pricer.oracle()
+      assert.equal(oracleModule, oracle.address)
     })
     it('should revert if initializing aggregator with 0 address', async () => {
       await expectRevert(
-        ChainlinkPricer.new(weth.address, ZERO_ADDR, wethAggregator.address),
+        ChainlinkPricer.new(bot, weth.address, ZERO_ADDR, wethAggregator.address),
         'ChainLinkPricer: Cannot set 0 address as aggregator',
       )
     })
     it('should revert if initializing oracle with 0 address', async () => {
       await expectRevert(
-        ChainlinkPricer.new(weth.address, oracle.address, ZERO_ADDR),
+        ChainlinkPricer.new(bot, weth.address, oracle.address, ZERO_ADDR),
         'ChainLinkPricer: Cannot set 0 address as oracle',
+      )
+    })
+    it('should revert if initializing bot with 0 address', async () => {
+      await expectRevert(
+        ChainlinkPricer.new(ZERO_ADDR, weth.address, oracle.address, wethAggregator.address),
+        'ChainLinkPricer: Cannot set 0 address as bot',
       )
     })
   })
@@ -111,29 +123,27 @@ contract('ChainlinkPricer', ([owner, random]) => {
       const expiryTimestamp = (t0 + t1) / 2 // between t0 and t1
       const roundId = 1
 
-      await pricer.setExpiryPriceInOracle(expiryTimestamp, roundId)
+      await pricer.setExpiryPriceInOracle(expiryTimestamp, roundId, {from: bot})
       const priceFromOracle = await oracle.getExpiryPrice(weth.address, expiryTimestamp)
       assert.equal(p1.toString(), priceFromOracle[0].toString())
     })
 
-    it('everyone can set an price oracle', async () => {
-      const expiryTimestamp = (t1 + t2) / 2 // between t1 and t2
-      const roundId = 2
-      await pricer.setExpiryPriceInOracle(expiryTimestamp, roundId, {from: random})
-      const priceFromOracle = await oracle.getExpiryPrice(weth.address, expiryTimestamp)
-      assert.equal(p2.toString(), priceFromOracle[0].toString())
+    it('should revert if sender is not bot address', async () => {
+      const expiryTimestamp = (t1 + t2) / 2 // between t0 and t1
+      const roundId = 1
+      await expectRevert(
+        pricer.setExpiryPriceInOracle(expiryTimestamp, roundId, {from: random}),
+        'ChainLinkPricer: unauthorized sender',
+      )
     })
 
     it('should revert if round ID is incorrect: price[roundId].timestamp < expiry', async () => {
       const expiryTimestamp = (t1 + t2) / 2 // between t0 and t1
       const roundId = 1
-      await expectRevert(pricer.setExpiryPriceInOracle(expiryTimestamp, roundId), 'ChainLinkPricer: invalid roundId')
-    })
-
-    it('should revert if round ID is incorrect: price[roundId-1].timestamp > expiry', async () => {
-      const expiryTimestamp = (t1 + t2) / 2 // between t2 and t3
-      const roundId = 3
-      await expectRevert(pricer.setExpiryPriceInOracle(expiryTimestamp, roundId), 'ChainLinkPricer: invalid roundId')
+      await expectRevert(
+        pricer.setExpiryPriceInOracle(expiryTimestamp, roundId, {from: bot}),
+        'ChainLinkPricer: invalid roundId',
+      )
     })
   })
 })
