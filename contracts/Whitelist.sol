@@ -3,6 +3,7 @@ pragma solidity 0.6.10;
 
 import "./interfaces/AddressBookInterface.sol";
 import "./packages/oz/Ownable.sol";
+import {ERC20Interface} from "./interfaces/ERC20Interface.sol";
 
 /**
  * @author Opyn Team
@@ -20,6 +21,10 @@ contract Whitelist is Ownable {
     mapping(address => bool) internal whitelistedOtoken;
     /// @dev mapping to track whitelisted callee addresses for the call action
     mapping(address => bool) internal whitelistedCallee;
+    /// @dev minimum decimals allowed for an underlying asset, strike asset, or collateral asset
+    uint256 private constant MIN_DECIMALS = 6;
+    /// @dev maximum decimals allowed for an underlying asset, strike asset, or collateral asset
+    uint256 private constant MAX_DECIMALS = 18;
 
     /**
      * @dev constructor
@@ -136,6 +141,28 @@ contract Whitelist is Ownable {
     ) external onlyOwner {
         require(whitelistedCollateral[_collateral], "Whitelist: Collateral is not whitelisted");
 
+        uint256 _underlyingDecimals = ERC20Interface(_underlying).decimals();
+        uint256 _strikeDecimals = ERC20Interface(_strike).decimals();
+        string memory _underlyingSymbol = ERC20Interface(_underlying).symbol();
+        string memory _strikeSymbol = ERC20Interface(_strike).symbol();
+
+        require(
+            _underlyingDecimals >= MIN_DECIMALS && _underlyingDecimals <= MAX_DECIMALS,
+            "Whitelist: Underlying decimals out of bounds"
+        );
+        require(
+            keccak256(abi.encodePacked((_underlyingSymbol))) != keccak256(abi.encodePacked((""))),
+            "Whitelist: Underlying has no symbol"
+        );
+        require(
+            _strikeDecimals >= MIN_DECIMALS && _strikeDecimals <= MAX_DECIMALS,
+            "Whitelist: Strike decimals out of bounds"
+        );
+        require(
+            keccak256(abi.encodePacked((_strikeSymbol))) != keccak256(abi.encodePacked((""))),
+            "Whitelist: Strike has no symbol"
+        );
+
         bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
 
         whitelistedProduct[productHash] = true;
@@ -171,6 +198,18 @@ contract Whitelist is Ownable {
      * @param _collateral collateral asset address
      */
     function whitelistCollateral(address _collateral) external onlyOwner {
+        uint256 _collateralDecimals = ERC20Interface(_collateral).decimals();
+        string memory _collateralSymbol = ERC20Interface(_collateral).symbol();
+
+        require(
+            _collateralDecimals >= MIN_DECIMALS && _collateralDecimals <= MAX_DECIMALS,
+            "Whitelist: Collateral decimals out of bounds"
+        );
+        require(
+            keccak256(abi.encodePacked((_collateralSymbol))) != keccak256(abi.encodePacked((""))),
+            "Whitelist: Collateral has no symbol"
+        );
+
         whitelistedCollateral[_collateral] = true;
 
         emit CollateralWhitelisted(_collateral);

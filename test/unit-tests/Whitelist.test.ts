@@ -1,8 +1,16 @@
-import {MockERC20Instance, MockAddressBookInstance, WhitelistInstance} from '../../build/types/truffle-types'
+import {
+  MockERC20Instance,
+  MockNoDecimalERC20Instance,
+  MockNoSymbolERC20Instance,
+  MockAddressBookInstance,
+  WhitelistInstance,
+} from '../../build/types/truffle-types'
 
 const {expectEvent, expectRevert} = require('@openzeppelin/test-helpers')
 
 const MockERC20 = artifacts.require('MockERC20.sol')
+const MockNoDecimalERC20 = artifacts.require('MockNoDecimalERC20.sol')
+const MockNoSymbolERC20 = artifacts.require('MockNoSymbolERC20.sol')
 const MockAddressBook = artifacts.require('MockAddressBook.sol')
 const Whitelist = artifacts.require('Whitelist.sol')
 // address(0)
@@ -12,6 +20,11 @@ contract('Whitelist', ([owner, otokenFactoryAddress, random, newOwner, callee]) 
   // ERC20 mocks
   let usdc: MockERC20Instance
   let dai: MockERC20Instance
+  let noDecimal: MockNoDecimalERC20Instance
+  let noSymbol: MockNoSymbolERC20Instance
+  let twentyDecimal: MockERC20Instance
+  let threeDecimal: MockERC20Instance
+  let blankSymbol: MockERC20Instance
   // option mock
   let otoken: MockERC20Instance
   // address book mock
@@ -30,6 +43,16 @@ contract('Whitelist', ([owner, otokenFactoryAddress, random, newOwner, callee]) 
     dai = await MockERC20.new('DAI', 'DAI', 18)
     // deploy option
     otoken = await MockERC20.new('OETH', 'OETH', 8)
+    //deploy no decimal erc-20
+    noDecimal = await MockNoDecimalERC20.new('noDecimalERC20', 'noDecimalERC20')
+    //deploy no symbol erc-20
+    noSymbol = await MockNoSymbolERC20.new('noSymbolERC20')
+    //deploy erc-20 with decimals = 20
+    twentyDecimal = await MockERC20.new('TwentyDecimalERC20', 'TwentyDecimalERC20', 20)
+    //deploy erc-20 with decimals = 3
+    threeDecimal = await MockERC20.new('ThreeDecimalERC20', 'ThreeDecimalERC20', 3)
+    //deploy erc-20 with symbol=""
+    blankSymbol = await MockERC20.new('NAMEBUTNOSYM', '', 18)
 
     // deploy AddressBook mock
     addressBook = await MockAddressBook.new()
@@ -58,6 +81,92 @@ contract('Whitelist', ([owner, otokenFactoryAddress, random, newOwner, callee]) 
     })
   })
 
+  describe('Out of bounds ERC-20s', () => {
+    it('should revert whitelisting collateral when decimals are too high', async () => {
+      await expectRevert(
+        whitelist.whitelistCollateral(twentyDecimal.address, {from: owner}),
+        'Whitelist: Collateral decimals out of bounds',
+      )
+    })
+
+    it('should revert whitelisting collateral when decimals are too low', async () => {
+      await expectRevert(
+        whitelist.whitelistCollateral(threeDecimal.address, {from: owner}),
+        'Whitelist: Collateral decimals out of bounds',
+      )
+    })
+
+    it('should revert whitelisting collateral when there is no decimals', async () => {
+      await expectRevert.unspecified(whitelist.whitelistCollateral(noDecimal.address, {from: owner}))
+    })
+
+    it('should revert whitelisting collateral when there is no symbol', async () => {
+      await expectRevert.unspecified(whitelist.whitelistCollateral(noSymbol.address, {from: owner}))
+    })
+
+    it('should revert whitelisting collateral when the symbol is blank', async () => {
+      await expectRevert(
+        whitelist.whitelistCollateral(blankSymbol.address, {from: owner}),
+        'Whitelist: Collateral has no symbol',
+      )
+    })
+
+    it('should revert whitelisting a product when underlying asset decimals are too high', async () => {
+      await expectRevert(
+        whitelist.whitelistProduct(twentyDecimal.address, usdc.address, usdc.address, isPut, {from: owner}),
+        'Whitelist: Underlying decimals out of bounds',
+      )
+    })
+    it('should revert whitelisting a product when underlying asset decimals are too low', async () => {
+      await expectRevert(
+        whitelist.whitelistProduct(threeDecimal.address, usdc.address, usdc.address, isPut, {from: owner}),
+        'Whitelist: Underlying decimals out of bounds',
+      )
+    })
+    it('should revert whitelisting a product when strike asset decimals are too high', async () => {
+      await expectRevert(
+        whitelist.whitelistProduct(usdc.address, twentyDecimal.address, usdc.address, isPut, {from: owner}),
+        'Whitelist: Strike decimals out of bounds',
+      )
+    })
+    it('should revert whitelisting a product when strike asset decimals are too low', async () => {
+      await expectRevert(
+        whitelist.whitelistProduct(usdc.address, threeDecimal.address, usdc.address, isPut, {from: owner}),
+        'Whitelist: Strike decimals out of bounds',
+      )
+    })
+    it('should revert whitelisting a product when underlying has no symbol', async () => {
+      await expectRevert.unspecified(
+        whitelist.whitelistProduct(noSymbol.address, usdc.address, usdc.address, isPut, {from: owner}),
+      )
+    })
+    it('should revert whitelisting a product when strike has no symbol', async () => {
+      await expectRevert.unspecified(
+        whitelist.whitelistProduct(usdc.address, noSymbol.address, usdc.address, isPut, {from: owner}),
+      )
+    })
+    it('should revert whitelisting a product when underlying has no decimals', async () => {
+      await expectRevert.unspecified(
+        whitelist.whitelistProduct(noDecimal.address, usdc.address, usdc.address, isPut, {from: owner}),
+      )
+    })
+    it('should revert whitelisting a product when strike has no decimals', async () => {
+      await expectRevert.unspecified(
+        whitelist.whitelistProduct(usdc.address, noDecimal.address, usdc.address, isPut, {from: owner}),
+      )
+    })
+    it('should revert whitelisting a product when underlying has a blank symbol', async () => {
+      await expectRevert.unspecified(
+        whitelist.whitelistProduct(blankSymbol.address, usdc.address, usdc.address, isPut, {from: owner}),
+      )
+    })
+    it('should revert whitelisting a product when strike has a blank symbol', async () => {
+      await expectRevert.unspecified(
+        whitelist.whitelistProduct(usdc.address, blankSymbol.address, usdc.address, isPut, {from: owner}),
+      )
+    })
+  })
+
   describe('blacklist collateral', () => {
     it('should revert blacklisting collateral from non-owner address', async () => {
       await expectRevert(
@@ -81,7 +190,7 @@ contract('Whitelist', ([owner, otokenFactoryAddress, random, newOwner, callee]) 
   describe('Whitelist product', () => {
     it('should revert whitelisting a product from non-owner address', async () => {
       await expectRevert(
-        whitelist.whitelistProduct(underlyingAsset, usdc.address, usdc.address, isPut, {from: random}),
+        whitelist.whitelistProduct(dai.address, usdc.address, usdc.address, isPut, {from: random}),
         'Ownable: caller is not the owner',
       )
     })
@@ -91,7 +200,7 @@ contract('Whitelist', ([owner, otokenFactoryAddress, random, newOwner, callee]) 
       assert.equal(isWhitelistedCollateral, false, 'fail: collateral is whitelisted')
 
       await expectRevert(
-        whitelist.whitelistProduct(underlyingAsset, usdc.address, usdc.address, isPut, {from: owner}),
+        whitelist.whitelistProduct(dai.address, usdc.address, usdc.address, isPut, {from: owner}),
         'Whitelist: Collateral is not whitelisted',
       )
     })
@@ -104,18 +213,13 @@ contract('Whitelist', ([owner, otokenFactoryAddress, random, newOwner, callee]) 
       const isWhitelistedCollateral = await whitelist.isWhitelistedCollateral(usdc.address)
       assert.equal(isWhitelistedCollateral, true, 'fail: collateral not whitelisted')
 
-      const productWhitelistTx = await whitelist.whitelistProduct(underlyingAsset, usdc.address, usdc.address, isPut, {
+      const productWhitelistTx = await whitelist.whitelistProduct(dai.address, usdc.address, usdc.address, isPut, {
         from: owner,
       })
 
       expectEvent(productWhitelistTx, 'ProductWhitelisted')
 
-      const isWhitelistedProduct = await whitelist.isWhitelistedProduct(
-        underlyingAsset,
-        usdc.address,
-        usdc.address,
-        isPut,
-      )
+      const isWhitelistedProduct = await whitelist.isWhitelistedProduct(dai.address, usdc.address, usdc.address, isPut)
       assert.equal(isWhitelistedProduct, true, 'fail: product not whitelisted')
     })
   })
@@ -123,30 +227,25 @@ contract('Whitelist', ([owner, otokenFactoryAddress, random, newOwner, callee]) 
   describe('Blacklist product', () => {
     it('should revert blacklisting a product from non-owner address', async () => {
       await expectRevert(
-        whitelist.blacklistProduct(underlyingAsset, usdc.address, usdc.address, isPut, {from: random}),
+        whitelist.blacklistProduct(dai.address, usdc.address, usdc.address, isPut, {from: random}),
         'Ownable: caller is not the owner',
       )
     })
 
     it('should blacklist a product from owner address', async () => {
       assert.equal(
-        await whitelist.isWhitelistedProduct(underlyingAsset, usdc.address, usdc.address, isPut),
+        await whitelist.isWhitelistedProduct(dai.address, usdc.address, usdc.address, isPut),
         true,
         'fail: product not whitelisted',
       )
 
-      const blacklistTx = await whitelist.blacklistProduct(underlyingAsset, usdc.address, usdc.address, isPut, {
+      const blacklistTx = await whitelist.blacklistProduct(dai.address, usdc.address, usdc.address, isPut, {
         from: owner,
       })
 
       expectEvent(blacklistTx, 'ProductBlacklisted')
 
-      const isWhitelistedProduct = await whitelist.isWhitelistedProduct(
-        underlyingAsset,
-        usdc.address,
-        usdc.address,
-        isPut,
-      )
+      const isWhitelistedProduct = await whitelist.isWhitelistedProduct(dai.address, usdc.address, usdc.address, isPut)
       assert.equal(isWhitelistedProduct, false, 'fail: product not blacklisted')
     })
   })
@@ -243,13 +342,13 @@ contract('Whitelist', ([owner, otokenFactoryAddress, random, newOwner, callee]) 
     })
 
     it('should whitelist a product from owner address', async () => {
-      const whitelistTx = await whitelist.whitelistProduct(underlyingAsset, dai.address, dai.address, isPut, {
+      const whitelistTx = await whitelist.whitelistProduct(dai.address, dai.address, dai.address, isPut, {
         from: newOwner,
       })
 
       expectEvent(whitelistTx, 'ProductWhitelisted')
 
-      const isSupportedProduct = await whitelist.isWhitelistedProduct(underlyingAsset, dai.address, dai.address, isPut)
+      const isSupportedProduct = await whitelist.isWhitelistedProduct(dai.address, dai.address, dai.address, isPut)
       assert.equal(isSupportedProduct, true, 'fail: product not supported')
     })
   })
