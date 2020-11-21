@@ -722,6 +722,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     function _redeem(Actions.RedeemArgs memory _args) internal {
         OtokenInterface otoken = OtokenInterface(_args.otoken);
 
+        require(whitelist.isWhitelistedOtoken(_args.otoken), "Controller: otoken is not whitelisted to be redeemed");
+
         require(now >= otoken.expiryTimestamp(), "Controller: can not redeem un-expired otoken");
 
         require(isSettlementAllowed(_args.otoken), "Controller: asset prices not finalized yet");
