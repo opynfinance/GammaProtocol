@@ -176,7 +176,7 @@ contract OtokenFactory is OtokenSpawner {
             _expiry,
             _isPut
         );
-        return _computeAddress(AddressBookInterface(addressBook).getOtokenImpl(), initializationCalldata);
+        return _computeAddress(otokenImpl, initializationCalldata);
     }
 
     /**

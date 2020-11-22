@@ -28,7 +28,7 @@ contract('ChainlinkPricer', ([owner, bot, random]) => {
     oracle = await MockOracle.new({from: owner})
     wethAggregator = await MockChainlinkAggregator.new()
     weth = await MockERC20.new('WETH', 'WETH', 18)
-    //
+    // deploy pricer
     pricer = await ChainlinkPricer.new(bot, weth.address, wethAggregator.address, oracle.address)
   })
 

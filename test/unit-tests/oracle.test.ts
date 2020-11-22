@@ -30,6 +30,7 @@ contract('Oracle', ([owner, disputer, random, collateral, strike]) => {
   let oracle: OracleInstance
   // otoken
   let otoken: MockOtokenInstance
+  let usdc: MockERC20Instance
   let weth: MockERC20Instance
   let otokenExpiry: BigNumber
 
@@ -40,6 +41,7 @@ contract('Oracle', ([owner, disputer, random, collateral, strike]) => {
     oracle = await Oracle.new({from: owner})
 
     // mock tokens
+    usdc = await MockERC20.new('USDC', 'USDC', 6)
     weth = await MockERC20.new('WETH', 'WETH', 18)
     otoken = await Otoken.new()
     otokenExpiry = new BigNumber((await time.latest()).toNumber() + time.duration.days(30).toNumber())
@@ -274,6 +276,26 @@ contract('Oracle', ([owner, disputer, random, collateral, strike]) => {
       await expectRevert(
         oracle.setExpiryPrice(weth.address, otokenExpiry, assetPrice, {from: disputer}),
         'Oracle: caller is not authorized to set expiry price',
+      )
+    })
+  })
+
+  describe('Stable prices', () => {
+    const stablePrice = '1000000'
+
+    it('should set stable price for asset', async () => {
+      await expectRevert(oracle.getPrice(usdc.address), 'Oracle: Pricer for this asset not set')
+
+      await oracle.setStablePrice(usdc.address, stablePrice, {from: owner})
+
+      assert.equal((await oracle.getPrice(usdc.address)).toString(), stablePrice, 'Stable price mismatch')
+    })
+
+    it('should get expiry price', async () => {
+      assert.equal(
+        (await oracle.getExpiryPrice(usdc.address, otokenExpiry))[0].toString(),
+        stablePrice,
+        'Stable price mismatch',
       )
     })
   })

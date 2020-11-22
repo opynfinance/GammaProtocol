@@ -242,8 +242,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         require(_addressBook != address(0), "Controller: invalid addressbook address");
         require(_owner != address(0), "Controller: invalid owner address");
 
-        __Context_init_unchained();
-        __Ownable_init_unchained(_owner);
+        __Ownable_init(_owner);
         __ReentrancyGuard_init_unchained();
 
         addressbook = AddressBookInterface(_addressBook);
@@ -721,6 +720,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     function _redeem(Actions.RedeemArgs memory _args) internal {
         OtokenInterface otoken = OtokenInterface(_args.otoken);
+
+        require(whitelist.isWhitelistedOtoken(_args.otoken), "Controller: otoken is not whitelisted to be redeemed");
 
         require(now >= otoken.expiryTimestamp(), "Controller: can not redeem un-expired otoken");
 
