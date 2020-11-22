@@ -41,9 +41,9 @@ contract CTokenProxy is ReentrancyGuard {
         address _underlying,
         address _cToken,
         uint256 _amountUnderlying
-    ) external payable nonReentrant {
+    ) external nonReentrant {
         ERC20Interface underlying = ERC20Interface(_underlying);
-        CERC20Interface cToken = CTokenInterface(_cToken);
+        CERC20Interface cToken = CERC20Interface(_cToken);
 
         // if depositing token: pull token from user
         uint256 cTokenBalance = 0;
@@ -52,11 +52,8 @@ contract CTokenProxy is ReentrancyGuard {
             // mint cToken
             underlying.safeApprove(_cToken, _amountUnderlying);
             cToken.mint(_amountUnderlying);
-            cTokenBalance = cToken.balanceOf(address(this)); //should we check initial balance vs final - same issue with eth trapped from OZ audit?
-            uint256 allowance = cToken.allowance(address(this), marginPool);
-            if (allowance < cTokenBalance) {
-                cToken.safeApprove(marginPool, uint256(-1)); // why do we check this every time?
-            }
+            cTokenBalance = cToken.balanceOf(address(this));
+            cToken.safeApprove(marginPool, cTokenBalance);
         }
 
         // verify sender
@@ -65,7 +62,6 @@ contract CTokenProxy is ReentrancyGuard {
 
             // check that msg.sender is an owner or operator
             if (action.owner != address(0)) {
-                //what does address(0) sender imply?
                 require(
                     (msg.sender == action.owner) || (controller.isOperator(action.owner, msg.sender)),
                     "PayableProxyController: cannot execute action "
@@ -74,14 +70,13 @@ contract CTokenProxy is ReentrancyGuard {
 
             // overwrite the deposit amount by the exact amount minted
             if (action.actionType == Actions.ActionType.DepositCollateral && action.amount == 0) {
-                //what if there are multiple DepositCollateral actions, should fail due to balanceOf being 0
                 _actions[i].amount = cTokenBalance;
             }
         }
 
         controller.operate(_actions);
 
-        // if it's withdraw, may have some cToken left in this contract
+        // unwrap and withdraw cTokens that have been added to contract via operate function
         uint256 cTokenBalanceAfter = cToken.balanceOf(address(this));
         if (cTokenBalanceAfter > 0) {
             require(cToken.redeem(cTokenBalanceAfter) == 0, "CTokenPricer: Redeem Failed");

@@ -9,7 +9,7 @@ import {SafeERC20} from "../../packages/oz/SafeERC20.sol";
 import {ERC20Interface} from "../../interfaces/ERC20Interface.sol";
 import {Actions} from "../../libs/Actions.sol";
 import {Controller} from "../../Controller.sol";
-import {CETHInterface} from "../../interfaces/CERC20Interface.sol";
+import {CETHInterface} from "../../interfaces/CETHInterface.sol";
 
 /**
  * @title CTokenProxy
@@ -18,10 +18,11 @@ import {CETHInterface} from "../../interfaces/CERC20Interface.sol";
  */
 contract CTokenProxy is ReentrancyGuard {
     using SafeERC20 for ERC20Interface;
-    using SafeERC20 for CETH0Interface;
+    using SafeERC20 for CETHInterface;
 
     Controller public controller;
     address public marginPool;
+    address constant CETH_ADDRESS = address(0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5);
 
     constructor(address _controller, address _marginPool) public {
         controller = Controller(_controller);
@@ -34,29 +35,24 @@ contract CTokenProxy is ReentrancyGuard {
      * @param _actions array of actions arguments
      * @param _underlying underlying asset
      * @param _cToken the cToken to mint
-     * @param _amountUnderlying the amount of underlying to supply to Compound
      */
     function operate(
         Actions.ActionArgs[] memory _actions,
         address _underlying,
-        address _cToken,
-        uint256 _amountUnderlying
+        address _cToken
     ) external payable nonReentrant {
+        require(_underlying == address(0), "CETHWrapUnwrap: ETH address other than address(0) specified");
+        require(_cToken == CETH_ADDRESS, "CETHWrapUnwrap: Wrong cToken address specified for ETH");
+
         ERC20Interface underlying = ERC20Interface(_underlying);
-        CETHInterface cToken = CTokenInterface(_cToken);
+        CETHInterface cToken = CETHInterface(_cToken);
 
         // if depositing token: pull token from user
         uint256 cTokenBalance = 0;
-        if (_amountUnderlying > 0) {
-            underlying.safeTransferFrom(msg.sender, address(this), _amountUnderlying);
-            // mint cToken
-            underlying.safeApprove(_cToken, _amountUnderlying);
-            cToken.mint(_amountUnderlying);
-            cTokenBalance = cToken.balanceOf(address(this)); //should we check initial balance vs final - same issue with eth trapped from OZ audit?
-            uint256 allowance = cToken.allowance(address(this), marginPool);
-            if (allowance < cTokenBalance) {
-                cToken.safeApprove(marginPool, uint256(-1)); // why do we check this every time?
-            }
+        if (msg.value > 0) {
+            cToken.mint{value: msg.value}();
+            cTokenBalance = cToken.balanceOf(address(this));
+            cToken.safeApprove(marginPool, cTokenBalance);
         }
 
         // verify sender
@@ -65,7 +61,6 @@ contract CTokenProxy is ReentrancyGuard {
 
             // check that msg.sender is an owner or operator
             if (action.owner != address(0)) {
-                //what does address(0) sender imply?
                 require(
                     (msg.sender == action.owner) || (controller.isOperator(action.owner, msg.sender)),
                     "PayableProxyController: cannot execute action "
@@ -74,19 +69,18 @@ contract CTokenProxy is ReentrancyGuard {
 
             // overwrite the deposit amount by the exact amount minted
             if (action.actionType == Actions.ActionType.DepositCollateral && action.amount == 0) {
-                //what if there are multiple DepositCollateral actions, should fail due to balanceOf being 0
                 _actions[i].amount = cTokenBalance;
             }
         }
 
         controller.operate(_actions);
 
-        // if it's withdraw, may have some cToken left in this contract
+        // unwrap and withdraw cTokens that have been added to contract via operate function
         uint256 cTokenBalanceAfter = cToken.balanceOf(address(this));
         if (cTokenBalanceAfter > 0) {
             require(cToken.redeem(cTokenBalanceAfter) == 0, "CTokenPricer: Redeem Failed");
-            uint256 underlyingBalance = underlying.balanceOf(address(this));
-            underlying.safeTransfer(msg.sender, underlyingBalance);
+            uint256 underlyingBalance = address(this).balance;
+            msg.sender.transfer(underlyingBalance);
         }
     }
 }
