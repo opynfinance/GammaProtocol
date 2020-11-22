@@ -29,8 +29,8 @@ contract ControllerHarness is Controller {
     address public dummyERC20C;
 
     
-    function assetBalanceOf(address asset, address a) external returns (uint256) {
-        if(asset == anOtokenA )
+    function assetBalanceOf(address asset, address a) external view returns (uint256) {
+        if (asset == anOtokenA)
             return  ERC20Interface(anOtokenA).balanceOf(a);
         else if (asset == anOtokenB)
             return  ERC20Interface(anOtokenB).balanceOf(a);
@@ -40,8 +40,8 @@ contract ControllerHarness is Controller {
             return ERC20Interface(asset).balanceOf(a);
     }
 
-    function assetBalanceOfPool(address asset) external returns (uint256){
-        if(asset == anOtokenA )
+    function assetBalanceOfPool(address asset) external view returns (uint256){
+        if(asset == anOtokenA)
             return  ERC20Interface(anOtokenA).balanceOf(address(pool));
         else if (asset == anOtokenB)
             return  ERC20Interface(anOtokenB).balanceOf(address(pool));
@@ -51,8 +51,8 @@ contract ControllerHarness is Controller {
             return ERC20Interface(asset).balanceOf(address(pool));
     }
 
-    function assetTotalSupply(address asset) external returns (uint256){
-        if(asset == anOtokenA )
+    function assetTotalSupply(address asset) external view returns (uint256){
+        if (asset == anOtokenA)
             return  ERC20Interface(anOtokenA).totalSupply();
         else if (asset == anOtokenB)
             return  ERC20Interface(anOtokenB).totalSupply();
@@ -63,15 +63,15 @@ contract ControllerHarness is Controller {
     }
 
  
-    function isValidAsset(address asset) external returns (bool) {
+    function isValidAsset(address asset) external view returns (bool) {
         return true;
     }
 
-    function cheapGetVault(address owner, uint256 vaultId) internal returns (MarginVault.Vault storage) {
+    function cheapGetVault(address owner, uint256 vaultId) internal view returns (MarginVault.Vault storage) {
         return vaults[owner][vaultId];
     }
 
-    function isValidVault(address owner, uint256 vaultId) external returns (bool) {
+    function isValidVault(address owner, uint256 vaultId) external view returns (bool) {
         MarginVault.Vault memory _vault = getVault(owner, vaultId);
         (, bool isValidVault) = calculator.getExcessCollateral(_vault);
         return isValidVault;
