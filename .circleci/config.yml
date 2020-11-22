@@ -122,6 +122,12 @@ jobs:
             cd specs
             ./runMarginVault.sh
 
+      - run:
+          name: Test Basic No Bankruptcy
+          command: |
+            cd specs
+            ./runNoBankruptcy1.sh
+
   size-check:
     working_directory: ~/gammaprotocol
     docker:
