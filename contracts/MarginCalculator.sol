@@ -95,7 +95,7 @@ contract MarginCalculator {
         }
 
         // get required margin, denominated in collateral
-        FPI.FixedPointInt memory collateralRequired = _getMarginRequired(_vault);
+        FPI.FixedPointInt memory collateralRequired = _getMarginRequired(_vault, hasShort, hasLong);
         FPI.FixedPointInt memory excessCollateral = collateralAmount.sub(collateralRequired);
 
         bool isExcess = excessCollateral.isGreaterThanOrEqual(ZERO);
@@ -143,25 +143,25 @@ contract MarginCalculator {
      * @param _vault theoretical vault that needs to be checked
      * @return marginRequired the minimal amount of collateral needed in a vault, denominated in collateral
      */
-    function _getMarginRequired(MarginVault.Vault memory _vault) internal view returns (FPI.FixedPointInt memory) {
-        // vault has either long oTokens or short oTokens in it
-        bool hasShort = _isNotEmpty(_vault.shortOtokens);
-        bool hasLong = _isNotEmpty(_vault.longOtokens);
+    function _getMarginRequired(
+        MarginVault.Vault memory _vault,
+        bool _hasShort,
+        bool _hasLong
+    ) internal view returns (FPI.FixedPointInt memory) {
+        FPI.FixedPointInt memory shortAmount = _hasShort ? FPI.fromScaledUint(_vault.shortAmounts[0], BASE) : ZERO;
+        FPI.FixedPointInt memory longAmount = _hasLong ? FPI.fromScaledUint(_vault.longAmounts[0], BASE) : ZERO;
 
-        FPI.FixedPointInt memory shortAmount = hasShort ? FPI.fromScaledUint(_vault.shortAmounts[0], BASE) : ZERO;
-        FPI.FixedPointInt memory longAmount = hasLong ? FPI.fromScaledUint(_vault.longAmounts[0], BASE) : ZERO;
-
-        OtokenInterface otoken = hasShort
+        OtokenInterface otoken = _hasShort
             ? OtokenInterface(_vault.shortOtokens[0])
             : OtokenInterface(_vault.longOtokens[0]);
         bool expired = now > otoken.expiryTimestamp();
         bool isPut = otoken.isPut();
 
         if (!expired) {
-            FPI.FixedPointInt memory shortStrike = hasShort
+            FPI.FixedPointInt memory shortStrike = _hasShort
                 ? FPI.fromScaledUint(OtokenInterface(_vault.shortOtokens[0]).strikePrice(), BASE)
                 : ZERO;
-            FPI.FixedPointInt memory longStrike = hasLong
+            FPI.FixedPointInt memory longStrike = _hasLong
                 ? FPI.fromScaledUint(OtokenInterface(_vault.longOtokens[0]).strikePrice(), BASE)
                 : ZERO;
 
@@ -185,8 +185,8 @@ contract MarginCalculator {
                 return _convertAmountOnLivePrice(underlyingNeeded, otoken.underlyingAsset(), otoken.collateralAsset());
             }
         } else {
-            FPI.FixedPointInt memory shortCashValue = hasShort ? _getExpiredCashValue(_vault.shortOtokens[0]) : ZERO;
-            FPI.FixedPointInt memory longCashValue = hasLong ? _getExpiredCashValue(_vault.longOtokens[0]) : ZERO;
+            FPI.FixedPointInt memory shortCashValue = _hasShort ? _getExpiredCashValue(_vault.shortOtokens[0]) : ZERO;
+            FPI.FixedPointInt memory longCashValue = _hasLong ? _getExpiredCashValue(_vault.longOtokens[0]) : ZERO;
 
             FPI.FixedPointInt memory valueInStrike = _getExpiredSpreadCashValue(
                 shortAmount,

@@ -242,8 +242,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         require(_addressBook != address(0), "Controller: invalid addressbook address");
         require(_owner != address(0), "Controller: invalid owner address");
 
-        __Context_init_unchained();
-        __Ownable_init_unchained(_owner);
+        __Ownable_init(_owner);
         __ReentrancyGuard_init_unchained();
 
         addressbook = AddressBookInterface(_addressBook);
