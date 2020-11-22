@@ -108,6 +108,14 @@ contract ControllerHarness is Controller {
         MarginVault.Vault storage vault = cheapGetVault(owner, vaultId);
         return vault.shortOtokens[i];
     }
+    
+    function isVaultExpired(address owner, uint256 vaultId, uint256 i) external view returns (bool) {
+        MarginVault.Vault storage vault = cheapGetVault(owner, vaultId);
+        bool hasShorts = _isNotEmpty(vault.shortOtokens);
+        bool hasLongs = _isNotEmpty(vault.longOtokens);
+        address otoken = hasShorts ? vault.shortOtokens[0] : vault.longOtokens[0];
+        return ((hasShorts || hasLongs) && now > OtokenInterface(otoken).expiryTimestamp());
+    }
 
     function havocVault(address owner, uint256 vaultId, uint256 i, uint256 newShortAmount,
                 uint256 newLongAmount, uint256 newcollateralAmount ) external  returns (address) {
