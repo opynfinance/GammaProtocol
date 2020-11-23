@@ -46,7 +46,7 @@ const MockChainlinkAggregator = artifacts.require('MockChainlinkAggregator.sol')
 const ChainlinkPricer = artifacts.require('ChainLinkPricer.sol')
 const MockCtoken = artifacts.require('MockCToken.sol')
 
-//unlock this address to get its USDC
+//unlock this address to get its USDC - remove all this
 const usdcWhale = '0xbe0eb53f46cd790cd13851d5eff43d12404d33e8'
 
 const WETHAddress = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
@@ -74,8 +74,8 @@ contract('CToken Proxy test', async ([user]) => {
   let usdc: MockERC20Instance
   //let comp: MockERC20Instance
   let weth: WETH9Instance
-  let cusdc: CERC20InterfaceInstance
-  let ceth: CETHInterfaceInstance
+  let cusdc: CERC20InterfaceInstance //change to new code
+  let ceth: CETHInterfaceInstance //change to new code
 
   let cethProxyOperator: CETHProxyInstance
   let cerc20ProxyOperator: CERC20ProxyInstance
@@ -102,14 +102,18 @@ contract('CToken Proxy test', async ([user]) => {
 
   let wethAggregator: MockChainlinkAggregatorInstance
 
+  let vaultCounter: number
+  let cusdcCollateralAmount: BigNumber
+  let cethCollateralAmount: BigNumber
+
   before('setup contracts', async () => {
     const now = (await time.latest()).toNumber()
     expiry = createValidExpiry(now, 300) // 300 days from now
 
-    usdc = await ERC20.at(USDCAddress)
-    weth = await WETH.at(WETHAddress)
-    cusdc = await CERC20Interface.at(cUSDCAddress)
-    ceth = await CETHInterface.at(cETHAddress)
+    usdc = await ERC20.at(USDCAddress) // create as local token
+    weth = await WETH.at(WETHAddress) //create as local token
+    cusdc = await CERC20Interface.at(cUSDCAddress) //change to new code + create new token
+    ceth = await CETHInterface.at(cETHAddress) //change to new code + create new token - need to pass in address into proxy constructor
 
     // initiate addressbook first.
     addressBook = await AddressBook.new()
@@ -169,7 +173,7 @@ contract('CToken Proxy test', async ([user]) => {
 
     // deploy callee
     cerc20ProxyOperator = await CERC20Proxy.new(controllerProxyAddress, marginPool.address)
-    cethProxyOperator = await CETHProxy.new(controllerProxyAddress, marginPool.address)
+    cethProxyOperator = await CETHProxy.new(controllerProxyAddress, marginPool.address) // include the cETH address
 
     // deploy ceth collateral option
     await otokenFactory.createOtoken(weth.address, usdc.address, ceth.address, createTokenAmount(300), expiry, false)
@@ -199,36 +203,52 @@ contract('CToken Proxy test', async ([user]) => {
     //transfer USDC to user
     await usdc.transfer(user, createTokenAmount(20000000, 6), {from: usdcWhale})
 
-    // set up cUSDC/cETH fx rates
+    // determine initial fx rates for assets
     const cusdcPrice = 0.02
-    const cethPrice = 0.02
-    const scaledCusdcPrice = createTokenAmount(cusdcPrice, 16) // 1 cToken = 0.02 USD
+    const cethPrice = 0.05
+    const scaledCusdcPrice = createTokenAmount(cusdcPrice, 16) // 1 cToken = 0.02 USD, check decimals here
     const scaledCethPrice = createTokenAmount(cethPrice, 16) // 1 cToken = 0.05 USD
-
     const usdPrice = createTokenAmount(1)
-    await usdcPricer.setPrice(usdPrice)
+    const ethPrice = createTokenAmount(300, 8)
+
+    //set initial prices for eth, cusdc, ceth
+    await wethAggregator.setLatestAnswer(ethPrice)
     await cusdc.setExchangeRate(scaledCusdcPrice)
+    await ceth.setExchangeRate(scaledCethPrice)
 
-    cusdcCollateralAmount = new BigNumber(usdcCollateralAmount).div(cusdcPrice)
-    const scaledCollateralAmount = createTokenAmount(cusdcCollateralAmount.toNumber(), cusdcDecimals)
-    cusdc.mint(accountOwner1, scaledCollateralAmount)
-    cusdc.approve(marginPool.address, scaledCollateralAmount, {from: accountOwner1})
-
-    const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-    vaultCounter = vaultCounterBefore.plus(1).toNumber()
+    const cusdcDecimals = 8
+    const cethDecimals = 8
   })
 
-  describe('Mint actions', () => {
+  describe('Mint actions via proxy', () => {
     it('mint 100 ethusdc-cusdc 300 strike put option by depositing 30000 USDC', async () => {
-      const oTokenAmount = createTokenAmount(100)
-      const collateralAmount = createTokenAmount(30000, 6)
+      const strike = 300
+      const amount = 100
 
-      const ownerCusdcBalanceBefore = new BigNumber(await cusdc.balanceOf(user))
+      const oTokenAmount = createTokenAmount(amount)
+      const underlyingAssetDeposit = createTokenAmount(strike * amount, 6)
+
+      const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(user))
+      vaultCounter = vaultCounterBefore.plus(1).toNumber()
+
+      const expectedDepositAmount = 100 * 300
+
+      cusdcCollateralAmount = new BigNumber(underlyingAssetDeposit).div(cusdcPrice)
+      const scaledCusdcCollateralAmount = createTokenAmount(
+        cusdcCollateralAmount.toNumber(),
+        (await cusdc.decimals()).toNumber(),
+      )
+
+      //user
+      const userOptionBalanceBefore = new BigNumber(await ethCusdcPut.balanceOf(user))
+      const userCusdcBalanceBefore = new BigNumber(await cusdc.balanceOf(user))
+      const userUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(user))
+      //margin pool
+      const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
       const marginPoolCusdcBalanceBefore = new BigNumber(await cusdc.balanceOf(marginPool.address))
-      const ownerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(user))
-      const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
-      const ownerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(user))
-      const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+      //proxy
+      const proxyUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(cerc20ProxyOperator.address))
+      const proxyCusdcBalanceBefore = new BigNumber(await cusdc.balanceOf(cerc20ProxyOperator.address))
 
       await usdc.approve(cerc20ProxyOperator.address, collateralAmount)
 
@@ -268,8 +288,59 @@ contract('CToken Proxy test', async ([user]) => {
         actionArgsAccountOwner2,
         usdc.address,
         cusdc.address,
-        collateralAmount,
+        underlyingAssetDeposit,
         {from: user},
+      )
+
+      //user
+      const userOptionBalanceAfter = new BigNumber(await ethCusdcPut.balanceOf(user))
+      const userCusdcBalanceAfter = new BigNumber(await cusdc.balanceOf(user))
+      const userUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(user))
+      //margin pool
+      const marginPoolCusdcBalanceAfter = new BigNumber(await cusdc.balanceOf(marginPool.address))
+      const marginPoolUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+      //proxy
+      const proxyCusdcBalanceAfter = new BigNumber(await cusdc.balanceOf(cerc20ProxyOperator.address))
+      const proxyUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(cerc20ProxyOperator.address))
+
+      //user
+      assert.equal(
+        userOptionBalanceBefore.plus(oTokenAmount).toString(),
+        userOptionBalanceAfter.toString(),
+        'User oToken balance is incorrect',
+      )
+      assert.equal(
+        userCusdcBalanceBefore.toString(),
+        userCusdcBalanceAfter.toString(),
+        'User cUSDC balance is incorrect',
+      )
+      assert.equal(
+        userUsdcBalanceBefore.toString(),
+        userUsdcBalanceAfter.plus(collateralAmount).toString(),
+        'User USDC balance is incorrect',
+      )
+
+      //margin pool
+      assert.equal(
+        marginPoolCusdcBalanceBefore.plus(expectedDepositAmount).toString(),
+        marginPoolCusdcBalanceAfter.toString(),
+        'Margin Pool cUSDC balance is incorrect',
+      )
+      assert.equal(
+        marginPoolUsdcBalanceBefore.toString(),
+        marginPoolUsdcBalanceAfter.toString(),
+        'Margin Pool USDC balance is incorrect',
+      )
+      //margin pool
+      assert.equal(
+        proxyCusdcBalanceBefore.plus(expectedDepositAmount).toString(),
+        proxyCusdcBalanceAfter.toString(),
+        'Proxy cUSDC balance is incorrect',
+      )
+      assert.equal(
+        proxyUsdcBalanceBefore.toString(),
+        proxyUsdcBalanceAfter.toString(),
+        'Proxy USDC balance is incorrect',
       )
     })
   })

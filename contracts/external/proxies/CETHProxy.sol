@@ -22,11 +22,16 @@ contract CETHProxy is ReentrancyGuard {
 
     Controller public controller;
     address public marginPool;
-    address constant CETH_ADDRESS = address(0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5);
+    address public cethAddress;
 
-    constructor(address _controller, address _marginPool) public {
+    constructor(
+        address _controller,
+        address _marginPool,
+        address _cethAddress
+    ) public {
         controller = Controller(_controller);
         marginPool = _marginPool;
+        cethAddress = _cethAddress;
     }
 
     /**
@@ -42,9 +47,8 @@ contract CETHProxy is ReentrancyGuard {
         address _cToken
     ) external payable nonReentrant {
         require(_underlying == address(0), "CETHWrapUnwrap: ETH address other than address(0) specified");
-        require(_cToken == CETH_ADDRESS, "CETHWrapUnwrap: Wrong cToken address specified for ETH");
+        require(_cToken == cethAddress, "CETHWrapUnwrap: Wrong cToken address specified for ETH");
 
-        ERC20Interface underlying = ERC20Interface(_underlying);
         CETHInterface cToken = CETHInterface(_cToken);
 
         // if depositing token: pull token from user

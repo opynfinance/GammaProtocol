@@ -70,6 +70,7 @@ contract CERC20Proxy is ReentrancyGuard {
 
             // overwrite the deposit amount by the exact amount minted
             if (action.actionType == Actions.ActionType.DepositCollateral && action.amount == 0) {
+                // should we only update if the action.second address == address(this)?
                 _actions[i].amount = cTokenBalance;
             }
         }
