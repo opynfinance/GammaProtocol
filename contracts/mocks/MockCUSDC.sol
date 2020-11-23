@@ -3,10 +3,10 @@ pragma solidity 0.6.10;
 
 import {ERC20Initializable} from "../packages/oz/upgradeability/ERC20Initializable.sol";
 import {ERC20Interface} from "../interfaces/ERC20Interface.sol";
-
-//safe math to add
+import {SafeMath} from "../packages/oz/SafeMath.sol";
 
 contract MockCUSDC is ERC20Initializable {
+    using SafeMath for uint256;
     uint256 public exchangeRateStored;
     address public underlying;
 
@@ -16,14 +16,14 @@ contract MockCUSDC is ERC20Initializable {
     }
 
     function mint(uint256 amount) public {
-        uint256 cTokenAmount = amount * exchangeRateStored;
+        uint256 cTokenAmount = amount.mul(exchangeRateStored);
         _mint(msg.sender, cTokenAmount);
         ERC20Interface(underlying).transferFrom(msg.sender, address(this), amount);
     }
 
     function redeem(uint256 amount) public {
         _burn(msg.sender, amount);
-        uint256 underlyingAmount = amount / exchangeRateStored;
+        uint256 underlyingAmount = amount.div(exchangeRateStored);
         ERC20Interface(underlying).transfer(msg.sender, underlyingAmount);
     }
 
