@@ -50,7 +50,7 @@ contract MockWhitelistModule {
         return whitelistedCallee[_callee];
     }
 
-    function whitelisteCallee(address _callee) external {
+    function whitelistCallee(address _callee) external {
         whitelistedCallee[_callee] = true;
     }
 

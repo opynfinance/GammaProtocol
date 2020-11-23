@@ -34,7 +34,7 @@
 <text text-anchor="start" x="8" y="-260.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;blacklistCollateral(_collateral: address)</text>
 <text text-anchor="start" x="8" y="-243.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;whitelistOtoken(_otokenAddress: address)</text>
 <text text-anchor="start" x="8" y="-227.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;blacklistOtoken(_otokenAddress: address)</text>
-<text text-anchor="start" x="8" y="-210.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;whitelisteCallee(_callee: address)</text>
+<text text-anchor="start" x="8" y="-210.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;whitelistCallee(_callee: address)</text>
 <text text-anchor="start" x="8" y="-193.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;blacklistCallee(_callee: address)</text>
 <text text-anchor="start" x="8" y="-176.7" font-family="Times,serif" font-size="14.00" fill="#000000">Public:</text>
 <text text-anchor="start" x="8" y="-159.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; ProductWhitelisted(productHash: bytes32, underlying: address, strike: address, collateral: address, isPut: bool)</text>
