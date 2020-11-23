@@ -130,13 +130,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         uint256 payout
     );
     /// @notice emits an event when a call action is executed
-    event CallExecuted(
-        address indexed from,
-        address indexed to,
-        address indexed vaultOwner,
-        uint256 vaultId,
-        bytes data
-    );
+    event CallExecuted(address indexed from, address indexed to, bytes data);
     /// @notice emits an event when the fullPauser address changes
     event FullPauserUpdated(address indexed oldFullPauser, address indexed newFullPauser);
     /// @notice emits an event when the partialPauser address changes
@@ -783,9 +777,9 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         onlyWhitelistedCallee(_args.callee)
         returns (uint256)
     {
-        CalleeInterface(_args.callee).callFunction(msg.sender, _args.owner, _args.vaultId, _args.data);
+        CalleeInterface(_args.callee).callFunction(msg.sender, _args.data);
 
-        emit CallExecuted(msg.sender, _args.callee, _args.owner, _args.vaultId, _args.data);
+        emit CallExecuted(msg.sender, _args.callee, _args.data);
     }
 
     /**

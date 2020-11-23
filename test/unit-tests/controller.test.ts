@@ -3930,8 +3930,6 @@ contract(
         expectEvent(await controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CallExecuted', {
           from: accountOwner1,
           to: callTester.address,
-          vaultOwner: ZERO_ADDR,
-          vaultId: '0',
           data: ZERO_ADDR,
         })
       })
@@ -3994,8 +3992,6 @@ contract(
         expectEvent(await controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CallExecuted', {
           from: accountOwner1,
           to: callTester.address,
-          vaultOwner: ZERO_ADDR,
-          vaultId: '0',
           data: ZERO_ADDR,
         })
       })
