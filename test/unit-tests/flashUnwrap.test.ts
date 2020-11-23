@@ -153,7 +153,7 @@ contract('Controller', ([owner, accountOwner1]) => {
       )
     })
 
-    it('should revert sending data with different lenth than the required one', async () => {
+    it('should revert sending data with different length than the required one', async () => {
       const amountToUnwrap = web3.utils.toWei('3', 'ether')
       const data = web3.eth.abi.encodeParameter(
         {
