@@ -2,6 +2,7 @@
  * SPDX-License-Identifier: UNLICENSED
  */
 pragma solidity =0.6.10;
+
 pragma experimental ABIEncoderV2;
 
 import {WETH9} from "../canonical-weth/WETH9.sol";
@@ -18,9 +19,11 @@ import {Address} from "../../packages/oz/Address.sol";
  * @dev Contract for wrapping/unwrapping ETH before/after interacting with the Gamma Protocol
  */
 contract PayableProxyController is ReentrancyGuard {
+    using SafeERC20 for ERC20Interface;
+    using Address for address payable;
+
     WETH9 public weth;
     Controller public controller;
-    using SafeERC20 for ERC20Interface;
 
     constructor(
         address _controller,
@@ -71,7 +74,7 @@ contract PayableProxyController is ReentrancyGuard {
             require(sendEthTo != address(0), "PayableProxyController: cannot send ETH to address zero");
 
             weth.withdraw(remainingWeth);
-            Address.sendValue(sendEthTo, remainingWeth);
+            sendEthTo.sendValue(remainingWeth);
         }
     }
 }
