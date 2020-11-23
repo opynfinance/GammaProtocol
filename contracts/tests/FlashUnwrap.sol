@@ -5,10 +5,10 @@ pragma solidity 0.6.10;
 
 pragma experimental ABIEncoderV2;
 
-import {CalleeInterface} from "../../interfaces/CalleeInterface.sol";
-import {ERC20Interface} from "../../interfaces/ERC20Interface.sol";
-import {SafeERC20} from "../../packages/oz/SafeERC20.sol";
-import {WETH9} from "../canonical-weth/WETH9.sol";
+import {CalleeInterface} from "../interfaces/CalleeInterface.sol";
+import {ERC20Interface} from "../interfaces/ERC20Interface.sol";
+import {SafeERC20} from "../packages/oz/SafeERC20.sol";
+import {WETH9} from "../external/canonical-weth/WETH9.sol";
 
 /**
  * @author Opyn Team
