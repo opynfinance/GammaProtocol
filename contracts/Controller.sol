@@ -343,7 +343,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev can only be called when the system is not fully paused
      * @param _actions array of actions arguments
      */
-    function operate(Actions.ActionArgs[] memory _actions) external payable nonReentrant notFullyPaused {
+    function operate(Actions.ActionArgs[] memory _actions) external nonReentrant notFullyPaused {
         (bool vaultUpdated, address vaultOwner, uint256 vaultId) = _runActions(_actions);
         if (vaultUpdated) _verifyFinalState(vaultOwner, vaultId);
     }
@@ -472,7 +472,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     {
         address vaultOwner;
         uint256 vaultId;
-        uint256 ethLeft = msg.value;
         bool vaultUpdated;
 
         for (uint256 i = 0; i < _actions.length; i++) {
@@ -513,7 +512,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             } else if (actionType == Actions.ActionType.SettleVault) {
                 _settleVault(Actions._parseSettleVaultArgs(action));
             } else if (actionType == Actions.ActionType.Call) {
-                ethLeft = _call(Actions._parseCallArgs(action), ethLeft);
+                _call(Actions._parseCallArgs(action));
             }
         }
 
@@ -777,25 +776,16 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @notice execute arbitrary calls
      * @dev cannot be called when system is partiallyPaused or fullyPaused
      * @param _args Call action
-     * @param _ethLeft amount of eth left for this call.
      */
-    function _call(Actions.CallArgs memory _args, uint256 _ethLeft)
+    function _call(Actions.CallArgs memory _args)
         internal
         notPartiallyPaused
         onlyWhitelistedCallee(_args.callee)
         returns (uint256)
     {
-        _ethLeft = _ethLeft.sub(_args.msgValue, "Controller: msg.value and CallArgs.value mismatch");
-        CalleeInterface(_args.callee).callFunction{value: _args.msgValue}(
-            msg.sender,
-            _args.owner,
-            _args.vaultId,
-            _args.data
-        );
+        CalleeInterface(_args.callee).callFunction(msg.sender, _args.owner, _args.vaultId, _args.data);
 
         emit CallExecuted(msg.sender, _args.callee, _args.owner, _args.vaultId, _args.data);
-
-        return _ethLeft;
     }
 
     /**
