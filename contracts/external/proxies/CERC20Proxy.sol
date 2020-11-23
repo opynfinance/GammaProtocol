@@ -9,20 +9,19 @@ import {SafeERC20} from "../../packages/oz/SafeERC20.sol";
 import {ERC20Interface} from "../../interfaces/ERC20Interface.sol";
 import {Actions} from "../../libs/Actions.sol";
 import {Controller} from "../../Controller.sol";
-import {CETHInterface} from "../../interfaces/CETHInterface.sol";
+import {CERC20Interface} from "../../interfaces/CERC20Interface.sol";
 
 /**
- * @title CTokenProxy
+ * @title CERC20Proxy
  * @author Opyn Team
  * @dev Contract for wrapping cToken before minting options
  */
-contract CTokenProxy is ReentrancyGuard {
+contract CERC20Proxy is ReentrancyGuard {
     using SafeERC20 for ERC20Interface;
-    using SafeERC20 for CETHInterface;
+    using SafeERC20 for CERC20Interface;
 
     Controller public controller;
     address public marginPool;
-    address constant CETH_ADDRESS = address(0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5);
 
     constructor(address _controller, address _marginPool) public {
         controller = Controller(_controller);
@@ -35,22 +34,24 @@ contract CTokenProxy is ReentrancyGuard {
      * @param _actions array of actions arguments
      * @param _underlying underlying asset
      * @param _cToken the cToken to mint
+     * @param _amountUnderlying the amount of underlying to supply to Compound
      */
     function operate(
         Actions.ActionArgs[] memory _actions,
         address _underlying,
-        address _cToken
-    ) external payable nonReentrant {
-        require(_underlying == address(0), "CETHWrapUnwrap: ETH address other than address(0) specified");
-        require(_cToken == CETH_ADDRESS, "CETHWrapUnwrap: Wrong cToken address specified for ETH");
-
+        address _cToken,
+        uint256 _amountUnderlying
+    ) external nonReentrant {
         ERC20Interface underlying = ERC20Interface(_underlying);
-        CETHInterface cToken = CETHInterface(_cToken);
+        CERC20Interface cToken = CERC20Interface(_cToken);
 
         // if depositing token: pull token from user
         uint256 cTokenBalance = 0;
-        if (msg.value > 0) {
-            cToken.mint{value: msg.value}();
+        if (_amountUnderlying > 0) {
+            underlying.safeTransferFrom(msg.sender, address(this), _amountUnderlying);
+            // mint cToken
+            underlying.safeApprove(_cToken, _amountUnderlying);
+            cToken.mint(_amountUnderlying);
             cTokenBalance = cToken.balanceOf(address(this));
             cToken.safeApprove(marginPool, cTokenBalance);
         }
@@ -79,8 +80,8 @@ contract CTokenProxy is ReentrancyGuard {
         uint256 cTokenBalanceAfter = cToken.balanceOf(address(this));
         if (cTokenBalanceAfter > 0) {
             require(cToken.redeem(cTokenBalanceAfter) == 0, "CTokenPricer: Redeem Failed");
-            uint256 underlyingBalance = address(this).balance;
-            msg.sender.transfer(underlyingBalance);
+            uint256 underlyingBalance = underlying.balanceOf(address(this));
+            underlying.safeTransfer(msg.sender, underlyingBalance);
         }
     }
 }
