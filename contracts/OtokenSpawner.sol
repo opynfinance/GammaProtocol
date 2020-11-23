@@ -15,7 +15,7 @@ import {Create2} from "./packages/oz/Create2.sol";
  */
 contract OtokenSpawner {
     // fixed salt value because we will only deploy an oToken with the same init value once
-    bytes32 private constant SALT = 0;
+    bytes32 private constant SALT = bytes32(0);
 
     /**
      * @notice internal function for spawning an eip-1167 minimal proxy using `CREATE2`
