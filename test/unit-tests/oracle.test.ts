@@ -298,5 +298,17 @@ contract('Oracle', ([owner, disputer, random, collateral, strike]) => {
         'Stable price mismatch',
       )
     })
+
+    it('should return true for checking if lockign period is over', async () => {
+      const isOver = await oracle.isLockingPeriodOver(usdc.address, await time.latest())
+      const expectedResult = true
+      assert.equal(isOver, expectedResult, 'locking period check mismatch')
+    })
+
+    it('should return true for checking if lockign period is over', async () => {
+      const isOver = await oracle.isDisputePeriodOver(usdc.address, await time.latest())
+      const expectedResult = true
+      assert.equal(isOver, expectedResult, 'dispute period check mismatch')
+    })
   })
 })
