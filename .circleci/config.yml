@@ -25,6 +25,10 @@ workflows:
       - integration-test:
           requires:
             - build
+      - e2e-test:
+          context: INFURA
+          requires:
+            - build
       - coverage:
           context: COVERALLS_REPO_TOKEN
           requires:
@@ -162,6 +166,23 @@ jobs:
       - run:
           name: Contracts Integration Tests 
           command: npm run ci:test:integration
+      - save_cache:
+          key: gas-{{ .Environment.CIRCLE_SHA1 }}
+          paths:
+            - ~/gammaprotocol/gasReporterOutput.json
+
+  e2e-test:
+    working_directory: ~/gammaprotocol
+    docker:
+      - image: circleci/node:10.18.0
+      - image: trufflesuite/ganache-cli:v6.10.1
+        command: ganache-cli --fork https://mainnet.infura.io/v3/$API_KEY --unlock 0xbe0eb53f46cd790cd13851d5eff43d12404d33e8
+    steps:
+      - restore_cache:
+          key: gamma-contracts-build-{{ .Environment.CIRCLE_SHA1 }}
+      - run:
+          name: Mainnet end2end test 
+          command: npm run ci:test:e2e
       - save_cache:
           key: gas-{{ .Environment.CIRCLE_SHA1 }}
           paths:
