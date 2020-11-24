@@ -25,16 +25,21 @@ contract PayableCERC20 is ReentrancyGuard {
 
     address public marginPool;
 
+    CERC20Interface public cToken;
     WETH9 public weth;
     Controller public controller;
 
     constructor(
         address _controller,
         address _marginPool,
+        address _cToken,
         address payable _weth
     ) public {
+        require(_controller != address(0), "PayableCERC20: invalid controller address");
+
         controller = Controller(_controller);
         marginPool = _marginPool;
+        CERC20Interface cToken = CERC20Interface(_cToken);
         weth = WETH9(_weth);
 
         ERC20Interface(address(weth)).safeApprove(_marginPool, uint256(-1));
@@ -44,28 +49,22 @@ contract PayableCERC20 is ReentrancyGuard {
      * @notice fallback function which disallows ETH to be sent to this contract without data except when unwrapping WETH
      */
     fallback() external payable {
-        require(msg.sender == address(weth), "PayableProxyController: Cannot receive ETH");
+        require(msg.sender == address(weth), "PayableCERC20: Cannot receive ETH");
     }
 
     /**
      * @notice execute a number of actions after minting some cTokens
      * @dev a wrapper for the Controller operate function, to wrap uderlying to cToken before the excution.
      * @param _actions array of actions arguments
-     * @param _underlying underlying asset
-     * @param _cToken the cToken to mint
      * @param _amountUnderlying the amount of underlying to supply to Compound
      */
     function operate(
         Actions.ActionArgs[] memory _actions,
-        address _underlying,
-        address _cToken,
         address payable sendEthTo,
         uint256 _amountUnderlying
     ) external payable nonReentrant {
+        ERC20Interface underlying = ERC20Interface(cToken.underlying());
         uint256 cTokenBalance = 0;
-
-        ERC20Interface underlying = ERC20Interface(_underlying);
-        CERC20Interface cToken = CERC20Interface(_cToken);
 
         // create WETH from ETH
         if (msg.value != 0) {
@@ -74,7 +73,7 @@ contract PayableCERC20 is ReentrancyGuard {
         if (_amountUnderlying > 0) {
             underlying.safeTransferFrom(msg.sender, address(this), _amountUnderlying);
             // mint cToken
-            underlying.safeIncreaseAllowance(address(_cToken), _amountUnderlying);
+            underlying.safeIncreaseAllowance(address(cToken), _amountUnderlying);
 
             require(cToken.mint(_amountUnderlying) == 0, "CERC20Proxy: cToken mint failed");
 
