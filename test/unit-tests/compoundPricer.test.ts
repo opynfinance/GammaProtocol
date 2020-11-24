@@ -127,7 +127,6 @@ contract('CompoundPricer', ([owner, random]) => {
     })
     it('should revert if price is 0', async () => {
       await oracle.setStablePrice(usdc.address, '0')
-      // await usdcPricer.setPrice('0')
       await expectRevert(cusdcPricer.getPrice(), 'Oracle: Pricer for this asset not set')
     })
   })
