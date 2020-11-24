@@ -27,12 +27,7 @@ contract Trade0x is CalleeInterface {
 
     event Trade0xBatch(address indexed to, uint256 amount);
 
-    function callFunction(
-        address payable _sender,
-        address, /* _vaultOwner */
-        uint256, /* _vaultId, */
-        bytes memory _data
-    ) external override payable {
+    function callFunction(address payable _sender, bytes memory _data) external override {
         (IZeroXExchange.Order memory order, uint256 takerAssetFillAmount, bytes memory signature) = abi.decode(
             _data,
             (IZeroXExchange.Order, uint256, bytes)
