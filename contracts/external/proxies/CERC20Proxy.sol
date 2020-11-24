@@ -50,10 +50,10 @@ contract CERC20Proxy is ReentrancyGuard {
         if (_amountUnderlying > 0) {
             underlying.safeTransferFrom(msg.sender, address(this), _amountUnderlying);
             // mint cToken
-            underlying.safeApprove(_cToken, _amountUnderlying);
+            underlying.safeIncreaseAllowance(_cToken, _amountUnderlying);
             cToken.mint(_amountUnderlying);
             cTokenBalance = cToken.balanceOf(address(this));
-            cToken.safeApprove(marginPool, cTokenBalance);
+            cToken.safeIncreaseAllowance(marginPool, cTokenBalance);
         }
 
         // verify sender
@@ -78,11 +78,11 @@ contract CERC20Proxy is ReentrancyGuard {
         controller.operate(_actions);
 
         // unwrap and withdraw cTokens that have been added to contract via operate function
-        uint256 cTokenBalanceAfter = cToken.balanceOf(address(this));
-        if (cTokenBalanceAfter > 0) {
-            require(cToken.redeem(cTokenBalanceAfter) == 0, "CTokenPricer: Redeem Failed");
-            uint256 underlyingBalance = underlying.balanceOf(address(this));
-            underlying.safeTransfer(msg.sender, underlyingBalance);
-        }
+        // uint256 cTokenBalanceAfter = cToken.balanceOf(address(this));
+        // if (cTokenBalanceAfter > 0) {
+        //     require(cToken.redeem(cTokenBalanceAfter) == 0, "CTokenPricer: Redeem Failed");
+        //     uint256 underlyingBalance = underlying.balanceOf(address(this));
+        //     underlying.safeTransfer(msg.sender, underlyingBalance);
+        // }
     }
 }
