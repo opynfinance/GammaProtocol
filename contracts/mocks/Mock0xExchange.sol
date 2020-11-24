@@ -36,24 +36,4 @@ contract Mock0xExchange {
         fillAmount = _takerAssetFillAmount;
         return IZeroXExchange.FillResults(0, 0, 0, 0, 0);
     }
-
-    function decodeERC20Asset(bytes memory b) internal pure returns (address result) {
-        require(b.length == 36, "LENGTH_65_REQUIRED");
-
-        uint256 index = 16;
-
-        // Add offset to index:
-        // 1. Arrays are prefixed by 32-byte length parameter (add 32 to index)
-        // 2. Account for size difference between address length and 32-byte storage word (subtract 12 from index)
-        index += 20;
-
-        // Read address from array memory
-        assembly {
-            // 1. Add index to address of bytes array
-            // 2. Load 32-byte word from memory
-            // 3. Apply 20-byte mask to obtain address
-            result := and(mload(add(b, index)), 0xffffffffffffffffffffffffffffffffffffffff)
-        }
-        return result;
-    }
 }
