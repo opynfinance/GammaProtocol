@@ -18,7 +18,8 @@ import {
   MockChainlinkAggregatorInstance,
   CETHInterfaceInstance,
   CERC20InterfaceInstance,
-  MockCTokenInstance,
+  MockCETHInstance,
+  MockCUSDCInstance,
 } from '../../build/types/truffle-types'
 
 import BigNumber from 'bignumber.js'
@@ -44,17 +45,9 @@ const USDCPricer = artifacts.require('USDCPricer.sol')
 const CompoundPricer = artifacts.require('CompoundPricer.sol')
 const MockChainlinkAggregator = artifacts.require('MockChainlinkAggregator.sol')
 const ChainlinkPricer = artifacts.require('ChainLinkPricer.sol')
-const MockCtoken = artifacts.require('MockCToken.sol')
-
-//unlock this address to get its USDC - remove all this
-const usdcWhale = '0xbe0eb53f46cd790cd13851d5eff43d12404d33e8'
-
-const WETHAddress = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-const USDCAddress = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
-const cUSDCAddress = '0x39aa39c021dfbae8fac545936693ac917d5e7563'
-const cETHAddress = '0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5'
+const MockCETH = artifacts.require('MockCETH.sol')
+const MockCUSDC = artifacts.require('MockCUSDC.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
-const MAX_UINT256 = '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
 
 enum ActionType {
   OpenVault,
@@ -70,12 +63,10 @@ enum ActionType {
 }
 
 contract('CToken Proxy test', async ([user]) => {
-  // let exchange: IZeroXExchangeInstance
   let usdc: MockERC20Instance
-  //let comp: MockERC20Instance
-  let weth: WETH9Instance
-  let cusdc: CERC20InterfaceInstance //change to new code
-  let ceth: CETHInterfaceInstance //change to new code
+  let weth: MockERC20Instance
+  let cusdc: MockCUSDCInstance
+  let ceth: MockCETHInstance
 
   let cethProxyOperator: CETHProxyInstance
   let cerc20ProxyOperator: CERC20ProxyInstance
@@ -95,7 +86,6 @@ contract('CToken Proxy test', async ([user]) => {
   let ethCethCall: OtokenInstance
   let ethCusdcPut: OtokenInstance
 
-  let usdcPricer: USDCPricerInstance
   let wethPricer: ChainLinkPricerInstance
   let cusdcPricer: CompoundPricerInstance
   let cethPricer: CompoundPricerInstance
@@ -110,10 +100,10 @@ contract('CToken Proxy test', async ([user]) => {
     const now = (await time.latest()).toNumber()
     expiry = createValidExpiry(now, 300) // 300 days from now
 
-    usdc = await ERC20.at(USDCAddress) // create as local token
-    weth = await WETH.at(WETHAddress) //create as local token
-    cusdc = await CERC20Interface.at(cUSDCAddress) //change to new code + create new token
-    ceth = await CETHInterface.at(cETHAddress) //change to new code + create new token - need to pass in address into proxy constructor
+    weth = await ERC20.new('WETH', 'WETH', 18)
+    usdc = await ERC20.new('USDC', 'USDC', 6)
+    ceth = await MockCETH.new('cETH', 'cETH')
+    cusdc = await MockCUSDC.new('cUSDC', 'cUSDC')
 
     // initiate addressbook first.
     addressBook = await AddressBook.new()
@@ -123,26 +113,25 @@ contract('CToken Proxy test', async ([user]) => {
     const lib = await MarginVault.new()
     await Controller.link('MarginVault', lib.address)
     controllerImplementation = await Controller.new(addressBook.address)
-    oracle = await Oracle.new(addressBook.address)
 
+    oracle = await Oracle.new(addressBook.address)
+    await oracle.setStablePrice(usdc.address, createTokenAmount(1, 8))
     wethAggregator = await MockChainlinkAggregator.new()
 
-    usdcPricer = await USDCPricer.new(usdc.address, oracle.address)
-    await oracle.setAssetPricer(usdc.address, usdcPricer.address)
     wethPricer = await ChainlinkPricer.new(weth.address, wethAggregator.address, oracle.address)
     await oracle.setAssetPricer(weth.address, wethPricer.address)
-    cusdcPricer = await CompoundPricer.new(cusdc.address, usdc.address, usdcPricer.address, oracle.address)
+    cusdcPricer = await CompoundPricer.new(cusdc.address, usdc.address, oracle.address)
     await oracle.setAssetPricer(cusdc.address, cusdcPricer.address)
-    cethPricer = await CompoundPricer.new(ceth.address, weth.address, wethPricer.address, oracle.address)
-    await oracle.setAssetPricer(weth.address, cethPricer.address)
+    cethPricer = await CompoundPricer.new(ceth.address, weth.address, oracle.address)
+    await oracle.setAssetPricer(ceth.address, cethPricer.address)
 
     const lockingPeriod = time.duration.minutes(15).toNumber()
     const disputePeriod = time.duration.minutes(15).toNumber()
 
     await oracle.setLockingPeriod(wethPricer.address, lockingPeriod)
     await oracle.setDisputePeriod(wethPricer.address, disputePeriod)
-    await oracle.setLockingPeriod(usdcPricer.address, lockingPeriod)
-    await oracle.setDisputePeriod(usdcPricer.address, disputePeriod)
+    //await oracle.setLockingPeriod(usdcPricer.address, lockingPeriod)
+    //await oracle.setDisputePeriod(usdcPricer.address, disputePeriod)
     await oracle.setLockingPeriod(cethPricer.address, lockingPeriod)
     await oracle.setDisputePeriod(cethPricer.address, disputePeriod)
     await oracle.setLockingPeriod(cusdcPricer.address, lockingPeriod)
@@ -150,8 +139,8 @@ contract('CToken Proxy test', async ([user]) => {
 
     whitelist = await Whitelist.new(addressBook.address)
 
-    await whitelist.whitelistCollateral(USDCAddress)
-    await whitelist.whitelistCollateral(cUSDCAddress)
+    await whitelist.whitelistCollateral(usdc.address)
+    await whitelist.whitelistCollateral(ceth.address)
 
     // whitelist eth-usdc-ceth calls and eth-usdc-cusdc puts
     whitelist.whitelistProduct(weth.address, usdc.address, ceth.address, false)
@@ -173,7 +162,7 @@ contract('CToken Proxy test', async ([user]) => {
 
     // deploy callee
     cerc20ProxyOperator = await CERC20Proxy.new(controllerProxyAddress, marginPool.address)
-    cethProxyOperator = await CETHProxy.new(controllerProxyAddress, marginPool.address) // include the cETH address
+    cethProxyOperator = await CETHProxy.new(controllerProxyAddress, marginPool.address, ceth.address)
 
     // deploy ceth collateral option
     await otokenFactory.createOtoken(weth.address, usdc.address, ceth.address, createTokenAmount(300), expiry, false)
@@ -199,45 +188,35 @@ contract('CToken Proxy test', async ([user]) => {
     )
 
     ethCusdcPut = await Otoken.at(cusdcPutAddr)
-
-    //transfer USDC to user
-    await usdc.transfer(user, createTokenAmount(20000000, 6), {from: usdcWhale})
-
-    // determine initial fx rates for assets
-    const cusdcPrice = 0.02
-    const cethPrice = 0.05
-    const scaledCusdcPrice = createTokenAmount(cusdcPrice, 16) // 1 cToken = 0.02 USD, check decimals here
-    const scaledCethPrice = createTokenAmount(cethPrice, 16) // 1 cToken = 0.05 USD
-    const usdPrice = createTokenAmount(1)
-    const ethPrice = createTokenAmount(300, 8)
-
-    //set initial prices for eth, cusdc, ceth
-    await wethAggregator.setLatestAnswer(ethPrice)
-    await cusdc.setExchangeRate(scaledCusdcPrice)
-    await ceth.setExchangeRate(scaledCethPrice)
-
-    const cusdcDecimals = 8
-    const cethDecimals = 8
   })
 
   describe('Mint actions via proxy', () => {
     it('mint 100 ethusdc-cusdc 300 strike put option by depositing 30000 USDC', async () => {
+      // determine initial fx rates for assets
+      const cusdcPrice = 0.02
+      const cethPrice = 0.03
+      const scaledCusdcPrice = createTokenAmount(cusdcPrice, 16) // 1 cToken = 0.02 USD
+      const scaledCethPrice = createTokenAmount(cethPrice, 28) // 1 cToken = 0.05 USD
+      const usdPrice = createTokenAmount(1, 8)
+      const ethPrice = createTokenAmount(300, 8)
+
+      //set initial prices for eth, cusdc, ceth
+      await wethAggregator.setLatestAnswer(ethPrice)
+      await cusdc.setExchangeRate(scaledCusdcPrice)
+      await ceth.setExchangeRate(scaledCethPrice)
+
       const strike = 300
       const amount = 100
 
+      const optionCollateralValue = strike * amount
       const oTokenAmount = createTokenAmount(amount)
-      const underlyingAssetDeposit = createTokenAmount(strike * amount, 6)
+      const underlyingAssetDeposit = createTokenAmount(optionCollateralValue, 6)
 
       const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(user))
       vaultCounter = vaultCounterBefore.plus(1).toNumber()
 
-      const expectedDepositAmount = 100 * 300
-
-      cusdcCollateralAmount = new BigNumber(underlyingAssetDeposit).div(cusdcPrice)
-      const scaledCusdcCollateralAmount = createTokenAmount(
-        cusdcCollateralAmount.toNumber(),
-        (await cusdc.decimals()).toNumber(),
-      )
+      cusdcCollateralAmount = new BigNumber(optionCollateralValue).div(cusdcPrice)
+      const scaledCusdcCollateralAmount = createTokenAmount(cusdcCollateralAmount.toNumber())
 
       //user
       const userOptionBalanceBefore = new BigNumber(await ethCusdcPut.balanceOf(user))
@@ -250,7 +229,7 @@ contract('CToken Proxy test', async ([user]) => {
       const proxyUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(cerc20ProxyOperator.address))
       const proxyCusdcBalanceBefore = new BigNumber(await cusdc.balanceOf(cerc20ProxyOperator.address))
 
-      await usdc.approve(cerc20ProxyOperator.address, collateralAmount)
+      await usdc.approve(cerc20ProxyOperator.address, underlyingAssetDeposit)
 
       const actionArgsAccountOwner2 = [
         {
@@ -316,13 +295,13 @@ contract('CToken Proxy test', async ([user]) => {
       )
       assert.equal(
         userUsdcBalanceBefore.toString(),
-        userUsdcBalanceAfter.plus(collateralAmount).toString(),
+        userUsdcBalanceAfter.plus(underlyingAssetDeposit).toString(),
         'User USDC balance is incorrect',
       )
 
       //margin pool
       assert.equal(
-        marginPoolCusdcBalanceBefore.plus(expectedDepositAmount).toString(),
+        marginPoolCusdcBalanceBefore.plus(scaledCusdcCollateralAmount).toString(),
         marginPoolCusdcBalanceAfter.toString(),
         'Margin Pool cUSDC balance is incorrect',
       )
@@ -331,9 +310,9 @@ contract('CToken Proxy test', async ([user]) => {
         marginPoolUsdcBalanceAfter.toString(),
         'Margin Pool USDC balance is incorrect',
       )
-      //margin pool
+      //proxy
       assert.equal(
-        proxyCusdcBalanceBefore.plus(expectedDepositAmount).toString(),
+        proxyCusdcBalanceBefore.toString(),
         proxyCusdcBalanceAfter.toString(),
         'Proxy cUSDC balance is incorrect',
       )
