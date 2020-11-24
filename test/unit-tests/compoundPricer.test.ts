@@ -106,7 +106,6 @@ contract('CompoundPricer', ([owner, random]) => {
     const usdPrice = createScaledNumber(1)
     const exchangeRate = new BigNumber('211619877757422')
     before('mock data in chainlink pricer and cToken', async () => {
-      // await usdcPricer.setPrice(usdPrice)
       await oracle.setStablePrice(usdc.address, '100000000')
       await cUSDC.setExchangeRate(exchangeRate)
     })
