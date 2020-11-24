@@ -7,21 +7,31 @@ import {SafeMath} from "../packages/oz/SafeMath.sol";
 
 contract MockCUSDC is ERC20Initializable {
     using SafeMath for uint256;
+
     uint256 public exchangeRateStored;
     address public underlying;
 
-    constructor(string memory _name, string memory _symbol) public {
+    constructor(
+        string memory _name,
+        string memory _symbol,
+        address _underlying,
+        uint256 _initExchangeRateStored
+    ) public {
         __ERC20_init_unchained(_name, _symbol);
         _setupDecimals(8);
+
+        underlying = _underlying;
+        exchangeRateStored = _initExchangeRateStored;
     }
 
-    function mint(uint256 amount) public {
+    function mint(uint256 amount) public returns (uint256) {
         uint256 cTokenAmount = amount.mul(exchangeRateStored);
         _mint(msg.sender, cTokenAmount);
         ERC20Interface(underlying).transferFrom(msg.sender, address(this), amount);
+        return 0;
     }
 
-    function redeem(uint256 amount) public {
+    function redeem(uint256 amount) public returns (uint256) {
         _burn(msg.sender, amount);
         uint256 underlyingAmount = amount.div(exchangeRateStored);
         ERC20Interface(underlying).transfer(msg.sender, underlyingAmount);

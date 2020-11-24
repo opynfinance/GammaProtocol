@@ -107,7 +107,7 @@ contract('CToken Proxy test', async ([user]) => {
     weth = await ERC20.new('WETH', 'WETH', 18)
     usdc = await ERC20.new('USDC', 'USDC', 6)
     ceth = await MockCETH.new('cETH', 'cETH')
-    cusdc = await MockCUSDC.new('cUSDC', 'cUSDC')
+    cusdc = await MockCUSDC.new('cUSDC', 'cUSDC', usdc.address, createTokenAmount(0, 16))
 
     // initiate addressbook first.
     addressBook = await AddressBook.new()
@@ -241,7 +241,7 @@ contract('CToken Proxy test', async ([user]) => {
       const proxyUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(cerc20ProxyOperator.address))
       const proxyCusdcBalanceBefore = new BigNumber(await cusdc.balanceOf(cerc20ProxyOperator.address))
 
-      await usdc.approve(cerc20ProxyOperator.address, underlyingAssetDeposit), {from: user}
+      await usdc.approve(cerc20ProxyOperator.address, underlyingAssetDeposit, {from: user})
 
       const actionArgsUser = [
         {
@@ -254,34 +254,31 @@ contract('CToken Proxy test', async ([user]) => {
           index: '0',
           data: ZERO_ADDR,
         },
-        // {
-        //   actionType: ActionType.MintShortOption,
-        //   owner: user,
-        //   secondAddress: user,
-        //   asset: ethCusdcPut.address,
-        //   vaultId: 1,
-        //   amount: oTokenAmount,
-        //   index: '0',
-        //   data: ZERO_ADDR,
-        // },
-        // {
-        //   actionType: ActionType.DepositCollateral,
-        //   owner: user,
-        //   secondAddress: cerc20ProxyOperator.address,
-        //   asset: cusdc.address,
-        //   vaultId: 1,
-        //   amount: 0,
-        //   index: '0',
-        //   data: ZERO_ADDR,
-        // },
+        {
+          actionType: ActionType.MintShortOption,
+          owner: user,
+          secondAddress: user,
+          asset: ethCusdcPut.address,
+          vaultId: 1,
+          amount: oTokenAmount,
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.DepositCollateral,
+          owner: user,
+          secondAddress: cerc20ProxyOperator.address,
+          asset: cusdc.address,
+          vaultId: 1,
+          amount: 0,
+          index: '0',
+          data: ZERO_ADDR,
+        },
       ]
-      const receipt = await cerc20ProxyOperator.operate(
-        actionArgsUser,
-        usdc.address,
-        cusdc.address,
-        underlyingAssetDeposit,
-        {from: user},
-      )
+
+      await cerc20ProxyOperator.operate(actionArgsUser, usdc.address, cusdc.address, underlyingAssetDeposit, {
+        from: user,
+      })
 
       //user
       const userOptionBalanceAfter = new BigNumber(await ethCusdcPut.balanceOf(user))
