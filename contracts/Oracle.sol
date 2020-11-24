@@ -178,6 +178,8 @@ contract Oracle is Ownable {
      */
     function setAssetPricer(address _asset, address _pricer) external onlyOwner {
         require(_pricer != address(0), "Oracle: cannot set pricer to address(0)");
+        require(stablePrice[_asset] == 0, "Oracle: could not set a pricer for stable asset");
+
         assetPricer[_asset] = _pricer;
 
         emit PricerUpdated(_asset, _pricer);
@@ -229,6 +231,8 @@ contract Oracle is Ownable {
      * @param _price price
      */
     function setStablePrice(address _asset, uint256 _price) external onlyOwner {
+        require(assetPricer[_asset] == address(0), "Oracle: could not set stable price for an asset with pricer");
+
         stablePrice[_asset] = _price;
 
         emit StablePriceUpdated(_asset, _price);
