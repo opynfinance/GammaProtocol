@@ -65,11 +65,8 @@ contract Trade0x is CalleeInterface {
         // pull token from user
         ERC20Interface(takerAsset).safeTransferFrom(_sender, address(this), takerAssetFillAmount);
 
-        // approve the 0x proxy if not done before
-        uint256 allowance = ERC20Interface(takerAsset).allowance(address(this), assetProxy);
-        if (allowance < takerAssetFillAmount) {
-            ERC20Interface(takerAsset).safeApprove(assetProxy, uint256(-1));
-        }
+        // approve the 0x ERC20 Proxy to move fund
+        ERC20Interface(takerAsset).safeIncreaseAllowance(assetProxy, takerAssetFillAmount);
 
         // pull weth (to pay 0x) from feePayer address
         uint256 protocolFee = tx.gasprice * PORTOCAL_FEE_BASE;
@@ -90,6 +87,13 @@ contract Trade0x is CalleeInterface {
             result.makerAssetFilledAmount
         );
     }
+
+    /**
+     * @dev decode 0x AssetData into contract address
+     * This is the merge of the following 2 function from 0x
+     * https://github.com/0xProject/0x-monorepo/blob/0571244e9e84b9ad778bccb99b837dd6f9baaf6e/contracts/dev-utils/contracts/src/LibAssetData.sol#L69
+     * https://github.com/0xProject/0x-monorepo/blob/0571244e9e84b9ad778bccb99b837dd6f9baaf6e/contracts/utils/contracts/src/LibBytes.sol#L296
+     */
 
     function decodeERC20Asset(bytes memory b) internal pure returns (address result) {
         require(b.length == 36, "LENGTH_65_REQUIRED");
