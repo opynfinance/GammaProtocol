@@ -44,7 +44,7 @@ manages pricers that are used for different assets
 
 - `PricerDisputePeriodUpdated(address pricer, uint256 disputePeriod)`
 
-- `ExpiryPriceUpdated(address asset, uint256 expirtyTimestamp, uint256 price, uint256 onchainTimestamp)`
+- `ExpiryPriceUpdated(address asset, uint256 expiryTimestamp, uint256 price, uint256 onchainTimestamp)`
 
 - `ExpiryPriceDisputed(address asset, uint256 expiryTimestamp, uint256 disputedPrice, uint256 newPrice, uint256 disputeTimestamp)`
 
@@ -256,7 +256,7 @@ emits an event when the locking period is updated for a pricer
 
 emits an event when the dispute period is updated for a pricer
 
-### Event `ExpiryPriceUpdated(address asset, uint256 expirtyTimestamp, uint256 price, uint256 onchainTimestamp)`
+### Event `ExpiryPriceUpdated(address asset, uint256 expiryTimestamp, uint256 price, uint256 onchainTimestamp)`
 
 emits an event when an expiry price is updated for a specific asset
 

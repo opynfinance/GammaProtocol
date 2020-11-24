@@ -158,6 +158,13 @@ contract(
         )
       })
 
+      it('should revert when set an already operator', async () => {
+        await expectRevert(
+          controllerProxy.setOperator(accountOperator1, true, {from: accountOwner1}),
+          'Controller: invalid input',
+        )
+      })
+
       it('should be able to remove operator', async () => {
         await controllerProxy.setOperator(accountOperator1, false, {from: accountOwner1})
 
@@ -165,6 +172,13 @@ contract(
           await controllerProxy.isOperator(accountOwner1, accountOperator1),
           false,
           'Operator address mismatch',
+        )
+      })
+
+      it('should revert when removing an already removed operator', async () => {
+        await expectRevert(
+          controllerProxy.setOperator(accountOperator1, false, {from: accountOwner1}),
+          'Controller: invalid input',
         )
       })
     })
@@ -747,7 +761,7 @@ contract(
 
           await expectRevert(
             controllerProxy.operate(actionArgs, {from: accountOwner1}),
-            'MarginVault: long otoken address mismatch',
+            'MarginVault: invalid long otoken index',
           )
         })
 
@@ -1425,7 +1439,7 @@ contract(
 
           await expectRevert(
             controllerProxy.operate(actionArgs, {from: accountOwner1}),
-            'MarginVault: collateral token address mismatch',
+            'MarginVault: invalid collateral asset index',
           )
         })
 
@@ -2280,7 +2294,7 @@ contract(
 
           await expectRevert(
             controllerProxy.operate(actionArgs, {from: accountOwner1}),
-            'MarginVault: short otoken address mismatch',
+            'MarginVault: invalid short otoken index',
           )
         })
 
@@ -2301,14 +2315,14 @@ contract(
               asset: shortOtoken.address,
               vaultId: vaultCounter.toNumber(),
               amount: shortOtokenToBurn.toString(),
-              index: '1',
+              index: '0',
               data: ZERO_ADDR,
             },
           ]
 
           await expectRevert(
             controllerProxy.operate(actionArgs, {from: accountOperator1}),
-            'MarginVault: short otoken address mismatch',
+            'ERC20: burn amount exceeds balance',
           )
 
           // transfer back
@@ -2692,6 +2706,7 @@ contract(
 
     describe('Redeem', () => {
       let shortOtoken: MockOtokenInstance
+      let fakeOtoken: MockOtokenInstance
 
       before(async () => {
         const expiryTime = new BigNumber(60 * 60 * 24) // after 1 day
@@ -2707,6 +2722,19 @@ contract(
           new BigNumber(await time.latest()).plus(expiryTime),
           true,
         )
+
+        fakeOtoken = await MockOtoken.new()
+        // init otoken
+        await fakeOtoken.init(
+          addressBook.address,
+          weth.address,
+          usdc.address,
+          usdc.address,
+          createTokenAmount(200),
+          new BigNumber(await time.latest()).plus(expiryTime),
+          true,
+        )
+
         // whitelist short otoken to be used in the protocol
         await whitelist.whitelistOtoken(shortOtoken.address, {from: owner})
         // open new vault, mintnaked short, sell it to holder 1
@@ -2750,8 +2778,28 @@ contract(
         // transfer minted short otoken to hodler`
         await shortOtoken.transfer(holder1, amountToMint.toString(), {from: accountOwner1})
       })
+      it('should revert exercising non-whitelisted otoken', async () => {
+        const shortAmountToBurn = new BigNumber('1')
+        const actionArgs = [
+          {
+            actionType: ActionType.Redeem,
+            owner: ZERO_ADDR,
+            secondAddress: holder1,
+            asset: fakeOtoken.address,
+            vaultId: '0',
+            amount: shortAmountToBurn.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
 
-      it('sshould revert exercising un-expired otoken', async () => {
+        await expectRevert(
+          controllerProxy.operate(actionArgs, {from: holder1}),
+          'Controller: otoken is not whitelisted to be redeemed',
+        )
+      })
+
+      it('should revert exercising un-expired otoken', async () => {
         const shortAmountToBurn = new BigNumber('1')
         const actionArgs = [
           {
@@ -3317,7 +3365,7 @@ contract(
 
         await expectRevert(
           controllerProxy.operate(actionArgs, {from: accountOwner1}),
-          "Can't settle vault with no otoken",
+          "Controller: Can't settle vault with no otoken",
         )
       })
 
@@ -3882,8 +3930,6 @@ contract(
         expectEvent(await controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CallExecuted', {
           from: accountOwner1,
           to: callTester.address,
-          vaultOwner: ZERO_ADDR,
-          vaultId: '0',
           data: ZERO_ADDR,
         })
       })
@@ -3892,10 +3938,18 @@ contract(
         await expectRevert(controllerProxy.setCallRestriction(true, {from: random}), 'Ownable: caller is not the owner')
       })
 
+      it('should revert deactivating call action restriction when it is already deactivated', async () => {
+        await expectRevert(controllerProxy.setCallRestriction(false, {from: owner}), 'Controller: invalid input')
+      })
+
       it('should activate call action restriction from owner', async () => {
         await controllerProxy.setCallRestriction(true, {from: owner})
 
         assert.equal(await controllerProxy.callRestricted(), true, 'Call action restriction activation failed')
+      })
+
+      it('should revert activating call action restriction when it is already activated', async () => {
+        await expectRevert(controllerProxy.setCallRestriction(true, {from: owner}), 'Controller: invalid input')
       })
 
       it('should revert calling any arbitrary address when call restriction is activated', async () => {
@@ -3920,7 +3974,7 @@ contract(
 
       it('should call whitelisted callee address when restriction is activated', async () => {
         // whitelist callee
-        await whitelist.whitelisteCallee(callTester.address, {from: owner})
+        await whitelist.whitelistCallee(callTester.address, {from: owner})
 
         const actionArgs = [
           {
@@ -3938,8 +3992,6 @@ contract(
         expectEvent(await controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CallExecuted', {
           from: accountOwner1,
           to: callTester.address,
-          vaultOwner: ZERO_ADDR,
-          vaultId: '0',
           data: ZERO_ADDR,
         })
       })
@@ -4023,10 +4075,24 @@ contract(
         assert.equal(await controllerProxy.partialPauser(), partialPauser, 'partialPauser address mismatch')
       })
 
+      it('should revert set partialPauser address to the same previous address', async () => {
+        await expectRevert(
+          controllerProxy.setPartialPauser(await controllerProxy.partialPauser(), {from: owner}),
+          'Controller: invalid input',
+        )
+      })
+
       it('should revert when pausing the system from address other than partialPauser', async () => {
         await expectRevert(
           controllerProxy.setSystemPartiallyPaused(true, {from: random}),
           'Controller: sender is not partialPauser',
+        )
+      })
+
+      it('should revert partially un-pausing an already running paused system', async () => {
+        await expectRevert(
+          controllerProxy.setSystemPartiallyPaused(false, {from: partialPauser}),
+          'Controller: invalid input',
         )
       })
 
@@ -4038,6 +4104,13 @@ contract(
 
         const stateAfter = await controllerProxy.systemPartiallyPaused()
         assert.equal(stateAfter, true, 'System not paused')
+      })
+
+      it('should revert partially pausing an already patially paused system', async () => {
+        await expectRevert(
+          controllerProxy.setSystemPartiallyPaused(true, {from: partialPauser}),
+          'Controller: invalid input',
+        )
       })
 
       it('should revert opening a vault when system is partially paused', async () => {
@@ -4328,11 +4401,22 @@ contract(
         assert.equal(await controllerProxy.fullPauser(), fullPauser, 'fullPauser address mismatch')
       })
 
+      it('should revert set fullPauser address to the same previous address', async () => {
+        await expectRevert(
+          controllerProxy.setFullPauser(await controllerProxy.fullPauser(), {from: owner}),
+          'Controller: invalid input',
+        )
+      })
+
       it('should revert when triggering full pause from address other than fullPauser', async () => {
         await expectRevert(
           controllerProxy.setSystemFullyPaused(true, {from: random}),
           'Controller: sender is not fullPauser',
         )
+      })
+
+      it('should revert fully un-pausing an already running system', async () => {
+        await expectRevert(controllerProxy.setSystemFullyPaused(false, {from: fullPauser}), 'Controller: invalid input')
       })
 
       it('should trigger full pause', async () => {
@@ -4343,6 +4427,10 @@ contract(
 
         const stateAfter = await controllerProxy.systemFullyPaused()
         assert.equal(stateAfter, true, 'System not in full pause state')
+      })
+
+      it('should revert fully pausing an already fully paused system', async () => {
+        await expectRevert(controllerProxy.setSystemFullyPaused(true, {from: fullPauser}), 'Controller: invalid input')
       })
 
       it('should revert opening a vault when system is in full pause state', async () => {

@@ -289,7 +289,7 @@
 <text text-anchor="start" x="13713.7293" y="-1506.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; PricerUpdated(asset: address, pricer: address)</text>
 <text text-anchor="start" x="13713.7293" y="-1489.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; PricerLockingPeriodUpdated(pricer: address, lockingPeriod: uint256)</text>
 <text text-anchor="start" x="13713.7293" y="-1472.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; PricerDisputePeriodUpdated(pricer: address, disputePeriod: uint256)</text>
-<text text-anchor="start" x="13713.7293" y="-1455.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; ExpiryPriceUpdated(asset: address, expirtyTimestamp: uint256, price: uint256, onchainTimestamp: uint256)</text>
+<text text-anchor="start" x="13713.7293" y="-1455.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; ExpiryPriceUpdated(asset: address, expiryTimestamp: uint256, price: uint256, onchainTimestamp: uint256)</text>
 <text text-anchor="start" x="13713.7293" y="-1438.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; ExpiryPriceDisputed(asset: address, expiryTimestamp: uint256, disputedPrice: uint256, newPrice: uint256, disputeTimestamp: uint256)</text>
 <text text-anchor="start" x="13713.7293" y="-1422.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;isLockingPeriodOver(_asset: address, _expiryTimestamp: uint256): bool</text>
 <text text-anchor="start" x="13713.7293" y="-1405.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;isDisputePeriodOver(_asset: address, _expiryTimestamp: uint256): bool</text>
@@ -629,7 +629,7 @@
 <text text-anchor="start" x="3504.9053" y="-1632.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;blacklistCollateral(_collateral: address)</text>
 <text text-anchor="start" x="3504.9053" y="-1615.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;whitelistOtoken(_otokenAddress: address)</text>
 <text text-anchor="start" x="3504.9053" y="-1598.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;blacklistOtoken(_otokenAddress: address)</text>
-<text text-anchor="start" x="3504.9053" y="-1581.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;whitelisteCallee(_callee: address)</text>
+<text text-anchor="start" x="3504.9053" y="-1581.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;whitelistCallee(_callee: address)</text>
 <text text-anchor="start" x="3504.9053" y="-1564.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;blacklistCallee(_callee: address)</text>
 <text text-anchor="start" x="3504.9053" y="-1548.1" font-family="Times,serif" font-size="14.00" fill="#000000">Public:</text>
 <text text-anchor="start" x="3504.9053" y="-1531.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; ProductWhitelisted(productHash: bytes32, underlying: address, strike: address, collateral: address, isPut: bool)</text>
@@ -1739,7 +1739,7 @@
 <text text-anchor="start" x="16803.9575" y="-579.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;isWhitelistedCollateral(_collateral: address): bool</text>
 <text text-anchor="start" x="16803.9575" y="-563.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;whitelistCollateral(_collateral: address)</text>
 <text text-anchor="start" x="16803.9575" y="-546.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;isWhitelistedCallee(_callee: address): bool</text>
-<text text-anchor="start" x="16803.9575" y="-529.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;whitelisteCallee(_callee: address)</text>
+<text text-anchor="start" x="16803.9575" y="-529.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;whitelistCallee(_callee: address)</text>
 <text text-anchor="start" x="16803.9575" y="-512.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;blacklistCallee(_callee: address)</text>
 </g>
 <!-- 25 -->

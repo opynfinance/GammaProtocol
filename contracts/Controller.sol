@@ -122,15 +122,15 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         uint256 payout
     );
     /// @notice emits an event when a vault is settled
-    event VaultSettled(address indexed AccountOwner, address indexed to, uint256 vaultId, uint256 payout);
-    /// @notice emits an event when a call action is executed
-    event CallExecuted(
-        address indexed from,
+    event VaultSettled(
+        address indexed AccountOwner,
         address indexed to,
-        address indexed vaultOwner,
+        address indexed otoken,
         uint256 vaultId,
-        bytes data
+        uint256 payout
     );
+    /// @notice emits an event when a call action is executed
+    event CallExecuted(address indexed from, address indexed to, bytes data);
     /// @notice emits an event when the fullPauser address changes
     event FullPauserUpdated(address indexed oldFullPauser, address indexed newFullPauser);
     /// @notice emits an event when the partialPauser address changes
@@ -236,8 +236,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         require(_addressBook != address(0), "Controller: invalid addressbook address");
         require(_owner != address(0), "Controller: invalid owner address");
 
-        __Context_init_unchained();
-        __Ownable_init_unchained(_owner);
+        __Ownable_init(_owner);
         __ReentrancyGuard_init_unchained();
 
         addressbook = AddressBookInterface(_addressBook);
@@ -250,6 +249,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _partiallyPaused new boolean value to set systemPartiallyPaused to
      */
     function setSystemPartiallyPaused(bool _partiallyPaused) external onlyPartialPauser {
+        require(systemPartiallyPaused != _partiallyPaused, "Controller: invalid input");
+
         systemPartiallyPaused = _partiallyPaused;
 
         emit SystemPartiallyPaused(systemPartiallyPaused);
@@ -261,6 +262,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _fullyPaused new boolean value to set systemFullyPaused to
      */
     function setSystemFullyPaused(bool _fullyPaused) external onlyFullPauser {
+        require(systemFullyPaused != _fullyPaused, "Controller: invalid input");
+
         systemFullyPaused = _fullyPaused;
 
         emit SystemFullyPaused(systemFullyPaused);
@@ -273,6 +276,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     function setFullPauser(address _fullPauser) external onlyOwner {
         require(_fullPauser != address(0), "Controller: fullPauser cannot be set to address zero");
+        require(fullPauser != _fullPauser, "Controller: invalid input");
 
         emit FullPauserUpdated(fullPauser, _fullPauser);
 
@@ -286,6 +290,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     function setPartialPauser(address _partialPauser) external onlyOwner {
         require(_partialPauser != address(0), "Controller: partialPauser cannot be set to address zero");
+        require(partialPauser != _partialPauser, "Controller: invalid input");
 
         emit PartialPauserUpdated(partialPauser, _partialPauser);
 
@@ -299,6 +304,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _isRestricted new call restriction state
      */
     function setCallRestriction(bool _isRestricted) external onlyOwner {
+        require(callRestricted != _isRestricted, "Controller: invalid input");
+
         callRestricted = _isRestricted;
 
         emit CallRestricted(callRestricted);
@@ -311,6 +318,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _isOperator new boolean value that expresses if the sender is giving or revoking privileges for _operator
      */
     function setOperator(address _operator, bool _isOperator) external {
+        require(operators[msg.sender][_operator] != _isOperator, "Controller: invalid input");
+
         operators[msg.sender][_operator] = _isOperator;
 
         emit AccountOperatorUpdated(msg.sender, _operator, _isOperator);
@@ -328,7 +337,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev can only be called when the system is not fully paused
      * @param _actions array of actions arguments
      */
-    function operate(Actions.ActionArgs[] memory _actions) external payable nonReentrant notFullyPaused {
+    function operate(Actions.ActionArgs[] memory _actions) external nonReentrant notFullyPaused {
         (bool vaultUpdated, address vaultOwner, uint256 vaultId) = _runActions(_actions);
         if (vaultUpdated) _verifyFinalState(vaultOwner, vaultId);
     }
@@ -425,7 +434,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     function hasExpired(address _otoken) external view returns (bool) {
         uint256 otokenExpiryTimestamp = OtokenInterface(_otoken).expiryTimestamp();
 
-        return now > otokenExpiryTimestamp;
+        return now >= otokenExpiryTimestamp;
     }
 
     /**
@@ -457,7 +466,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     {
         address vaultOwner;
         uint256 vaultId;
-        uint256 ethLeft = msg.value;
         bool vaultUpdated;
 
         for (uint256 i = 0; i < _actions.length; i++) {
@@ -497,9 +505,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
                 _redeem(Actions._parseRedeemArgs(action));
             } else if (actionType == Actions.ActionType.SettleVault) {
                 _settleVault(Actions._parseSettleVaultArgs(action));
-            } else {
-                // actionType == Actions.ActionType.Call
-                ethLeft = _call(Actions._parseCallArgs(action), ethLeft);
+            } else if (actionType == Actions.ActionType.Call) {
+                _call(Actions._parseCallArgs(action));
             }
         }
 
@@ -707,7 +714,9 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     function _redeem(Actions.RedeemArgs memory _args) internal {
         OtokenInterface otoken = OtokenInterface(_args.otoken);
 
-        require(now > otoken.expiryTimestamp(), "Controller: can not redeem un-expired otoken");
+        require(whitelist.isWhitelistedOtoken(_args.otoken), "Controller: otoken is not whitelisted to be redeemed");
+
+        require(now >= otoken.expiryTimestamp(), "Controller: can not redeem un-expired otoken");
 
         require(isSettlementAllowed(_args.otoken), "Controller: asset prices not finalized yet");
 
@@ -730,13 +739,16 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         MarginVault.Vault memory vault = getVault(_args.owner, _args.vaultId);
 
-        require(_isNotEmpty(vault.shortOtokens) || _isNotEmpty(vault.longOtokens), "Can't settle vault with no otoken");
+        require(
+            _isNotEmpty(vault.shortOtokens) || _isNotEmpty(vault.longOtokens),
+            "Controller: Can't settle vault with no otoken"
+        );
 
         OtokenInterface otoken = _isNotEmpty(vault.shortOtokens)
             ? OtokenInterface(vault.shortOtokens[0])
             : OtokenInterface(vault.longOtokens[0]);
 
-        require(now > otoken.expiryTimestamp(), "Controller: can not settle vault with un-expired otoken");
+        require(now >= otoken.expiryTimestamp(), "Controller: can not settle vault with un-expired otoken");
         require(isSettlementAllowed(address(otoken)), "Controller: asset prices not finalized yet");
 
         (uint256 payout, ) = calculator.getExcessCollateral(vault);
@@ -751,32 +763,23 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         pool.transferToUser(otoken.collateralAsset(), _args.to, payout);
 
-        emit VaultSettled(_args.owner, _args.to, _args.vaultId, payout);
+        emit VaultSettled(_args.owner, _args.to, address(otoken), _args.vaultId, payout);
     }
 
     /**
      * @notice execute arbitrary calls
      * @dev cannot be called when system is partiallyPaused or fullyPaused
      * @param _args Call action
-     * @param _ethLeft amount of eth left for this call.
      */
-    function _call(Actions.CallArgs memory _args, uint256 _ethLeft)
+    function _call(Actions.CallArgs memory _args)
         internal
         notPartiallyPaused
         onlyWhitelistedCallee(_args.callee)
         returns (uint256)
     {
-        _ethLeft = _ethLeft.sub(_args.msgValue, "Controller: msg.value and CallArgs.value mismatch");
-        CalleeInterface(_args.callee).callFunction{value: _args.msgValue}(
-            msg.sender,
-            _args.owner,
-            _args.vaultId,
-            _args.data
-        );
+        CalleeInterface(_args.callee).callFunction(msg.sender, _args.data);
 
-        emit CallExecuted(msg.sender, _args.callee, _args.owner, _args.vaultId, _args.data);
-
-        return _ethLeft;
+        emit CallExecuted(msg.sender, _args.callee, _args.data);
     }
 
     /**

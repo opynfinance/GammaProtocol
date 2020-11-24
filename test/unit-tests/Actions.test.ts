@@ -703,7 +703,6 @@ contract('Actions', ([owner, random, random2, random3]) => {
       await actionTester.testParseCallAction(data)
 
       const callArgs = await actionTester.getCallArgs()
-      assert.equal(callArgs.owner, random)
       assert.equal(callArgs.callee, random2)
       assert.equal(callArgs.data.toLowerCase(), random3.toLowerCase())
     })

@@ -21,7 +21,7 @@ const Oracle = artifacts.require('Oracle.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
 contract('Oracle', ([owner, disputer, random, collateral, strike]) => {
-  // const batch = web3.utils.asciiToHex('ETHUSDCUSDC1596218762')
+  // const batch = web3.utils.asciiToHex('ETHUSDC/USDC1596218762')
   // mock a pricer
   let wethPricer: MockPricerInstance
   // AddressBook module
@@ -30,6 +30,7 @@ contract('Oracle', ([owner, disputer, random, collateral, strike]) => {
   let oracle: OracleInstance
   // otoken
   let otoken: MockOtokenInstance
+  let usdc: MockERC20Instance
   let weth: MockERC20Instance
   let otokenExpiry: BigNumber
 
@@ -40,6 +41,7 @@ contract('Oracle', ([owner, disputer, random, collateral, strike]) => {
     oracle = await Oracle.new({from: owner})
 
     // mock tokens
+    usdc = await MockERC20.new('USDC', 'USDC', 6)
     weth = await MockERC20.new('WETH', 'WETH', 18)
     otoken = await Otoken.new()
     otokenExpiry = new BigNumber((await time.latest()).toNumber() + time.duration.days(30).toNumber())
@@ -222,6 +224,13 @@ contract('Oracle', ([owner, disputer, random, collateral, strike]) => {
       )
     })
 
+    it('should revert disputing price before it get pushed by pricer', async () => {
+      await expectRevert(
+        oracle.disputeExpiryPrice(weth.address, otokenExpiry.plus(10), disputePrice, {from: disputer}),
+        'Oracle: price to dispute does not exist',
+      )
+    })
+
     it('should dispute price during dispute period', async () => {
       await oracle.disputeExpiryPrice(weth.address, otokenExpiry, disputePrice, {from: disputer})
 
@@ -263,13 +272,31 @@ contract('Oracle', ([owner, disputer, random, collateral, strike]) => {
       await oracle.setDisputer(disputer, {from: owner})
     })
 
-    it('should set price correctly from disputer', async () => {
-      // setExpiryPrice is called from disputer
-      await oracle.setExpiryPrice(weth.address, otokenExpiry, assetPrice, {from: disputer})
+    it('should revert setting price from disputer address', async () => {
+      await expectRevert(
+        oracle.setExpiryPrice(weth.address, otokenExpiry, assetPrice, {from: disputer}),
+        'Oracle: caller is not authorized to set expiry price',
+      )
+    })
+  })
 
-      const [price, isFinalized] = await oracle.getExpiryPrice(weth.address, otokenExpiry)
-      assert.equal(price.toString(), assetPrice.toString())
-      assert.equal(isFinalized, false)
+  describe('Stable prices', () => {
+    const stablePrice = '1000000'
+
+    it('should set stable price for asset', async () => {
+      await expectRevert(oracle.getPrice(usdc.address), 'Oracle: Pricer for this asset not set')
+
+      await oracle.setStablePrice(usdc.address, stablePrice, {from: owner})
+
+      assert.equal((await oracle.getPrice(usdc.address)).toString(), stablePrice, 'Stable price mismatch')
+    })
+
+    it('should get expiry price', async () => {
+      assert.equal(
+        (await oracle.getExpiryPrice(usdc.address, otokenExpiry))[0].toString(),
+        stablePrice,
+        'Stable price mismatch',
+      )
     })
   })
 })
