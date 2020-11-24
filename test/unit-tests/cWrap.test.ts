@@ -10,6 +10,7 @@ import {
   OtokenFactoryInstance,
   CETHProxyInstance,
   CERC20ProxyInstance,
+  PayableCERC20Instance,
   MockOracleInstance,
   ChainLinkPricerInstance,
   MockChainlinkAggregatorInstance,
@@ -26,6 +27,7 @@ const ERC20 = artifacts.require('MockERC20')
 const Controller = artifacts.require('Controller.sol')
 const CETHProxy = artifacts.require('CETHProxy')
 const CERC20Proxy = artifacts.require('CERC20Proxy')
+const PayableCERC20 = artifacts.require('PayableCERC20')
 const AddressBook = artifacts.require('AddressBook.sol')
 const Oracle = artifacts.require('Oracle.sol')
 const Otoken = artifacts.require('Otoken.sol')
@@ -55,14 +57,14 @@ enum ActionType {
   Call,
 }
 
-contract('CToken Proxy test', async ([user, random]) => {
+contract('CToken Proxy test', async ([user, random, holder1]) => {
   let usdc: MockERC20Instance
   let weth: MockERC20Instance
   let cusdc: MockCUSDCInstance
   let ceth: MockCETHInstance
 
   let cethProxyOperator: CETHProxyInstance
-  let cerc20ProxyOperator: CERC20ProxyInstance
+  let payableCerc20ProxyOperator: PayableCERC20Instance
 
   let addressBook: AddressBookInstance
   let calculator: MarginCalculatorInstance
@@ -156,7 +158,7 @@ contract('CToken Proxy test', async ([user, random]) => {
     const proxy: OwnedUpgradeabilityProxyInstance = await OwnedUpgradeabilityProxy.at(controllerProxyAddress)
 
     // deploy proxy
-    cerc20ProxyOperator = await CERC20Proxy.new(controllerProxyAddress, marginPool.address)
+    payableCerc20ProxyOperator = await PayableCERC20.new(controllerProxyAddress, marginPool.address, weth.address)
     cethProxyOperator = await CETHProxy.new(controllerProxyAddress, marginPool.address, ceth.address)
 
     //deploy ceth collateral option
@@ -190,7 +192,7 @@ contract('CToken Proxy test', async ([user, random]) => {
     await weth.mint(random, createTokenAmount(1000000, 6))
 
     //set proxy as operator
-    await controllerProxy.setOperator(cerc20ProxyOperator.address, true, {from: user})
+    await controllerProxy.setOperator(payableCerc20ProxyOperator.address, true, {from: user})
     await controllerProxy.setOperator(cethProxyOperator.address, true, {from: user})
   })
 
@@ -230,10 +232,10 @@ contract('CToken Proxy test', async ([user, random]) => {
       const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
       const marginPoolCusdcBalanceBefore = new BigNumber(await cusdc.balanceOf(marginPool.address))
       //proxy
-      const proxyUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(cerc20ProxyOperator.address))
-      const proxyCusdcBalanceBefore = new BigNumber(await cusdc.balanceOf(cerc20ProxyOperator.address))
+      const proxyUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(payableCerc20ProxyOperator.address))
+      const proxyCusdcBalanceBefore = new BigNumber(await cusdc.balanceOf(payableCerc20ProxyOperator.address))
 
-      await usdc.approve(cerc20ProxyOperator.address, underlyingAssetDeposit, {from: user})
+      await usdc.approve(payableCerc20ProxyOperator.address, underlyingAssetDeposit, {from: user})
 
       const actionArgsUser = [
         {
@@ -259,7 +261,7 @@ contract('CToken Proxy test', async ([user, random]) => {
         {
           actionType: ActionType.DepositCollateral,
           owner: user,
-          secondAddress: cerc20ProxyOperator.address,
+          secondAddress: payableCerc20ProxyOperator.address,
           asset: cusdc.address,
           vaultId: vaultCounter,
           amount: 0,
@@ -268,9 +270,16 @@ contract('CToken Proxy test', async ([user, random]) => {
         },
       ]
 
-      await cerc20ProxyOperator.operate(actionArgsUser, usdc.address, cusdc.address, underlyingAssetDeposit, {
-        from: user,
-      })
+      await payableCerc20ProxyOperator.operate(
+        actionArgsUser,
+        usdc.address,
+        cusdc.address,
+        user,
+        underlyingAssetDeposit,
+        {
+          from: user,
+        },
+      )
 
       //user
       const userOptionBalanceAfter = new BigNumber(await ethCusdcPut.balanceOf(user))
@@ -280,8 +289,8 @@ contract('CToken Proxy test', async ([user, random]) => {
       const marginPoolCusdcBalanceAfter = new BigNumber(await cusdc.balanceOf(marginPool.address))
       const marginPoolUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
       //proxy
-      const proxyCusdcBalanceAfter = new BigNumber(await cusdc.balanceOf(cerc20ProxyOperator.address))
-      const proxyUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(cerc20ProxyOperator.address))
+      const proxyCusdcBalanceAfter = new BigNumber(await cusdc.balanceOf(payableCerc20ProxyOperator.address))
+      const proxyUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(payableCerc20ProxyOperator.address))
 
       //user
       assert.equal(
@@ -358,8 +367,8 @@ contract('CToken Proxy test', async ([user, random]) => {
       const marginPoolUsdcBalanceBefore2 = new BigNumber(await usdc.balanceOf(marginPool.address))
       const marginPoolCusdcBalanceBefore2 = new BigNumber(await cusdc.balanceOf(marginPool.address))
       //proxy
-      const proxyUsdcBalanceBefore2 = new BigNumber(await usdc.balanceOf(cerc20ProxyOperator.address))
-      const proxyCusdcBalanceBefore2 = new BigNumber(await cusdc.balanceOf(cerc20ProxyOperator.address))
+      const proxyUsdcBalanceBefore2 = new BigNumber(await usdc.balanceOf(payableCerc20ProxyOperator.address))
+      const proxyCusdcBalanceBefore2 = new BigNumber(await cusdc.balanceOf(payableCerc20ProxyOperator.address))
 
       const actionArgsUser2 = [
         {
@@ -375,7 +384,7 @@ contract('CToken Proxy test', async ([user, random]) => {
         {
           actionType: ActionType.WithdrawCollateral,
           owner: user,
-          secondAddress: cerc20ProxyOperator.address,
+          secondAddress: payableCerc20ProxyOperator.address,
           asset: cusdc.address,
           vaultId: vaultCounter,
           amount: scaledCusdcCollateralAmount,
@@ -384,7 +393,7 @@ contract('CToken Proxy test', async ([user, random]) => {
         },
       ]
 
-      await cerc20ProxyOperator.operate(actionArgsUser2, usdc.address, cusdc.address, 0, {
+      await payableCerc20ProxyOperator.operate(actionArgsUser2, usdc.address, cusdc.address, user, 0, {
         from: user,
       })
 
@@ -396,8 +405,8 @@ contract('CToken Proxy test', async ([user, random]) => {
       const marginPoolCusdcBalanceAfter2 = new BigNumber(await cusdc.balanceOf(marginPool.address))
       const marginPoolUsdcBalanceAfter2 = new BigNumber(await usdc.balanceOf(marginPool.address))
       //proxy
-      const proxyCusdcBalanceAfter2 = new BigNumber(await cusdc.balanceOf(cerc20ProxyOperator.address))
-      const proxyUsdcBalanceAfter2 = new BigNumber(await usdc.balanceOf(cerc20ProxyOperator.address))
+      const proxyCusdcBalanceAfter2 = new BigNumber(await cusdc.balanceOf(payableCerc20ProxyOperator.address))
+      const proxyUsdcBalanceAfter2 = new BigNumber(await usdc.balanceOf(payableCerc20ProxyOperator.address))
 
       //user
       assert.equal(
@@ -475,10 +484,10 @@ contract('CToken Proxy test', async ([user, random]) => {
       const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
       const marginPoolCusdcBalanceBefore = new BigNumber(await cusdc.balanceOf(marginPool.address))
       //proxy
-      const proxyUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(cerc20ProxyOperator.address))
-      const proxyCusdcBalanceBefore = new BigNumber(await cusdc.balanceOf(cerc20ProxyOperator.address))
+      const proxyUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(payableCerc20ProxyOperator.address))
+      const proxyCusdcBalanceBefore = new BigNumber(await cusdc.balanceOf(payableCerc20ProxyOperator.address))
 
-      await usdc.approve(cerc20ProxyOperator.address, underlyingAssetDeposit, {from: user})
+      await usdc.approve(payableCerc20ProxyOperator.address, underlyingAssetDeposit, {from: user})
 
       const actionArgsUser = [
         {
@@ -493,9 +502,16 @@ contract('CToken Proxy test', async ([user, random]) => {
         },
       ]
 
-      await cerc20ProxyOperator.operate(actionArgsUser, usdc.address, cusdc.address, underlyingAssetDeposit, {
-        from: user,
-      })
+      await payableCerc20ProxyOperator.operate(
+        actionArgsUser,
+        usdc.address,
+        cusdc.address,
+        user,
+        underlyingAssetDeposit,
+        {
+          from: user,
+        },
+      )
 
       //user
       const userOptionBalanceAfter = new BigNumber(await ethCusdcPut.balanceOf(user))
@@ -505,8 +521,8 @@ contract('CToken Proxy test', async ([user, random]) => {
       const marginPoolCusdcBalanceAfter = new BigNumber(await cusdc.balanceOf(marginPool.address))
       const marginPoolUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
       //proxy
-      const proxyCusdcBalanceAfter = new BigNumber(await cusdc.balanceOf(cerc20ProxyOperator.address))
-      const proxyUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(cerc20ProxyOperator.address))
+      const proxyCusdcBalanceAfter = new BigNumber(await cusdc.balanceOf(payableCerc20ProxyOperator.address))
+      const proxyUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(payableCerc20ProxyOperator.address))
 
       //user
       assert.equal(
@@ -580,10 +596,10 @@ contract('CToken Proxy test', async ([user, random]) => {
       const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
       const marginPoolCusdcBalanceBefore = new BigNumber(await cusdc.balanceOf(marginPool.address))
       //proxy
-      const proxyUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(cerc20ProxyOperator.address))
-      const proxyCusdcBalanceBefore = new BigNumber(await cusdc.balanceOf(cerc20ProxyOperator.address))
+      const proxyUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(payableCerc20ProxyOperator.address))
+      const proxyCusdcBalanceBefore = new BigNumber(await cusdc.balanceOf(payableCerc20ProxyOperator.address))
 
-      await usdc.approve(cerc20ProxyOperator.address, underlyingAssetDeposit, {from: user})
+      await usdc.approve(payableCerc20ProxyOperator.address, underlyingAssetDeposit, {from: user})
 
       const actionArgsUser = [
         {
@@ -599,7 +615,7 @@ contract('CToken Proxy test', async ([user, random]) => {
       ]
 
       await expectRevert(
-        cerc20ProxyOperator.operate(actionArgsUser, usdc.address, cusdc.address, 0, {
+        payableCerc20ProxyOperator.operate(actionArgsUser, usdc.address, cusdc.address, random, 0, {
           from: random,
         }),
         'CERC20Proxy: msg.sender is not owner or operator',
@@ -641,10 +657,10 @@ contract('CToken Proxy test', async ([user, random]) => {
       const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
       const marginPoolCusdcBalanceBefore = new BigNumber(await cusdc.balanceOf(marginPool.address))
       //proxy
-      const proxyUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(cerc20ProxyOperator.address))
-      const proxyCusdcBalanceBefore = new BigNumber(await cusdc.balanceOf(cerc20ProxyOperator.address))
+      const proxyUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(payableCerc20ProxyOperator.address))
+      const proxyCusdcBalanceBefore = new BigNumber(await cusdc.balanceOf(payableCerc20ProxyOperator.address))
 
-      await usdc.approve(cerc20ProxyOperator.address, underlyingAssetDeposit, {from: random})
+      await usdc.approve(payableCerc20ProxyOperator.address, underlyingAssetDeposit, {from: random})
 
       const actionArgsUser = [
         {
@@ -660,11 +676,339 @@ contract('CToken Proxy test', async ([user, random]) => {
       ]
 
       await expectRevert(
-        cerc20ProxyOperator.operate(actionArgsUser, usdc.address, cusdc.address, underlyingAssetDeposit, {
-          from: random,
-        }),
+        payableCerc20ProxyOperator.operate(
+          actionArgsUser,
+          usdc.address,
+          cusdc.address,
+          random,
+          underlyingAssetDeposit,
+          {
+            from: random,
+          },
+        ),
         'CERC20Proxy: msg.sender is not owner or operator',
       )
+    })
+  })
+
+  describe('Wrap ETH and execute actions', () => {
+    it('should deposit a whitelisted collateral asset from account owner', async () => {
+      // set payabale proxy as operator
+      await controllerProxy.setOperator(payableCerc20ProxyOperator.address, true, {from: user})
+      // whitelist weth
+      await whitelist.whitelistCollateral(weth.address)
+
+      const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(user)).plus(1)
+      const collateralToDeposit = new BigNumber('5')
+
+      const actionArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: user,
+          secondAddress: user,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounter.toNumber(),
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.DepositCollateral,
+          owner: user,
+          secondAddress: payableCerc20ProxyOperator.address,
+          asset: weth.address,
+          vaultId: vaultCounter.toNumber(),
+          amount: collateralToDeposit.toNumber(),
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+
+      const marginPoolBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
+
+      await payableCerc20ProxyOperator.operate(actionArgs, user, {
+        from: user,
+        value: collateralToDeposit.toString(),
+      })
+
+      const marginPoolBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
+      const vaultAfter = await controllerProxy.getVault(user, vaultCounter)
+
+      assert.equal(
+        marginPoolBalanceAfter.minus(marginPoolBalanceBefore).toString(),
+        collateralToDeposit.toString(),
+        'Margin pool balance collateral asset balance mismatch',
+      )
+      assert.equal(vaultAfter.collateralAssets.length, 1, 'Vault collateral assets array length mismatch')
+      assert.equal(
+        vaultAfter.collateralAssets[0],
+        weth.address,
+        'Collateral asset address deposited into vault mismatch',
+      )
+      assert.equal(
+        new BigNumber(vaultAfter.collateralAmounts[0]).toString(),
+        collateralToDeposit.toString(),
+        'Collateral asset amount deposited into vault mismatch',
+      )
+    })
+
+    it('should wrap ETH, execute actions and unwrap remaining WETH', async () => {
+      const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(user)).plus(1)
+      const collateralToDeposit = new BigNumber('5')
+      const ethToSend = new BigNumber('7')
+
+      const actionArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: user,
+          secondAddress: user,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounter.toNumber(),
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.DepositCollateral,
+          owner: user,
+          secondAddress: payableCerc20ProxyOperator.address,
+          asset: weth.address,
+          vaultId: vaultCounter.toNumber(),
+          amount: collateralToDeposit.toNumber(),
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+
+      const marginPoolBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
+
+      await payableCerc20ProxyOperator.operate(actionArgs, user, {
+        from: user,
+        value: ethToSend.toString(),
+      })
+
+      const marginPoolBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
+      const vaultAfter = await controllerProxy.getVault(user, vaultCounter)
+
+      assert.equal(
+        marginPoolBalanceAfter.minus(marginPoolBalanceBefore).toString(),
+        collateralToDeposit.toString(),
+        'Margin pool balance collateral asset balance mismatch',
+      )
+      assert.equal(vaultAfter.collateralAssets.length, 1, 'Vault collateral assets array length mismatch')
+      assert.equal(
+        vaultAfter.collateralAssets[0],
+        weth.address,
+        'Collateral asset address deposited into vault mismatch',
+      )
+      assert.equal(
+        new BigNumber(vaultAfter.collateralAmounts[0]).toString(),
+        collateralToDeposit.toString(),
+        'Collateral asset amount deposited into vault mismatch',
+      )
+    })
+
+    it('should revert sending remaining ETH to address zero', async () => {
+      const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(user)).plus(1)
+      const collateralToDeposit = new BigNumber('5')
+      const ethToSend = new BigNumber('7')
+
+      const actionArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: user,
+          secondAddress: user,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounter.toNumber(),
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.DepositCollateral,
+          owner: user,
+          secondAddress: payableCerc20ProxyOperator.address,
+          asset: weth.address,
+          vaultId: vaultCounter.toNumber(),
+          amount: collateralToDeposit.toNumber(),
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+      await expectRevert(
+        payableCerc20ProxyOperator.operate(actionArgs, ZERO_ADDR, {
+          from: user,
+          value: ethToSend.toString(),
+        }),
+        'PayableProxyController: cannot send ETH to address zero',
+      )
+    })
+
+    it('should revert calling fallback function unless caller is WETH token address', async () => {
+      const ethToSend = new BigNumber('7')
+
+      await expectRevert(
+        web3.eth.sendTransaction({
+          from: user,
+          to: payableCerc20ProxyOperator.address,
+          value: ethToSend.toString(),
+        }),
+        'PayableProxyController: Cannot receive ETH',
+      )
+    })
+
+    it('should revert calling operate on a vault from a random address other than owner or operator', async () => {
+      const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(user))
+      const actionArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: user,
+          secondAddress: user,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounterBefore.plus(1).toNumber(),
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+
+      await expectRevert(
+        payableCerc20ProxyOperator.operate(actionArgs, ZERO_ADDR, {
+          from: random,
+        }),
+        'PayableProxyController: cannot execute action',
+      )
+    })
+  })
+
+  describe('Operate without ETH', () => {
+    it('should normally execute operate', async () => {
+      const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(user))
+      const actionArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: user,
+          secondAddress: user,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounterBefore.plus(1).toNumber(),
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+
+      await payableCerc20ProxyOperator.operate(actionArgs, ZERO_ADDR, {
+        from: user,
+      })
+
+      const vaultCounterAfter = new BigNumber(await controllerProxy.getAccountVaultCounter(user))
+      assert.equal(
+        vaultCounterAfter.minus(vaultCounterBefore).toString(),
+        '1',
+        'vault counter after execution mismatch',
+      )
+    })
+  })
+
+  describe('Operate without owner address', () => {
+    let shortOtoken: MockOtokenInstance
+
+    before(async () => {
+      const expiryTime = new BigNumber(60 * 60 * 24) // after 1 day
+      const expiry = new BigNumber(await time.latest()).plus(expiryTime)
+      const strikePrice = 200
+      const underlyingPriceAtExpiry = createScaledNumber(150)
+      const strikePriceAtExpiry = createScaledNumber(1)
+
+      shortOtoken = await MockOtoken.new()
+      // init otoken
+      await shortOtoken.init(
+        addressBook.address,
+        weth.address,
+        usdc.address,
+        usdc.address,
+        createScaledNumber(strikePrice),
+        expiry,
+        true,
+      )
+      // whitelist short otoken to be used in the protocol
+      await whitelist.whitelistOtoken(shortOtoken.address, {from: owner})
+      // whitelist collateral
+      await whitelist.whitelistCollateral(usdc.address, {from: owner})
+      // open new vault, mintnaked short, sell it to holder 1
+      const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(user)).plus(1)
+      const collateralToDeposit = createTokenAmount(strikePrice, 6)
+      const amountToMint = createTokenAmount(1)
+      const actionArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: user,
+          secondAddress: user,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounter.toNumber(),
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.MintShortOption,
+          owner: user,
+          secondAddress: user,
+          asset: shortOtoken.address,
+          vaultId: vaultCounter.toNumber(),
+          amount: amountToMint.toString(),
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.DepositCollateral,
+          owner: user,
+          secondAddress: user,
+          asset: usdc.address,
+          vaultId: vaultCounter.toNumber(),
+          amount: collateralToDeposit,
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+      await usdc.approve(marginPool.address, collateralToDeposit, {from: user})
+      await payableCerc20ProxyOperator.operate(actionArgs, user, {from: user})
+      // transfer minted short otoken to hodler`
+      await shortOtoken.transfer(holder1, amountToMint.toString(), {from: user})
+      // increase time with one hour in seconds
+      await time.increase(60 * 61 * 24)
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(
+        await shortOtoken.underlyingAsset(),
+        new BigNumber(await shortOtoken.expiryTimestamp()),
+        underlyingPriceAtExpiry,
+        true,
+      )
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(
+        await shortOtoken.strikeAsset(),
+        new BigNumber(await shortOtoken.expiryTimestamp()),
+        strikePriceAtExpiry,
+        true,
+      )
+    })
+
+    it('should normally execute when owner address is equal to zero', async () => {
+      const amountToRedeem = createTokenAmount(1)
+      const actionArgs = [
+        {
+          actionType: ActionType.Redeem,
+          owner: ZERO_ADDR,
+          secondAddress: holder1,
+          asset: shortOtoken.address,
+          vaultId: '0',
+          amount: amountToRedeem.toString(),
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+      assert.equal(await controllerProxy.hasExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
+
+      await shortOtoken.transfer(payableCerc20ProxyOperator.address, amountToRedeem.toString(), {from: holder1})
+      await payableCerc20ProxyOperator.operate(actionArgs, holder1, {from: holder1})
     })
   })
 })
