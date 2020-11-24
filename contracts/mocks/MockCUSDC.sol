@@ -10,6 +10,7 @@ contract MockCUSDC is ERC20Initializable {
 
     uint256 public exchangeRateStored;
     address public underlying;
+    uint256 public scale = 1e18;
 
     constructor(
         string memory _name,
@@ -25,7 +26,11 @@ contract MockCUSDC is ERC20Initializable {
     }
 
     function mint(uint256 amount) public returns (uint256) {
-        uint256 cTokenAmount = amount.mul(exchangeRateStored);
+        uint256 numerator = scale.mul(amount);
+        //getExp(numerator, exchangeRateStored.mantissa) want to check this
+        //uint256 scaledNumerator = numerator.mul(scale);
+        uint256 cTokenAmount = numerator.div(exchangeRateStored);
+        //uint256 cTokenAmount = numerator.div(exchangeRateStored);
         _mint(msg.sender, cTokenAmount);
         ERC20Interface(underlying).transferFrom(msg.sender, address(this), amount);
         return 0;
@@ -33,7 +38,8 @@ contract MockCUSDC is ERC20Initializable {
 
     function redeem(uint256 amount) public returns (uint256) {
         _burn(msg.sender, amount);
-        uint256 underlyingAmount = amount.div(exchangeRateStored);
+        //uint256 numerator = scale.mul(amount) //need to check
+        uint256 underlyingAmount = amount.mul(exchangeRateStored).div(scale);
         ERC20Interface(underlying).transfer(msg.sender, underlyingAmount);
     }
 

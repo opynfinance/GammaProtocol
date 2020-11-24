@@ -66,7 +66,7 @@ contract CERC20Proxy is ReentrancyGuard {
             if (action.owner != address(0)) {
                 require(
                     (msg.sender == action.owner) || (controller.isOperator(action.owner, msg.sender)),
-                    "PayableProxyController: cannot execute action "
+                    "CERC20Proxy: msg.sender is not owner or operator "
                 );
             }
 

@@ -2,7 +2,7 @@
 pragma solidity 0.6.10;
 
 import {ERC20Initializable} from "../packages/oz/upgradeability/ERC20Initializable.sol";
-import {ERC20Interface} from "../interfaces/ERC20Interface.sol";
+//import {ERC20Interface} from "../interfaces/ERC20Interface.sol";
 import {SafeMath} from "../packages/oz/SafeMath.sol";
 
 contract MockCETH is ERC20Initializable {
@@ -16,13 +16,13 @@ contract MockCETH is ERC20Initializable {
     }
 
     function mint() public payable {
-        uint256 cTokenAmount = msg.value.mul(exchangeRateStored);
+        uint256 cTokenAmount = msg.value.div(exchangeRateStored);
         _mint(msg.sender, cTokenAmount);
     }
 
     function redeem(uint256 amount) public {
         _burn(msg.sender, amount);
-        uint256 underlyingAmount = amount.div(exchangeRateStored);
+        uint256 underlyingAmount = amount.mul(exchangeRateStored);
         msg.sender.transfer(underlyingAmount);
     }
 
