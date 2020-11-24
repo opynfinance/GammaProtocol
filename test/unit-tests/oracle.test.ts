@@ -71,6 +71,15 @@ contract('Oracle', ([owner, disputer, random, collateral, strike]) => {
 
       assert.equal(await oracle.getPricer(weth.address), wethPricer.address, 'batch oracle address mismatch')
     })
+
+    it('should revert setting a stable price for an asset that have a pricer', async () => {
+      const stablePrice = createTokenAmount(1000, 8)
+
+      await expectRevert(
+        oracle.setStablePrice(weth.address, stablePrice, {from: owner}),
+        'Oracle: could not set stable price for an asset with pricer',
+      )
+    })
   })
 
   describe('Get live price.', () => {
@@ -309,6 +318,15 @@ contract('Oracle', ([owner, disputer, random, collateral, strike]) => {
       const isOver = await oracle.isDisputePeriodOver(usdc.address, await time.latest())
       const expectedResult = true
       assert.equal(isOver, expectedResult, 'dispute period check mismatch')
+    })
+
+    it('should revert setting a pricer for an asset that have a stable price', async () => {
+      const usdcPricer = await MockPricer.new(usdc.address, oracle.address)
+
+      await expectRevert(
+        oracle.setAssetPricer(usdc.address, usdcPricer.address, {from: owner}),
+        'Oracle: could not set a pricer for stable asset',
+      )
     })
   })
 })
