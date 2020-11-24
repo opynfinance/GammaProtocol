@@ -57,7 +57,9 @@ contract PayableProxyController is ReentrancyGuard {
         // create WETH from ETH
         if (msg.value != 0) {
             weth.deposit{value: msg.value}();
-            ERC20Interface(address(weth)).safeApprove(_spender, msg.value);
+            if (_spender != address(0)) {
+                ERC20Interface(address(weth)).safeApprove(_spender, msg.value);
+            }
         }
 
         // verify sender

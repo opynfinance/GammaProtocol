@@ -11,6 +11,7 @@ import {createTokenAmount} from '../utils'
 
 const TradeCallee = artifacts.require('Trade0x')
 const ERC20 = artifacts.require('MockERC20')
+const WETH9 = artifacts.require('WETH9')
 
 const {balance} = require('@openzeppelin/test-helpers')
 // unlock this address to get its USDC
@@ -50,7 +51,7 @@ const signature =
 
 const fillAmount = '1000000'
 
-contract('Callee contract test', async ([deployer, user, controller]) => {
+contract('Callee contract test', async ([deployer, user, controller, payabeProxy]) => {
   let callee: Trade0xInstance
   // let exchange: IZeroXExchangeInstance
   let usdc: MockERC20Instance
@@ -60,12 +61,14 @@ contract('Callee contract test', async ([deployer, user, controller]) => {
   before('setup transfer account asset', async () => {
     // setup contracts
     // exchange = await Exchange.at(EXCHANGE_ADDR)
-    callee = await TradeCallee.new(EXCHANGE_ADDR, ERC20PROXY_ADDR, {from: deployer})
+    callee = await TradeCallee.new(EXCHANGE_ADDR, ERC20PROXY_ADDR, WETHAddress, STAKING_ADDR, {from: deployer})
 
     const proxy = await callee.assetProxy()
     assert.equal(proxy.toLowerCase(), ERC20PROXY_ADDR.toLowerCase())
 
     usdc = await ERC20.at(USDCAddress)
+
+    weth = await WETH9.at(WETHAddress)
 
     // get 10000 USDC from the whale ;)
     await usdc.transfer(user, createTokenAmount(10000, 6), {from: usdcWhale})
@@ -103,8 +106,9 @@ contract('Callee contract test', async ([deployer, user, controller]) => {
         },
         'uint256',
         'bytes',
+        'address',
       ],
-      [order2, fillAmount, signature],
+      [order2, fillAmount, signature, payabeProxy],
     )
 
     const usdcBalanceBefore = new BigNumber(await usdc.balanceOf(user))
@@ -113,17 +117,17 @@ contract('Callee contract test', async ([deployer, user, controller]) => {
     // pay protocol fee in ETH.
     const gasPriceGWei = '50'
     const gasPriceWei = web3.utils.toWei(gasPriceGWei, 'gwei')
-    // protocol require 70000 * gas price per fill. We're paying a bit more here
-    const value = new BigNumber(gasPriceWei).times(80000).toString()
+    // protocol require 70000 * gas price per fill
+    const feeAmount = new BigNumber(gasPriceWei).times(70000).toString()
 
-    const tracker = await balance.tracker(user, 'gwei')
-    await callee.callFunction(user, ZERO_ADDR, 0, data, {
+    // payabeProxy need to approve weth
+    await weth.deposit({from: payabeProxy, value: feeAmount})
+    await weth.approve(callee.address, feeAmount, {from: payabeProxy})
+
+    await callee.callFunction(user, data, {
       from: controller,
-      value,
       gasPrice: gasPriceWei,
     })
-    // the function should refund 10000 * 50 gwei back to _sender
-    assert.equal((await tracker.delta()).toString(), '500000')
 
     const usdcBalanceAfter = new BigNumber(await usdc.balanceOf(user))
     assert.equal(usdcBalanceBefore.minus(usdcBalanceAfter).toString(), fillAmount)

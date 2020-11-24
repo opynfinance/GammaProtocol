@@ -9,6 +9,7 @@ import {CalleeInterface} from "../../interfaces/CalleeInterface.sol";
 import {IZeroXExchange} from "../../interfaces/ZeroXExchangeInterface.sol";
 import {SafeERC20} from "../../packages/oz/SafeERC20.sol";
 import {ERC20Interface} from "../../interfaces/ERC20Interface.sol";
+import {WETH9} from "../canonical-weth/WETH9.sol";
 
 /**
  * @author Opyn Team
@@ -18,42 +19,60 @@ import {ERC20Interface} from "../../interfaces/ERC20Interface.sol";
 contract Trade0x is CalleeInterface {
     using SafeERC20 for ERC20Interface;
     IZeroXExchange public exchange;
+    ERC20Interface public weth;
     address public assetProxy;
+    address public staking;
 
-    constructor(address _exchange, address _assetProxy) public {
+    ///@dev 0x portocal fee to fill 1 order
+    uint256 private PORTOCAL_FEE_BASE = 70000;
+
+    constructor(
+        address _exchange,
+        address _assetProxy,
+        address _weth,
+        address _staking
+    ) public {
         exchange = IZeroXExchange(_exchange);
         assetProxy = _assetProxy;
+        weth = ERC20Interface(_weth);
+        weth.safeApprove(_staking, uint256(-1));
     }
 
     event Trade0xBatch(address indexed to, uint256 amount);
 
+    /**
+     * @dev fill 0x order
+     *
+     */
     function callFunction(address payable _sender, bytes memory _data) external override {
-        (IZeroXExchange.Order memory order, uint256 takerAssetFillAmount, bytes memory signature) = abi.decode(
-            _data,
-            (IZeroXExchange.Order, uint256, bytes)
-        );
+        (
+            IZeroXExchange.Order memory order,
+            uint256 takerAssetFillAmount,
+            bytes memory signature,
+            address feePayer
+        ) = abi.decode(_data, (IZeroXExchange.Order, uint256, bytes, address));
 
         address makerAsset = decodeERC20Asset(order.makerAssetData);
         address takerAsset = decodeERC20Asset(order.takerAssetData);
 
+        // pull token from user
         ERC20Interface(takerAsset).safeTransferFrom(_sender, address(this), takerAssetFillAmount);
 
-        // approve the proxy if not done before
+        // approve the 0x proxy if not done before
         uint256 allowance = ERC20Interface(takerAsset).allowance(address(this), assetProxy);
         if (allowance < takerAssetFillAmount) {
             ERC20Interface(takerAsset).safeApprove(assetProxy, uint256(-1));
         }
 
-        uint256 protocolFee = tx.gasprice * 70000;
-        exchange.fillOrder{value: protocolFee}(order, takerAssetFillAmount, signature);
+        // pull weth (to pay 0x) from feePayer address
+        uint256 protocolFee = tx.gasprice * PORTOCAL_FEE_BASE;
+        weth.safeTransferFrom(feePayer, address(this), protocolFee);
+
+        exchange.fillOrder(order, takerAssetFillAmount, signature);
 
         // transfer token to sender
         uint256 balance = ERC20Interface(makerAsset).balanceOf(address(this));
         ERC20Interface(makerAsset).safeTransfer(_sender, balance);
-
-        // transfer any excess fee back to user
-        uint256 refund = address(this).balance;
-        if (refund > 0) _sender.transfer(refund);
     }
 
     function decodeERC20Asset(bytes memory b) internal pure returns (address result) {

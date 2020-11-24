@@ -147,7 +147,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
 
       const marginPoolBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
 
-      await payableProxyController.operate(actionArgs, accountOwner1, {
+      await payableProxyController.operate(actionArgs, accountOwner1, ZERO_ADDR, {
         from: accountOwner1,
         value: collateralToDeposit.toString(),
       })
@@ -203,7 +203,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
 
       const marginPoolBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
 
-      await payableProxyController.operate(actionArgs, accountOwner1, {
+      await payableProxyController.operate(actionArgs, accountOwner1, ZERO_ADDR, {
         from: accountOwner1,
         value: ethToSend.toString(),
       })
@@ -257,7 +257,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
         },
       ]
       await expectRevert(
-        payableProxyController.operate(actionArgs, ZERO_ADDR, {
+        payableProxyController.operate(actionArgs, ZERO_ADDR, ZERO_ADDR, {
           from: accountOwner1,
           value: ethToSend.toString(),
         }),
@@ -294,7 +294,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
       ]
 
       await expectRevert(
-        payableProxyController.operate(actionArgs, ZERO_ADDR, {
+        payableProxyController.operate(actionArgs, ZERO_ADDR, ZERO_ADDR, {
           from: random,
         }),
         'PayableProxyController: cannot execute action',
@@ -318,7 +318,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
         },
       ]
 
-      await payableProxyController.operate(actionArgs, ZERO_ADDR, {
+      await payableProxyController.operate(actionArgs, ZERO_ADDR, ZERO_ADDR, {
         from: accountOwner1,
       })
 
@@ -393,7 +393,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
         },
       ]
       await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
-      await payableProxyController.operate(actionArgs, accountOwner1, {from: accountOwner1})
+      await payableProxyController.operate(actionArgs, accountOwner1, ZERO_ADDR, {from: accountOwner1})
       // transfer minted short otoken to hodler`
       await shortOtoken.transfer(holder1, amountToMint.toString(), {from: accountOwner1})
       // increase time with one hour in seconds
@@ -429,7 +429,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
       assert.equal(await controllerProxy.hasExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
 
       await shortOtoken.transfer(payableProxyController.address, amountToRedeem.toString(), {from: holder1})
-      await payableProxyController.operate(actionArgs, holder1, {from: holder1})
+      await payableProxyController.operate(actionArgs, holder1, ZERO_ADDR, {from: holder1})
     })
   })
 })
