@@ -822,7 +822,7 @@ contract('CToken Proxy test', async ([user, random, holder1]) => {
           from: user,
           value: ethToSend.toString(),
         }),
-        'PayableProxyController: cannot send ETH to address zero',
+        'PayableCERC2: cannot send ETH to address zero',
       )
     })
 
@@ -835,7 +835,7 @@ contract('CToken Proxy test', async ([user, random, holder1]) => {
           to: payableCerc20ProxyOperator.address,
           value: ethToSend.toString(),
         }),
-        'PayableProxyController: Cannot receive ETH',
+        'PayableCERC2: Cannot receive ETH',
       )
     })
 
@@ -858,7 +858,7 @@ contract('CToken Proxy test', async ([user, random, holder1]) => {
         payableCerc20ProxyOperator.operate(actionArgs, ZERO_ADDR, '0', {
           from: random,
         }),
-        'PayableProxyController: cannot execute action',
+        'PayableCERC2: cannot execute action',
       )
     })
   })

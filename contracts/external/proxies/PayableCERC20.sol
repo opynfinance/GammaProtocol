@@ -26,8 +26,9 @@ contract PayableCERC20 is ReentrancyGuard {
     address public marginPool;
 
     CERC20Interface public cToken;
-    WETH9 public weth;
+    ERC20Interface public underlying;
     Controller public controller;
+    WETH9 public weth;
 
     constructor(
         address _controller,
@@ -39,7 +40,8 @@ contract PayableCERC20 is ReentrancyGuard {
 
         controller = Controller(_controller);
         marginPool = _marginPool;
-        CERC20Interface cToken = CERC20Interface(_cToken);
+        cToken = CERC20Interface(_cToken);
+        underlying = ERC20Interface(cToken.underlying());
         weth = WETH9(_weth);
 
         ERC20Interface(address(weth)).safeApprove(_marginPool, uint256(-1));
@@ -63,7 +65,6 @@ contract PayableCERC20 is ReentrancyGuard {
         address payable sendEthTo,
         uint256 _amountUnderlying
     ) external payable nonReentrant {
-        ERC20Interface underlying = ERC20Interface(cToken.underlying());
         uint256 cTokenBalance = 0;
 
         // create WETH from ETH
