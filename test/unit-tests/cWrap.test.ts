@@ -14,12 +14,14 @@ import {
   CETHProxyInstance,
   CERC20ProxyInstance,
   OracleInstance,
+  MockOracleInstance,
   ChainLinkPricerInstance,
   MockChainlinkAggregatorInstance,
   CETHInterfaceInstance,
   CERC20InterfaceInstance,
   MockCETHInstance,
   MockCUSDCInstance,
+  OwnedUpgradeabilityProxyInstance,
 } from '../../build/types/truffle-types'
 
 import BigNumber from 'bignumber.js'
@@ -28,7 +30,7 @@ const {time} = require('@openzeppelin/test-helpers')
 
 const ERC20 = artifacts.require('MockERC20')
 const WETH = artifacts.require('WETH9')
-const Controller = artifacts.require('Controller')
+const Controller = artifacts.require('Controller.sol')
 const CETHProxy = artifacts.require('CETHProxy')
 const CERC20Proxy = artifacts.require('CERC20Proxy')
 const AddressBook = artifacts.require('AddressBook.sol')
@@ -47,7 +49,9 @@ const MockChainlinkAggregator = artifacts.require('MockChainlinkAggregator.sol')
 const ChainlinkPricer = artifacts.require('ChainLinkPricer.sol')
 const MockCETH = artifacts.require('MockCETH.sol')
 const MockCUSDC = artifacts.require('MockCUSDC.sol')
+const MockOracle = artifacts.require('MockOracle.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
+const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy.sol')
 
 enum ActionType {
   OpenVault,
@@ -79,8 +83,8 @@ contract('CToken Proxy test', async ([user]) => {
   let whitelist: WhitelistInstance
   let otokenImplementation: OtokenInstance
   let otokenFactory: OtokenFactoryInstance
-  let oracle: OracleInstance
-
+  //  let oracle: OracleInstance
+  let oracle: MockOracleInstance
   let expiry: number
 
   let ethCethCall: OtokenInstance
@@ -108,17 +112,18 @@ contract('CToken Proxy test', async ([user]) => {
     // initiate addressbook first.
     addressBook = await AddressBook.new()
     calculator = await MarginCalculator.new(addressBook.address)
-
     marginPool = await MarginPool.new(addressBook.address)
     const lib = await MarginVault.new()
     await Controller.link('MarginVault', lib.address)
     controllerImplementation = await Controller.new(addressBook.address)
 
-    oracle = await Oracle.new(addressBook.address)
+    //oracle = await Oracle.new(addressBook.address)
+    oracle = await Oracle.new()
+
     await oracle.setStablePrice(usdc.address, createTokenAmount(1, 8))
     wethAggregator = await MockChainlinkAggregator.new()
 
-    wethPricer = await ChainlinkPricer.new(weth.address, wethAggregator.address, oracle.address)
+    wethPricer = await ChainlinkPricer.new(user, weth.address, wethAggregator.address, oracle.address)
     await oracle.setAssetPricer(weth.address, wethPricer.address)
     cusdcPricer = await CompoundPricer.new(cusdc.address, usdc.address, oracle.address)
     await oracle.setAssetPricer(cusdc.address, cusdcPricer.address)
@@ -139,7 +144,7 @@ contract('CToken Proxy test', async ([user]) => {
 
     whitelist = await Whitelist.new(addressBook.address)
 
-    await whitelist.whitelistCollateral(usdc.address)
+    await whitelist.whitelistCollateral(cusdc.address)
     await whitelist.whitelistCollateral(ceth.address)
 
     // whitelist eth-usdc-ceth calls and eth-usdc-cusdc puts
@@ -159,12 +164,13 @@ contract('CToken Proxy test', async ([user]) => {
 
     const controllerProxyAddress = await addressBook.getController()
     controllerProxy = await Controller.at(controllerProxyAddress)
+    const proxy: OwnedUpgradeabilityProxyInstance = await OwnedUpgradeabilityProxy.at(controllerProxyAddress)
 
-    // deploy callee
+    // deploy proxy
     cerc20ProxyOperator = await CERC20Proxy.new(controllerProxyAddress, marginPool.address)
     cethProxyOperator = await CETHProxy.new(controllerProxyAddress, marginPool.address, ceth.address)
 
-    // deploy ceth collateral option
+    //deploy ceth collateral option
     await otokenFactory.createOtoken(weth.address, usdc.address, ceth.address, createTokenAmount(300), expiry, false)
     const cethCallAddr = await otokenFactory.getOtoken(
       weth.address,
@@ -172,7 +178,7 @@ contract('CToken Proxy test', async ([user]) => {
       ceth.address,
       createTokenAmount(300),
       expiry,
-      true,
+      false,
     )
     ethCethCall = await Otoken.at(cethCallAddr)
 
@@ -186,8 +192,14 @@ contract('CToken Proxy test', async ([user]) => {
       expiry,
       true,
     )
-
     ethCusdcPut = await Otoken.at(cusdcPutAddr)
+
+    //mint usdc and weth for user
+    await usdc.mint(user, createTokenAmount(100000, 6))
+    await weth.mint(user, createTokenAmount(100000, 6))
+    //set proxy as operator
+    await controllerProxy.setOperator(cerc20ProxyOperator.address, true, {from: user})
+    await controllerProxy.setOperator(cethProxyOperator.address, true, {from: user})
   })
 
   describe('Mint actions via proxy', () => {
@@ -229,9 +241,9 @@ contract('CToken Proxy test', async ([user]) => {
       const proxyUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(cerc20ProxyOperator.address))
       const proxyCusdcBalanceBefore = new BigNumber(await cusdc.balanceOf(cerc20ProxyOperator.address))
 
-      await usdc.approve(cerc20ProxyOperator.address, underlyingAssetDeposit)
+      await usdc.approve(cerc20ProxyOperator.address, underlyingAssetDeposit), {from: user}
 
-      const actionArgsAccountOwner2 = [
+      const actionArgsUser = [
         {
           actionType: ActionType.OpenVault,
           owner: user,
@@ -242,29 +254,29 @@ contract('CToken Proxy test', async ([user]) => {
           index: '0',
           data: ZERO_ADDR,
         },
-        {
-          actionType: ActionType.MintShortOption,
-          owner: user,
-          secondAddress: user,
-          asset: ethCusdcPut.address,
-          vaultId: 1,
-          amount: oTokenAmount,
-          index: '0',
-          data: ZERO_ADDR,
-        },
-        {
-          actionType: ActionType.DepositCollateral,
-          owner: user,
-          secondAddress: user,
-          asset: usdc.address,
-          vaultId: 1,
-          amount: 0,
-          index: '0',
-          data: ZERO_ADDR,
-        },
+        // {
+        //   actionType: ActionType.MintShortOption,
+        //   owner: user,
+        //   secondAddress: user,
+        //   asset: ethCusdcPut.address,
+        //   vaultId: 1,
+        //   amount: oTokenAmount,
+        //   index: '0',
+        //   data: ZERO_ADDR,
+        // },
+        // {
+        //   actionType: ActionType.DepositCollateral,
+        //   owner: user,
+        //   secondAddress: cerc20ProxyOperator.address,
+        //   asset: cusdc.address,
+        //   vaultId: 1,
+        //   amount: 0,
+        //   index: '0',
+        //   data: ZERO_ADDR,
+        // },
       ]
       const receipt = await cerc20ProxyOperator.operate(
-        actionArgsAccountOwner2,
+        actionArgsUser,
         usdc.address,
         cusdc.address,
         underlyingAssetDeposit,
