@@ -68,7 +68,7 @@ contract PayableProxyController is ReentrancyGuard {
 
             if (action.actionType == Actions.ActionType.Call) {
                 // our PayableProxy could ends up approving amount > total eth received.
-                ERC20Interface(address(weth)).safeApprove(action.secondAddress, msg.value);
+                ERC20Interface(address(weth)).safeIncreaseAllowance(action.secondAddress, msg.value);
             }
         }
 
