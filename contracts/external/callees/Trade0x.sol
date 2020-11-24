@@ -38,7 +38,14 @@ contract Trade0x is CalleeInterface {
         weth.safeApprove(_staking, uint256(-1));
     }
 
-    event Trade0xBatch(address indexed to, uint256 amount);
+    event Trade(
+        address indexed taker,
+        address indexed maker,
+        address takerAsset,
+        address makerAsset,
+        uint256 takerAmount,
+        uint256 makerAmount
+    );
 
     /**
      * @dev fill 0x order
@@ -68,11 +75,20 @@ contract Trade0x is CalleeInterface {
         uint256 protocolFee = tx.gasprice * PORTOCAL_FEE_BASE;
         weth.safeTransferFrom(feePayer, address(this), protocolFee);
 
-        exchange.fillOrder(order, takerAssetFillAmount, signature);
+        IZeroXExchange.FillResults memory result = exchange.fillOrder(order, takerAssetFillAmount, signature);
 
         // transfer token to sender
         uint256 balance = ERC20Interface(makerAsset).balanceOf(address(this));
         ERC20Interface(makerAsset).safeTransfer(_sender, balance);
+
+        emit Trade(
+            _sender,
+            order.makerAddress,
+            takerAsset,
+            makerAsset,
+            takerAssetFillAmount,
+            result.makerAssetFilledAmount
+        );
     }
 
     function decodeERC20Asset(bytes memory b) internal pure returns (address result) {
