@@ -47,19 +47,11 @@ contract PayableProxyController is ReentrancyGuard {
      * @dev a wrapper for the Controller operate function, to wrap WETH and the beginning and unwrap WETH at the end of the execution
      * @param _actions array of actions arguments
      * @param _sendEthTo address to send the remaining eth to
-     * @param _spender address that can pull weth from this contract
      */
-    function operate(
-        Actions.ActionArgs[] memory _actions,
-        address payable _sendEthTo,
-        address _spender
-    ) external payable nonReentrant {
+    function operate(Actions.ActionArgs[] memory _actions, address payable _sendEthTo) external payable nonReentrant {
         // create WETH from ETH
         if (msg.value != 0) {
             weth.deposit{value: msg.value}();
-            if (_spender != address(0)) {
-                ERC20Interface(address(weth)).safeApprove(_spender, msg.value);
-            }
         }
 
         // verify sender
@@ -73,6 +65,11 @@ contract PayableProxyController is ReentrancyGuard {
                     "PayableProxyController: cannot execute action "
                 );
             }
+
+            if (action.actionType == Actions.ActionType.Call) {
+                // our PayableProxy could ends up approving amount > total eth received.
+                ERC20Interface(address(weth)).safeApprove(action.secondAddress, msg.value);
+            }
         }
 
         controller.operate(_actions);
@@ -84,10 +81,6 @@ contract PayableProxyController is ReentrancyGuard {
 
             weth.withdraw(remainingWeth);
             _sendEthTo.sendValue(remainingWeth);
-        }
-        // unapprove the spender contract
-        if (_spender != address(0)) {
-            ERC20Interface(address(weth)).safeApprove(_spender, 0);
         }
     }
 }
