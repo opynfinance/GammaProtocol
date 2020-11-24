@@ -42,7 +42,8 @@ contract Trade0x is CalleeInterface {
 
     /**
      * @dev fill 0x order
-     *
+     * @param _sender the original sender who wants to trade on 0x
+     * @param _data abi-encoded order, fillamount, signature and feePayer. fee payer is the address we pull weth from.
      */
     function callFunction(address payable _sender, bytes memory _data) external override {
         (

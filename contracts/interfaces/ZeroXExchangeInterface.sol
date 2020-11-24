@@ -45,16 +45,4 @@ interface IZeroXExchange {
         uint256 takerAssetFillAmount,
         bytes memory signature
     ) external payable returns (FillResults memory fillResults);
-
-    /// @dev Synchronously executes multiple calls of fillOrder.
-    /// @param orders Array of order specifications.
-    /// @param takerAssetFillAmounts Array of desired amounts of takerAsset to sell in orders.
-    /// @param signatures Proofs that orders have been created by makers.
-    /// @return totalFillResults Amounts filled and fees paid by makers and taker.
-    ///         NOTE: makerAssetFilledAmount and takerAssetFilledAmount may include amounts filled of different assets.
-    function batchFillOrders(
-        Order[] memory orders,
-        uint256[] memory takerAssetFillAmounts,
-        bytes[] memory signatures
-    ) external payable returns (FillResults memory totalFillResults);
 }

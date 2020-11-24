@@ -57,6 +57,7 @@
     "test:unit": "truffle test ./test/unit-tests/*.ts",
     "test:integration": "truffle test ./test/integration-tests/*.ts",
     "test:testing-engine": "truffle test ./test/test-engine/*.ts",
+    "test:e2e" : "truffle test test/e2e/*.ts",
     "coverage": "truffle run coverage  --file \"test/unit-tests/*.test.ts\"",
     "contract-size": "truffle run contract-size --checkMaxSize",
     "generate:doc": "npm run generate:doc:control-flow & npm run generate:doc:uml",
