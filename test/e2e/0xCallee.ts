@@ -22,7 +22,7 @@ const WETHAddress = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
 // the maker's address
 const maker = '0xa163e3e565d67c71778060f9dc907cf92d13ce4a'
 
-const order = {
+const order1 = {
   expirationTimeSeconds: '1764547200',
   feeRecipientAddress: '0x1000000000000000000000000000000000000011',
   makerAddress: maker,
@@ -39,10 +39,10 @@ const order = {
   takerFeeAssetData: '0x',
 }
 
-const signature =
+const signature1 =
   '0x1c698be1f76b87c5a7f8aed7836374fdacca342416862f8c393565037fa506a43e0b71f8b8f45b359bb534ef7074cc24bdb863a633751fefeadb5c22e24425ba6802'
 
-const fillAmount = new BigNumber('1000000')
+const fillAmount1 = new BigNumber('1000000')
 
 contract('Callee contract test', async ([deployer, user, controller, payabeProxy]) => {
   let callee: Trade0xInstance
@@ -66,12 +66,12 @@ contract('Callee contract test', async ([deployer, user, controller, payabeProxy
     // get 10000 USDC from the whale ;)
     await usdc.transfer(user, createTokenAmount(10000, 6), {from: usdcWhale})
     // user need to approve callee function
-    await usdc.approve(callee.address, fillAmount, {from: user})
+    await usdc.approve(callee.address, fillAmount1, {from: user})
 
     cToken = await ERC20.at(CTokenAddress)
 
     const makerAllowance = await cToken.allowance(maker, ERC20PROXY_ADDR)
-    assert.isTrue(makerAllowance.gte('100000000'))
+    assert.isTrue(makerAllowance.gte('200000000'))
   })
 
   it("call the callee address with user's address as sender ", async () => {
@@ -101,7 +101,7 @@ contract('Callee contract test', async ([deployer, user, controller, payabeProxy
         'bytes',
         'address',
       ],
-      [order, fillAmount.toString(), signature, payabeProxy],
+      [order1, fillAmount1.toString(), signature1, payabeProxy],
     )
 
     const usdcBalanceBefore = new BigNumber(await usdc.balanceOf(user))
@@ -123,7 +123,7 @@ contract('Callee contract test', async ([deployer, user, controller, payabeProxy
     })
 
     const usdcBalanceAfter = new BigNumber(await usdc.balanceOf(user))
-    assert.equal(usdcBalanceBefore.minus(usdcBalanceAfter).toString(), fillAmount.toString())
+    assert.equal(usdcBalanceBefore.minus(usdcBalanceAfter).toString(), fillAmount1.toString())
 
     const cTokenBalanceAfter = new BigNumber(await cToken.balanceOf(user))
     assert.equal(cTokenBalanceAfter.minus(cTokenBalanceBefore).toString(), '100000000')

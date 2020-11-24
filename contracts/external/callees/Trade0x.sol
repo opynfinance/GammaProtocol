@@ -22,7 +22,6 @@ contract Trade0x is CalleeInterface {
     ERC20Interface public weth;
     address public assetProxy;
     address public staking;
-
     ///@dev 0x portocal fee to fill 1 order
     uint256 private PORTOCAL_FEE_BASE = 70000;
 
@@ -35,6 +34,7 @@ contract Trade0x is CalleeInterface {
         exchange = IZeroXExchange(_exchange);
         assetProxy = _assetProxy;
         weth = ERC20Interface(_weth);
+        weth.safeApprove(_assetProxy, uint256(-1));
         weth.safeApprove(_staking, uint256(-1));
     }
 
@@ -55,7 +55,6 @@ contract Trade0x is CalleeInterface {
 
         address makerAsset = decodeERC20Asset(order.makerAssetData);
         address takerAsset = decodeERC20Asset(order.takerAssetData);
-
         // pull token from user
         ERC20Interface(takerAsset).safeTransferFrom(_sender, address(this), takerAssetFillAmount);
 
