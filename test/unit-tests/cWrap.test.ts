@@ -1,8 +1,6 @@
 import {
   MockERC20Instance,
-  WETH9Instance,
   ControllerInstance,
-  USDCPricerInstance,
   CompoundPricerInstance,
   AddressBookInstance,
   MarginCalculatorInstance,
@@ -10,15 +8,11 @@ import {
   WhitelistInstance,
   OtokenInstance,
   OtokenFactoryInstance,
-  CTokenInterfaceInstance,
   CETHProxyInstance,
   CERC20ProxyInstance,
-  OracleInstance,
   MockOracleInstance,
   ChainLinkPricerInstance,
   MockChainlinkAggregatorInstance,
-  CETHInterfaceInstance,
-  CERC20InterfaceInstance,
   MockCETHInstance,
   MockCUSDCInstance,
   OwnedUpgradeabilityProxyInstance,
@@ -26,30 +20,25 @@ import {
 
 import BigNumber from 'bignumber.js'
 import {createTokenAmount, createValidExpiry} from '../utils'
-const {expectRevert, expectEvent, time} = require('@openzeppelin/test-helpers')
+const {expectRevert, time} = require('@openzeppelin/test-helpers')
 
 const ERC20 = artifacts.require('MockERC20')
-const WETH = artifacts.require('WETH9')
 const Controller = artifacts.require('Controller.sol')
 const CETHProxy = artifacts.require('CETHProxy')
 const CERC20Proxy = artifacts.require('CERC20Proxy')
 const AddressBook = artifacts.require('AddressBook.sol')
 const Oracle = artifacts.require('Oracle.sol')
 const Otoken = artifacts.require('Otoken.sol')
-const CERC20Interface = artifacts.require('CERC20Interface')
-const CETHInterface = artifacts.require('CETHInterface')
 const MarginCalculator = artifacts.require('MarginCalculator.sol')
 const Whitelist = artifacts.require('Whitelist.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
 const MarginVault = artifacts.require('MarginVault.sol')
 const OTokenFactory = artifacts.require('OtokenFactory.sol')
-const USDCPricer = artifacts.require('USDCPricer.sol')
 const CompoundPricer = artifacts.require('CompoundPricer.sol')
 const MockChainlinkAggregator = artifacts.require('MockChainlinkAggregator.sol')
 const ChainlinkPricer = artifacts.require('ChainLinkPricer.sol')
 const MockCETH = artifacts.require('MockCETH.sol')
 const MockCUSDC = artifacts.require('MockCUSDC.sol')
-const MockOracle = artifacts.require('MockOracle.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy.sol')
 
