@@ -1,6 +1,7 @@
 pragma solidity =0.6.10;
 
 import {SafeMath} from "../packages/oz/SafeMath.sol";
+import {OpynPricerInterface} from "../interfaces/OpynPricerInterface.sol";
 
 /**
  * SPDX-License-Identifier: UNLICENSED
@@ -16,6 +17,7 @@ contract MockOracle {
 
     mapping(address => uint256) public realTimePrice;
     mapping(address => mapping(uint256 => uint256)) public storedPrice;
+    mapping(address => uint256) internal stablePrice;
     mapping(address => mapping(uint256 => bool)) public isFinalized;
 
     mapping(address => uint256) internal pricerLockingPeriod;
@@ -31,7 +33,13 @@ contract MockOracle {
     }
 
     function getPrice(address _asset) external view returns (uint256) {
-        return realTimePrice[_asset];
+        uint256 price = stablePrice[_asset];
+
+        if (price == 0) {
+            price = realTimePrice[_asset];
+        }
+
+        return price;
     }
 
     // set bunch of things at expiry in 1 function
@@ -65,7 +73,15 @@ contract MockOracle {
     }
 
     function getExpiryPrice(address _asset, uint256 _expiryTimestamp) external view returns (uint256, bool) {
-        return (storedPrice[_asset][_expiryTimestamp], isFinalized[_asset][_expiryTimestamp]);
+        uint256 price = stablePrice[_asset];
+        bool _isFinalized = true;
+
+        if (price == 0) {
+            price = storedPrice[_asset][_expiryTimestamp];
+            _isFinalized = isFinalized[_asset][_expiryTimestamp];
+        }
+
+        return (price, _isFinalized);
     }
 
     function getPricer(address _asset) external view returns (address) {
@@ -114,5 +130,9 @@ contract MockOracle {
 
     function setDisputePeriod(address _pricer, uint256 _disputePeriod) external {
         pricerDisputePeriod[_pricer] = _disputePeriod;
+    }
+
+    function setStablePrice(address _asset, uint256 _price) external {
+        stablePrice[_asset] = _price;
     }
 }

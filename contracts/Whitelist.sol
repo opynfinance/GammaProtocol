@@ -214,7 +214,7 @@ contract Whitelist is Ownable {
      * @dev can only be called from the owner address
      * @param _callee callee address
      */
-    function whitelisteCallee(address _callee) external onlyOwner {
+    function whitelistCallee(address _callee) external onlyOwner {
         whitelistedCallee[_callee] = true;
 
         emit CalleeWhitelisted(_callee);

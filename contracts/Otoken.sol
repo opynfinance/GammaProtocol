@@ -139,12 +139,14 @@ contract Otoken is ERC20Initializable {
             )
         );
 
-        // concatenated symbol string: oETHUSDC-05SEP20-200P
+        // concatenated symbol string: oETHUSDC/USDC-05SEP20-200P
         tokenSymbol = string(
             abi.encodePacked(
                 "o",
                 underlying,
                 strike,
+                "/",
+                collateral,
                 "-",
                 _uintTo2Chars(day),
                 monthSymbol,

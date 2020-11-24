@@ -198,7 +198,7 @@ contract('AddressBook', ([owner, otokenImplAdd, marginPoolAdd, liquidationManage
   })
 
   describe('Set arbitrary address', () => {
-    const modulekey = web3.utils.fromAscii('newModule')
+    const modulekey = web3.utils.soliditySha3('newModule')
     let module: UpgradeableContractV1Instance
 
     before(async () => {
@@ -225,7 +225,7 @@ contract('AddressBook', ([owner, otokenImplAdd, marginPoolAdd, liquidationManage
   })
 
   describe('Upgrade contract', async () => {
-    const key = web3.utils.fromAscii('ammModule')
+    const key = web3.utils.soliditySha3('ammModule')
 
     let v1Contract: UpgradeableContractV1Instance
     let v2Contract: UpgradeableContractV2Instance

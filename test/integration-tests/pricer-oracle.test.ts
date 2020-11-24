@@ -17,7 +17,7 @@ const MockChainlinkAggregator = artifacts.require('MockChainlinkAggregator.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
 const MockCToken = artifacts.require('MockCToken.sol')
 
-contract('Pricer + Oracle', ([owner, disputer]) => {
+contract('Pricer + Oracle', ([owner, bot, disputer, random]) => {
   let wethAggregator: MockChainlinkAggregatorInstance
   // mock tokens
   let weth: MockERC20Instance
@@ -40,8 +40,8 @@ contract('Pricer + Oracle', ([owner, disputer]) => {
     ceth = await MockCToken.new('cETH', 'cETH')
 
     oracle = await Oracle.new()
-    wethPricer = await ChainlinkPricer.new(weth.address, wethAggregator.address, oracle.address)
-    cethPricer = await CompoundPricer.new(ceth.address, weth.address, wethPricer.address, oracle.address)
+    wethPricer = await ChainlinkPricer.new(bot, weth.address, wethAggregator.address, oracle.address)
+    cethPricer = await CompoundPricer.new(ceth.address, weth.address, oracle.address)
   })
 
   describe('get live price from chainlink pricer', () => {
@@ -149,7 +149,7 @@ contract('Pricer + Oracle', ([owner, disputer]) => {
       }
       const roundId = 1
       await expectRevert(
-        wethPricer.setExpiryPriceInOracle(expiryTimestamp, roundId),
+        wethPricer.setExpiryPriceInOracle(expiryTimestamp, roundId, {from: bot}),
         'Oracle: locking period is not over yet',
       )
     })
@@ -162,13 +162,27 @@ contract('Pricer + Oracle', ([owner, disputer]) => {
       )
     })
 
-    it('anyone can set weth price to oracle', async () => {
+    it('should revert set weth price if sender is not bot address', async () => {
       const expiryTimestamp = (t0 + t1) / 2 // between t0 and t1
       if ((await time.latest()) < expiryTimestamp + lockingPeriod) {
         await time.increaseTo(expiryTimestamp + lockingPeriod + 10)
       }
       const roundId = 1
-      await wethPricer.setExpiryPriceInOracle(expiryTimestamp, roundId)
+      await expectRevert(
+        wethPricer.setExpiryPriceInOracle(expiryTimestamp, roundId, {from: random}),
+        'ChainLinkPricer: unauthorized sender',
+      )
+    })
+
+    it('should set weth price when sender is bot address', async () => {
+      const expiryTimestamp = (t0 + t1) / 2 // between t0 and t1
+      if ((await time.latest()) < expiryTimestamp + lockingPeriod) {
+        await time.increaseTo(expiryTimestamp + lockingPeriod + 10)
+      }
+      const roundId = 1
+
+      await wethPricer.setExpiryPriceInOracle(expiryTimestamp, roundId, {from: bot})
+
       const [priceFromOracle, isFinalized] = await oracle.getExpiryPrice(weth.address, expiryTimestamp)
       assert.equal(p1.toString(), priceFromOracle.toString())
       assert.equal(isFinalized, false)
@@ -180,6 +194,13 @@ contract('Pricer + Oracle', ([owner, disputer]) => {
       if ((await time.latest()) < expiryTimestamp + lockingPeriod) {
         await time.increaseTo(expiryTimestamp + lockingPeriod + 10)
       }
+
+      assert.isAbove(
+        (await oracle.getExpiryPrice(weth.address, expiryTimestamp))[0].toNumber(),
+        0,
+        'WETH price is not available yet',
+      )
+
       await cethPricer.setExpiryPriceInOracle(expiryTimestamp)
       const [underlyingPrice, _] = await oracle.getExpiryPrice(weth.address, expiryTimestamp)
       const expectedCTokenPrice = await underlyingPriceToCtokenPrice(underlyingPrice, newExchangeRate, weth)
@@ -191,7 +212,10 @@ contract('Pricer + Oracle', ([owner, disputer]) => {
     it('should revert when trying to submit weth price again', async () => {
       const expiryTimestamp = (t0 + t1) / 2 // between t0 and t1
       const roundId = 1
-      await expectRevert(wethPricer.setExpiryPriceInOracle(expiryTimestamp, roundId), 'Oracle: dispute period started')
+      await expectRevert(
+        wethPricer.setExpiryPriceInOracle(expiryTimestamp, roundId, {from: bot}),
+        'Oracle: dispute period started',
+      )
       const priceFromOracle = await oracle.getExpiryPrice(weth.address, expiryTimestamp)
       assert.equal(p1.toString(), priceFromOracle[0].toString())
     })
