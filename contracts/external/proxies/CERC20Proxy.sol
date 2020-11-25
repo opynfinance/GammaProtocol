@@ -14,7 +14,7 @@ import {CERC20Interface} from "../../interfaces/CERC20Interface.sol";
 /**
  * @title CERC20Proxy
  * @author Opyn Team
- * @dev Contract for wrapping cToken before minting options
+ * @dev Contract for wrapping cToken before minting options or unwrapping a cToken after some actions
  */
 contract CERC20Proxy is ReentrancyGuard {
     using SafeERC20 for ERC20Interface;
@@ -29,12 +29,12 @@ contract CERC20Proxy is ReentrancyGuard {
     }
 
     /**
-     * @notice execute a number of actions after minting some cTokens
-     * @dev a wrapper for the Controller operate function, to wrap uderlying to cToken before the excution.
+     * @notice Execute a number of actions after minting some cTokens or execute a number of actions and then unwrap any cTokens
+     * @dev A wrapper for the Controller operate function
      * @param _actions array of actions arguments
      * @param _underlying underlying asset
-     * @param _cToken the cToken to mint
-     * @param _amountUnderlying the amount of underlying to supply to Compound
+     * @param _cToken the cToken to wrap or unwrap
+     * @param _amountUnderlying the amount of underlying asset to supply to Compound
      */
     function operate(
         Actions.ActionArgs[] memory _actions,
@@ -72,14 +72,13 @@ contract CERC20Proxy is ReentrancyGuard {
 
             // overwrite the deposit amount by the exact amount minted
             if (action.actionType == Actions.ActionType.DepositCollateral && action.amount == 0) {
-                // should we only update if the action.second address == address(this)?
                 _actions[i].amount = cTokenBalance;
             }
         }
 
         controller.operate(_actions);
 
-        // unwrap and withdraw cTokens that have been added to contract via operate function
+        // unwrap and withdraw cTokens that have been added to contract
         uint256 cTokenBalanceAfter = cToken.balanceOf(address(this));
         if (cTokenBalanceAfter > 0) {
             require(cToken.redeem(cTokenBalanceAfter) == 0, "CTokenPricer: Redeem Failed");
