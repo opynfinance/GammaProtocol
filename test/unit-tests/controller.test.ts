@@ -3,6 +3,7 @@ import {
   MarginCalculatorInstance,
   MockOtokenInstance,
   MockERC20Instance,
+  MockPricerInstance,
   MockOracleInstance,
   MockWhitelistModuleInstance,
   MarginPoolInstance,
@@ -17,6 +18,7 @@ const {expectRevert, expectEvent, time} = require('@openzeppelin/test-helpers')
 
 const CallTester = artifacts.require('CallTester.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
+const MockPricer = artifacts.require('MockPricer.sol')
 const MockOtoken = artifacts.require('MockOtoken.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy.sol')
