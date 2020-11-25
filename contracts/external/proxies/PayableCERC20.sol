@@ -65,7 +65,7 @@ contract PayableCERC20 is ReentrancyGuard {
         address payable sendEthTo,
         uint256 _amountUnderlying
     ) external payable nonReentrant {
-        uint256 cTokenBalance = 0;
+        uint256 cTokenBalance;
 
         // create WETH from ETH
         if (msg.value != 0) {
@@ -76,7 +76,7 @@ contract PayableCERC20 is ReentrancyGuard {
             // mint cToken
             underlying.safeIncreaseAllowance(address(cToken), _amountUnderlying);
 
-            require(cToken.mint(_amountUnderlying) == 0, "CERC20Proxy: cToken mint failed");
+            require(cToken.mint(_amountUnderlying) == 0, "PayableCERC20: cToken mint failed");
 
             cTokenBalance = cToken.balanceOf(address(this));
             cToken.safeIncreaseAllowance(marginPool, cTokenBalance);
@@ -90,12 +90,16 @@ contract PayableCERC20 is ReentrancyGuard {
             if (action.owner != address(0)) {
                 require(
                     (msg.sender == action.owner) || (controller.isOperator(action.owner, msg.sender)),
-                    "CERC20Proxy: msg.sender is not owner or operator "
+                    "PayableCERC20: msg.sender is not owner or operator "
                 );
             }
 
             // overwrite the deposit amount by the exact amount minted
-            if (action.actionType == Actions.ActionType.DepositCollateral && action.amount == 0) {
+            if (
+                action.actionType == Actions.ActionType.DepositCollateral &&
+                action.amount == 0 &&
+                action.asset == address(cToken)
+            ) {
                 // should we only update if the action.second address == address(this)?
                 _actions[i].amount = cTokenBalance;
             }
@@ -113,14 +117,15 @@ contract PayableCERC20 is ReentrancyGuard {
         // unwrap and withdraw cTokens that have been added to contract via operate function
         uint256 cTokenBalanceAfter = cToken.balanceOf(address(this));
         if (cTokenBalanceAfter > 0) {
-            require(cToken.redeem(cTokenBalanceAfter) == 0, "CTokenPricer: Redeem Failed");
+            require(cToken.redeem(cTokenBalanceAfter) == 0, "PayableCERC20: Redeem Failed");
+
             uint256 underlyingBalance = underlying.balanceOf(address(this));
             underlying.safeTransfer(msg.sender, underlyingBalance);
         }
         // return all remaining WETH to the sendEthTo address as ETH
         uint256 remainingWeth = weth.balanceOf(address(this));
         if (remainingWeth != 0) {
-            require(sendEthTo != address(0), "PayableProxyController: cannot send ETH to address zero");
+            require(sendEthTo != address(0), "PayableCERC20: cannot send ETH to address zero");
 
             weth.withdraw(remainingWeth);
             sendEthTo.sendValue(remainingWeth);

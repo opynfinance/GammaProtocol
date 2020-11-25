@@ -1,4 +1,6 @@
 import {
+  WETH9Instance,
+  MockOtokenInstance,
   MockERC20Instance,
   ControllerInstance,
   CompoundPricerInstance,
@@ -20,15 +22,18 @@ import {
 } from '../../build/types/truffle-types'
 
 import BigNumber from 'bignumber.js'
-import {createTokenAmount, createValidExpiry} from '../utils'
+import {createTokenAmount, createValidExpiry, createScaledNumber} from '../utils'
 const {expectRevert, time} = require('@openzeppelin/test-helpers')
 
+const WETH9 = artifacts.require('WETH9.sol')
 const ERC20 = artifacts.require('MockERC20')
 const Controller = artifacts.require('Controller.sol')
 const CETHProxy = artifacts.require('CETHProxy')
 const CERC20Proxy = artifacts.require('CERC20Proxy')
+const MockOtoken = artifacts.require('MockOtoken')
 const PayableCERC20 = artifacts.require('PayableCERC20')
 const AddressBook = artifacts.require('AddressBook.sol')
+const MockOracle = artifacts.require('MockOracle.sol')
 const Oracle = artifacts.require('Oracle.sol')
 const Otoken = artifacts.require('Otoken.sol')
 const MarginCalculator = artifacts.require('MarginCalculator.sol')
@@ -57,9 +62,9 @@ enum ActionType {
   Call,
 }
 
-contract('CToken Proxy test', async ([user, random, holder1]) => {
+contract('CToken Proxy test', async ([user, random, holder1, factoryMock]) => {
   let usdc: MockERC20Instance
-  let weth: MockERC20Instance
+  let weth: WETH9Instance
   let cusdc: MockCUSDCInstance
   let ceth: MockCETHInstance
 
@@ -95,7 +100,7 @@ contract('CToken Proxy test', async ([user, random, holder1]) => {
     const now = (await time.latest()).toNumber()
     expiry = createValidExpiry(now, 300) // 300 days from now
 
-    weth = await ERC20.new('WETH', 'WETH', 18)
+    weth = await WETH9.new()
     usdc = await ERC20.new('USDC', 'USDC', 6)
     ceth = await MockCETH.new('cETH', 'cETH')
     cusdc = await MockCUSDC.new('cUSDC', 'cUSDC', usdc.address, createTokenAmount(1, 16))
@@ -109,29 +114,30 @@ contract('CToken Proxy test', async ([user, random, holder1]) => {
     controllerImplementation = await Controller.new(addressBook.address)
 
     //oracle = await Oracle.new(addressBook.address)
-    oracle = await Oracle.new()
+    oracle = await MockOracle.new()
 
-    await oracle.setStablePrice(usdc.address, createTokenAmount(1, 8))
-    wethAggregator = await MockChainlinkAggregator.new()
+    await oracle.setRealTimePrice(usdc.address, createTokenAmount(1, 8))
 
-    wethPricer = await ChainlinkPricer.new(user, weth.address, wethAggregator.address, oracle.address)
-    await oracle.setAssetPricer(weth.address, wethPricer.address)
-    cusdcPricer = await CompoundPricer.new(cusdc.address, usdc.address, oracle.address)
-    await oracle.setAssetPricer(cusdc.address, cusdcPricer.address)
-    cethPricer = await CompoundPricer.new(ceth.address, weth.address, oracle.address)
-    await oracle.setAssetPricer(ceth.address, cethPricer.address)
+    // wethAggregator = await MockChainlinkAggregator.new()
 
-    const lockingPeriod = time.duration.minutes(15).toNumber()
-    const disputePeriod = time.duration.minutes(15).toNumber()
+    // wethPricer = await ChainlinkPricer.new(user, weth.address, wethAggregator.address, oracle.address)
+    // await oracle.setAssetPricer(weth.address, wethPricer.address)
+    // cusdcPricer = await CompoundPricer.new(cusdc.address, usdc.address, oracle.address)
+    // await oracle.setAssetPricer(cusdc.address, cusdcPricer.address)
+    // cethPricer = await CompoundPricer.new(ceth.address, weth.address, oracle.address)
+    // await oracle.setAssetPricer(ceth.address, cethPricer.address)
 
-    await oracle.setLockingPeriod(wethPricer.address, lockingPeriod)
-    await oracle.setDisputePeriod(wethPricer.address, disputePeriod)
-    //await oracle.setLockingPeriod(usdcPricer.address, lockingPeriod)
-    //await oracle.setDisputePeriod(usdcPricer.address, disputePeriod)
-    await oracle.setLockingPeriod(cethPricer.address, lockingPeriod)
-    await oracle.setDisputePeriod(cethPricer.address, disputePeriod)
-    await oracle.setLockingPeriod(cusdcPricer.address, lockingPeriod)
-    await oracle.setDisputePeriod(cusdcPricer.address, disputePeriod)
+    // const lockingPeriod = time.duration.minutes(15).toNumber()
+    // const disputePeriod = time.duration.minutes(15).toNumber()
+
+    // await oracle.setLockingPeriod(wethPricer.address, lockingPeriod)
+    // await oracle.setDisputePeriod(wethPricer.address, disputePeriod)
+    // //await oracle.setLockingPeriod(usdcPricer.address, lockingPeriod)
+    // //await oracle.setDisputePeriod(usdcPricer.address, disputePeriod)
+    // await oracle.setLockingPeriod(cethPricer.address, lockingPeriod)
+    // await oracle.setDisputePeriod(cethPricer.address, disputePeriod)
+    // await oracle.setLockingPeriod(cusdcPricer.address, lockingPeriod)
+    // await oracle.setDisputePeriod(cusdcPricer.address, disputePeriod)
 
     whitelist = await Whitelist.new(addressBook.address)
 
@@ -192,9 +198,9 @@ contract('CToken Proxy test', async ([user, random, holder1]) => {
 
     //mint usdc and weth for user
     await usdc.mint(user, createTokenAmount(1000000, 6))
-    await weth.mint(user, createTokenAmount(1000000, 6))
+    // await weth.mint(user, createTokenAmount(1000000, 6))
     await usdc.mint(random, createTokenAmount(1000000, 6))
-    await weth.mint(random, createTokenAmount(1000000, 6))
+    // await weth.mint(random, createTokenAmount(1000000, 6))
 
     //set proxy as operator
     await controllerProxy.setOperator(payableCerc20ProxyOperator.address, true, {from: user})
@@ -212,7 +218,8 @@ contract('CToken Proxy test', async ([user, random, holder1]) => {
       const ethPrice = createTokenAmount(300, 8)
 
       //set initial prices for eth, cusdc, ceth
-      await wethAggregator.setLatestAnswer(ethPrice)
+      await oracle.setRealTimePrice(weth.address, ethPrice)
+      await oracle.setStablePrice(usdc.address, usdPrice)
       await cusdc.setExchangeRate(scaledCusdcPrice)
       await ceth.setExchangeRate(scaledCethPrice)
 
@@ -341,7 +348,8 @@ contract('CToken Proxy test', async ([user, random, holder1]) => {
       const ethPrice = createTokenAmount(300, 8)
 
       //set initial prices for eth, cusdc, ceth
-      await wethAggregator.setLatestAnswer(ethPrice)
+      // await wethAggregator.setLatestAnswer(ethPrice)
+      await oracle.setRealTimePrice(weth.address, ethPrice)
       await cusdc.setExchangeRate(scaledCusdcPrice)
       await ceth.setExchangeRate(scaledCethPrice)
 
@@ -457,7 +465,8 @@ contract('CToken Proxy test', async ([user, random, holder1]) => {
       const ethPrice = createTokenAmount(300, 8)
 
       //set initial prices for eth, cusdc, ceth
-      await wethAggregator.setLatestAnswer(ethPrice)
+      // await wethAggregator.setLatestAnswer(ethPrice)
+      await oracle.setRealTimePrice(weth.address, ethPrice)
       await cusdc.setExchangeRate(scaledCusdcPrice)
       await ceth.setExchangeRate(scaledCethPrice)
 
@@ -562,7 +571,8 @@ contract('CToken Proxy test', async ([user, random, holder1]) => {
       const ethPrice = createTokenAmount(300, 8)
 
       //set initial prices for eth, cusdc, ceth
-      await wethAggregator.setLatestAnswer(ethPrice)
+      // await wethAggregator.setLatestAnswer(ethPrice)
+      await oracle.setRealTimePrice(weth.address, ethPrice)
       await cusdc.setExchangeRate(scaledCusdcPrice)
       await ceth.setExchangeRate(scaledCethPrice)
 
@@ -609,7 +619,7 @@ contract('CToken Proxy test', async ([user, random, holder1]) => {
         payableCerc20ProxyOperator.operate(actionArgsUser, random, 0, {
           from: random,
         }),
-        'CERC20Proxy: msg.sender is not owner or operator',
+        'PayableCERC20: msg.sender is not owner or operator',
       )
     })
 
@@ -623,7 +633,8 @@ contract('CToken Proxy test', async ([user, random, holder1]) => {
       const ethPrice = createTokenAmount(300, 8)
 
       //set initial prices for eth, cusdc, ceth
-      await wethAggregator.setLatestAnswer(ethPrice)
+      // await wethAggregator.setLatestAnswer(ethPrice)
+      await oracle.setRealTimePrice(weth.address, ethPrice)
       await cusdc.setExchangeRate(scaledCusdcPrice)
       await ceth.setExchangeRate(scaledCethPrice)
 
@@ -670,7 +681,7 @@ contract('CToken Proxy test', async ([user, random, holder1]) => {
         payableCerc20ProxyOperator.operate(actionArgsUser, random, underlyingAssetDeposit, {
           from: random,
         }),
-        'CERC20Proxy: msg.sender is not owner or operator',
+        'PayableCERC20: msg.sender is not owner or operator',
       )
     })
   })
@@ -822,7 +833,7 @@ contract('CToken Proxy test', async ([user, random, holder1]) => {
           from: user,
           value: ethToSend.toString(),
         }),
-        'PayableCERC2: cannot send ETH to address zero',
+        'PayableCERC20: cannot send ETH to address zero',
       )
     })
 
@@ -835,7 +846,7 @@ contract('CToken Proxy test', async ([user, random, holder1]) => {
           to: payableCerc20ProxyOperator.address,
           value: ethToSend.toString(),
         }),
-        'PayableCERC2: Cannot receive ETH',
+        'PayableCERC20: Cannot receive ETH',
       )
     })
 
@@ -858,7 +869,7 @@ contract('CToken Proxy test', async ([user, random, holder1]) => {
         payableCerc20ProxyOperator.operate(actionArgs, ZERO_ADDR, '0', {
           from: random,
         }),
-        'PayableCERC2: cannot execute action',
+        'PayableCERC20: msg.sender is not owner or operator',
       )
     })
   })
@@ -892,105 +903,107 @@ contract('CToken Proxy test', async ([user, random, holder1]) => {
     })
   })
 
-  // describe('Operate without owner address', () => {
-  //   let shortOtoken: MockOtokenInstance
+  describe('Operate without owner address', () => {
+    let shortOtoken: MockOtokenInstance
 
-  //   before(async () => {
-  //     const expiryTime = new BigNumber(60 * 60 * 24) // after 1 day
-  //     const expiry = new BigNumber(await time.latest()).plus(expiryTime)
-  //     const strikePrice = 200
-  //     const underlyingPriceAtExpiry = createScaledNumber(150)
-  //     const strikePriceAtExpiry = createScaledNumber(1)
+    before(async () => {
+      const expiryTime = new BigNumber(60 * 60 * 24) // after 1 day
+      const expiry = new BigNumber(await time.latest()).plus(expiryTime)
+      const strikePrice = 200
+      const underlyingPriceAtExpiry = createScaledNumber(150)
+      const strikePriceAtExpiry = createScaledNumber(1)
 
-  //     shortOtoken = await MockOtoken.new()
-  //     // init otoken
-  //     await shortOtoken.init(
-  //       addressBook.address,
-  //       weth.address,
-  //       usdc.address,
-  //       usdc.address,
-  //       createScaledNumber(strikePrice),
-  //       expiry,
-  //       true,
-  //     )
-  //     // whitelist short otoken to be used in the protocol
-  //     await whitelist.whitelistOtoken(shortOtoken.address, {from: owner})
-  //     // whitelist collateral
-  //     await whitelist.whitelistCollateral(usdc.address, {from: owner})
-  //     // open new vault, mintnaked short, sell it to holder 1
-  //     const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(user)).plus(1)
-  //     const collateralToDeposit = createTokenAmount(strikePrice, 6)
-  //     const amountToMint = createTokenAmount(1)
-  //     const actionArgs = [
-  //       {
-  //         actionType: ActionType.OpenVault,
-  //         owner: user,
-  //         secondAddress: user,
-  //         asset: ZERO_ADDR,
-  //         vaultId: vaultCounter.toNumber(),
-  //         amount: '0',
-  //         index: '0',
-  //         data: ZERO_ADDR,
-  //       },
-  //       {
-  //         actionType: ActionType.MintShortOption,
-  //         owner: user,
-  //         secondAddress: user,
-  //         asset: shortOtoken.address,
-  //         vaultId: vaultCounter.toNumber(),
-  //         amount: amountToMint.toString(),
-  //         index: '0',
-  //         data: ZERO_ADDR,
-  //       },
-  //       {
-  //         actionType: ActionType.DepositCollateral,
-  //         owner: user,
-  //         secondAddress: user,
-  //         asset: usdc.address,
-  //         vaultId: vaultCounter.toNumber(),
-  //         amount: collateralToDeposit,
-  //         index: '0',
-  //         data: ZERO_ADDR,
-  //       },
-  //     ]
-  //     await usdc.approve(marginPool.address, collateralToDeposit, {from: user})
-  //     await payableCerc20ProxyOperator.operate(actionArgs, user, {from: user})
-  //     // transfer minted short otoken to hodler`
-  //     await shortOtoken.transfer(holder1, amountToMint.toString(), {from: user})
-  //     // increase time with one hour in seconds
-  //     await time.increase(60 * 61 * 24)
-  //     await oracle.setExpiryPriceFinalizedAllPeiodOver(
-  //       await shortOtoken.underlyingAsset(),
-  //       new BigNumber(await shortOtoken.expiryTimestamp()),
-  //       underlyingPriceAtExpiry,
-  //       true,
-  //     )
-  //     await oracle.setExpiryPriceFinalizedAllPeiodOver(
-  //       await shortOtoken.strikeAsset(),
-  //       new BigNumber(await shortOtoken.expiryTimestamp()),
-  //       strikePriceAtExpiry,
-  //       true,
-  //     )
-  //   })
+      shortOtoken = await MockOtoken.new()
+      // init otoken
+      await shortOtoken.init(
+        addressBook.address,
+        weth.address,
+        usdc.address,
+        usdc.address,
+        createScaledNumber(strikePrice),
+        expiry,
+        true,
+      )
+      // change factory address
+      await addressBook.setOtokenFactory(factoryMock)
+      // whitelist short otoken to be used in the protocol
+      await whitelist.whitelistOtoken(shortOtoken.address, {from: factoryMock})
+      // whitelist collateral
+      await whitelist.whitelistCollateral(usdc.address, {from: user})
+      // open new vault, mintnaked short, sell it to holder 1
+      const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(user)).plus(1)
+      const collateralToDeposit = createTokenAmount(strikePrice, 6)
+      const amountToMint = createTokenAmount(1)
+      const actionArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: user,
+          secondAddress: user,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounter.toNumber(),
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.MintShortOption,
+          owner: user,
+          secondAddress: user,
+          asset: shortOtoken.address,
+          vaultId: vaultCounter.toNumber(),
+          amount: amountToMint.toString(),
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.DepositCollateral,
+          owner: user,
+          secondAddress: user,
+          asset: usdc.address,
+          vaultId: vaultCounter.toNumber(),
+          amount: collateralToDeposit,
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+      await usdc.approve(marginPool.address, collateralToDeposit, {from: user})
+      await payableCerc20ProxyOperator.operate(actionArgs, user, '0', {from: user})
+      // transfer minted short otoken to hodler`
+      await shortOtoken.transfer(holder1, amountToMint.toString(), {from: user})
+      // increase time with one hour in seconds
+      await time.increase(60 * 61 * 24)
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(
+        await shortOtoken.underlyingAsset(),
+        new BigNumber(await shortOtoken.expiryTimestamp()),
+        underlyingPriceAtExpiry,
+        true,
+      )
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(
+        await shortOtoken.strikeAsset(),
+        new BigNumber(await shortOtoken.expiryTimestamp()),
+        strikePriceAtExpiry,
+        true,
+      )
+    })
 
-  //   it('should normally execute when owner address is equal to zero', async () => {
-  //     const amountToRedeem = createTokenAmount(1)
-  //     const actionArgs = [
-  //       {
-  //         actionType: ActionType.Redeem,
-  //         owner: ZERO_ADDR,
-  //         secondAddress: holder1,
-  //         asset: shortOtoken.address,
-  //         vaultId: '0',
-  //         amount: amountToRedeem.toString(),
-  //         index: '0',
-  //         data: ZERO_ADDR,
-  //       },
-  //     ]
-  //     assert.equal(await controllerProxy.hasExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
+    it('should normally execute when owner address is equal to zero', async () => {
+      const amountToRedeem = createTokenAmount(1)
+      const actionArgs = [
+        {
+          actionType: ActionType.Redeem,
+          owner: ZERO_ADDR,
+          secondAddress: holder1,
+          asset: shortOtoken.address,
+          vaultId: '0',
+          amount: amountToRedeem.toString(),
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+      assert.equal(await controllerProxy.hasExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
 
-  //     await shortOtoken.transfer(payableCerc20ProxyOperator.address, amountToRedeem.toString(), {from: holder1})
-  //     await payableCerc20ProxyOperator.operate(actionArgs, holder1, {from: holder1})
-  //   })
-  // })
+      await shortOtoken.transfer(payableCerc20ProxyOperator.address, amountToRedeem.toString(), {from: holder1})
+      await payableCerc20ProxyOperator.operate(actionArgs, holder1, '0', {from: holder1})
+    })
+  })
 })
