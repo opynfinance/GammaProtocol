@@ -8,12 +8,10 @@ import {
   WhitelistInstance,
   OtokenInstance,
   OtokenFactoryInstance,
-  CETHProxyInstance,
   CERC20ProxyInstance,
   MockOracleInstance,
   ChainLinkPricerInstance,
   MockChainlinkAggregatorInstance,
-  MockCETHInstance,
   MockCUSDCInstance,
   OwnedUpgradeabilityProxyInstance,
 } from '../../build/types/truffle-types'
@@ -24,7 +22,6 @@ const {expectRevert, time} = require('@openzeppelin/test-helpers')
 
 const ERC20 = artifacts.require('MockERC20')
 const Controller = artifacts.require('Controller.sol')
-const CETHProxy = artifacts.require('CETHProxy')
 const CERC20Proxy = artifacts.require('CERC20Proxy')
 const AddressBook = artifacts.require('AddressBook.sol')
 const Oracle = artifacts.require('Oracle.sol')
@@ -37,7 +34,6 @@ const OTokenFactory = artifacts.require('OtokenFactory.sol')
 const CompoundPricer = artifacts.require('CompoundPricer.sol')
 const MockChainlinkAggregator = artifacts.require('MockChainlinkAggregator.sol')
 const ChainlinkPricer = artifacts.require('ChainLinkPricer.sol')
-const MockCETH = artifacts.require('MockCETH.sol')
 const MockCUSDC = artifacts.require('MockCUSDC.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy.sol')
@@ -59,9 +55,7 @@ contract('CToken Proxy test', async ([user, random]) => {
   let usdc: MockERC20Instance
   let weth: MockERC20Instance
   let cusdc: MockCUSDCInstance
-  let ceth: MockCETHInstance
 
-  let cethProxyOperator: CETHProxyInstance
   let cerc20ProxyOperator: CERC20ProxyInstance
 
   let addressBook: AddressBookInstance
@@ -95,7 +89,6 @@ contract('CToken Proxy test', async ([user, random]) => {
 
     weth = await ERC20.new('WETH', 'WETH', 18)
     usdc = await ERC20.new('USDC', 'USDC', 6)
-    ceth = await MockCETH.new('cETH', 'cETH')
     cusdc = await MockCUSDC.new('cUSDC', 'cUSDC', usdc.address, createTokenAmount(1, 16))
 
     // initiate addressbook first.
@@ -116,8 +109,6 @@ contract('CToken Proxy test', async ([user, random]) => {
     await oracle.setAssetPricer(weth.address, wethPricer.address)
     cusdcPricer = await CompoundPricer.new(cusdc.address, usdc.address, oracle.address)
     await oracle.setAssetPricer(cusdc.address, cusdcPricer.address)
-    cethPricer = await CompoundPricer.new(ceth.address, weth.address, oracle.address)
-    await oracle.setAssetPricer(ceth.address, cethPricer.address)
 
     const lockingPeriod = time.duration.minutes(15).toNumber()
     const disputePeriod = time.duration.minutes(15).toNumber()
@@ -134,10 +125,8 @@ contract('CToken Proxy test', async ([user, random]) => {
     whitelist = await Whitelist.new(addressBook.address)
 
     await whitelist.whitelistCollateral(cusdc.address)
-    await whitelist.whitelistCollateral(ceth.address)
 
     // whitelist eth-usdc-ceth calls and eth-usdc-cusdc puts
-    whitelist.whitelistProduct(weth.address, usdc.address, ceth.address, false)
     whitelist.whitelistProduct(weth.address, usdc.address, cusdc.address, true)
     // setup otoken
     otokenImplementation = await Otoken.new()
@@ -157,19 +146,6 @@ contract('CToken Proxy test', async ([user, random]) => {
 
     // deploy proxy
     cerc20ProxyOperator = await CERC20Proxy.new(controllerProxyAddress, marginPool.address)
-    cethProxyOperator = await CETHProxy.new(controllerProxyAddress, marginPool.address, ceth.address)
-
-    //deploy ceth collateral option
-    await otokenFactory.createOtoken(weth.address, usdc.address, ceth.address, createTokenAmount(300), expiry, false)
-    const cethCallAddr = await otokenFactory.getOtoken(
-      weth.address,
-      usdc.address,
-      ceth.address,
-      createTokenAmount(300),
-      expiry,
-      false,
-    )
-    ethCethCall = await Otoken.at(cethCallAddr)
 
     // deploy cusdc collateral option
     await otokenFactory.createOtoken(weth.address, usdc.address, cusdc.address, createTokenAmount(300), expiry, true)
@@ -191,7 +167,6 @@ contract('CToken Proxy test', async ([user, random]) => {
 
     //set proxy as operator
     await controllerProxy.setOperator(cerc20ProxyOperator.address, true, {from: user})
-    await controllerProxy.setOperator(cethProxyOperator.address, true, {from: user})
   })
 
   describe('Operate actions via proxy', () => {
@@ -207,7 +182,6 @@ contract('CToken Proxy test', async ([user, random]) => {
       //set initial prices for eth, cusdc, ceth
       await wethAggregator.setLatestAnswer(ethPrice)
       await cusdc.setExchangeRate(scaledCusdcPrice)
-      await ceth.setExchangeRate(scaledCethPrice)
 
       const strike = 300
       const amount = 100
