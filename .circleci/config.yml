@@ -26,7 +26,6 @@ workflows:
           requires:
             - build
       - e2e-test:
-          context: INFURA
           requires:
             - build
       - coverage:
@@ -176,7 +175,7 @@ jobs:
     docker:
       - image: circleci/node:10.18.0
       - image: trufflesuite/ganache-cli:v6.10.1
-        command: "ganache-cli --fork https://mainnet.infura.io/v3/${API_KEY} --unlock 0xbe0eb53f46cd790cd13851d5eff43d12404d33e8"
+        command: "ganache-cli --fork https://mainnet.infura.io/v3/66f6b3a0e1704ef396c915fe5aa36a09 --unlock 0xbe0eb53f46cd790cd13851d5eff43d12404d33e8"
     steps:
       - restore_cache:
           key: gamma-contracts-build-{{ .Environment.CIRCLE_SHA1 }}
