@@ -53,9 +53,6 @@ contract(
     let usdc: MockERC20Instance
     let weth: MockERC20Instance
     let weth2: MockERC20Instance
-    // mock a pricer
-    let wethPricer: MockPricerInstance
-    let weth2Pricer: MockPricerInstance
 
     // Oracle module
     let oracle: MockOracleInstance
@@ -118,14 +115,6 @@ contract(
       await usdc.mint(accountOwner1, createTokenAmount(10000, usdcDecimals))
       await usdc.mint(accountOperator1, createTokenAmount(10000, usdcDecimals))
       await usdc.mint(random, createTokenAmount(10000, usdcDecimals))
-
-      // deply mock pricer (to get live price and set expiry price)
-      wethPricer = await MockPricer.new(weth.address, oracle.address)
-      weth2Pricer = await MockPricer.new(weth2.address, oracle.address)
-
-      await oracle.setStablePrice(usdc.address, createTokenAmount(1, 8))
-      await oracle.setAssetPricer(weth.address, wethPricer.address, {from: owner})
-      await oracle.setAssetPricer(weth2.address, weth2Pricer.address, {from: owner})
     })
 
     describe('Controller initialization', () => {
@@ -3050,8 +3039,8 @@ contract(
           false,
         )
 
-        await wethPricer.setPrice(createTokenAmount(400))
-        await weth2Pricer.setPrice(createTokenAmount(400))
+        await oracle.setRealTimePrice(weth.address, createTokenAmount(400))
+        await oracle.setRealTimePrice(weth2.address, createTokenAmount(400))
 
         await whitelist.whitelistOtoken(call.address)
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
@@ -3944,8 +3933,6 @@ contract(
         expectEvent(await controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CallExecuted', {
           from: accountOwner1,
           to: callTester.address,
-          vaultOwner: ZERO_ADDR,
-          vaultId: '0',
           data: ZERO_ADDR,
         })
       })
@@ -4008,8 +3995,6 @@ contract(
         expectEvent(await controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CallExecuted', {
           from: accountOwner1,
           to: callTester.address,
-          vaultOwner: ZERO_ADDR,
-          vaultId: '0',
           data: ZERO_ADDR,
         })
       })
