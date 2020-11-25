@@ -1003,8 +1003,345 @@ contract('CToken Proxy test', async ([user, random, holder1, factoryMock]) => {
       ]
       assert.equal(await controllerProxy.hasExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
 
-      await shortOtoken.transfer(payableCerc20ProxyOperator.address, amountToRedeem.toString(), {from: holder1})
+      await shortOtoken.approve(payableCerc20ProxyOperator.address, amountToRedeem.toString(), {from: holder1})
       await payableCerc20ProxyOperator.operate(actionArgs, holder1, '0', {from: holder1})
+    })
+  })
+  describe('Redeem ETH collateralized vault and cUSDC collateralized vault at once', () => {
+    let shortOtoken: MockOtokenInstance
+    // let strikePriceAtExpiry: BigNumber
+    // let underlyingPriceAtExpiry: BigNumber
+    // let cusdcPriceAtExpiry: BigNumber
+    // let strikePrice: BigNumber
+
+    before(async () => {
+      const amountToMint = createTokenAmount(1)
+
+      // determine initial fx rates for assets
+      const cusdcPrice = 0.02
+      const cethPrice = 0.03
+      const scaledCusdcPrice = createTokenAmount(cusdcPrice, 16) // 1 cToken = 0.02 USD
+      const scaledCethPrice = createTokenAmount(cethPrice, 28) // 1 cToken = 0.05 USD
+      const usdPrice = createTokenAmount(1, 8)
+      const ethPrice = createTokenAmount(300, 8)
+
+      //set initial prices for eth, cusdc, ceth
+      await oracle.setRealTimePrice(weth.address, ethPrice)
+      await oracle.setStablePrice(usdc.address, usdPrice)
+      await cusdc.setExchangeRate(scaledCusdcPrice)
+      await ceth.setExchangeRate(scaledCethPrice)
+      await oracle.setRealTimePrice(cusdc.address, createTokenAmount(cusdcPrice, 8))
+
+      const strike = 300
+      const amount = 100
+
+      const optionCollateralValue = strike * amount
+      const oTokenAmount = createTokenAmount(amount)
+      const underlyingAssetDeposit = createTokenAmount(optionCollateralValue, 6)
+
+      const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(user))
+      vaultCounter = vaultCounterBefore.plus(1).toNumber()
+
+      cusdcCollateralAmount = new BigNumber(optionCollateralValue).div(cusdcPrice)
+      const scaledCusdcCollateralAmount = createTokenAmount(cusdcCollateralAmount.toNumber())
+
+      await usdc.approve(payableCerc20ProxyOperator.address, underlyingAssetDeposit, {from: user})
+
+      const actionArgsUser = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: user,
+          secondAddress: user,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounter,
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.MintShortOption,
+          owner: user,
+          secondAddress: user,
+          asset: ethCusdcPut.address,
+          vaultId: vaultCounter,
+          amount: oTokenAmount,
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.DepositCollateral,
+          owner: user,
+          secondAddress: payableCerc20ProxyOperator.address,
+          asset: cusdc.address,
+          vaultId: vaultCounter,
+          amount: 0,
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+
+      await payableCerc20ProxyOperator.operate(actionArgsUser, user, underlyingAssetDeposit, {
+        from: user,
+      })
+
+      await ethCusdcPut.transfer(holder1, amountToMint.toString(), {from: user})
+
+      //const expiryTime = new BigNumber(60 * 60 * 24) // after 1 day
+      //const expiry = new BigNumber(await time.latest()).plus(expiryTime)
+      const strikePrice = 200
+      // const underlyingPriceAtExpiry = createScaledNumber(250)
+      // const strikePriceAtExpiry = createScaledNumber(1)
+      // const cusdcPriceAtExpiry = createScaledNumber(0.02)
+
+      const underlyingPriceAtExpiry = createTokenAmount(250)
+      const strikePriceAtExpiry = createTokenAmount(1)
+      const cusdcPriceAtExpiry = createTokenAmount(0.02)
+
+      shortOtoken = await MockOtoken.new()
+      // init otoken
+      await shortOtoken.init(
+        addressBook.address,
+        weth.address,
+        usdc.address,
+        weth.address,
+        createScaledNumber(strikePrice),
+        expiry,
+        false,
+      )
+      // change factory address
+      await addressBook.setOtokenFactory(factoryMock)
+      // whitelist short otoken to be used in the protocol
+      await whitelist.whitelistOtoken(shortOtoken.address, {from: factoryMock})
+      // whitelist collateral
+      await whitelist.whitelistCollateral(usdc.address, {from: user})
+      // open new vault, mintnaked short, sell it to holder 1
+      const vaultCounterBefore2ndMint = new BigNumber(await controllerProxy.getAccountVaultCounter(user))
+      vaultCounter = vaultCounterBefore2ndMint.plus(1).toNumber()
+      const collateralToDeposit = createTokenAmount(1, 18)
+      const actionArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: user,
+          secondAddress: user,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounter,
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.MintShortOption,
+          owner: user,
+          secondAddress: user,
+          asset: shortOtoken.address,
+          vaultId: vaultCounter,
+          amount: amountToMint,
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.DepositCollateral,
+          owner: user,
+          secondAddress: payableCerc20ProxyOperator.address,
+          asset: weth.address,
+          vaultId: vaultCounter,
+          amount: collateralToDeposit,
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+      await payableCerc20ProxyOperator.operate(actionArgs, user, '0', {from: user, value: collateralToDeposit})
+      // transfer minted short otoken to hodler`
+      await shortOtoken.transfer(holder1, amountToMint.toString(), {from: user})
+      // increase time with one hour in seconds
+      await time.increase(60 * 60 * 24 * 367)
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(
+        await shortOtoken.underlyingAsset(),
+        new BigNumber(await shortOtoken.expiryTimestamp()),
+        underlyingPriceAtExpiry,
+        true,
+      )
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(
+        await shortOtoken.strikeAsset(),
+        new BigNumber(await shortOtoken.expiryTimestamp()),
+        strikePriceAtExpiry,
+        true,
+      )
+      await oracle.setExpiryPriceFinalizedAllPeiodOver(
+        await ethCusdcPut.collateralAsset(),
+        new BigNumber(await shortOtoken.expiryTimestamp()),
+        cusdcPriceAtExpiry,
+        true,
+      )
+    })
+    it('redeem ETH collateral options and cUSDC collateral options', async () => {
+      const strikePrice = new BigNumber(200)
+      // const underlyingPriceAtExpiry = createScaledNumber(250)
+      // const strikePriceAtExpiry = createScaledNumber(1)
+      // const cusdcPriceAtExpiry = createScaledNumber(0.02)
+      const underlyingPriceAtExpiry = new BigNumber(createTokenAmount(250))
+      const strikePriceAtExpiry = new BigNumber(createTokenAmount(1))
+      const cusdcPriceAtExpiry = new BigNumber(createTokenAmount(0.02))
+
+      const amountToRedeem = new BigNumber(createTokenAmount(1))
+      const proceedsPerCall = underlyingPriceAtExpiry.minus(strikePrice)
+      const proceedsPerPut = strikePrice.minus(underlyingPriceAtExpiry)
+      const callProceeds = proceedsPerCall.times(amountToRedeem)
+      const putProceeds = proceedsPerPut.times(amountToRedeem)
+
+      const expectedCusdc = createTokenAmount(putProceeds.div(cusdcPriceAtExpiry), 8)
+      const expectedEth = createTokenAmount(callProceeds, 18)
+      const expectedUsdc = createTokenAmount(putProceeds, 6)
+
+      //holder1
+      const userPutBalanceBefore = new BigNumber(await ethCusdcPut.balanceOf(holder1))
+      const userCallBalanceBefore = new BigNumber(await shortOtoken.balanceOf(holder1))
+      const userCusdcBalanceBefore = new BigNumber(await cusdc.balanceOf(holder1))
+      const userUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(holder1))
+      const userWethBalanceBefore = new BigNumber(await weth.balanceOf(holder1))
+      const userEthBalanceBefore = new BigNumber(await web3.eth.getBalance(holder1))
+
+      //margin pool
+      const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+      const marginPoolCusdcBalanceBefore = new BigNumber(await cusdc.balanceOf(marginPool.address))
+      const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
+      const marginPoolEthBalanceBefore = new BigNumber(await web3.eth.getBalance(marginPool.address))
+
+      //proxy
+      const proxyUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(payableCerc20ProxyOperator.address))
+      const proxyCusdcBalanceBefore = new BigNumber(await cusdc.balanceOf(payableCerc20ProxyOperator.address))
+      const proxyWethBalanceBefore = new BigNumber(await weth.balanceOf(payableCerc20ProxyOperator.address))
+      const proxyEthBalanceBefore = new BigNumber(await web3.eth.getBalance(payableCerc20ProxyOperator.address))
+
+      const actionArgs = [
+        {
+          actionType: ActionType.Redeem,
+          owner: ZERO_ADDR,
+          secondAddress: payableCerc20ProxyOperator.address,
+          asset: shortOtoken.address,
+          vaultId: '0',
+          amount: amountToRedeem.toString(),
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.Redeem,
+          owner: ZERO_ADDR,
+          secondAddress: payableCerc20ProxyOperator.address,
+          asset: ethCusdcPut.address,
+          vaultId: '0',
+          amount: amountToRedeem.toString(),
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+      assert.equal(await controllerProxy.hasExpired(shortOtoken.address), true, 'Short call is not expired yet')
+      assert.equal(await controllerProxy.hasExpired(ethCusdcPut.address), true, 'Short put is not expired yet')
+
+      await shortOtoken.approve(payableCerc20ProxyOperator.address, amountToRedeem, {from: holder1})
+      await ethCusdcPut.approve(payableCerc20ProxyOperator.address, amountToRedeem, {from: holder1})
+      await payableCerc20ProxyOperator.operate(actionArgs, holder1, '0', {from: holder1})
+
+      //holder1
+      const userPutBalanceAfter = new BigNumber(await ethCusdcPut.balanceOf(holder1))
+      const userCallBalanceAfter = new BigNumber(await shortOtoken.balanceOf(holder1))
+      const userCusdcBalanceAfter = new BigNumber(await cusdc.balanceOf(holder1))
+      const userUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(holder1))
+      const userWethBalanceAfter = new BigNumber(await weth.balanceOf(holder1))
+      const userEthBalanceAfter = new BigNumber(await web3.eth.getBalance(holder1))
+      //margin pool
+      const marginPoolCusdcBalanceAfter = new BigNumber(await cusdc.balanceOf(marginPool.address))
+      const marginPoolUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+      const marginPoolWethBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
+      const marginPoolEthBalanceAfter = new BigNumber(await web3.eth.getBalance(marginPool.address))
+
+      //proxy
+      const proxyCusdcBalanceAfter = new BigNumber(await cusdc.balanceOf(payableCerc20ProxyOperator.address))
+      const proxyUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(payableCerc20ProxyOperator.address))
+      const proxyWethBalanceAfter = new BigNumber(await weth.balanceOf(payableCerc20ProxyOperator.address))
+      const proxyEthBalanceAfter = new BigNumber(await web3.eth.getBalance(payableCerc20ProxyOperator.address))
+
+      //user
+      assert.equal(
+        userPutBalanceBefore.minus(amountToRedeem).toString(),
+        userPutBalanceAfter.toString(),
+        'User put option balance is incorrect',
+      )
+      assert.equal(
+        userCallBalanceBefore.minus(amountToRedeem).toString(),
+        userCallBalanceAfter.toString(),
+        'User call option balance is incorrect',
+      )
+
+      assert.equal(
+        userCusdcBalanceBefore.toString(),
+        userCusdcBalanceAfter.toString(),
+        'User cUSDC balance is incorrect',
+      )
+
+      console.log(userUsdcBalanceBefore.toString())
+      console.log(userUsdcBalanceAfter.toString())
+
+      assert.equal(
+        userUsdcBalanceBefore.plus(expectedUsdc).toString(),
+        userUsdcBalanceAfter.toString(),
+        'User USDC balance is incorrect',
+      )
+
+      assert.equal(userWethBalanceBefore.toString(), userWethBalanceAfter.toString(), 'User USDC balance is incorrect')
+
+      assert.equal(
+        userEthBalanceBefore.plus(expectedEth).toString(),
+        userEthBalanceAfter.toString(),
+        'User USDC balance is incorrect',
+      )
+
+      //margin pool
+      assert.equal(
+        marginPoolCusdcBalanceBefore.minus(expectedCusdc).toString(),
+        marginPoolCusdcBalanceAfter.toString(),
+        'Margin Pool cUSDC balance is incorrect',
+      )
+      assert.equal(
+        marginPoolUsdcBalanceBefore.toString(),
+        marginPoolUsdcBalanceAfter.toString(),
+        'Margin Pool USDC balance is incorrect',
+      )
+
+      assert.equal(
+        marginPoolWethBalanceBefore.minus(expectedEth).toString(),
+        marginPoolWethBalanceAfter.toString(),
+        'Margin Pool USDC balance is incorrect',
+      )
+
+      assert.equal(
+        marginPoolEthBalanceBefore.toString(),
+        marginPoolEthBalanceAfter.toString(),
+        'Margin Pool USDC balance is incorrect',
+      )
+
+      //proxy
+      assert.equal(
+        proxyCusdcBalanceBefore.toString(),
+        proxyCusdcBalanceAfter.toString(),
+        'Proxy cUSDC balance is incorrect',
+      )
+      assert.equal(
+        proxyUsdcBalanceBefore.toString(),
+        proxyUsdcBalanceAfter.toString(),
+        'Proxy USDC balance is incorrect',
+      )
+
+      assert.equal(
+        proxyCusdcBalanceBefore.toString(),
+        proxyCusdcBalanceAfter.toString(),
+        'Proxy cUSDC balance is incorrect',
+      )
+      assert.equal(
+        proxyUsdcBalanceBefore.toString(),
+        proxyUsdcBalanceAfter.toString(),
+        'Proxy USDC balance is incorrect',
+      )
     })
   })
 })

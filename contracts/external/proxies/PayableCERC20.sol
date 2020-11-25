@@ -103,6 +103,10 @@ contract PayableCERC20 is ReentrancyGuard {
                 // should we only update if the action.second address == address(this)?
                 _actions[i].amount = cTokenBalance;
             }
+            // pull tokens to proxy if user is trying to redeem
+            if (action.actionType == Actions.ActionType.Redeem) {
+                ERC20Interface(action.asset).safeTransferFrom(msg.sender, address(this), action.amount);
+            }
             // check if Call action exist, approve WETH to Callee
             if (action.actionType == Actions.ActionType.Call) {
                 ERC20Interface(address(weth)).safeIncreaseAllowance(
