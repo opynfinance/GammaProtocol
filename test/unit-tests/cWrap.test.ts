@@ -70,7 +70,6 @@ contract('CToken Proxy test', async ([user, random]) => {
   let oracle: MockOracleInstance
   let expiry: number
 
-  let ethCethCall: OtokenInstance
   let ethCusdcPut: OtokenInstance
 
   let wethPricer: ChainLinkPricerInstance
@@ -81,7 +80,6 @@ contract('CToken Proxy test', async ([user, random]) => {
 
   let vaultCounter: number
   let cusdcCollateralAmount: BigNumber
-  let cethCollateralAmount: BigNumber
 
   before('setup contracts', async () => {
     const now = (await time.latest()).toNumber()
