@@ -222,6 +222,7 @@ contract('CToken Proxy test', async ([user, random, holder1, factoryMock]) => {
       await oracle.setStablePrice(usdc.address, usdPrice)
       await cusdc.setExchangeRate(scaledCusdcPrice)
       await ceth.setExchangeRate(scaledCethPrice)
+      await oracle.setRealTimePrice(cusdc.address, createTokenAmount(cusdcPrice, 8))
 
       const strike = 300
       const amount = 100
