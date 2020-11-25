@@ -74,7 +74,6 @@ contract('CToken Proxy test', async ([user, random]) => {
 
   let wethPricer: ChainLinkPricerInstance
   let cusdcPricer: CompoundPricerInstance
-  let cethPricer: CompoundPricerInstance
 
   let wethAggregator: MockChainlinkAggregatorInstance
 
@@ -113,10 +112,6 @@ contract('CToken Proxy test', async ([user, random]) => {
 
     await oracle.setLockingPeriod(wethPricer.address, lockingPeriod)
     await oracle.setDisputePeriod(wethPricer.address, disputePeriod)
-    //await oracle.setLockingPeriod(usdcPricer.address, lockingPeriod)
-    //await oracle.setDisputePeriod(usdcPricer.address, disputePeriod)
-    await oracle.setLockingPeriod(cethPricer.address, lockingPeriod)
-    await oracle.setDisputePeriod(cethPricer.address, disputePeriod)
     await oracle.setLockingPeriod(cusdcPricer.address, lockingPeriod)
     await oracle.setDisputePeriod(cusdcPricer.address, disputePeriod)
 
