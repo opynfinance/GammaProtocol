@@ -36,9 +36,7 @@ contract MockOracle {
         uint256 price = stablePrice[_asset];
 
         if (price == 0) {
-            require(assetPricer[_asset] != address(0), "Oracle: Pricer for this asset not set");
-
-            price = OpynPricerInterface(assetPricer[_asset]).getPrice();
+            price = realTimePrice[_asset];
         }
 
         return price;

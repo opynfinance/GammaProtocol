@@ -77,7 +77,8 @@ contract('CompoundPricer', ([owner, random]) => {
     const exchangeRate = new BigNumber('200192735438752381581313918')
     before('mock data in chainlink pricer and cToken', async () => {
       await oracle.setRealTimePrice(usdc.address, '100000000')
-      await wethPricer.setPrice(ethPrice)
+      await oracle.setRealTimePrice(weth.address, ethPrice)
+      // await wethPricer.setPrice(ethPrice)
       await cETH.setExchangeRate(exchangeRate)
     })
     it('should return the price in 1e8', async () => {
@@ -91,13 +92,15 @@ contract('CompoundPricer', ([owner, random]) => {
     })
     it('should return the new price after resetting answer in underlying pricer', async () => {
       const newPrice = createScaledNumber(500)
-      await wethPricer.setPrice(newPrice)
+      // await wethPricer.setPrice(newPrice)
+      await oracle.setRealTimePrice(weth.address, newPrice)
       const cTokenPrice = await cethPricer.getPrice()
       const expectedResult = await underlyingPriceToCtokenPrice(new BigNumber(newPrice), exchangeRate, weth)
       assert.equal(cTokenPrice.toString(), expectedResult.toString())
     })
     it('should revert if price is lower than 0', async () => {
-      await wethPricer.setPrice('0')
+      // await wethPricer.setPrice('0')
+      await oracle.setRealTimePrice(weth.address, '0')
       await expectRevert(cethPricer.getPrice(), 'CompoundPricer: underlying price is 0')
     })
   })
@@ -105,10 +108,12 @@ contract('CompoundPricer', ([owner, random]) => {
   describe('getPrice for cUSDC', () => {
     const usdPrice = createScaledNumber(1)
     const exchangeRate = new BigNumber('211619877757422')
+
     before('mock data in chainlink pricer and cToken', async () => {
       await oracle.setStablePrice(usdc.address, '100000000')
       await cUSDC.setExchangeRate(exchangeRate)
     })
+
     it('should return the price in 1e8', async () => {
       // how much 1e8 cToken worth in USD
       const cTokenprice = await cusdcPricer.getPrice()
@@ -124,10 +129,6 @@ contract('CompoundPricer', ([owner, random]) => {
       const cTokenPrice = await cusdcPricer.getPrice()
       const expectedResult = await underlyingPriceToCtokenPrice(new BigNumber(newPrice), exchangeRate, usdc)
       assert.equal(cTokenPrice.toString(), expectedResult.toString())
-    })
-    it('should revert if price is 0', async () => {
-      await oracle.setStablePrice(usdc.address, '0')
-      await expectRevert(cusdcPricer.getPrice(), 'Oracle: Pricer for this asset not set')
     })
   })
 
