@@ -310,7 +310,6 @@ contract('CToken Proxy test', async ([user, random]) => {
       //set initial prices for eth, cusdc, ceth
       await wethAggregator.setLatestAnswer(ethPrice)
       await cusdc.setExchangeRate(scaledCusdcPrice)
-      await ceth.setExchangeRate(scaledCethPrice)
 
       const strike = 300
       const amount = 100
@@ -426,7 +425,6 @@ contract('CToken Proxy test', async ([user, random]) => {
       //set initial prices for eth, cusdc, ceth
       await wethAggregator.setLatestAnswer(ethPrice)
       await cusdc.setExchangeRate(scaledCusdcPrice)
-      await ceth.setExchangeRate(scaledCethPrice)
 
       const strike = 300
       const amount = 100
@@ -531,7 +529,6 @@ contract('CToken Proxy test', async ([user, random]) => {
       //set initial prices for eth, cusdc, ceth
       await wethAggregator.setLatestAnswer(ethPrice)
       await cusdc.setExchangeRate(scaledCusdcPrice)
-      await ceth.setExchangeRate(scaledCethPrice)
 
       const strike = 300
       const amount = 100
@@ -592,7 +589,6 @@ contract('CToken Proxy test', async ([user, random]) => {
       //set initial prices for eth, cusdc, ceth
       await wethAggregator.setLatestAnswer(ethPrice)
       await cusdc.setExchangeRate(scaledCusdcPrice)
-      await ceth.setExchangeRate(scaledCethPrice)
 
       const strike = 300
       const amount = 100
