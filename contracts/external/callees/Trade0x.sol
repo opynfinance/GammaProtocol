@@ -98,12 +98,10 @@ contract Trade0x is CalleeInterface {
     function decodeERC20Asset(bytes memory b) internal pure returns (address result) {
         require(b.length == 36, "LENGTH_65_REQUIRED");
 
-        uint256 index = 16;
-
         // Add offset to index:
         // 1. Arrays are prefixed by 32-byte length parameter (add 32 to index)
         // 2. Account for size difference between address length and 32-byte storage word (subtract 12 from index)
-        index += 20;
+        uint256 index = 36;
 
         // Read address from array memory
         assembly {
