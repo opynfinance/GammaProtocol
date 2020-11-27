@@ -72,14 +72,13 @@ contract CERC20Proxy is ReentrancyGuard {
 
             // overwrite the deposit amount by the exact amount minted
             if (action.actionType == Actions.ActionType.DepositCollateral && action.amount == 0) {
-                // should we only update if the action.second address == address(this)?
                 _actions[i].amount = cTokenBalance;
             }
         }
 
         controller.operate(_actions);
 
-        // unwrap and withdraw cTokens that have been added to contract via operate function
+        // unwrap and withdraw cTokens that have been added to contract
         uint256 cTokenBalanceAfter = cToken.balanceOf(address(this));
         if (cTokenBalanceAfter > 0) {
             require(cToken.redeem(cTokenBalanceAfter) == 0, "CTokenPricer: Redeem Failed");

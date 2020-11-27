@@ -512,7 +512,6 @@ contract('CToken Proxy test', async ([user, random, holder1, factoryMock]) => {
       const ethPrice = createTokenAmount(300, 8)
 
       //set initial prices for eth, cusdc, ceth
-      // await wethAggregator.setLatestAnswer(ethPrice)
       await oracle.setRealTimePrice(weth.address, ethPrice)
       await cusdc.setExchangeRate(scaledCusdcPrice)
 
