@@ -100,7 +100,6 @@ contract PayableCERC20 is ReentrancyGuard {
                 action.amount == 0 &&
                 action.asset == address(cToken)
             ) {
-                // should we only update if the action.second address == address(this)?
                 _actions[i].amount = cTokenBalance;
             }
             // pull tokens to proxy if user is trying to redeem
