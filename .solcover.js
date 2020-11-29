@@ -9,7 +9,7 @@ module.exports = {
     'mocks/',
     'packages/',
     'external/canonical-weth',
-    'callees/proxies/CERC20Proxy.sol',
-    'callees/proxies/CETHProxy.sol'
+    'external/proxies/CERC20Proxy.sol',
+    'external/proxies/CETHProxy.sol'
   ]
 }
