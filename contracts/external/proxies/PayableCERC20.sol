@@ -110,7 +110,7 @@ contract PayableCERC20 is ReentrancyGuard {
             if (action.actionType == Actions.ActionType.Call) {
                 ERC20Interface(address(weth)).safeIncreaseAllowance(
                     action.secondAddress,
-                    weth.balanceOf(address(this))
+                    msg.value
                 );
             }
         }
