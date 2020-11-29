@@ -1,5 +1,6 @@
 using DummyERC20C as collateralToken
 using MarginPool as pool
+using Whitelist as whitelist
 
 methods {
     //The tracked asset balance of the system
@@ -8,7 +9,7 @@ methods {
     // ERC20 functions
     collateralToken.totalSupply() returns uint256 envfree
     collateralToken.balanceOf(address) returns uint256 envfree
-  
+
     //the amount of collateral in an index in a vault of an owner. i.e.,  vaults[owner][index].collateralAmounts[i]
     getVaultCollateralAmount(address, uint256, uint256)  returns uint256 envfree
     //the collateral asset of an index in a vault of an owner. i.e., vaults[owner][index].collateralAssets(i)
@@ -18,18 +19,36 @@ methods {
     //the long oToken in an index in a vault of an owner. i.e.,  vaults[owner][index].longOtoken[i]
     getVaultLongOtoken(address, uint256, uint256)  returns uint256 envfree
     //the amount of long in an index in a vault of an owner. i.e.,  vaults[owner][index].shortAmounts[i]
-    getVaultShortAmount(address, uint256, uint256)  returns address envfree
+    getVaultShortAmount(address, uint256, uint256)  returns uint256 envfree
     //the long oToken in an index in a vault of an owner. i.e.,  vaults[owner][index].shortOtoken[i]
     getVaultShortOtoken(address, uint256, uint256)  returns uint256 envfree
 	// checks if the vault is expired (true when there is an otoken which we can check expiry for)
     isVaultExpired(address, uint256) returns bool
     // checks if vault is "small" all lengths shorter than a constant
     smallVault(address, uint256, uint256) returns bool envfree
+
+    // The total supply of an asset. i.e., asset.totalSupply()
+    assetTotalSupply(address) returns uint256 envfree
+    whitelist.isWhitelistedOtoken(address) returns bool envfree
+    whitelist.isWhitelistedCollateral(address) returns bool envfree
 }
 
 summaries {
     expiryTimestamp() => CONSTANT;
 }
+
+
+invariant validState(address owner, uint256 vaultId, uint256 index, address asset, address shortOtoken, address longOtoken) 
+    ( shortOtoken == getVaultShortOtoken(owner, vaultId, index) &&
+      longOtoken == getVaultLongOtoken(owner, vaultId, index) &&
+      asset == getVaultCollateralAsset(owner, vaultId, index) 
+    )
+        =>
+    ( assetTotalSupply(shortOtoken) >= (pool.getStoredBalance(shortOtoken) + getVaultShortAmount(owner, vaultId, index)) &&
+      assetTotalSupply(longOtoken) >= pool.getStoredBalance(longOtoken) &&
+      pool.getStoredBalance(longOtoken) >= getVaultLongAmount(owner, vaultId, index) &&
+      pool.getStoredBalance(asset) >= getVaultCollateralAmount(owner, vaultId, index) 
+    ) 
 
 /**
 @title Valid balance with respect to total collateral
@@ -139,5 +158,40 @@ rule cantSettleUnexpiredVault(address owner, uint256 vaultId)
 */
 // XX Instantiated for collateral token
 /*isValidAsset(asset) => */
-invariant validBalanceOfTheSystem
-         sinvoke pool.getStoredBalance(collateralToken) <= sinvoke collateralToken.balanceOf(pool)
+invariant validBalanceOfTheSystem()
+         sinvoke pool.getStoredBalance(collateralToken) == sinvoke collateralToken.balanceOf(pool)
+{
+    preserved withdrawCollateral(env e, address owner, uint256 vaultId, address to, uint256 index, uint256 amount) {
+        require owner != pool && to != pool;
+        require getVaultCollateralAsset(owner, vaultId, index) == collateralToken;
+        require smallVault(owner, vaultId, 1);
+    }
+    
+    preserved depositCollateral(env e, address owner, uint256 vaultId, address from, uint256 index, uint256 amount){
+        require owner != pool;
+        require getVaultCollateralAsset(owner, vaultId, index) == collateralToken;
+        require smallVault(owner, vaultId, 1);
+    }
+    
+
+}
+
+rule onlyValidOtoken(address otoken, method f) {
+        uint256 before = pool.getStoredBalance(otoken);
+        uint256 totalSupplyBefore = assetTotalSupply(otoken);
+        //otoken is not an asset
+        require !whitelist.isWhitelistedCollateral(otoken);
+        env e;
+        calldataarg arg;
+        sinvoke f(e,arg);
+        uint256 after = pool.getStoredBalance(otoken);
+        uint256 totalSupplyAfter = assetTotalSupply(otoken);
+        assert ( before != after || totalSupplyBefore != totalSupplyAfter) => whitelist.isWhitelistedOtoken(otoken);
+}
+
+invariant shortOtokenIsWhitelisted(address owner, uint256 vaultId, uint256 index, address otoken)
+    ( getVaultShortOtoken(owner, vaultId, index) == otoken || getVaultLongOtoken(owner, vaultId, index) == otoken) 
+    => whitelist.isWhitelistedOtoken(otoken)
+
+invariant assetIsNotOtoken(address a)
+    !(whitelist.isWhitelistedOtoken(a) && whitelist.isWhitelistedCollateral(a))

@@ -6,10 +6,12 @@ import "../contracts/Controller.sol";
 import {ERC20Interface} from "../contracts/interfaces/ERC20Interface.sol";
 import {MarginVault} from "../contracts/libs/MarginVault.sol";
 
-interface ExtendedERC20 {
+/*interface ExtendedERC20 {
     function havocTotalSupply(uint256) external;
+    function havocVault(address owner, uint256 vaultId, uint256 i, uint256 newShortAmount,
+                uint256 newLongAmount, uint256 newcollateralAmount ) external ; 
 }
-
+*/
 contract ControllerHarness is Controller {
 
     function _runActions(Actions.ActionArgs[] memory _actions)
@@ -126,20 +128,6 @@ contract ControllerHarness is Controller {
         return ((hasShorts || hasLongs) && now >= OtokenInterface(otoken).expiryTimestamp());
     }
 
-    function havocVault(address owner, uint256 vaultId, uint256 i, uint256 newShortAmount,
-                uint256 newLongAmount, uint256 newcollateralAmount ) external  returns (address) {
-        MarginVault.Vault storage vault = cheapGetVault(owner, vaultId);
-        vault.shortAmounts[i] = newShortAmount;
-        vault.longAmounts[i] = newLongAmount;
-        vault.collateralAmounts[i] = newcollateralAmount;
-    }
-
-    function havocTotalSpply(address oToken, uint256 newValue) external  {
-        if (oToken == anOtokenA )
-            ExtendedERC20(anOtokenA).havocTotalSupply(newValue);
-        else if (oToken == anOtokenB)
-            ExtendedERC20(anOtokenB).havocTotalSupply(newValue);
-    }
 
     function openVault(address owner, uint256 vaultId) external {
         Actions.OpenVaultArgs memory args = Actions.OpenVaultArgs({
@@ -214,6 +202,7 @@ contract ControllerHarness is Controller {
             });
         _depositCollateral(args);
     }
+
 
     function withdrawCollateral(address owner, uint256 vaultId, address to, uint256 index, uint256 amount)
     external {
