@@ -1,5 +1,6 @@
 import {
   WETH9Instance,
+  Mock0xTradeInstance,
   MockOtokenInstance,
   MockERC20Instance,
   ControllerInstance,
@@ -20,6 +21,7 @@ import {createTokenAmount, createValidExpiry, createScaledNumber} from '../utils
 const {expectRevert, time} = require('@openzeppelin/test-helpers')
 
 const WETH9 = artifacts.require('WETH9.sol')
+const Mock0xTrade = artifacts.require('Mock0xTrade.sol')
 const ERC20 = artifacts.require('MockERC20')
 const Controller = artifacts.require('Controller.sol')
 const MockOtoken = artifacts.require('MockOtoken')
@@ -49,7 +51,8 @@ enum ActionType {
   Call,
 }
 
-contract('CToken Proxy test', async ([user, random, holder1, factoryMock]) => {
+contract('PayableCERC20 contract', async ([user, random, holder1, factoryMock]) => {
+  let tradingExchange: Mock0xTradeInstance
   let usdc: MockERC20Instance
   let weth: WETH9Instance
   let cusdc: MockCUSDCInstance
@@ -75,6 +78,8 @@ contract('CToken Proxy test', async ([user, random, holder1, factoryMock]) => {
     weth = await WETH9.new()
     usdc = await ERC20.new('USDC', 'USDC', 6)
     cusdc = await MockCUSDC.new('cUSDC', 'cUSDC', usdc.address, createTokenAmount(1, 16))
+
+    tradingExchange = await Mock0xTrade.new()
 
     addressBook = await AddressBook.new()
     calculator = await MarginCalculator.new(addressBook.address)
@@ -1186,14 +1191,6 @@ contract('CToken Proxy test', async ([user, random, holder1, factoryMock]) => {
         marginPoolUsdcBalanceAfter.toString(),
         'Margin Pool USDC balance is incorrect',
       )
-      // console.log(expectedEth.toString())
-      // console.log(marginPoolWethBalanceBefore.toString())
-      // console.log(marginPoolWethBalanceAfter.toString())
-      // assert.equal(
-      //   marginPoolWethBalanceBefore.minus(expectedEth).toString(),
-      //   marginPoolWethBalanceAfter.toString(),
-      //   'Margin Pool WETH balance is incorrect',
-      // )
       assert.equal(
         marginPoolEthBalanceBefore.toString(),
         marginPoolEthBalanceAfter.toString(),
@@ -1209,6 +1206,105 @@ contract('CToken Proxy test', async ([user, random, holder1, factoryMock]) => {
         proxyCusdcBalanceBefore.toString(),
         proxyCusdcBalanceAfter.toString(),
         'Proxy cUSDC balance is incorrect',
+      )
+    })
+  })
+
+  describe('Mint cUSDC collateralized option and trade through 0x callee', async () => {
+    let shortOtoken: MockOtokenInstance
+
+    before(async () => {
+      const now = (await time.latest()).toNumber()
+      expiry = createValidExpiry(now, 300) // 300 days from now
+      // deploy cusdc collateral option
+      shortOtoken = await MockOtoken.new()
+      await shortOtoken.init(
+        addressBook.address,
+        weth.address,
+        usdc.address,
+        cusdc.address,
+        createTokenAmount(300),
+        expiry,
+        true,
+      )
+      // change factory address
+      await addressBook.setOtokenFactory(factoryMock)
+      // whitelist short otoken to be used in the protocol
+      await whitelist.whitelistOtoken(shortOtoken.address, {from: factoryMock})
+    })
+
+    it('should mint cUSDC collateralized token and trade WEHT by sending ETH', async () => {
+      const strike = 300
+      const oTokenAmount = 10
+      const optionCollateralValue = strike * oTokenAmount
+      const underlyingAssetDeposit = createTokenAmount(optionCollateralValue, 6)
+
+      const wethToTrade = web3.utils.toWei('3', 'ether')
+      const data = web3.eth.abi.encodeParameters(['address', 'uint256'], [weth.address, wethToTrade])
+
+      const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(user))
+      vaultCounter = vaultCounterBefore.plus(1).toNumber()
+
+      const actionArgsUser = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: user,
+          secondAddress: user,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounter,
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.MintShortOption,
+          owner: user,
+          secondAddress: user,
+          asset: shortOtoken.address,
+          vaultId: vaultCounter,
+          amount: oTokenAmount,
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.DepositCollateral,
+          owner: user,
+          secondAddress: payableCerc20ProxyOperator.address,
+          asset: cusdc.address,
+          vaultId: vaultCounter,
+          amount: 0,
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.Call,
+          owner: ZERO_ADDR,
+          secondAddress: tradingExchange.address,
+          asset: ZERO_ADDR,
+          vaultId: '0',
+          amount: '0',
+          index: '0',
+          data: data,
+        },
+      ]
+
+      const userOptionAmountBefore = new BigNumber(await shortOtoken.balanceOf(user))
+      const exchangeWethBefore = new BigNumber(await weth.balanceOf(tradingExchange.address))
+
+      await usdc.approve(payableCerc20ProxyOperator.address, underlyingAssetDeposit, {from: user})
+      await payableCerc20ProxyOperator.operate(actionArgsUser, user, underlyingAssetDeposit, {
+        value: wethToTrade,
+        from: user,
+      })
+
+      const userOptionAmountAfter = new BigNumber(await shortOtoken.balanceOf(user))
+      const exchangeWethAfter = new BigNumber(await weth.balanceOf(tradingExchange.address))
+
+      assert.equal(exchangeWethAfter.minus(exchangeWethBefore), wethToTrade, 'Exchange WETH balance mismatch')
+      assert.equal(
+        userOptionAmountAfter.minus(userOptionAmountBefore).toString(),
+        new BigNumber(oTokenAmount).toString(),
+        'Minted option amount mismatch',
       )
     })
   })
