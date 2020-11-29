@@ -8,6 +8,8 @@ module.exports = {
     'Migrations.sol',
     'mocks/',
     'packages/',
-    'external/canonical-weth'
+    'external/canonical-weth',
+    'callees/proxies/CERC20Proxy.sol',
+    'callees/proxies/CETHProxy.sol'
   ]
 }
