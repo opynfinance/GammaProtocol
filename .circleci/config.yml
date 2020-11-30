@@ -10,32 +10,32 @@ workflows:
       - build:
           requires:
             - checkout_and_install
-      - lint:
-          requires:
-            - build
-      - certora:
-          requires:
-            - build
-      - size-check:
-          requires:
-            - build
-      - unit-test:
-          requires:
-            - build
-      - integration-test:
-          requires:
-            - build
+      # - lint:
+      #     requires:
+      #       - build
+      # - certora:
+      #     requires:
+      #       - build
+      # - size-check:
+      #     requires:
+      #       - build
+      # - unit-test:
+      #     requires:
+      #       - build
+      # - integration-test:
+      #     requires:
+      #       - build
       - e2e-test:
           requires:
             - build
-      - coverage:
-          context: COVERALLS_REPO_TOKEN
-          requires:
-            - build
-      - gas-report:
-          context: COVERALLS_REPO_TOKEN
-          requires:
-            - unit-test
+      # - coverage:
+      #     context: COVERALLS_REPO_TOKEN
+      #     requires:
+      #       - build
+      # - gas-report:
+      #     context: COVERALLS_REPO_TOKEN
+      #     requires:
+      #       - unit-test
 
 jobs:
 
@@ -175,7 +175,7 @@ jobs:
     docker:
       - image: circleci/node:10.18.0
       - image: trufflesuite/ganache-cli:v6.10.1
-        command: "ganache-cli --fork https://mainnet.infura.io/v3/${$INFURA_KEY} --unlock 0xbe0eb53f46cd790cd13851d5eff43d12404d33e8"
+        command: "ganache-cli --fork https://mainnet.infura.io/v3/${INFURA_KEY} --unlock 0xbe0eb53f46cd790cd13851d5eff43d12404d33e8"
     steps:
       - restore_cache:
           key: gamma-contracts-build-{{ .Environment.CIRCLE_SHA1 }}
