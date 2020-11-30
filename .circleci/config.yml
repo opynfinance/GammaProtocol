@@ -185,14 +185,12 @@ jobs:
           name: Ganache Mainnet Fork
           command: |
             echo "Started Ganache Fork"
-            cd ci
-            ./ganache_fork.sh
+            ./ci/ganache_fork.sh
       - run:
           name: Mainnet E2E Test 
           # command: npm run ci:test:e2e
           command: |
-            cd ci
-            ./e2e.sh	
+            ./ci/e2e.sh	
       - save_cache:
           key: gas-{{ .Environment.CIRCLE_SHA1 }}
           paths:
