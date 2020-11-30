@@ -77,7 +77,6 @@ contract MarginPool is Ownable {
         uint256 _amount
     ) public onlyController {
         require(_amount > 0, "MarginPool: transferToPool amount is equal to 0");
-        require(_user != address(this), "MarginPool: cannot transfer assets from oneself");
         assetBalance[_asset] = assetBalance[_asset].add(_amount);
 
         // transfer _asset _amount from _user to pool

@@ -90,7 +90,7 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
 
       await expectRevert(
         marginPool.transferToPool(usdc.address, marginPool.address, ether('1'), {from: controllerAddress}),
-        'MarginPool: cannot transfer assets from oneself',
+        'ERC20: transfer amount exceeds balance',
       )
     })
 
