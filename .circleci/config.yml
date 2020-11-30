@@ -7,9 +7,9 @@ workflows:
   build-test-report:
     jobs:
       - checkout_and_install
-      - build:
-          requires:
-            - checkout_and_install
+      # - build:
+      #     requires:
+      #       - checkout_and_install
       # - lint:
       #     requires:
       #       - build
@@ -27,7 +27,8 @@ workflows:
       #       - build
       - e2e-test:
           requires:
-            - build
+            # - build
+            - checkout_and_install
       # - coverage:
       #     context: COVERALLS_REPO_TOKEN
       #     requires:
@@ -181,7 +182,9 @@ jobs:
           key: gamma-contracts-build-{{ .Environment.CIRCLE_SHA1 }}
       - run:
           name: Set Env Variables
-          command: export INFURA_KEY=${INFURA_KEY}
+          command: |
+            export INFURA_KEY=${INFURA_KEY}
+            echo $INFURA_KEY
       - run:
           name: Ganache Mainnet Fork
           command: ./ci/ganache_fork.sh
