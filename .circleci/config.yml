@@ -184,7 +184,7 @@ jobs:
       - run:
           name: Ganache Mainnet Fork
           command: |
-            echo $INFURA_KEY
+            echo "Started Ganache Fork"
             cd ci
             ./ganache_fork.sh
       - run:
