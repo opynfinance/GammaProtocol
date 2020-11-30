@@ -182,13 +182,7 @@ jobs:
           name: Set Env Variables
           command: echo "export INFURA_KEY=${INFURA_KEY}" >> $BASH_ENV
       - run:
-          name: Ganache Mainnet Fork
-          command: |
-            echo "Started Ganache Fork"
-            ./ci/ganache_fork.sh
-      - run:
           name: Mainnet E2E Test 
-          # command: npm run ci:test:e2e
           command: |
             ./ci/e2e.sh	
       - save_cache:
