@@ -174,7 +174,7 @@ jobs:
     working_directory: ~/gammaprotocol
     docker:
       - image: circleci/node:10.18.0
-      - image: trufflesuite/ganache-cli:v6.10.1
+      # - image: trufflesuite/ganache-cli:v6.10.1
         # command: "ganache-cli --fork https://mainnet.infura.io/v3/${INFURA_KEY} --unlock 0xbe0eb53f46cd790cd13851d5eff43d12404d33e8"
     steps:
       - restore_cache:
