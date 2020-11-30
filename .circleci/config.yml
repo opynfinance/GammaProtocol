@@ -7,9 +7,9 @@ workflows:
   build-test-report:
     jobs:
       - checkout_and_install
-      # - build:
-      #     requires:
-      #       - checkout_and_install
+      - build:
+          requires:
+            - checkout_and_install
       # - lint:
       #     requires:
       #       - build
@@ -27,8 +27,7 @@ workflows:
       #       - build
       - e2e-test:
           requires:
-            # - build
-            - checkout_and_install
+            - build
       # - coverage:
       #     context: COVERALLS_REPO_TOKEN
       #     requires:
@@ -44,7 +43,6 @@ jobs:
     working_directory: ~/gammaprotocol
     docker:
       - image: circleci/node:10.18.0
-      
     steps:
       - checkout
       - restore_cache:
@@ -119,7 +117,6 @@ jobs:
           command: |
             cd specs/whitelist
             ./runPrivilegedWhitelist.sh
-
       - run:
           name: Test MarginVault
           command: |
@@ -184,15 +181,16 @@ jobs:
           name: Set Env Variables
           command: export INFURA_KEY=${INFURA_KEY}
       - run:
-          name: test circle Env
-          command: echo ${INFURA_KEY}
-      - run:
           name: Ganache Mainnet Fork
-          command: ./ci/ganache_fork.sh
+          command: |
+            cd ci
+            ./ganache_fork.sh
       - run:
           name: Mainnet E2E Test 
           # command: npm run ci:test:e2e
-          command: ./ci/e2e.sh	
+          command: |
+            cd ci
+            ./e2e.sh	
       - save_cache:
           key: gas-{{ .Environment.CIRCLE_SHA1 }}
           paths:
