@@ -179,10 +179,11 @@ jobs:
           key: gamma-contracts-build-{{ .Environment.CIRCLE_SHA1 }}
       - run:
           name: Set Env Variables
-          command: export INFURA_KEY=${INFURA_KEY}
+          command: echi "export INFURA_KEY=${INFURA_KEY}" >> $BASH_ENV
       - run:
           name: Ganache Mainnet Fork
           command: |
+            echo $INFURA_KEY
             cd ci
             ./ganache_fork.sh
       - run:
