@@ -1,6 +1,8 @@
 using DummyERC20C as collateralToken
 using MarginPool as pool
 using Whitelist as whitelist
+using OtokenHarnessA as shortOtoken
+using OtokenHarnessB as longOtoken
 
 methods {
     //The tracked asset balance of the system
@@ -35,20 +37,34 @@ methods {
 
 summaries {
     expiryTimestamp() => CONSTANT;
+    burnOtoken(address, uint256) => CONSTANT;
+
 }
 
 
-invariant validState(address owner, uint256 vaultId, uint256 index, address asset, address shortOtoken, address longOtoken) 
-    ( shortOtoken == getVaultShortOtoken(owner, vaultId, index) &&
+
+
+rule validState(address owner, uint256 vaultId, uint256 index,  method f) 
+{
+    require ( shortOtoken == getVaultShortOtoken(owner, vaultId, index) &&
       longOtoken == getVaultLongOtoken(owner, vaultId, index) &&
-      asset == getVaultCollateralAsset(owner, vaultId, index) 
-    )
-        =>
-    ( assetTotalSupply(shortOtoken) >= (pool.getStoredBalance(shortOtoken) + getVaultShortAmount(owner, vaultId, index)) &&
+      collateralToken == getVaultCollateralAsset(owner, vaultId, index) 
+    );
+    
+    require ( assetTotalSupply(shortOtoken) >= (pool.getStoredBalance(shortOtoken) + getVaultShortAmount(owner, vaultId, index)) &&
       assetTotalSupply(longOtoken) >= pool.getStoredBalance(longOtoken) &&
       pool.getStoredBalance(longOtoken) >= getVaultLongAmount(owner, vaultId, index) &&
-      pool.getStoredBalance(asset) >= getVaultCollateralAmount(owner, vaultId, index) 
-    ) 
+      pool.getStoredBalance(collateralToken) >= getVaultCollateralAmount(owner, vaultId, index) 
+    ) ;
+    callFunctionWithParameters(f, owner, vaultId, index);
+    assert ( assetTotalSupply(shortOtoken) >= (pool.getStoredBalance(shortOtoken) + getVaultShortAmount(owner, vaultId, index)) &&
+      assetTotalSupply(longOtoken) >= pool.getStoredBalance(longOtoken) &&
+      pool.getStoredBalance(longOtoken) >= getVaultLongAmount(owner, vaultId, index) &&
+      pool.getStoredBalance(collateralToken) >= getVaultCollateralAmount(owner, vaultId, index) 
+    );
+}
+
+
 
 /**
 @title Valid balance with respect to total collateral
@@ -176,22 +192,63 @@ invariant validBalanceOfTheSystem()
 
 }
 
-rule onlyValidOtoken(address otoken, method f) {
+rule onlyValidOtoken(address owner, uint256 vaultId, uint256 index, address otoken, method f) {
+        require (otoken == shortOtoken || otoken == longOtoken );
+        require ( getVaultShortOtoken(owner, vaultId, index) == otoken || getVaultLongOtoken(owner, vaultId, index) == otoken) 
+                => whitelist.isWhitelistedOtoken(otoken);
         uint256 before = pool.getStoredBalance(otoken);
         uint256 totalSupplyBefore = assetTotalSupply(otoken);
-        //otoken is not an asset
         require !whitelist.isWhitelistedCollateral(otoken);
-        env e;
-        calldataarg arg;
-        sinvoke f(e,arg);
+        callFunctionWithParameters(f, owner, vaultId, index);
         uint256 after = pool.getStoredBalance(otoken);
         uint256 totalSupplyAfter = assetTotalSupply(otoken);
         assert ( before != after || totalSupplyBefore != totalSupplyAfter) => whitelist.isWhitelistedOtoken(otoken);
 }
 
-invariant shortOtokenIsWhitelisted(address owner, uint256 vaultId, uint256 index, address otoken)
-    ( getVaultShortOtoken(owner, vaultId, index) == otoken || getVaultLongOtoken(owner, vaultId, index) == otoken) 
-    => whitelist.isWhitelistedOtoken(otoken)
+
+function callFunctionWithParameters(method f, address owner, uint256 vaultId, uint256 index) {
+    env e;
+    uint256 amount;
+    address to;
+    address from;
+    address receiver;
+    if (f.selector == withdrawCollateral(address,uint256,address,uint256,uint256).selector) {
+        withdrawCollateral(e, owner, vaultId, to, index, amount);
+    }
+    else if (f.selector == withdrawLongB(address,uint256,address,uint256,uint256).selector) {
+        withdrawLongB(e, owner, vaultId, to, index, amount);
+    }
+    else if (f.selector == withdrawLongA(address,uint256,address,uint256,uint256).selector) {
+        withdrawLongA(e, owner, vaultId, to, index, amount);
+    }
+    
+    else if (f.selector == burnOtokenA(address,uint256,address,uint256,uint256).selector) {
+        burnOtokenA(e, owner, vaultId, from, index, amount);
+    }
+    else if (f.selector == burnOtokenB(address,uint256,address,uint256,uint256).selector) {
+        burnOtokenB(e, owner, vaultId, from, index, amount);
+    }
+    else if (f.selector == settleVault(address,uint256,address).selector) {
+        settleVault(e, owner, vaultId, to);
+    }
+    else {
+        calldataarg arg;
+        sinvoke f(e,arg);
+    }
+}
+
+rule OtokenInVaultIsWhitelisted(address owner, uint256 vaultId, uint256 index, address otoken, method f) {
+    require ( getVaultShortOtoken(owner, vaultId, index) == otoken || getVaultLongOtoken(owner, vaultId, index) == otoken) 
+                => whitelist.isWhitelistedOtoken(otoken);
+    callFunctionWithParameters(f, owner, vaultId, index);
+    assert ( getVaultShortOtoken(owner, vaultId, index) == otoken || getVaultLongOtoken(owner, vaultId, index) == otoken) 
+                => whitelist.isWhitelistedOtoken(otoken);
+    
+}
+
 
 invariant assetIsNotOtoken(address a)
     !(whitelist.isWhitelistedOtoken(a) && whitelist.isWhitelistedCollateral(a))
+   
+
+
