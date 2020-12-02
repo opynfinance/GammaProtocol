@@ -10,6 +10,7 @@ import {
   AddressBookInstance,
   OwnedUpgradeabilityProxyInstance,
   PayableProxyControllerInstance,
+  CalleeAllowanceTesterInstance,
 } from '../../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 import {createTokenAmount, createScaledNumber} from '../utils'
@@ -27,6 +28,7 @@ const AddressBook = artifacts.require('AddressBook.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
 const MarginVault = artifacts.require('MarginVault.sol')
+const CalleeAllowanceTester = artifacts.require('CalleeAllowanceTester.sol')
 const PayableProxyController = artifacts.require('PayableProxyController.sol')
 
 // address(0)
@@ -66,6 +68,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
   let controllerProxy: ControllerInstance
   // payable controller proxy
   let payableProxyController: PayableProxyControllerInstance
+  let testerCallee: CalleeAllowanceTesterInstance
 
   before('Deployment', async () => {
     // addressbook deployment
@@ -81,6 +84,8 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
     marginPool = await MarginPool.new(addressBook.address)
     // whitelist module
     whitelist = await MockWhitelistModule.new()
+    // callee allowance tester
+    testerCallee = await CalleeAllowanceTester.new(weth.address)
     // set margin pool in addressbook
     await addressBook.setMarginPool(marginPool.address)
     // set calculator in addressbook
@@ -299,6 +304,33 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
         }),
         'PayableProxyController: cannot execute action',
       )
+    })
+
+    it('should wrap eth and make it accessable to callee contract', async () => {
+      const amountEth = createTokenAmount(0.5, 18)
+      const wethBalanceBefore = new BigNumber(await weth.balanceOf(testerCallee.address))
+      const data = web3.eth.abi.encodeParameters(
+        ['address', 'uint256'],
+        [payableProxyController.address, amountEth.toString()],
+      )
+      const actionArgs = [
+        {
+          actionType: ActionType.Call,
+          owner: accountOwner1,
+          secondAddress: testerCallee.address,
+          asset: ZERO_ADDR,
+          vaultId: 0,
+          amount: '0',
+          index: '0',
+          data,
+        },
+      ]
+      await payableProxyController.operate(actionArgs, accountOwner1, {
+        from: accountOwner1,
+        value: amountEth,
+      })
+      const wethBalanceAfter = new BigNumber(await weth.balanceOf(testerCallee.address))
+      assert.equal(wethBalanceAfter.minus(wethBalanceBefore).toString(), amountEth.toString())
     })
   })
 
