@@ -135,12 +135,12 @@ jobs:
             ./specs/scripts/runValidBalances.sh validBalanceTotalLong
             
       - run:
-          name: Test valid balances 
+          name: Test general rules 
           command: |
-            ./specs/scripts/runValidBalances.sh validBalanceTotalCollateral
-            ./specs/scripts/runValidBalances.sh validBalanceTotalShort
-            ./specs/scripts/runValidBalances.sh validBalanceTotalLong
-       
+            ./specs/scripts/runValidBalances.sh cantSettleUnexpiredVault
+            ./specs/scripts/runValidBalances.sh assetIsNotOtoken
+            
+      
             
   size-check:
     working_directory: ~/gammaprotocol
