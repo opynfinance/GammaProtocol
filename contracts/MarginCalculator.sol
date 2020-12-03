@@ -43,15 +43,16 @@ contract MarginCalculator {
      */
     function getExpiredPayoutRate(address _otoken) external view returns (uint256) {
         require(_otoken != address(0), "MarginCalculator: Invalid token address");
+
         OtokenInterface otoken = OtokenInterface(_otoken);
-        require(now > otoken.expiryTimestamp(), "MarginCalculator: Otoken not expired yet");
+        uint256 expiry = otoken.expiryTimestamp();
+
+        require(now > expiry, "MarginCalculator: Otoken not expired yet");
 
         FPI.FixedPointInt memory cashValueInStrike = _getExpiredCashValue(_otoken);
 
         address strike = otoken.strikeAsset();
         address collateral = otoken.collateralAsset();
-
-        uint256 expiry = otoken.expiryTimestamp();
 
         FPI.FixedPointInt memory cashValueInCollateral = _convertAmountOnExpiryPrice(
             cashValueInStrike,
