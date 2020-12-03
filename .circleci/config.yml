@@ -138,7 +138,7 @@ jobs:
           name: Test general rules 
           command: |
             ./specs/scripts/runValidBalances.sh cantSettleUnexpiredVault
-            ./specs/scripts/runValidBalances.sh assetIsNotOtoken
+            
             
       
             
