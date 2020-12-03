@@ -2,8 +2,8 @@ pragma solidity =0.6.10;
 
 pragma experimental ABIEncoderV2;
 
-import {MarginVault} from "../contracts/libs/MarginVault.sol";
-import {SafeMath} from "../contracts/packages/oz/SafeMath.sol";
+import {MarginVault} from "../../contracts/libs/MarginVault.sol";
+import {SafeMath} from "../../contracts/packages/oz/SafeMath.sol";
 
 
 

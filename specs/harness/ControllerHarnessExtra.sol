@@ -2,8 +2,7 @@ pragma solidity =0.6.10;
 
 pragma experimental ABIEncoderV2;
 
-import "specs/ControllerHarness.sol";
-//import {ERC20Interface} from "../contracts/interfaces/ERC20Interface.sol";
+import "specs/harness/ControllerHarness.sol";
 
 interface ExtendedERC20 {
     function havocTotalSupply(uint256) external;

@@ -2,16 +2,10 @@ pragma solidity =0.6.10;
 
 pragma experimental ABIEncoderV2;
 
-import "../contracts/Controller.sol";
-import {ERC20Interface} from "../contracts/interfaces/ERC20Interface.sol";
-import {MarginVault} from "../contracts/libs/MarginVault.sol";
+import "../../contracts/Controller.sol";
+import {ERC20Interface} from "../../contracts/interfaces/ERC20Interface.sol";
+import {MarginVault} from "../../contracts/libs/MarginVault.sol";
 
-/*interface ExtendedERC20 {
-    function havocTotalSupply(uint256) external;
-    function havocVault(address owner, uint256 vaultId, uint256 i, uint256 newShortAmount,
-                uint256 newLongAmount, uint256 newcollateralAmount ) external ; 
-}
-*/
 contract ControllerHarness is Controller {
 
     function _runActions(Actions.ActionArgs[] memory _actions)
@@ -22,10 +16,6 @@ contract ControllerHarness is Controller {
         uint256
     ) { }
 
-    /* function operate(Actions.ActionArgs[] memory _actions) external payable override nonReentrant notShutdown {
-
-    }
-*/
     address public anOtokenA;
     address public anOtokenB;
     address public dummyERC20C;

@@ -113,21 +113,35 @@ jobs:
       - run:
           name: Test Whitelist privileged ops
           command: |
-            cd specs/whitelist
-            ./runPrivilegedWhitelist.sh
+            ./specs/scripts/runPrivilegedWhitelist.sh
 
       - run:
           name: Test MarginVault
           command: |
-            cd specs
-            ./runMarginVault.sh
+            ./specs/scripts/runMarginVault.sh
 
       - run:
-          name: Test Basic No Bankruptcy
+          name: Test no Bankruptcy
           command: |
-            cd specs
-            ./runNoBankruptcy1.sh
-
+            ./specs/scripts/runNoBankruptcy.sh putOptionsPreExpiryCase1StartingWithAllCases
+            ./specs/scripts/runNoBankruptcy.sh putOptionsPreExpiryCase2StartingWithAllCases
+            ./specs/scripts/runNoBankruptcy.sh callOptionsPreExpiry
+            
+      - run:
+          name: Test valid balances 
+          command: |
+            ./specs/scripts/runValidBalances.sh validBalanceTotalCollateral
+            ./specs/scripts/runValidBalances.sh validBalanceTotalShort
+            ./specs/scripts/runValidBalances.sh validBalanceTotalLong
+            
+      - run:
+          name: Test valid balances 
+          command: |
+            ./specs/scripts/runValidBalances.sh validBalanceTotalCollateral
+            ./specs/scripts/runValidBalances.sh validBalanceTotalShort
+            ./specs/scripts/runValidBalances.sh validBalanceTotalLong
+       
+            
   size-check:
     working_directory: ~/gammaprotocol
     docker:

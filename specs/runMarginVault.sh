@@ -1,1 +1,0 @@
-certoraRun MarginVaultHarness.sol --solc solc --verify MarginVaultHarness:MarginVault.spec --settings  -assumeUnwindCond,-b=3,-enableStorageVariableUnpacking=false,-useNonLinearArithmetic --path .. --staging

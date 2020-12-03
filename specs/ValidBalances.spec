@@ -176,21 +176,7 @@ rule cantSettleUnexpiredVault(address owner, uint256 vaultId)
 /*isValidAsset(asset) => */
 invariant validBalanceOfTheSystem()
          sinvoke pool.getStoredBalance(collateralToken) == sinvoke collateralToken.balanceOf(pool)
-{
-    preserved withdrawCollateral(env e, address owner, uint256 vaultId, address to, uint256 index, uint256 amount) {
-        require owner != pool && to != pool;
-        require getVaultCollateralAsset(owner, vaultId, index) == collateralToken;
-        require smallVault(owner, vaultId, 1);
-    }
-    
-    preserved depositCollateral(env e, address owner, uint256 vaultId, address from, uint256 index, uint256 amount){
-        require owner != pool;
-        require getVaultCollateralAsset(owner, vaultId, index) == collateralToken;
-        require smallVault(owner, vaultId, 1);
-    }
-    
 
-}
 
 rule onlyValidOtoken(address owner, uint256 vaultId, uint256 index, address otoken, method f) {
         require (otoken == shortOtoken || otoken == longOtoken );
@@ -238,6 +224,7 @@ function callFunctionWithParameters(method f, address owner, uint256 vaultId, ui
 }
 
 rule OtokenInVaultIsWhitelisted(address owner, uint256 vaultId, uint256 index, address otoken, method f) {
+    require (otoken == shortOtoken || otoken == longOtoken );
     require ( getVaultShortOtoken(owner, vaultId, index) == otoken || getVaultLongOtoken(owner, vaultId, index) == otoken) 
                 => whitelist.isWhitelistedOtoken(otoken);
     callFunctionWithParameters(f, owner, vaultId, index);
