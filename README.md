@@ -1,4 +1,4 @@
-# Gamma Protocol [![CircleCI](https://circleci.com/gh/opynfinance/GammaProtocol.svg?style=svg)](https://circleci.com/gh/opynfinance/GammaProtocol/tree/master) [![Coverage Status](https://coveralls.io/repos/github/opynfinance/GammaProtocol/badge.svg?branch=master)](https://coveralls.io/github/opynfinance/GammaProtocol?branch=master) [![Crytic Status](https://crytic.io/api/repositories/4uRxP_ItTzK-RmpaNiU6PA/badge.svg?token=95ac29ba-8408-48bc-a798-9faf7eaf83c8)](https://crytic.io/opynfinance/GammaProtocol)
+# Gamma Protocol [![CircleCI](https://circleci.com/gh/opynfinance/GammaProtocol.svg?style=svg)](https://circleci.com/gh/opynfinance/GammaProtocol/tree/master) [![Coverage Status](https://coveralls.io/repos/github/opynfinance/GammaProtocol/badge.svg?branch=master)](https://coveralls.io/github/opynfinance/GammaProtocol?branch=master)
 
 Gamma is a decentralized capital efficient option protocol that enables sellers to create spreads. 
 Gamma protocol enables any user to create arbitrary option tokens, that represent the right to buy or sell a certain asset in a predefined price (strike price) at or before expiry. 
