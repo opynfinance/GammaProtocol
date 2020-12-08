@@ -17,13 +17,13 @@ methods {
     //the collateral asset of an index in a vault of an owner. i.e., vaults[owner][index].collateralAssets(i)
     getVaultCollateralAsset(address, uint256, uint256)  returns address envfree
     //the amount of long in an index in a vault of an owner. i.e.,  vaults[owner][index].longAmounts[i]
-    getVaultLongAmount(address, uint256, uint256)  returns address envfree
+    getVaultLongAmount(address, uint256, uint256)  returns uint256 envfree
     //the long oToken in an index in a vault of an owner. i.e.,  vaults[owner][index].longOtoken[i]
-    getVaultLongOtoken(address, uint256, uint256)  returns uint256 envfree
+    getVaultLongOtoken(address, uint256, uint256)  returns address envfree
     //the amount of long in an index in a vault of an owner. i.e.,  vaults[owner][index].shortAmounts[i]
     getVaultShortAmount(address, uint256, uint256)  returns uint256 envfree
     //the long oToken in an index in a vault of an owner. i.e.,  vaults[owner][index].shortOtoken[i]
-    getVaultShortOtoken(address, uint256, uint256)  returns uint256 envfree
+    getVaultShortOtoken(address, uint256, uint256)  returns address envfree
 	// checks if the vault is expired (true when there is an otoken which we can check expiry for)
     isVaultExpired(address, uint256) returns bool
     // checks if vault is "small" all lengths shorter than a constant
