@@ -19,11 +19,11 @@ methods {
     // The amount of long in an index in a vault of an owner. i.e.,  vaults[owner][index].longAmounts[i]
     getVaultLongAmount(address, uint256, uint256)  returns uint256 envfree
     // The long oToken in an index in a vault of an owner. i.e.,  vaults[owner][index].longOtoken[i]
-    getVaultLongOtoken(address, uint256, uint256)  returns uint256 envfree
+    getVaultLongOtoken(address, uint256, uint256)  returns address envfree
     // The amount of long in an index in a vault of an owner. i.e.,  vaults[owner][index].shortAmounts[i]
     getVaultShortAmount(address, uint256, uint256)  returns uint256 envfree
     // The long oToken in an index in a vault of an owner. i.e.,  vaults[owner][index].shortOtoken[i]
-    getVaultShortOtoken(address, uint256, uint256)  returns uint256 envfree
+    getVaultShortOtoken(address, uint256, uint256)  returns address envfree
     // Checks if the vault is expired (true when there is an otoken which we can check expiry for)
     isVaultExpired(address, uint256) returns bool
     // The strike price of OtokenHarnessA 
