@@ -12,6 +12,8 @@ methods {
     collateralToken.totalSupply() returns uint256 envfree
     collateralToken.balanceOf(address) returns uint256 envfree
 
+    longOtoken.balanceOf(address) returns uint256 envfree
+
     //the amount of collateral in an index in a vault of an owner. i.e.,  vaults[owner][index].collateralAmounts[i]
     getVaultCollateralAmount(address, uint256, uint256)  returns uint256 envfree
     //the collateral asset of an index in a vault of an owner. i.e., vaults[owner][index].collateralAssets(i)
@@ -108,23 +110,19 @@ description "$f breaks the validity of stored balance of collateral asset"
         Vasset = { (v,i) v ∈ Vaults.  v.longOtokens(i) = oToken}
         getStoredBalance(oToken) = ∑(v,i) ∈ Vasset. v.longAmounts[i]
 */
-rule validBalanceTotalLong(address owner, uint256 vaultId, uint256 index, address oToken, method f)
+rule validBalanceTotalLong(address owner, uint256 vaultId, uint256 index, method f)
 description "$f breaks the validity of stored balance of long asset"
 {
     env e;
-    require oToken == collateralToken;
-    require !isVaultExpired(e, owner, vaultId);
-    require getVaultLongOtoken(owner, vaultId, index) == oToken;
+    require getVaultLongOtoken(owner, vaultId, index) == longOtoken;
     uint256 longVaultBefore = getVaultLongAmount(owner, vaultId, index);
-    uint256 poolBalanceBefore = pool.getStoredBalance(oToken);
-    if (f.selector == settleVault(address,uint256,address).selector) {
-        assert true;
-    } else {
-        calldataarg arg;
-        sinvoke f(e, arg);
-    }
+    uint256 poolBalanceBefore = longOtoken.balanceOf(pool);
+    
+    calldataarg arg;
+    sinvoke f(e, arg);
+    
     uint256 longVaultAfter = getVaultLongAmount(owner, vaultId, index);
-    uint256 poolBalanceAfter = pool.getStoredBalance(oToken);
+    uint256 poolBalanceAfter = longOtoken.balanceOf(pool);
     assert longVaultBefore != longVaultAfter => ( poolBalanceAfter - poolBalanceBefore ==  longVaultAfter - longVaultBefore);
 }
 

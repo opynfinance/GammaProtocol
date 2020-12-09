@@ -5,6 +5,7 @@ pragma experimental ABIEncoderV2;
 import "../../contracts/Controller.sol";
 import {ERC20Interface} from "../../contracts/interfaces/ERC20Interface.sol";
 import {MarginVault} from "../../contracts/libs/MarginVault.sol";
+import {OtokenInterface} from "../../contracts/interfaces/OtokenInterface.sol";
 
 contract ControllerHarness is Controller {
 
@@ -283,13 +284,35 @@ contract ControllerHarness is Controller {
 
     function settleVault(address owner, uint256 vaultId, address to)
     external {
-        Actions.SettleVaultArgs memory args = Actions.SettleVaultArgs({
-            owner: owner,
-            vaultId: vaultId,
-            to: to
-        });
-        _settleVault(args);
+        
+        MarginVault.Vault memory vault = getVault(owner, vaultId);
+        bool hasShorts = _isNotEmpty(vault.shortOtokens);
+        bool hasLongs = _isNotEmpty(vault.longOtokens);
+        require(
+            hasShorts || hasLongs,
+            "Controller: Can't settle vault with no otoken"
+        );
+
+        OtokenInterface otoken = hasShorts
+            ? OtokenInterface(vault.shortOtokens[0])
+            : OtokenInterface(vault.longOtokens[0]);
+
+        require(now >= otoken.expiryTimestamp(), "Controller: can not settle vault with un-expired otoken");
+        require(isSettlementAllowed(address(otoken)), "Controller: asset prices not finalized yet");
+
+        (uint256 payout, ) = calculator.getExcessCollateral(vault);
+
+        if (hasLongs) {
+            OtokenInterface longOtoken = OtokenInterface(anOtokenB);
+
+            longOtoken.burnOtoken(address(pool), vault.longAmounts[0]);
+        }
+
+        delete vaults[owner][vaultId];
+
+        pool.transferToUser(dummyERC20C, to, payout);
     }
+
 
     function call(address owner, address callee, uint256 vaultId, uint256 msgValue, bytes memory data)
     external {
