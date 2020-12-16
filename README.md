@@ -47,7 +47,11 @@ $ npm run ganache
 Switch back to your other terminal and deploy the contracts, and make sure to to setup the deployments parameters in `./migrations/deployment-config.json` file:
 
 ```sh
+# Local deployment
 $ npm run deploy:development
+
+# Mainnet deployment
+$ npm run deploy:mainnet
 ```
 
 ## Running Tests
