@@ -10,7 +10,7 @@ module.exports = async function(callback) {
             .option("controller", { describe: "Controller proxy address", type: "string", demandOption: true })
             .option("pool", { describe: "Margin pool address", type: "string", demandOption: true })
             .option("weth", { describe: "WETH token address", type: "string", demandOption: true })
-            .option("gas", { describe: "Gas pricer in GWEI", type: "string", demandOption: false })
+            .option("gas", { describe: "Gas pricer in WEI", type: "string", demandOption: false })
             .argv;
 
         console.log(`Deploying payable proxy contract on ${options.network} 🍕`)
