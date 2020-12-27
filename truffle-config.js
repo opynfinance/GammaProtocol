@@ -50,7 +50,11 @@ module.exports = {
     },
   },
 
-  plugins: ['solidity-coverage', 'truffle-contract-size'],
+  plugins: ['solidity-coverage', 'truffle-contract-size', 'truffle-plugin-verify'],
+
+  api_keys: {
+    etherscan: process.env.ETHERSCAN_API
+  },
 
   compilers: {
     solc: {
