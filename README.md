@@ -1,4 +1,4 @@
-# Gamma Protocol [![CircleCI](https://circleci.com/gh/opynfinance/GammaProtocol.svg?style=svg)](https://circleci.com/gh/opynfinance/GammaProtocol/tree/master) [![Coverage Status](https://coveralls.io/repos/github/opynfinance/GammaProtocol/badge.svg?branch=master)](https://coveralls.io/github/opynfinance/GammaProtocol?branch=master) [![Crytic Status](https://crytic.io/api/repositories/4uRxP_ItTzK-RmpaNiU6PA/badge.svg?token=95ac29ba-8408-48bc-a798-9faf7eaf83c8)](https://crytic.io/opynfinance/GammaProtocol)
+# Gamma Protocol [![CircleCI](https://circleci.com/gh/opynfinance/GammaProtocol.svg?style=svg)](https://circleci.com/gh/opynfinance/GammaProtocol/tree/master) [![Coverage Status](https://coveralls.io/repos/github/opynfinance/GammaProtocol/badge.svg?branch=master)](https://coveralls.io/github/opynfinance/GammaProtocol?branch=master)
 
 Gamma is a decentralized capital efficient option protocol that enables sellers to create spreads. 
 Gamma protocol enables any user to create arbitrary option tokens, that represent the right to buy or sell a certain asset in a predefined price (strike price) at or before expiry. 
@@ -47,7 +47,11 @@ $ npm run ganache
 Switch back to your other terminal and deploy the contracts, and make sure to to setup the deployments parameters in `./migrations/deployment-config.json` file:
 
 ```sh
+# Local deployment
 $ npm run deploy:development
+
+# Mainnet deployment
+$ npm run deploy:mainnet
 ```
 
 ## Running Tests
@@ -62,6 +66,42 @@ Run all integration tests:
 
 ```sh
 $ npm run test:integration
+```
+
+## Scripts
+
+### Payable Proxy Contract Deployment
+
+To deploy a new `PayableProxyController.sol`, it is recommended to use the `deployPayableProxyController` truffle script inside the `scripts` folder.
+
+**Input**
+```sh
+truffle exec scripts/deployPayableProxyController.js --network mainnet --controller 0x7d78c401c69c56cb21f4bf80c53afd92be0BBBBB --pool 0xc02aaa39b223fe8d0a0e5c4f27ead9083c7AAaaa --weth 0x5f4eC3Df9cbd43714FE2740f5E3616155cAGAGAG --gas 50000000000
+```
+
+**Output**
+```sh
+Deploying payable proxy contract on mainnet 🍕
+Payable proxy contract deployed! 🎉
+Transaction hash: 0xebf12fc6603ee857bcabe1c0c6194XX82639a9888776f7ff6e83a409XXXXXXXX
+Deployed contract address: 0x669cC97687c792fc5369d7bdd38cXXXXXXXXXX
+```
+
+### Chainlink Pricer Deployment
+
+To deploy a new `ChainlinkPricer.sol`, it is recommended to use the `deployChainlinkPricer` truffle script inside the `scripts` folder.
+
+**Input**
+```sh
+truffle exec scripts/deployChainlinkPricer.js --network mainnet --controller 0x7d78c401c69c56cb21f4bf80c53afd92be0BBBBB --pool 0xc02aaa39b223fe8d0a0e5c4f27ead9083c7AAaaa --weth 0x5f4eC3Df9cbd43714FE2740f5E3616155cAGAGAG --oracle 0xef196aA0e3Cb8EA6d5720557C3B611Eff6OOOOOO --gas 50000000000
+```
+
+**Output**
+```sh
+Deploying chainlink pricer contract on mainnet 🍕
+Chainlink pricer deployed! 🎉
+Transaction hash: 0xebf12fc6603ee857bcabe1c0c6194XX82639a9888776f7ff6e83a409XXXXXXXX
+Deployed contract address: 0x669cC97687c792fc5369d7bdd38cXXXXXXXXXX
 ```
 
 ## Linting
