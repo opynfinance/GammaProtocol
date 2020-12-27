@@ -43,5 +43,21 @@ module.exports = async function(network, accounts) {
     await oracle.transferOwnership(newOwner, {from: deployerAddress})
     await pool.transferOwnership(newOwner, {from: deployerAddress})
     await controller.transferOwnership(newOwner, {from: deployerAddress})
+  } else if (network == "development") {
+    // new protocol owner
+    const newOwner = deploymentConfig.DEVELOPMENT.MULTISIG
+
+    const addressbook = await AddressBook.deployed()
+    const whitelist = await Whitelist.deployed()
+    const oracle = await Oracle.deployed()
+    const pool = await MarginPool.deployed()
+    const controller = await Controller.deployed()
+
+    // transfer ownership
+    await addressbook.transferOwnership(newOwner, {from: deployerAddress})
+    await whitelist.transferOwnership(newOwner, {from: deployerAddress})
+    await oracle.transferOwnership(newOwner, {from: deployerAddress})
+    await pool.transferOwnership(newOwner, {from: deployerAddress})
+    await controller.transferOwnership(newOwner, {from: deployerAddress})
   }
 }
