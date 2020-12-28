@@ -24,9 +24,13 @@ contract Oracle is Ownable {
 
     /// @dev mapping of asset pricer to its locking period
     /// locking period is the period of time after the expiry timestamp where a price can not be pushed
+    /// the locking period is set per Pricer, it can be set to zero in case the system have a pricer with an instant asset price
     mapping(address => uint256) internal pricerLockingPeriod;
     /// @dev mapping of asset pricer to its dispute period
     /// dispute period is the period of time after an expiry price has been pushed where a price can be disputed
+    /// Disputing a price is a defense mechanism for a certain Pricer, where in case the dispute period is set for a specific Pricer
+    /// the Disputer can dispute the pushed price during the disputing period
+    /// The dispute period can be set to zero in certain scenario where the system does not need to dispute the price source (e.g getting price from a specific Uniswap pool)
     mapping(address => uint256) internal pricerDisputePeriod;
     /// @dev mapping between an asset and its pricer
     mapping(address => address) internal assetPricer;
@@ -253,7 +257,7 @@ contract Oracle is Ownable {
 
     /**
      * @notice dispute an asset price during the dispute period
-     * @dev only the disputer can dispute a price during the dispute period, by setting a new one
+     * @dev price disputing is only allowed by the disputer address and when the dispute period for the asset pricer is not set to zero
      * @param _asset asset address
      * @param _expiryTimestamp expiry timestamp
      * @param _price the correct price
