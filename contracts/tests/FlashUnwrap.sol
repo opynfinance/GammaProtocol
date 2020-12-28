@@ -37,7 +37,7 @@ contract FlashUnwrap is CalleeInterface {
     receive() external payable {}
 
     // flash unwrap
-    function callFunction(address payable _sender, bytes memory _data) external override {
+    function callFunction(address payable _sender, bytes memory _data) external override payable {
         require(_data.length == NUM_CALLFUNCTIONDATA_BYTES, "FlashUnwrap: cannot parse CallFunctionData");
 
         CallFunctionData memory cfd = abi.decode(_data, (CallFunctionData));
