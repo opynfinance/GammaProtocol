@@ -16,10 +16,6 @@ contract CompoundPricer is OpynPricerInterface {
     /// @notice opyn oracle address
     OracleInterface public oracle;
 
-    /// @notice pricer interface to get the price for the cToken's underying asset
-    // if the cToken is cUSDC, underlyingPricer is the pricer for USDC
-    OpynPricerInterface public underlyingPricer;
-
     /// @notice cToken that this pricer will a get price for
     CTokenInterface public cToken;
 
@@ -29,23 +25,19 @@ contract CompoundPricer is OpynPricerInterface {
     /**
      * @param _cToken cToken asset
      * @param _underlying underlying asset for this cToken
-     * @param _underlyingPricer pricer for cToken's underlying
      * @param _oracle Opyn Oracle contract address
      */
     constructor(
         address _cToken,
         address _underlying,
-        address _underlyingPricer,
         address _oracle
     ) public {
         require(_cToken != address(0), "CompoundPricer: cToken address can not be 0");
         require(_underlying != address(0), "CompoundPricer: underlying address can not be 0");
-        require(_underlyingPricer != address(0), "CompoundPricer: underlying pricer address can not be 0");
         require(_oracle != address(0), "CompoundPricer: oracle address can not be 0");
 
         cToken = CTokenInterface(_cToken);
         underlying = ERC20Interface(_underlying);
-        underlyingPricer = OpynPricerInterface(_underlyingPricer);
         oracle = OracleInterface(_oracle);
     }
 
@@ -55,7 +47,7 @@ contract CompoundPricer is OpynPricerInterface {
      * @return price of 1e8 cToken in USD, scaled by 1e8
      */
     function getPrice() external override view returns (uint256) {
-        uint256 underlyingPrice = underlyingPricer.getPrice();
+        uint256 underlyingPrice = oracle.getPrice(address(underlying));
         require(underlyingPrice > 0, "CompoundPricer: underlying price is 0");
         return _underlyingPriceToCtokenPrice(underlyingPrice);
     }

@@ -41,7 +41,7 @@ contract('Pricer + Oracle', ([owner, bot, disputer, random]) => {
 
     oracle = await Oracle.new()
     wethPricer = await ChainlinkPricer.new(bot, weth.address, wethAggregator.address, oracle.address)
-    cethPricer = await CompoundPricer.new(ceth.address, weth.address, wethPricer.address, oracle.address)
+    cethPricer = await CompoundPricer.new(ceth.address, weth.address, oracle.address)
   })
 
   describe('get live price from chainlink pricer', () => {
