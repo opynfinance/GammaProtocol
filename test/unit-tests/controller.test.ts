@@ -53,7 +53,6 @@ contract(
     let usdc: MockERC20Instance
     let weth: MockERC20Instance
     let weth2: MockERC20Instance
-
     // Oracle module
     let oracle: MockOracleInstance
     // calculator module
