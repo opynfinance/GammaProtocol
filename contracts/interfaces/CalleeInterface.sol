@@ -12,5 +12,5 @@ interface CalleeInterface {
      * @param _sender The msg.sender to Controller
      * @param _data Arbitrary data given by the sender
      */
-    function callFunction(address payable _sender, bytes memory _data) external payable;
+    function callFunction(address payable _sender, bytes memory _data) external;
 }
