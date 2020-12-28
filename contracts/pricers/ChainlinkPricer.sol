@@ -23,6 +23,7 @@ contract ChainLinkPricer is OpynPricerInterface {
     address public bot;
 
     /**
+     * @param _bot priveleged address that can call setExpiryPriceInOracle
      * @param _asset asset that this pricer will get a price for
      * @param _aggregator Chainlink aggregator contract for the asset
      * @param _oracle Opyn Oracle address

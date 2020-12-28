@@ -738,13 +738,12 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
 
         MarginVault.Vault memory vault = getVault(_args.owner, _args.vaultId);
+        bool hasShort = _isNotEmpty(vault.shortOtokens);
+        bool hasLong = _isNotEmpty(vault.longOtokens);
 
-        require(
-            _isNotEmpty(vault.shortOtokens) || _isNotEmpty(vault.longOtokens),
-            "Controller: Can't settle vault with no otoken"
-        );
+        require(hasShort || hasLong, "Controller: Can't settle vault with no otoken");
 
-        OtokenInterface otoken = _isNotEmpty(vault.shortOtokens)
+        OtokenInterface otoken = hasShort
             ? OtokenInterface(vault.shortOtokens[0])
             : OtokenInterface(vault.longOtokens[0]);
 
@@ -753,7 +752,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         (uint256 payout, ) = calculator.getExcessCollateral(vault);
 
-        if (_isNotEmpty(vault.longOtokens)) {
+        if (hasLong) {
             OtokenInterface longOtoken = OtokenInterface(vault.longOtokens[0]);
 
             longOtoken.burnOtoken(address(pool), vault.longAmounts[0]);

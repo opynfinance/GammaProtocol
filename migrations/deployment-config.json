@@ -1,6 +1,9 @@
 {
     "RINKEBY": {
-        "MULTISIG": "0x8c8b4C5caEAf1A6FB8308a6336932B3e3419704C"
+        "MULTISIG": ""
+    },
+    "DEVELOPMENT": {
+        "MULTISIG": "0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1"
     },
     "MAINNET": {
         "MULTISIG": ""

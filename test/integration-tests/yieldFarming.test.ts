@@ -227,6 +227,7 @@ contract('Yield Farming: Naked Put Option closed before expiry flow', ([admin, a
     const cusdcDecimals = 8
     const compDecimals = 18
     let wethPricer: MockPricerInstance
+    let usdcPricer: MockPricerInstance
     let cusdcPricer: CompoundPricerInstance
     const lockingPeriod = time.duration.minutes(15).toNumber()
     const disputePeriod = time.duration.minutes(15).toNumber()
@@ -246,9 +247,11 @@ contract('Yield Farming: Naked Put Option closed before expiry flow', ([admin, a
       await oracle.setAssetPricer(weth.address, wethPricer.address)
       await oracle.setLockingPeriod(wethPricer.address, lockingPeriod)
       await oracle.setDisputePeriod(wethPricer.address, disputePeriod)
-      // sett USDC stable price in oracle
-      await oracle.setStablePrice(usdc.address, createTokenAmount(1, 8))
-      cusdcPricer = await CompoundPricer.new(cusdc.address, usdc.address, oracle.address)
+      usdcPricer = await MockPricer.new(usdc.address, oracle.address)
+      await oracle.setAssetPricer(usdc.address, usdcPricer.address)
+      await oracle.setLockingPeriod(usdcPricer.address, lockingPeriod)
+      await oracle.setDisputePeriod(usdcPricer.address, disputePeriod)
+      cusdcPricer = await CompoundPricer.new(cusdc.address, usdc.address, usdcPricer.address, oracle.address)
       await oracle.setAssetPricer(cusdc.address, cusdcPricer.address)
 
       await otokenFactory.createOtoken(
@@ -274,7 +277,7 @@ contract('Yield Farming: Naked Put Option closed before expiry flow', ([admin, a
       const cusdcPrice = 0.02
       const scaledCusdcPrice = createTokenAmount(cusdcPrice, 16) // 1 cToken = 0.02 USD
       const usdPrice = createTokenAmount(1)
-      await oracle.setStablePrice(usdc.address, usdPrice)
+      await usdcPricer.setPrice(usdPrice)
       await cusdc.setExchangeRate(scaledCusdcPrice)
 
       cusdcCollateralAmount = new BigNumber(usdcCollateralAmount).div(cusdcPrice)
@@ -415,7 +418,7 @@ contract('Yield Farming: Naked Put Option closed before expiry flow', ([admin, a
       const cusdcPrice = 0.025
       const scaledCusdcPrice = createTokenAmount(cusdcPrice, 16) // 1 cToken = 0.025 USD
       await cusdc.setExchangeRate(scaledCusdcPrice)
-      await oracle.setStablePrice(usdc.address, scaledUSDCPrice)
+      await usdcPricer.setExpiryPriceInOracle(expiry, scaledUSDCPrice)
       await wethPricer.setExpiryPriceInOracle(expiry, scaledETHPrice)
       await cusdcPricer.setExpiryPriceInOracle(expiry)
 
