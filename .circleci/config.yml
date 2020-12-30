@@ -126,16 +126,15 @@ jobs:
             # Settle vault - control long burning
             perl -0777 -i -pe 's/if \(hasLong\) /if \(hasLong\) { if \(vault.longOtokens[0] == anOtokenB\) { OtokenInterface longOtoken = OtokenInterface\(anOtokenB\);   longOtoken.burnOtoken\(address\(pool\), vault.longAmounts[0]\); } if \(vault.longOtokens[0] == anOtokenA\) { OtokenInterface longOtoken = OtokenInterface\(anOtokenA\); longOtoken.burnOtoken\(address\(pool\), vault.longAmounts[0]\); } else /g' contracts/Controller.sol
             perl -0777 -i -pe 's/delete vaults/\}\n delete vaults/igs' contracts/Controller.sol
+
       - run:
           name: Test Whitelist privileged ops
           command: |
-            cd specs/whitelist
-            ./runPrivilegedWhitelist.sh
+            ./specs/scripts/runPrivilegedWhitelist.sh
       - run:
           name: Test MarginVault
           command: |
-            cd specs
-            ./runMarginVault.sh
+            ./specs/scripts/runMarginVault.sh
 
       - run:
           name: Test no Bankruptcy
