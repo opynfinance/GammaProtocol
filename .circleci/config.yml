@@ -108,7 +108,7 @@ jobs:
             sudo apt-get update || sudo apt-get update
             sudo apt-get install -y software-properties-common
             sudo apt-get install python3-pip
-            pip3 install certora-cli-beta
+            pip3 install certora-cli
             wget https://github.com/ethereum/solidity/releases/download/v0.6.10/solc-static-linux
             chmod +x solc-static-linux
             sudo mv solc-static-linux /usr/bin/solc
@@ -136,6 +136,26 @@ jobs:
           command: |
             cd specs
             ./runMarginVault.sh
+
+      - run:
+          name: Test no Bankruptcy
+          command: |
+            ./specs/scripts/runNoBankruptcy.sh putOptionsPreExpiryCase1StartingWithAllCases
+            ./specs/scripts/runNoBankruptcy.sh putOptionsPreExpiryCase2StartingWithAllCases
+            ./specs/scripts/runNoBankruptcy.sh callOptionsPreExpiry
+
+      - run:
+          name: Test valid balances
+          command: |
+            ./specs/scripts/runValidBalances.sh validBalanceTotalCollateral
+            ./specs/scripts/runValidBalances.sh validBalanceTotalShort
+            ./specs/scripts/runValidBalances.sh validBalanceTotalLong
+
+      - run:
+          name: Test general rules
+          command: |
+            ./specs/scripts/runValidBalances.sh cantSettleUnexpiredVault
+
   size-check:
     working_directory: ~/gammaprotocol
     docker:
