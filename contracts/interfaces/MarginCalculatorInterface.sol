@@ -14,4 +14,7 @@ interface MarginCalculatorInterface {
         external
         view
         returns (uint256 netValue, bool isExcess);
+
+     function getExcessCollateral(uint256 shortAmounts, uint256 longAmounts, uint256 collateralAmounts) 
+        external view returns  (uint256, bool);
 }
