@@ -348,47 +348,14 @@ contract ControllerHarness is Controller {
     - Control long burning: sed 's/if \(hasLongs\) /if \(hasLongs\) { if \(vault.longOtokens[0] == anOtokenB\) { OtokenInterface longOtoken = OtokenInterface\(anOtokenB\);   longOtoken.burnOtoken\(address\(pool\), vault.longAmounts[0]\); } if \(vault.longOtokens[0] == anOtokenA\) { OtokenInterface longOtoken = OtokenInterface\(anOtokenA\); longOtoken.burnOtoken\(address\(pool\), vault.longAmounts[0]\); } else {/g'
     - and : sed 's/delete vaults/} delete vaults/g'
   */
-  /*function settleVault(
+  function settleVault(
     address owner,
     uint256 vaultId,
     address to
   ) external {
-    require( smallVault(owner,vaultId,1));
-    MarginVault.Vault memory vault = getVault(owner, vaultId);
-    //MarginVault.Vault storage vault = cheapGetVault(owner, vaultId);
-    bool hasShorts = _isNotEmpty(vault.shortOtokens);
-    bool hasLongs = _isNotEmpty(vault.longOtokens);
-    require(hasShorts || hasLongs, "Controller: Can't settle vault with no otoken");
-
-    OtokenInterface otoken = hasShorts ? OtokenInterface(vault.shortOtokens[0]) : OtokenInterface(vault.longOtokens[0]);
-
-    require(now >= otoken.expiryTimestamp(), 'Controller: can not settle vault with un-expired otoken');
-  //  require(isSettlementAllowed(address(otoken)), 'Controller: asset prices not finalized yet');
-
-    (uint256 payout, ) = calculator.getExcessCollateral(vault.shortAmounts[0],
-        vault.longAmounts[0],
-        vault.collateralAmounts[0]);
-
-    if (hasLongs) {
-      if (vault.longOtokens[0] == anOtokenB) {
-        OtokenInterface longOtoken = OtokenInterface(anOtokenB);
-        longOtoken.burnOtoken(address(pool), vault.longAmounts[0]);
-      }
-      if (vault.longOtokens[0] == anOtokenA) {
-        OtokenInterface longOtoken = OtokenInterface(anOtokenA);
-        longOtoken.burnOtoken(address(pool), vault.longAmounts[0]);
-      }
-      else {
-        OtokenInterface longOtoken = OtokenInterface(vault.longOtokens[0]);
-        longOtoken.burnOtoken(address(pool), vault.longAmounts[0]);
-      }
-      
-    }
-
-    delete vaults[owner][vaultId];
-
-    pool.transferToUser(dummyERC20C, to, payout);
-  }*/
+    Actions.SettleVaultArgs memory args = Actions.SettleVaultArgs({});
+    _settleVault(args);
+  }
 
 
   /**
@@ -396,7 +363,6 @@ contract ControllerHarness is Controller {
     - call with extended calculator: sed 's/getExcessCollateral\(vault/getExcessCollateral\(vault.shortAmounts[0],vault.longAmounts[0],vault.collateralAmounts[0]/g'
   */
   /*function getProceed(address _owner, uint256 _vaultId) external view override returns (uint256) {
-        //MarginVault.Vault memory vault = getVault(_owner, _vaultId);
         MarginVault.Vault storage vault = cheapGetVault(_owner, _vaultId);
 
         (uint256 netValue, ) = calculator.getExcessCollateral(vault.shortAmounts[0],
@@ -411,4 +377,6 @@ contract ControllerHarness is Controller {
   
   // In MarginPool:
   // sed 's/safeT/t/g'
+  
+  // TODO: Small vault requirement inside rules
 }
