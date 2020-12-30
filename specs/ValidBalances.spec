@@ -13,6 +13,7 @@ methods {
     shortOtoken.totalSupply() returns uint256 envfree
     collateralToken.balanceOf(address) returns uint256 envfree
     longOtoken.balanceOf(address) returns uint256 envfree
+    longOtoken.collateralAsset() returns address envfree
 
     // get the cash value for an otoken afte rexpiry
     getPayout(address, uint256) returns uint256 envfree
@@ -47,7 +48,7 @@ methods {
 summaries {
     expiryTimestamp() => CONSTANT;
     burnOtoken(address, uint256) => CONSTANT;
-
+    collateralAsset() => CONSTANT;
 }
 
 
@@ -143,6 +144,8 @@ description "$f breaks the validity of stored balance of long asset"
         require (secondAddress != pool);
         sinvoke mintOtokenB(e, owner, vaultId, secondAddress, index, amount);
 	} else {
+        require smallVault(owner, vaultId, 1);
+        require longOtoken.collateralAsset() == collateralToken;
         callFunctionWithParameters(f, owner, vaultId, index);
     }
     
