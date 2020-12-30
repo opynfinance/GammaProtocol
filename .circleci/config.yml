@@ -114,6 +114,10 @@ jobs:
             sudo mv solc-static-linux /usr/bin/solc
             chmod -R +x specs/
       - run:
+          name: Apply harnesses
+          command: |
+            sed -i 's/safeT/t/g' contracts/MarginPool.sol
+      - run:
           name: Test Whitelist privileged ops
           command: |
             cd specs/whitelist
