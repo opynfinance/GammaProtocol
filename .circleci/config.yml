@@ -116,16 +116,7 @@ jobs:
       - run:
           name: Apply harnesses
           command: |
-            sed -i 's/safeT/t/g' contracts/MarginPool.sol
-            # Get proceed - memory to storage
-            perl -0777 -i -pe 's/function getProceed\(address _owner, uint256 _vaultId\) external view returns \(uint256\) \{\n\s*MarginVault.Vault memory vault = getVault/function getProceed\(address _owner, uint256 _vaultId\) external view returns \(uint256\) \{ MarginVault.Vault storage vault = cheapGetVault/igs' contracts/Controller.sol
-            # Get proceed & settleVault - call to getExcessCollateral
-            perl -0777 -i -pe 's/getExcessCollateral\(vault/getExcessCollateral\(vault.shortAmounts[0],vault.longAmounts[0],vault.collateralAmounts[0]/igs' contracts/Controller.sol
-            # Settle vault - memory to storage
-            perl -0777 -i -pe 's/MarginVault.Vault memory vault = getVault\(_args.owner, _args.vaultId\);\n\s*bool hasShort/MarginVault.Vault storage vault = cheapGetVault\(_args.owner, _args.vaultId\); bool hasShort/igs' contracts/Controller.sol
-            # Settle vault - control long burning
-            perl -0777 -i -pe 's/if \(hasLong\) /if \(hasLong\) { if \(vault.longOtokens[0] == anOtokenB\) { OtokenInterface longOtoken = OtokenInterface\(anOtokenB\);   longOtoken.burnOtoken\(address\(pool\), vault.longAmounts[0]\); } if \(vault.longOtokens[0] == anOtokenA\) { OtokenInterface longOtoken = OtokenInterface\(anOtokenA\); longOtoken.burnOtoken\(address\(pool\), vault.longAmounts[0]\); } else /g' contracts/Controller.sol
-            perl -0777 -i -pe 's/delete vaults/\}\n delete vaults/igs' contracts/Controller.sol
+            ./specs/scripts/applyHarnesses.sh
 
       - run:
           name: Test Whitelist privileged ops

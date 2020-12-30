@@ -23,10 +23,12 @@ contract ControllerHarness is Controller {
     )
   {}
 
-  address public anOtokenA; // the "short"
-  address public anOtokenB; // the "long"
-  address public dummyERC20C; // the "collateral"
-
+  /* will be added by harness script */
+  /*
+  address public anOtokenA;
+  address public anOtokenB;
+  address public dummyERC20C;
+  */
   function assetBalanceOf(address asset, address a) external view returns (uint256) {
     if (asset == anOtokenA) return ERC20Interface(anOtokenA).balanceOf(a);
     else if (asset == anOtokenB) return ERC20Interface(anOtokenB).balanceOf(a);
@@ -67,9 +69,12 @@ contract ControllerHarness is Controller {
     return true;
   }
 
+  /* will be added by harness script */
+  /*
   function cheapGetVault(address owner, uint256 vaultId) internal view returns (MarginVault.Vault storage) {
     return vaults[owner][vaultId];
-  }
+    }
+  */
 
   function isValidVault(address owner, uint256 vaultId) external view returns (bool) {
     MarginVault.Vault storage _vault = cheapGetVault(owner, vaultId);
@@ -353,7 +358,7 @@ contract ControllerHarness is Controller {
     uint256 vaultId,
     address to
   ) external {
-    Actions.SettleVaultArgs memory args = Actions.SettleVaultArgs({});
+    Actions.SettleVaultArgs memory args = Actions.SettleVaultArgs({owner: owner, vaultId: vaultId, to: to});
     _settleVault(args);
   }
 
