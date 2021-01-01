@@ -383,6 +383,5 @@ contract ControllerHarness is Controller {
   // In MarginPool:
   // sed 's/safeT/t/g'
   
-  // TODO: Small vault requirement inside rules
   // TODO: remove --staging everywhere in scripts
 }

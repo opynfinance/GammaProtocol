@@ -11,7 +11,7 @@ interface ExtendedERC20 {
 }
 
 /**
-    An additional harness over the controller to allow checking no bankruptcy rules.
+    An additional harness over the controller to allow checking the no-bankruptcy rules.
  */
 contract ControllerHarnessExtra is ControllerHarness {
 
