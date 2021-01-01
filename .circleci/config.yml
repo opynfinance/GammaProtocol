@@ -150,6 +150,7 @@ jobs:
             ./specs/scripts/runValidBalances.sh assetIsNotOtoken
             ./specs/scripts/runValidBalances.sh OtokenInVaultIsWhitelisted
             ./specs/scripts/runValidBalances.sh onlyValidOtoken
+            ./specs/scripts/runController.sh onlyOneVaultModified
 
   size-check:
     working_directory: ~/gammaprotocol
