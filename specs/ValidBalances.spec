@@ -51,30 +51,33 @@ summaries {
     collateralAsset() => CONSTANT;
 }
 
-
-
-
 rule validState(address owner, uint256 vaultId, uint256 index,  method f) 
 {
-    require ( shortOtoken == getVaultShortOtoken(owner, vaultId, index) &&
-      longOtoken == getVaultLongOtoken(owner, vaultId, index) &&
-      collateralToken == getVaultCollateralAsset(owner, vaultId, index) 
-    );
+    /* TODO: Redeem */
+    require f.selector != redeemA(address,uint256).selector && f.selector != redeemB(address,uint256).selector;
+    /* TODO: depositLongB */
+    require f.selector != depositLongB(address,uint256,address,uint256,uint256).selector;
     
-    require ( assetTotalSupply(shortOtoken) >= (pool.getStoredBalance(shortOtoken) + getVaultShortAmount(owner, vaultId, index)) &&
-      assetTotalSupply(longOtoken) >= pool.getStoredBalance(longOtoken) &&
-      pool.getStoredBalance(longOtoken) >= getVaultLongAmount(owner, vaultId, index) &&
-      pool.getStoredBalance(collateralToken) >= getVaultCollateralAmount(owner, vaultId, index) 
-    ) ;
+    require smallVault(owner, vaultId, 1);
+    require shortOtoken == getVaultShortOtoken(owner, vaultId, index) &&
+            longOtoken == getVaultLongOtoken(owner, vaultId, index) &&
+            collateralToken == getVaultCollateralAsset(owner, vaultId, index) 
+    ;
+    
+    require assetTotalSupply(shortOtoken) >= (pool.getStoredBalance(shortOtoken) + getVaultShortAmount(owner, vaultId, index)) &&
+            assetTotalSupply(longOtoken) >= pool.getStoredBalance(longOtoken) &&
+            pool.getStoredBalance(longOtoken) >= getVaultLongAmount(owner, vaultId, index) &&
+            pool.getStoredBalance(collateralToken) >= getVaultCollateralAmount(owner, vaultId, index) 
+    ;
+    
     callFunctionWithParameters(f, owner, vaultId, index);
-    assert ( assetTotalSupply(shortOtoken) >= (pool.getStoredBalance(shortOtoken) + getVaultShortAmount(owner, vaultId, index)) &&
-    /* tricky on redeem */
-     // assetTotalSupply(longOtoken) >= pool.getStoredBalance(longOtoken) &&
-     // pool.getStoredBalance(longOtoken) >= getVaultLongAmount(owner, vaultId, index) &&
-      pool.getStoredBalance(collateralToken) >= getVaultCollateralAmount(owner, vaultId, index) 
-    );
+    
+    assert  assetTotalSupply(shortOtoken) >= (pool.getStoredBalance(shortOtoken) + getVaultShortAmount(owner, vaultId, index)) &&
+            assetTotalSupply(longOtoken) >= pool.getStoredBalance(longOtoken) &&
+            pool.getStoredBalance(longOtoken) >= getVaultLongAmount(owner, vaultId, index) &&
+            pool.getStoredBalance(collateralToken) >= getVaultCollateralAmount(owner, vaultId, index) 
+    ;
 }
-
 
 
 /**
@@ -94,7 +97,6 @@ description "$f breaks the validity of stored balance of collateral asset"
     require getVaultCollateralAsset(owner, vaultId, index) == asset;
     require !isVaultExpired(e, owner, vaultId);
     uint256 collateralVaultBefore = getVaultCollateralAmount(owner, vaultId, index);
-    // todo: add pool.balance
     uint256 poolBalanceBefore = pool.getStoredBalance(asset);
     if (f.selector == settleVault(address,uint256,address).selector 
         || f.selector == redeemB(address,uint256).selector
