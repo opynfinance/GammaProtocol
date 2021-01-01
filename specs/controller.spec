@@ -99,27 +99,6 @@ rule redeem (address oToken, address to, address collateral, uint256 amount) {
 
 }
 
-/*
-rule onlyOneVaultModified (address owner1, address owner2, uint256 vaultId1, uint256 vaultId2, address to) {
-    address collateral1Before = getVaultCollateralAsset(owner1, vaultId1, 0);
-    address collateral2Before = getVaultCollateralAsset(owner2, vaultId2, 0);
-    uint256 collateralAmt1Before = getVaultCollateralAmount(owner1, vaultId1, 0);
-    uint256 collateralAmt2Before = getVaultCollateralAmount(owner2, vaultId2, 0);
-    // address otokenShort1 = getVaultShortOtoken(owner1, vaultId1, 0);
-    // address otokenLong1 = getVaultLongOtoken(owner1, vaultId1, 0);
-    env e;
-    sinvoke settleVault(e, owner1, vaultId1, to);
-
-    address collateral1After = getVaultCollateralAsset(owner1, vaultId1, 0);
-    address collateral2After = getVaultCollateralAsset(owner2, vaultId2, 0);
-    uint256 collateralAmt1After = getVaultCollateralAmount(owner1, vaultId1, 0);
-    uint256 collateralAmt2After = getVaultCollateralAmount(owner2, vaultId2, 0);
-
-    assert collateralAmt2After != collateralAmt2Before => (collateralAmt2Before - collateralAmt2After == collateralAmt1Before - collateralAmt1After);
-    assert collateralAmt2After != collateralAmt2Before => (vaultId1 == vaultId2 && owner1 == owner2);
-    // assert collateral2After != collateral2Before => (vaultId1 == vaultId2 && owner1 == owner2);
-}*/
-
 rule onlyOneVaultModified (address owner1, address owner2, uint256 vaultId1, uint256 vaultId2, address to,  method f) {
     require owner1 != owner2 || vaultId1 != vaultId2;
     uint256 collateralAmt1Before = getVaultCollateralAmount(owner1, vaultId1, 0);
@@ -205,3 +184,30 @@ rule optionWithdrawsRestricted(address owner, uint256 vaultId, uint256 index, ad
 //     // run first method and then second method and store the result 
 //     // run the second method then first method and compare result 
 // }
+
+
+rule orderOfOperations (address owner, uint256 vaultId, method f1, method f2) { 
+    if ( f1.selector  > f2.selector) {
+        assert true;
+    } else {
+        storage initialStorage = lastStorage;
+        env e1; 
+        calldataarg arg1;
+        sinvoke f1(e1, arg1);
+        env e2;
+        calldataarg arg2;
+        sinvoke f2(e2, arg2);
+        
+        uint256 vaultCollateralAmount1 = getVaultCollateralAmount(owner, vaultId,0);
+
+        sinvoke f2(e2, arg2) at initialStorage;
+        sinvoke f1(e1, arg1);
+        
+        uint256 vaultCollateralAmount2 = getVaultCollateralAmount(owner, vaultId,0);
+        // run first method and then second method and store the result 
+        // run the second method then first method and compare result 
+        assert vaultCollateralAmount1 == vaultCollateralAmount2;
+    }
+        
+}
+

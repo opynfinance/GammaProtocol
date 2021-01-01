@@ -111,6 +111,7 @@ jobs:
             pip3 install certora-cli
             wget https://github.com/ethereum/solidity/releases/download/v0.6.10/solc-static-linux
             chmod +x solc-static-linux
+            sudo cp solc-static-linux /usr/bin/solc6.10
             sudo mv solc-static-linux /usr/bin/solc
             chmod -R +x specs/
       - run:
@@ -145,6 +146,10 @@ jobs:
           name: Test general rules
           command: |
             ./specs/scripts/runValidBalances.sh cantSettleUnexpiredVault
+            ./specs/scripts/runValidBalances.sh validBalanceOfTheSystem
+            ./specs/scripts/runValidBalances.sh assetIsNotOtoken
+            ./specs/scripts/runValidBalances.sh OtokenInVaultIsWhitelisted
+            ./specs/scripts/runValidBalances.sh onlyValidOtoken
 
   size-check:
     working_directory: ~/gammaprotocol

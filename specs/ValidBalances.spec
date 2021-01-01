@@ -68,6 +68,7 @@ rule validState(address owner, uint256 vaultId, uint256 index,  method f)
     ) ;
     callFunctionWithParameters(f, owner, vaultId, index);
     assert ( assetTotalSupply(shortOtoken) >= (pool.getStoredBalance(shortOtoken) + getVaultShortAmount(owner, vaultId, index)) &&
+    /* tricky on redeem */
      // assetTotalSupply(longOtoken) >= pool.getStoredBalance(longOtoken) &&
      // pool.getStoredBalance(longOtoken) >= getVaultLongAmount(owner, vaultId, index) &&
       pool.getStoredBalance(collateralToken) >= getVaultCollateralAmount(owner, vaultId, index) 
@@ -239,6 +240,7 @@ rule validBalanceOfTheSystem(address owner, uint256 vaultId, uint256 index, meth
 }
 
 rule onlyValidOtoken(address owner, uint256 vaultId, uint256 index, address otoken, method f) {
+        require smallVault(owner, vaultId, 1);
         require (otoken == shortOtoken || otoken == longOtoken );
         require ( getVaultShortOtoken(owner, vaultId, index) == otoken || getVaultLongOtoken(owner, vaultId, index) == otoken) 
                 => whitelist.isWhitelistedOtoken(otoken);
