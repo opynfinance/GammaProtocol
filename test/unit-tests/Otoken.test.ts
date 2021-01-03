@@ -270,6 +270,13 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
       assert.equal(balance.toString(), amountToMint.toString())
     })
 
+    it('should revert if minting zero tokens', async () => {
+      await expectRevert(
+        otoken.mintOtoken(user1, 0, {from: random}),
+        'Otoken: Cannot mint zero tokens',
+      )
+    })
+
     it('should revert when minting from random address', async () => {
       await expectRevert(
         otoken.mintOtoken(user1, amountToMint, {from: random}),
@@ -321,6 +328,13 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
       await expectRevert(
         otoken.burnOtoken(user1, amountToMint, {from: random}),
         'Otoken: Only Controller can burn Otokens',
+      )
+    })
+
+    it('should revert if burning zero tokens', async () => {
+      await expectRevert(
+        otoken.burnOtoken(user1, 0, {from: random}),
+        'Otoken: Cannot burn zero tokens',
       )
     })
 
