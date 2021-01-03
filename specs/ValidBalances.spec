@@ -321,7 +321,7 @@ function callFunctionWithParameters(method f, address owner, uint256 vaultId, ui
     }
 }
 
-rule OtokenInVaultIsWhitelisted(address owner, uint256 vaultId, uint256 index, address otoken, method f
+rule OtokenInVaultIsWhitelisted(address owner, uint256 vaultId, uint256 index, address otoken, method f)
 {
     links();
     require (otoken == shortOtoken || otoken == longOtoken );
