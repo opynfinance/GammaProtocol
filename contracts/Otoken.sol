@@ -99,8 +99,10 @@ contract Otoken is ERC20Initializable {
             msg.sender == AddressBookInterface(addressBook).getController(),
             "Otoken: Only Controller can burn Otokens"
         );
-        if(amount == 0)
-            return;
+        require(
+            amount > 0,
+            "Otoken: Minting zero Otokens"
+        );
         _burn(account, amount);
     }
 
