@@ -81,6 +81,10 @@ contract Otoken is ERC20Initializable {
             msg.sender == AddressBookInterface(addressBook).getController(),
             "Otoken: Only Controller can mint Otokens"
         );
+        require(
+            amount > 0,
+            "Otoken: Minting zero Otokens"
+        );
         _mint(account, amount);
     }
 
@@ -95,6 +99,8 @@ contract Otoken is ERC20Initializable {
             msg.sender == AddressBookInterface(addressBook).getController(),
             "Otoken: Only Controller can burn Otokens"
         );
+        if(amount == 0)
+            return;
         _burn(account, amount);
     }
 
@@ -170,7 +176,7 @@ contract Otoken is ERC20Initializable {
 
         if (remainder == 0) return quotientStr;
 
-        uint256 trailingZeroes = 0;
+        uint256 trailingZeroes; // gas saving
         while (remainder.mod(10) == 0) {
             remainder = remainder / 10;
             trailingZeroes += 1;
