@@ -30,6 +30,7 @@
     "truffle": "^5.1.32",
     "truffle-assertions": "0.9.2",
     "truffle-contract-size": "^2.0.0",
+    "truffle-plugin-verify": "^0.5.2",
     "truffle-typings": "^1.0.8",
     "ts-node": "8.5.4",
     "typechain": "^1.0.5",
@@ -57,7 +58,7 @@
     "test:unit": "truffle test ./test/unit-tests/*.ts",
     "test:integration": "truffle test ./test/integration-tests/*.ts",
     "test:testing-engine": "truffle test ./test/test-engine/*.ts",
-    "test:e2e" : "truffle test test/e2e/*.ts",
+    "test:e2e": "truffle test test/e2e/*.ts",
     "coverage": "truffle run coverage  --file \"test/unit-tests/*.test.ts\"",
     "contract-size": "truffle run contract-size --checkMaxSize",
     "generate:doc": "npm run generate:doc:control-flow & npm run generate:doc:uml",
@@ -86,8 +87,7 @@
     "doc:uml:addressbook": "sol2uml ./contracts/AddressBook.sol -f png -o ./docs/uml/GammaAddressbook.png",
     "docify": "node docify.js",
     "ci:test:unit": "CI=true truffle test ./test/unit-tests/*.ts",
-    "ci:test:integration": "CI=true truffle test ./test/integration-tests/*.ts",
-    "ci:test:e2e": "CI=true truffle test ./test/e2e/*.ts"
+    "ci:test:integration": "CI=true truffle test ./test/integration-tests/*.ts"
   },
   "husky": {
     "hooks": {
@@ -122,6 +122,7 @@
   "dependencies": {
     "@truffle/hdwallet-provider": "^1.0.44",
     "solc-0.6.10": "npm:solc@^0.6.10",
-    "solidity-docgen": "^0.5.6"
+    "solidity-docgen": "^0.5.6",
+    "yargs": "^13.2.4"
   }
 }

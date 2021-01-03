@@ -35,7 +35,7 @@ module.exports = {
       confirmations: 2,   
       timeoutBlocks: 50,  
       skipDryRun: false,
-      gasPrice: 400000000000
+      gasPrice: 100000000000
     }
   },
 
@@ -50,7 +50,11 @@ module.exports = {
     },
   },
 
-  plugins: ['solidity-coverage', 'truffle-contract-size'],
+  plugins: ['solidity-coverage', 'truffle-contract-size', 'truffle-plugin-verify'],
+
+  api_keys: {
+    etherscan: process.env.ETHERSCAN_API
+  },
 
   compilers: {
     solc: {
