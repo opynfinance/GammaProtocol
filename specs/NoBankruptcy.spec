@@ -35,6 +35,9 @@ methods {
     shortOtoken.havocTotalSupply(uint256) envfree
     pool.havocSystemBalance(address) envfree
     havocVault(address, uint256, uint256, uint256, uint256, uint256 ) envfree
+    anOtokenA() returns address envfree
+    anOtokenB() returns address envfree
+    dummyERC20C() returns address envfree
 }
 
 
@@ -93,6 +96,7 @@ rule putOptionsPreExpiryCase1StartingWithAllCases(
     uint256 totalSupplyShortOtoken_,
     uint256 totalSupplyLongOtoken_
 ) {
+    links();
     env e;
     require shortOtoken == getVaultShortOtoken(owner, vaultId, index);
     require longOtoken == getVaultLongOtoken(owner, vaultId, index);
@@ -214,6 +218,7 @@ rule putOptionsPreExpiryCase2StartingWithAllCases(
     uint256 totalSupplyShortOtoken_,
     uint256 totalSupplyLongOtoken_
 ) {
+    links();
     env e;
     require shortOtoken == getVaultShortOtoken(owner, vaultId, index);
     require longOtoken == getVaultLongOtoken(owner, vaultId, index);
@@ -334,6 +339,7 @@ rule putOptionsPreExpiryCase3StartingWithAllCases(
     uint256 totalSupplyShortOtoken_,
     uint256 totalSupplyLongOtoken_
 ) {
+    links();
     env e;
     require shortOtoken == getVaultShortOtoken(owner, vaultId, index);
     require longOtoken == getVaultLongOtoken(owner, vaultId, index);
@@ -464,6 +470,7 @@ rule callOptionsPreExpiry(
     uint256 totalSupplyShortOtoken_,
     uint256 totalSupplyLongOtoken_
 ) {
+    links();
     env e;
     require shortOtoken == getVaultShortOtoken(owner, vaultId, index);
     require longOtoken == getVaultLongOtoken(owner, vaultId, index);
@@ -608,6 +615,7 @@ rule putOptionsPreExpiryCase3StartingWithAllCasesNoCode(
     uint256 totalSupplyShortOtoken_,
     uint256 totalSupplyLongOtoken_
 ) {
+    links();
     env e;
     require asset == collateralToken;
 
@@ -675,4 +683,10 @@ rule putOptionsPreExpiryCase3StartingWithAllCasesNoCode(
 
     //verify no bankruptchy 
     assert poolAssetBalance_ >= obligation_ ;
+}
+
+function links() {
+    require anOtokenA() == shortOtoken;
+    require anOtokenB() == longOtoken;
+    require dummyERC20C() == collateralToken;
 }

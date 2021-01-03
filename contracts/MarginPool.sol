@@ -80,7 +80,7 @@ contract MarginPool is Ownable {
         assetBalance[_asset] = assetBalance[_asset].add(_amount);
 
         // transfer _asset _amount from _user to pool
-        ERC20Interface(_asset).safeTransferFrom(_user, address(this), _amount);
+        ERC20Interface(_asset).transferFrom(_user, address(this), _amount);
         emit TransferToPool(_asset, _user, _amount);
     }
 
@@ -99,7 +99,7 @@ contract MarginPool is Ownable {
         assetBalance[_asset] = assetBalance[_asset].sub(_amount);
 
         // transfer _asset _amount from pool to _user
-        ERC20Interface(_asset).safeTransfer(_user, _amount);
+        ERC20Interface(_asset).transfer(_user, _amount);
         emit TransferToUser(_asset, _user, _amount);
     }
 
@@ -175,7 +175,7 @@ contract MarginPool is Ownable {
 
         require(_amount <= externalBalance.sub(storedBalance), "MarginPool: amount to farm exceeds limit");
 
-        ERC20Interface(_asset).safeTransfer(_receiver, _amount);
+        ERC20Interface(_asset).transfer(_receiver, _amount);
 
         emit AssetFarmed(_asset, _receiver, _amount);
     }

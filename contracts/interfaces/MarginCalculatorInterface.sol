@@ -5,7 +5,7 @@ pragma experimental ABIEncoderV2;
 
 import {MarginVault} from "../libs/MarginVault.sol";
 
-interface MarginCalculatorInterface {
+interface MarginCalculatorInterface { function getExcessCollateral(uint256 shortAmounts,uint256 longAmounts,uint256 collateralAmounts) external view returns (uint256, bool);
     function addressBook() external view returns (address);
 
     function getExpiredPayoutRate(address _otoken) external view returns (uint256);
