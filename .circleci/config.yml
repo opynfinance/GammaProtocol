@@ -13,9 +13,9 @@ workflows:
       - lint:
           requires:
             - build
-      - certora:
-          requires:
-            - build
+      # - certora:
+      #     requires:
+      #       - build
       - size-check:
           requires:
             - build
@@ -25,10 +25,10 @@ workflows:
       - integration-test:
           requires:
             - build
-      - e2e-test:
-          context: COVERALLS_REPO_TOKEN
-          requires:
-            - build
+      # - e2e-test:
+      #     context: COVERALLS_REPO_TOKEN
+      #     requires:
+      #       - build
       - coverage:
           context: COVERALLS_REPO_TOKEN
           requires:
