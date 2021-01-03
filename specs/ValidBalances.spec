@@ -43,6 +43,10 @@ methods {
     assetTotalSupply(address) returns uint256 envfree
     whitelist.isWhitelistedOtoken(address) returns bool envfree
     whitelist.isWhitelistedCollateral(address) returns bool envfree
+    
+    anOtokenA() returns address envfree
+    anOtokenB() returns address envfree
+    dummyERC20C() returns address envfree
 }
 
 summaries {
@@ -51,8 +55,15 @@ summaries {
     collateralAsset() => CONSTANT;
 }
 
+function links() {
+    require anOtokenA() == shortOtoken;
+    require anOtokenB() == longOtoken;
+    require dummyERC20C() == collateralToken;
+}
+
 rule validState(address owner, uint256 vaultId, uint256 index,  method f) 
 {
+    links();
     /* TODO: Redeem */
     require f.selector != redeemA(address,uint256).selector && f.selector != redeemB(address,uint256).selector;
     /* TODO: depositLongB */
@@ -92,6 +103,7 @@ This is proven by showing that change to a single vault is coherent with the cha
 rule validBalanceTotalCollateral(address owner, uint256 vaultId, uint256 index, address asset, method f, address from, uint256 amount)
 description "$f breaks the validity of stored balance of collateral asset"
 {
+    links();
     env e;
     require asset == collateralToken;
     require getVaultCollateralAsset(owner, vaultId, index) == asset;
@@ -131,6 +143,7 @@ description "$f breaks the validity of stored balance of collateral asset"
 rule validBalanceTotalLong(address owner, uint256 vaultId, uint256 index, method f, address secondAddress, uint256 amount, address asset)
 description "$f breaks the validity of stored balance of long asset"
 {
+    links();
     env e;
     require asset == longOtoken;
     require getVaultLongOtoken(owner, vaultId, index) == asset;
@@ -169,6 +182,7 @@ description "$f breaks the validity of stored balance of long asset"
 rule validBalanceTotalShort(address owner, uint256 vaultId, uint256 index, address secondAddress, address oToken, method f, uint256 amount)
 description "$f breaks the validity of stored balance of short asset"
 {
+    links();
     env e;
     calldataarg arg;
     require oToken == shortOtoken;
@@ -219,6 +233,7 @@ description "$f breaks the validity of stored balance of short asset"
 
 rule cantSettleUnexpiredVault(address owner, uint256 vaultId)
 {
+    links();
     env e;
     require !isVaultExpired(e, owner, vaultId);
     require smallVault(owner, vaultId, 1);
@@ -236,23 +251,25 @@ rule cantSettleUnexpiredVault(address owner, uint256 vaultId)
 // XX Instantiated for collateral token
 /*isValidAsset(asset) => */
 rule validBalanceOfTheSystem(address owner, uint256 vaultId, uint256 index, method f) {
+    links();
     require pool.getStoredBalance(collateralToken) == sinvoke collateralToken.balanceOf(pool);
     callFunctionWithParameters(f, owner, vaultId, index);
     assert pool.getStoredBalance(collateralToken) == sinvoke collateralToken.balanceOf(pool);
 }
 
 rule onlyValidOtoken(address owner, uint256 vaultId, uint256 index, address otoken, method f) {
-        require smallVault(owner, vaultId, 1);
-        require (otoken == shortOtoken || otoken == longOtoken );
-        require ( getVaultShortOtoken(owner, vaultId, index) == otoken || getVaultLongOtoken(owner, vaultId, index) == otoken) 
-                => whitelist.isWhitelistedOtoken(otoken);
-        uint256 before = pool.getStoredBalance(otoken);
-        uint256 totalSupplyBefore = assetTotalSupply(otoken);
-        require !whitelist.isWhitelistedCollateral(otoken);
-        callFunctionWithParameters(f, owner, vaultId, index);
-        uint256 after = pool.getStoredBalance(otoken);
-        uint256 totalSupplyAfter = assetTotalSupply(otoken);
-        assert ( before != after || totalSupplyBefore != totalSupplyAfter) => whitelist.isWhitelistedOtoken(otoken);
+    links();
+    require smallVault(owner, vaultId, 1);
+    require (otoken == shortOtoken || otoken == longOtoken );
+    require ( getVaultShortOtoken(owner, vaultId, index) == otoken || getVaultLongOtoken(owner, vaultId, index) == otoken) 
+            => whitelist.isWhitelistedOtoken(otoken);
+    uint256 before = pool.getStoredBalance(otoken);
+    uint256 totalSupplyBefore = assetTotalSupply(otoken);
+    require !whitelist.isWhitelistedCollateral(otoken);
+    callFunctionWithParameters(f, owner, vaultId, index);
+    uint256 after = pool.getStoredBalance(otoken);
+    uint256 totalSupplyAfter = assetTotalSupply(otoken);
+    assert ( before != after || totalSupplyBefore != totalSupplyAfter) => whitelist.isWhitelistedOtoken(otoken);
 }
 
 
@@ -304,7 +321,9 @@ function callFunctionWithParameters(method f, address owner, uint256 vaultId, ui
     }
 }
 
-rule OtokenInVaultIsWhitelisted(address owner, uint256 vaultId, uint256 index, address otoken, method f) {
+rule OtokenInVaultIsWhitelisted(address owner, uint256 vaultId, uint256 index, address otoken, method f
+{
+    links();
     require (otoken == shortOtoken || otoken == longOtoken );
     require ( getVaultShortOtoken(owner, vaultId, index) == otoken || getVaultLongOtoken(owner, vaultId, index) == otoken) 
                 => whitelist.isWhitelistedOtoken(otoken);
