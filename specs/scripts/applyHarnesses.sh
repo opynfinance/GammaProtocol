@@ -17,3 +17,5 @@ perl -0777 -i -pe 's/function _runActions\(Actions.ActionArgs\[\] memory _action
 perl -0777 -i -pe 's/uint256 private _totalSupply;/uint256 internal _totalSupply;/g' contracts/packages/oz/upgradeability/ERC20Initializable.sol
 # otoken.collateralAsset in settleVault should be dummyERC20C
 perl -0777 -i -pe 's/pool.transferToUser\(otoken.collateralAsset\(\), _args.to, payout\)/pool.transferToUser\(dummyERC20C, _args.to, payout\)/g' contracts/Controller.sol
+# MarginCalculatorInterface
+perl -0777 -i -pe 's/interface MarginCalculatorInterface \{/interface MarginCalculatorInterface \{ function getExcessCollateral\(uint256 shortAmounts,        uint256 longAmounts,uint256 collateralAmounts\) external view returns \(uint256, bool\);/igs' contracts/interfaces/MarginCalculatorInterface.sol
