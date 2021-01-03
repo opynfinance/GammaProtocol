@@ -13,9 +13,9 @@ workflows:
       - lint:
           requires:
             - build
-      # - certora:
-      #     requires:
-      #       - build
+      - certora:
+          requires:
+            - build
       - size-check:
           requires:
             - build
