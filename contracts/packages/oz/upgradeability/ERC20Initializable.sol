@@ -40,7 +40,7 @@ contract ERC20Initializable is Initializable, ContextUpgradeSafe, IERC20 {
 
     mapping(address => mapping(address => uint256)) private _allowances;
 
-    uint256 internal _totalSupply;
+    uint256 private _totalSupply;
 
     string private _name;
     string private _symbol;

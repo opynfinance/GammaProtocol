@@ -26,7 +26,7 @@ import {CalleeInterface} from "./interfaces/CalleeInterface.sol";
  */
 contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgradeSafe {
     using MarginVault for MarginVault.Vault;
-    using SafeMath for uint256; function cheapGetVault(address owner, uint256 vaultId) internal view returns (MarginVault.Vault storage) { return vaults[owner][vaultId]; } address public anOtokenA;  address public anOtokenB;  address public dummyERC20C;
+    using SafeMath for uint256;
 
     AddressBookInterface public addressbook;
     WhitelistInterface public whitelist;
@@ -378,9 +378,10 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _vaultId vaultId to return balances for
      * @return amount of collateral that can be taken out
      */
-    function getProceed(address _owner, uint256 _vaultId) external view returns (uint256) { MarginVault.Vault storage vault = cheapGetVault(_owner, _vaultId);
+    function getProceed(address _owner, uint256 _vaultId) external view returns (uint256) {
+        MarginVault.Vault memory vault = getVault(_owner, _vaultId);
 
-        (uint256 netValue, ) = calculator.getExcessCollateral(vault.shortAmounts[0],vault.longAmounts[0],vault.collateralAmounts[0]);
+        (uint256 netValue, ) = calculator.getExcessCollateral(vault);
         return netValue;
     }
 
@@ -455,7 +456,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @return owner, the vault owner if a vault has changed
      * @return vaultId, the vault Id if a vault has changed
      */
-    function _runActions(Actions.ActionArgs[] memory _actions) virtual
+    function _runActions(Actions.ActionArgs[] memory _actions)
         internal
         returns (
             bool,
@@ -736,7 +737,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     function _settleVault(Actions.SettleVaultArgs memory _args) internal onlyAuthorized(msg.sender, _args.owner) {
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
 
-        MarginVault.Vault storage vault = cheapGetVault(_args.owner, _args.vaultId); bool hasShort = _isNotEmpty(vault.shortOtokens);
+        MarginVault.Vault memory vault = getVault(_args.owner, _args.vaultId);
+        bool hasShort = _isNotEmpty(vault.shortOtokens);
         bool hasLong = _isNotEmpty(vault.longOtokens);
 
         require(hasShort || hasLong, "Controller: Can't settle vault with no otoken");
@@ -748,18 +750,17 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         require(now >= otoken.expiryTimestamp(), "Controller: can not settle vault with un-expired otoken");
         require(isSettlementAllowed(address(otoken)), "Controller: asset prices not finalized yet");
 
-        (uint256 payout, ) = calculator.getExcessCollateral(vault.shortAmounts[0],vault.longAmounts[0],vault.collateralAmounts[0]);
+        (uint256 payout, ) = calculator.getExcessCollateral(vault);
 
-        if (hasLong) { if (vault.longOtokens[0] == anOtokenB) { OtokenInterface longOtoken = OtokenInterface(anOtokenB);   longOtoken.burnOtoken(address(pool), vault.longAmounts[0]); } if (vault.longOtokens[0] == anOtokenA) { OtokenInterface longOtoken = OtokenInterface(anOtokenA); longOtoken.burnOtoken(address(pool), vault.longAmounts[0]); } else {
+        if (hasLong) {
             OtokenInterface longOtoken = OtokenInterface(vault.longOtokens[0]);
 
             longOtoken.burnOtoken(address(pool), vault.longAmounts[0]);
         }
 
-        }
- delete vaults[_args.owner][_args.vaultId];
+        delete vaults[_args.owner][_args.vaultId];
 
-        pool.transferToUser(dummyERC20C, _args.to, payout);
+        pool.transferToUser(otoken.collateralAsset(), _args.to, payout);
 
         emit VaultSettled(_args.owner, _args.to, address(otoken), _args.vaultId, payout);
     }
