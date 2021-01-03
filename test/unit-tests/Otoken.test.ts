@@ -272,7 +272,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
 
     it('should revert if minting zero tokens', async () => {
       await expectRevert(
-        otoken.mintOtoken(user1, 0, {from: random}),
+        otoken.mintOtoken(user1, 0, {from: controller}),
         'Otoken: Cannot mint zero tokens',
       )
     })
@@ -333,7 +333,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
 
     it('should revert if burning zero tokens', async () => {
       await expectRevert(
-        otoken.burnOtoken(user1, 0, {from: random}),
+        otoken.burnOtoken(user1, 0, {from: controller}),
         'Otoken: Cannot burn zero tokens',
       )
     })
