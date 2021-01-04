@@ -274,6 +274,12 @@ rule validBalanceOfTheSystem(address owner, uint256 vaultId, uint256 index, meth
 
 rule onlyValidOtoken(address owner, uint256 vaultId, uint256 index, address otoken, method f) {
     links();
+    require shortOtoken.underlyingAsset() == underlying;
+    require longOtoken.underlyingAsset() == underlying;
+    require shortOtoken.strikeAsset() == strike;
+    require longOtoken.strikeAsset() == strike;
+    require shortOtoken.collateralAsset() == collateralToken;
+    require longOtoken.collateralAsset() == collateralToken;
     require smallVault(owner, vaultId, 1);
     require (otoken == shortOtoken || otoken == longOtoken );
     require ( getVaultShortOtoken(owner, vaultId, index) == otoken || getVaultLongOtoken(owner, vaultId, index) == otoken) 
