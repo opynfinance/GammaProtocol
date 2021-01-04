@@ -3,6 +3,9 @@ using MarginPool as pool
 using Whitelist as whitelist
 using OtokenHarnessA as shortOtoken
 using OtokenHarnessB as longOtoken
+using DummyERC20A as underlying
+using DummyERC20B as strike
+
 
 methods {
     //The tracked asset balance of the system
@@ -47,6 +50,10 @@ methods {
     anOtokenA() returns address envfree
     anOtokenB() returns address envfree
     dummyERC20C() returns address envfree
+    shortOtoken.underlyingAsset() returns address envfree
+    longOtoken.underlyingAsset() returns address envfree
+    shortOtoken.strikeAsset() returns address envfree
+    longOtoken.strikeAsset() returns address envfree
 }
 
 summaries {
@@ -252,6 +259,10 @@ rule cantSettleUnexpiredVault(address owner, uint256 vaultId)
 /*isValidAsset(asset) => */
 rule validBalanceOfTheSystem(address owner, uint256 vaultId, uint256 index, method f) {
     links();
+    require shortOtoken.underlyingAsset() == underlying;
+    require longOtoken.underlyingAsset() == underlying;
+    require shortOtoken.strikeAsset() == strike;
+    require longOtoken.strikeAsset() == strike;
     require pool.getStoredBalance(collateralToken) == sinvoke collateralToken.balanceOf(pool);
     callFunctionWithParameters(f, owner, vaultId, index);
     assert pool.getStoredBalance(collateralToken) == sinvoke collateralToken.balanceOf(pool);
