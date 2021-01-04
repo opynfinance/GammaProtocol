@@ -54,6 +54,8 @@ methods {
     longOtoken.underlyingAsset() returns address envfree
     shortOtoken.strikeAsset() returns address envfree
     longOtoken.strikeAsset() returns address envfree
+    shortOtoken.collateralAsset() returns address envfree
+    longOtoken.collateralAsset() returns address envfree
 }
 
 summaries {
@@ -263,6 +265,8 @@ rule validBalanceOfTheSystem(address owner, uint256 vaultId, uint256 index, meth
     require longOtoken.underlyingAsset() == underlying;
     require shortOtoken.strikeAsset() == strike;
     require longOtoken.strikeAsset() == strike;
+    require shortOtoken.collateralAsset() == collateralToken;
+    require longOtoken.collateralAsset() == collateralToken;
     require pool.getStoredBalance(collateralToken) == sinvoke collateralToken.balanceOf(pool);
     callFunctionWithParameters(f, owner, vaultId, index);
     assert pool.getStoredBalance(collateralToken) == sinvoke collateralToken.balanceOf(pool);
