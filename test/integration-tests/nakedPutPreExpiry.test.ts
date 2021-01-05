@@ -76,8 +76,6 @@ contract('Naked Put Option closed before expiry flow', ([accountOwner1]) => {
 
     // initiate addressbook first.
     addressBook = await AddressBook.new()
-    // setup calculator
-    calculator = await MarginCalculator.new(addressBook.address)
     // setup margin pool
     marginPool = await MarginPool.new(addressBook.address)
     // setup margin vault
@@ -87,6 +85,8 @@ contract('Naked Put Option closed before expiry flow', ([accountOwner1]) => {
     controllerImplementation = await Controller.new(addressBook.address)
     // setup mock Oracle module
     oracle = await MockOracle.new(addressBook.address)
+    // setup calculator
+    calculator = await MarginCalculator.new(oracle.address)
     // setup whitelist module
     whitelist = await Whitelist.new(addressBook.address)
     await whitelist.whitelistCollateral(usdc.address)

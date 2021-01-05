@@ -62,13 +62,12 @@ contract('MarginCalculator', () => {
     expiry = now + time.duration.days(30).toNumber()
     // initiate addressbook first.
     addressBook = await MockAddressBook.new()
-    // setup calculator
-    calculator = await MarginCalculator.new(addressBook.address)
     // setup oracle
     oracle = await MockOracle.new()
     await addressBook.setOracle(oracle.address)
+    // setup calculator
+    calculator = await MarginCalculator.new(oracle.address)
     // setup usdc and weth
-
     usdc = await MockERC20.new('USDC', 'USDC', usdcDecimals)
     dai = await MockERC20.new('DAI', 'DAI', daiDecimals)
     weth = await MockERC20.new('WETH', 'WETH', wethDecimals)
@@ -120,7 +119,7 @@ contract('MarginCalculator', () => {
 
   describe('Deployment test', () => {
     it('should revert deploying Calculator with addressbook address equal to zero', async () => {
-      await expectRevert(MarginCalculator.new(ZERO_ADDR), 'MarginCalculator: invalid addressbook')
+      await expectRevert(MarginCalculator.new(ZERO_ADDR), 'MarginCalculator: invalid oracle address')
     })
   })
 
