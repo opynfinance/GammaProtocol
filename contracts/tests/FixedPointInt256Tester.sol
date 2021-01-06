@@ -6,6 +6,7 @@ pragma solidity 0.6.10;
 pragma experimental ABIEncoderV2;
 
 import "../libs/FixedPointInt256.sol";
+import "../packages/oz/SignedSafeMath.sol";
 
 /**
  * @author Opyn Team
@@ -13,6 +14,12 @@ import "../libs/FixedPointInt256.sol";
  */
 contract FixedPointInt256Tester {
     using FixedPointInt256 for FixedPointInt256.FixedPointInt;
+    using SignedSafeMath for int256;
+
+    // helper function for testing
+    function testFromUnscaledInt(int256 a) external pure returns (FixedPointInt256.FixedPointInt memory) {
+        return FixedPointInt256.FixedPointInt(a.mul(1e27));
+    }
 
     function testAdd(FixedPointInt256.FixedPointInt memory a, FixedPointInt256.FixedPointInt memory b)
         external
