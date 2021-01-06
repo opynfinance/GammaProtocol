@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: UNLICENSED */
 pragma solidity =0.6.10;
 
+import {ERC20Upgradeable} from "./packages/oz/upgradeability/ERC20Upgradeable.sol";
 import {ERC20PermitUpgradeable} from "./packages/oz/upgradeability/erc20-permit/ERC20PermitUpgradeable.sol";
 import {SafeMath} from "./packages/oz/SafeMath.sol";
 import {Strings} from "./packages/oz/Strings.sol";
