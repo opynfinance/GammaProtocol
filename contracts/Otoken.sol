@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: UNLICENSED */
 pragma solidity =0.6.10;
 
+import {ERC20PermitUpgradeable} from "./packages/oz/upgradeability/erc20-permit/ERC20PermitUpgradeable.sol";
 import {ERC20Upgradeable} from "./packages/oz/upgradeability/ERC20Upgradeable.sol";
 import {SafeMath} from "./packages/oz/SafeMath.sol";
 import {Strings} from "./packages/oz/Strings.sol";
@@ -13,7 +14,7 @@ import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
  * @notice Otoken is the ERC20 token for an option
  * @dev The Otoken inherits ERC20Upgradeable because we need to use the init instead of constructor
  */
-contract Otoken is ERC20Upgradeable {
+contract Otoken is ERC20PermitUpgradeable {
     /// @notice address of the AddressBook module
     address public addressBook;
 
@@ -65,6 +66,7 @@ contract Otoken is ERC20Upgradeable {
         isPut = _isPut;
         (string memory tokenName, string memory tokenSymbol) = _getNameAndSymbol();
         __ERC20_init_unchained(tokenName, tokenSymbol);
+        __ERC20Permit_init(tokenName);
         _setupDecimals(8);
     }
 
