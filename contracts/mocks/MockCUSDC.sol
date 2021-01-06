@@ -1,13 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.6.10;
 
-import {ERC20Initializable} from "../packages/oz/upgradeability/ERC20Initializable.sol";
+import {ERC20Upgradeable} from "../packages/oz/upgradeability/ERC20Upgradeable.sol";
 import {ERC20Interface} from "../interfaces/ERC20Interface.sol";
 import {SafeMath} from "../packages/oz/SafeMath.sol";
 
-contract MockCUSDC is ERC20Initializable {
-    using SafeMath for uint256;
-
+contract MockCUSDC is ERC20Upgradeable {
     uint256 public exchangeRateStored;
     address public underlying;
     uint256 public scale = 1e18;
