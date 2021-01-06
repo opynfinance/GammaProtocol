@@ -26,15 +26,6 @@ library FixedPointInt256 {
     }
 
     /**
-     * @notice constructs an `FixedPointInt` from an unscaled int, e.g., `b=5` gets stored internally as `5**27`.
-     * @param a int to convert into a FixedPoint.
-     * @return the converted FixedPoint.
-     */
-    function fromUnscaledInt(int256 a) internal pure returns (FixedPointInt memory) {
-        return FixedPointInt(a.mul(SCALING_FACTOR));
-    }
-
-    /**
      * @notice constructs an FixedPointInt from an scaled uint with {_decimals} decimals
      * Examples:
      * (1)  USDC    decimals = 6

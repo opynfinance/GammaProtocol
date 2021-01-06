@@ -14,10 +14,6 @@ import "../libs/FixedPointInt256.sol";
 contract FixedPointInt256Tester {
     using FixedPointInt256 for FixedPointInt256.FixedPointInt;
 
-    function testFromUnscaledInt(int256 a) external pure returns (FixedPointInt256.FixedPointInt memory) {
-        return FixedPointInt256.fromUnscaledInt(a);
-    }
-
     function testAdd(FixedPointInt256.FixedPointInt memory a, FixedPointInt256.FixedPointInt memory b)
         external
         pure

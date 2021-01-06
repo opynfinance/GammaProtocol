@@ -4,8 +4,6 @@ FixedPoint library
 
 ## Functions:
 
-- `fromUnscaledInt(int256 a) (internal)`
-
 - `fromScaledUint(uint256 _a, uint256 _decimals) (internal)`
 
 - `toScaledUint(struct FixedPointInt256.FixedPointInt _a, uint256 _decimals, bool _roundDown) (internal)`
@@ -31,18 +29,6 @@ FixedPoint library
 - `isLessThan(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) (internal)`
 
 - `isLessThanOrEqual(struct FixedPointInt256.FixedPointInt a, struct FixedPointInt256.FixedPointInt b) (internal)`
-
-### Function `fromUnscaledInt(int256 a) → struct FixedPointInt256.FixedPointInt internal`
-
-constructs an `FixedPointInt` from an unscaled int, e.g., `b=5` gets stored internally as `5**27`.
-
-#### Parameters:
-
-- `a`: int to convert into a FixedPoint.
-
-#### Return Values:
-
-- the converted FixedPoint.
 
 ### Function `fromScaledUint(uint256 _a, uint256 _decimals) → struct FixedPointInt256.FixedPointInt internal`
 

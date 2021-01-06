@@ -15,8 +15,6 @@
       * [WETH9](docs/contracts-documentation/external/canonical-weth/WETH9.md)
     * proxies
       * [PayableProxyController](docs/contracts-documentation/external/proxies/PayableProxyController.md)
-    * wrapper
-      * [FlashWrap](docs/contracts-documentation/external/wrapper/FlashWrap.md)
   * libs
     * [Actions](docs/contracts-documentation/libs/Actions.md)
     * [FixedPointInt256](docs/contracts-documentation/libs/FixedPointInt256.md)
@@ -25,4 +23,3 @@
   * pricers
     * [ChainlinkPricer](docs/contracts-documentation/pricers/ChainlinkPricer.md)
     * [CompoundPricer](docs/contracts-documentation/pricers/CompoundPricer.md)
-    * [USDCPricer](docs/contracts-documentation/pricers/USDCPricer.md)
