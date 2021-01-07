@@ -10,3 +10,7 @@ specs/.certora_config
 specs/.last_confs
 specs/.certora_build.json
 specs/.certora_verify
+.last_confs/
+.certora_verify.json
+.certora_config/
+.certora_build.json
