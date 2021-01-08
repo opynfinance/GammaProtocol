@@ -41,6 +41,7 @@ const order1 = {
   takerFee: '0',
   takerFeeAssetData: '0x',
 }
+
 const signature1 =
   '0x1b83ae7e3dae7d335bac2e1594bc517f797d18cc0ddb67518f39cd422e0153d1ad21e8ddf039f9b04d4581fa1530e1a0b6f89eabce6f91c295ab5c46b75333ee9902'
 
@@ -79,60 +80,32 @@ contract('Callee contract test', async ([deployer, user, controller, payabeProxy
   it("call the callee address with user's address as sender ", async () => {
     const data = web3.eth.abi.encodeParameters(
       [
-        //   [{
-        //    Order: {
-        //       makerAddress: 'address',
-        //       takerAddress: 'address',
-        //       feeRecipientAddress: 'address',
-        //       senderAddress: 'address',
+        {
+          'Order[]': {
+            makerAddress: 'address',
+            takerAddress: 'address',
+            feeRecipientAddress: 'address',
+            senderAddress: 'address',
 
-        //       makerAssetAmount: 'uint256',
-        //       takerAssetAmount: 'uint256',
-        //       makerFee: 'uint256',
-        //       takerFee: 'uint256',
-        //       expirationTimeSeconds: 'uint256',
-        //       salt: 'uint256',
+            makerAssetAmount: 'uint256',
+            takerAssetAmount: 'uint256',
+            makerFee: 'uint256',
+            takerFee: 'uint256',
+            expirationTimeSeconds: 'uint256',
+            salt: 'uint256',
 
-        //       makerAssetData: 'bytes',
-        //       takerAssetData: 'bytes',
-        //       makerFeeAssetData: 'bytes',
-        //       takerFeeAssetData: 'bytes',
-        //     },
-        //   }],
+            makerAssetData: 'bytes',
+            takerAssetData: 'bytes',
+            makerFeeAssetData: 'bytes',
+            takerFeeAssetData: 'bytes',
+          },
+        },
         'uint256[]',
         'bytes[]',
         'address',
       ],
-      [[fillAmount1.toString()], [signature1], payabeProxy],
+      [[order1], [fillAmount1.toString()], [signature1], payabeProxy],
     )
-    // const data = web3.eth.abi.encodeParameters(
-    //   [
-    //     [{
-    //      Order: {
-    //         makerAddress: 'address',
-    //         takerAddress: 'address',
-    //         feeRecipientAddress: 'address',
-    //         senderAddress: 'address',
-
-    //         makerAssetAmount: 'uint256',
-    //         takerAssetAmount: 'uint256',
-    //         makerFee: 'uint256',
-    //         takerFee: 'uint256',
-    //         expirationTimeSeconds: 'uint256',
-    //         salt: 'uint256',
-
-    //         makerAssetData: 'bytes',
-    //         takerAssetData: 'bytes',
-    //         makerFeeAssetData: 'bytes',
-    //         takerFeeAssetData: 'bytes',
-    //       },
-    //     }],
-    //     'uint256[]',
-    //     'bytes[]',
-    //     'address',
-    //   ],
-    //   [[order1], [fillAmount1.toString()], [signature1], payabeProxy],
-    // )
 
     const usdcBalanceBefore = new BigNumber(await usdc.balanceOf(user))
     const oTokenBalanceBefore = new BigNumber(await otoken.balanceOf(user))

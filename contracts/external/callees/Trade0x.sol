@@ -59,12 +59,8 @@ contract Trade0x is CalleeInterface {
      */
 
     function callFunction(address payable _sender, bytes memory _data) external override {
-        require(msg.sender == controller);
-        // (
-        //     uint256[] memory takerAssetFillAmount,
-        //     bytes[] memory signature,
-        //     address feePayer
-        // ) = abi.decode(_data, (uint256[], bytes[], address));
+        require(msg.sender == controller, "sender not controller");
+
         (
             IZeroXExchange.Order[] memory order,
             uint256[] memory takerAssetFillAmount,
