@@ -79,32 +79,60 @@ contract('Callee contract test', async ([deployer, user, controller, payabeProxy
   it("call the callee address with user's address as sender ", async () => {
     const data = web3.eth.abi.encodeParameters(
       [
-        {
-          Order: {
-            makerAddress: 'address',
-            takerAddress: 'address',
-            feeRecipientAddress: 'address',
-            senderAddress: 'address',
+        //   [{
+        //    Order: {
+        //       makerAddress: 'address',
+        //       takerAddress: 'address',
+        //       feeRecipientAddress: 'address',
+        //       senderAddress: 'address',
 
-            makerAssetAmount: 'uint256',
-            takerAssetAmount: 'uint256',
-            makerFee: 'uint256',
-            takerFee: 'uint256',
-            expirationTimeSeconds: 'uint256',
-            salt: 'uint256',
+        //       makerAssetAmount: 'uint256',
+        //       takerAssetAmount: 'uint256',
+        //       makerFee: 'uint256',
+        //       takerFee: 'uint256',
+        //       expirationTimeSeconds: 'uint256',
+        //       salt: 'uint256',
 
-            makerAssetData: 'bytes',
-            takerAssetData: 'bytes',
-            makerFeeAssetData: 'bytes',
-            takerFeeAssetData: 'bytes',
-          },
-        },
-        'uint256',
-        'bytes',
+        //       makerAssetData: 'bytes',
+        //       takerAssetData: 'bytes',
+        //       makerFeeAssetData: 'bytes',
+        //       takerFeeAssetData: 'bytes',
+        //     },
+        //   }],
+        'uint256[]',
+        'bytes[]',
         'address',
       ],
-      [order1, fillAmount1.toString(), signature1, payabeProxy],
+      [[fillAmount1.toString()], [signature1], payabeProxy],
     )
+    // const data = web3.eth.abi.encodeParameters(
+    //   [
+    //     [{
+    //      Order: {
+    //         makerAddress: 'address',
+    //         takerAddress: 'address',
+    //         feeRecipientAddress: 'address',
+    //         senderAddress: 'address',
+
+    //         makerAssetAmount: 'uint256',
+    //         takerAssetAmount: 'uint256',
+    //         makerFee: 'uint256',
+    //         takerFee: 'uint256',
+    //         expirationTimeSeconds: 'uint256',
+    //         salt: 'uint256',
+
+    //         makerAssetData: 'bytes',
+    //         takerAssetData: 'bytes',
+    //         makerFeeAssetData: 'bytes',
+    //         takerFeeAssetData: 'bytes',
+    //       },
+    //     }],
+    //     'uint256[]',
+    //     'bytes[]',
+    //     'address',
+    //   ],
+    //   [[order1], [fillAmount1.toString()], [signature1], payabeProxy],
+    // )
 
     const usdcBalanceBefore = new BigNumber(await usdc.balanceOf(user))
     const oTokenBalanceBefore = new BigNumber(await otoken.balanceOf(user))

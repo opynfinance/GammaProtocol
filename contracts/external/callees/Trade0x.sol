@@ -60,40 +60,48 @@ contract Trade0x is CalleeInterface {
 
     function callFunction(address payable _sender, bytes memory _data) external override {
         require(msg.sender == controller);
-
+        // (
+        //     uint256[] memory takerAssetFillAmount,
+        //     bytes[] memory signature,
+        //     address feePayer
+        // ) = abi.decode(_data, (uint256[], bytes[], address));
         (
-            IZeroXExchange.Order memory order,
-            uint256 takerAssetFillAmount,
-            bytes memory signature,
+            IZeroXExchange.Order[] memory order,
+            uint256[] memory takerAssetFillAmount,
+            bytes[] memory signature,
             address feePayer
-        ) = abi.decode(_data, (IZeroXExchange.Order, uint256, bytes, address));
+        ) = abi.decode(_data, (IZeroXExchange.Order[], uint256[], bytes[], address));
 
-        address makerAsset = decodeERC20Asset(order.makerAssetData);
-        address takerAsset = decodeERC20Asset(order.takerAssetData);
-        // pull token from user
-        ERC20Interface(takerAsset).safeTransferFrom(_sender, address(this), takerAssetFillAmount);
+        // for (uint256 i=0; i< order.length; i++) {
+        //     address takerAsset = decodeERC20Asset(order[i].takerAssetData);
+        //     // pull token from user
+        //     ERC20Interface(takerAsset).safeTransferFrom(_sender, address(this), takerAssetFillAmount[i]);
 
-        // approve the 0x ERC20 Proxy to move fund
-        ERC20Interface(takerAsset).safeIncreaseAllowance(assetProxy, takerAssetFillAmount);
+        //     // approve the 0x ERC20 Proxy to move fund
+        //     ERC20Interface(takerAsset).safeIncreaseAllowance(assetProxy, takerAssetFillAmount[i]);
+        // }
 
-        // pull weth (to pay 0x) from feePayer address
-        uint256 protocolFee = tx.gasprice * PORTOCAL_FEE_BASE;
-        weth.safeTransferFrom(feePayer, address(this), protocolFee);
+        // // pull weth (to pay 0x) from feePayer address
+        // uint256 protocolFee = tx.gasprice * PORTOCAL_FEE_BASE;
+        // weth.safeTransferFrom(feePayer, address(this), protocolFee);
 
-        IZeroXExchange.FillResults memory result = exchange.fillOrder(order, takerAssetFillAmount, signature);
+        // IZeroXExchange.FillResults[] memory result = exchange.batchFillOrders(order, takerAssetFillAmount, signature);
 
-        // transfer token to sender
-        uint256 balance = ERC20Interface(makerAsset).balanceOf(address(this));
-        ERC20Interface(makerAsset).safeTransfer(_sender, balance);
+        // for (uint256 i=0; i< order.length; i++) {
+        //     // transfer token to sender
+        //     address makerAsset = decodeERC20Asset(order[i].makerAssetData);
+        //     uint256 balance = ERC20Interface(makerAsset).balanceOf(address(this));
+        //     ERC20Interface(makerAsset).safeTransfer(_sender, balance);
+        // }
 
-        emit Trade(
-            _sender,
-            order.makerAddress,
-            takerAsset,
-            makerAsset,
-            takerAssetFillAmount,
-            result.makerAssetFilledAmount
-        );
+        // emit Trade(
+        //     _sender,
+        //     order.makerAddress,
+        //     takerAsset,
+        //     makerAsset,
+        //     takerAssetFillAmount,
+        //     result.makerAssetFilledAmount
+        // );
     }
 
     /**
