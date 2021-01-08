@@ -29,6 +29,27 @@ contract MarginCalculator {
     /// @dev FixedPoint 0
     FPI.FixedPointInt internal ZERO = FPI.fromScaledUint(0, BASE);
 
+    struct VaultDetails {
+        address shortUnderlyingAsset;
+        address shortStrikeAsset;
+        address shortCollateralAsset;
+        address longUnderlyingAsset;
+        address longStrikeAsset;
+        address longCollateralAsset;
+        uint256 shortStrikePrice;
+        uint256 shortDecimals;
+        uint256 shortExpiryTimestamp;
+        uint256 longStrikePrice;
+        uint256 longDecimals;
+        uint256 longExpiryTimestamp;
+        uint256 collateralDecimals;
+        bool shortType;
+        bool longType;
+        bool hasLong;
+        bool hasShort;
+        bool hasCollateral;
+    }
+
     constructor(address _addressBook) public {
         require(_addressBook != address(0), "MarginCalculator: invalid addressbook");
 
@@ -75,6 +96,8 @@ contract MarginCalculator {
      * if True, collateral can be taken out from the vault, if False, additional collateral needs to be added to vault
      */
     function getExcessCollateral(MarginVault.Vault memory _vault) public view returns (uint256, bool) {
+        // get vault details
+        VaultDetails memory vaultDetails = getVaultDetails(_vault);
         // include all the checks for to ensure the vault is valid
         _checkIsValidVault(_vault);
 
@@ -410,5 +433,81 @@ contract MarginCalculator {
      */
     function _isNotEmpty(address[] memory _assets) internal pure returns (bool) {
         return _assets.length > 0 && _assets[0] != address(0);
+    }
+
+    // struct VaultDetails {
+    //     address shortUnderlyingAsset;
+    //     address shortStrikeAsset;
+    //     address shortCollateralAsset;
+    //     address longUnderlyingAsset;
+    //     address longStrikeAsset;
+    //     address longCollateralAsset;
+    //     uint256 shortStrikePrice;
+    //     uint256 shortDecimals;
+    //     uint256 shortExpiryTimestamp;
+    //     uint256 shortCollateralDecimals;
+    //     uint256 longStrikePrice;
+    //     uint256 longDecimals;
+    //     uint256 longExpiryTimestamp;
+    //     uint256 longCollateralDecimals;
+    //     uint256 collateralDecimals();
+    //     bool shortType;
+    //     bool longType;
+    //     bool hasLong;
+    //     bool hasShort;
+    //     bool hasCollateral;
+    // }
+
+    function getVaultDetails(MarginVault.Vault memory _vault) internal view returns (VaultDetails memory) {
+        VaultDetails memory vaultDetails = VaultDetails(
+            address(0),
+            address(0),
+            address(0),
+            address(0),
+            address(0),
+            address(0),
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            false,
+            false,
+            false,
+            false,
+            false
+        );
+
+        vaultDetails.hasLong = _isNotEmpty(_vault.longOtokens);
+        vaultDetails.hasShort = _isNotEmpty(_vault.shortOtokens);
+        vaultDetails.hasCollateral = _isNotEmpty(_vault.collateralAssets);
+
+        if (vaultDetails.hasLong) {
+            OtokenInterface long = OtokenInterface(_vault.longOtokens[0]);
+            vaultDetails.longCollateralAsset = long.collateralAsset();
+            vaultDetails.longStrikePrice = long.strikePrice();
+            vaultDetails.longCollateralDecimals = uint256(ERC20Interface(long.collateralAsset()).decimals());
+            vaultDetails.longExpiryTimestamp = long.expiryTimestamp();
+            vaultDetails.longType = long.isPut();
+        }
+
+        if (vaultDetails.hasShort) {
+            OtokenInterface short = OtokenInterface(_vault.shortOtokens[0]);
+            vaultDetails.shortCollateralAsset = short.collateralAsset();
+            vaultDetails.shortUnderlyingAsset = short.underlyingAsset();
+            vaultDetails.shortStrikeAsset = short.strikeAsset();
+            vaultDetails.shortStrikePrice = short.strikePrice();
+            vaultDetails.shortCollateralDecimals = uint256(ERC20Interface(short.collateralAsset()).decimals());
+            vaultDetails.shortExpiryTimestamp = short.expiryTimestamp();
+            vaultDetails.shortType = short.isPut();
+        }
+
+        if (vaultDetails.hasCollateral) {
+            vaultDetails.collateralDecimals = uint256(ERC20Interface(_vault.collateralAssets[0]).decimals());
+        }
+
+        return vaultDetails;
     }
 }
