@@ -39,9 +39,11 @@ contract MarginCalculator {
         uint256 shortStrikePrice;
         uint256 shortDecimals;
         uint256 shortExpiryTimestamp;
+        uint256 shortCollateralDecimals;
         uint256 longStrikePrice;
         uint256 longDecimals;
         uint256 longExpiryTimestamp;
+        uint256 longCollateralDecimals;
         uint256 collateralDecimals;
         bool shortType;
         bool longType;
@@ -450,7 +452,7 @@ contract MarginCalculator {
     //     uint256 longDecimals;
     //     uint256 longExpiryTimestamp;
     //     uint256 longCollateralDecimals;
-    //     uint256 collateralDecimals();
+    //     uint256 collateralDecimals;
     //     bool shortType;
     //     bool longType;
     //     bool hasLong;
@@ -473,6 +475,8 @@ contract MarginCalculator {
             0,
             0,
             0,
+            0,
+            0,
             false,
             false,
             false,
@@ -487,7 +491,10 @@ contract MarginCalculator {
         if (vaultDetails.hasLong) {
             OtokenInterface long = OtokenInterface(_vault.longOtokens[0]);
             vaultDetails.longCollateralAsset = long.collateralAsset();
+            vaultDetails.longUnderlyingAsset = long.underlyingAsset();
+            vaultDetails.longStrikeAsset = long.strikeAsset();
             vaultDetails.longStrikePrice = long.strikePrice();
+            vaultDetails.longDecimals = long.decimals();
             vaultDetails.longCollateralDecimals = uint256(ERC20Interface(long.collateralAsset()).decimals());
             vaultDetails.longExpiryTimestamp = long.expiryTimestamp();
             vaultDetails.longType = long.isPut();
@@ -499,6 +506,7 @@ contract MarginCalculator {
             vaultDetails.shortUnderlyingAsset = short.underlyingAsset();
             vaultDetails.shortStrikeAsset = short.strikeAsset();
             vaultDetails.shortStrikePrice = short.strikePrice();
+            vaultDetails.shortDecimals = short.decimals();
             vaultDetails.shortCollateralDecimals = uint256(ERC20Interface(short.collateralAsset()).decimals());
             vaultDetails.shortExpiryTimestamp = short.expiryTimestamp();
             vaultDetails.shortType = short.isPut();
