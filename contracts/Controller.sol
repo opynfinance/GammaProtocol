@@ -398,21 +398,21 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
     /**
      * @dev return if an expired oToken contract’s settlement price has been finalized
-     * @param _otoken address of the oToken
+     * @param _underlying oToken underlying asset
+     * @param _strike oToken strike asset
+     * @param _collateral oToken collateral asset
+     * @param _expiry otoken expiry timestamp
      * @return True if the oToken has expired AND all oracle prices at the expiry timestamp have been finalized, False if not
      */
-    function isSettlementAllowed(address _otoken) public view returns (bool) {
-        OtokenInterface otoken = OtokenInterface(_otoken);
-
-        address underlying = otoken.underlyingAsset();
-        address strike = otoken.strikeAsset();
-        address collateral = otoken.collateralAsset();
-
-        uint256 expiry = otoken.expiryTimestamp();
-
-        bool isUnderlyingFinalized = oracle.isDisputePeriodOver(underlying, expiry);
-        bool isStrikeFinalized = oracle.isDisputePeriodOver(strike, expiry);
-        bool isCollateralFinalized = oracle.isDisputePeriodOver(collateral, expiry);
+    function isSettlementAllowed(
+        address _underlying,
+        address _strike,
+        address _collateral,
+        uint256 _expiry
+    ) public view returns (bool) {
+        bool isUnderlyingFinalized = oracle.isDisputePeriodOver(_underlying, _expiry);
+        bool isStrikeFinalized = oracle.isDisputePeriodOver(_strike, _expiry);
+        bool isCollateralFinalized = oracle.isDisputePeriodOver(_collateral, _expiry);
 
         return isUnderlyingFinalized && isStrikeFinalized && isCollateralFinalized;
     }
@@ -716,9 +716,16 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         require(whitelist.isWhitelistedOtoken(_args.otoken), "Controller: otoken is not whitelisted to be redeemed");
 
-        require(now >= otoken.expiryTimestamp(), "Controller: can not redeem un-expired otoken");
+        address underlying = otoken.underlyingAsset();
+        address strike = otoken.strikeAsset();
+        address collateral = otoken.collateralAsset();
+        uint256 expiry = otoken.expiryTimestamp();
 
-        require(isSettlementAllowed(_args.otoken), "Controller: asset prices not finalized yet");
+        require(now >= otoken.expiryTimestamp(), "Controller: can not redeem un-expired otoken");
+        require(
+            isSettlementAllowed(underlying, strike, collateral, expiry),
+            "Controller: asset prices not finalized yet"
+        );
 
         uint256 payout = getPayout(_args.otoken, _args.amount);
 
@@ -747,8 +754,16 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             ? OtokenInterface(vault.shortOtokens[0])
             : OtokenInterface(vault.longOtokens[0]);
 
-        require(now >= otoken.expiryTimestamp(), "Controller: can not settle vault with un-expired otoken");
-        require(isSettlementAllowed(address(otoken)), "Controller: asset prices not finalized yet");
+        address underlying = otoken.underlyingAsset();
+        address strike = otoken.strikeAsset();
+        address collateral = otoken.collateralAsset();
+        uint256 expiry = otoken.expiryTimestamp();
+
+        require(now >= expiry, "Controller: can not settle vault with un-expired otoken");
+        require(
+            isSettlementAllowed(underlying, strike, collateral, expiry),
+            "Controller: asset prices not finalized yet"
+        );
 
         (uint256 payout, ) = calculator.getExcessCollateral(vault);
 
