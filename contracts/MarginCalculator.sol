@@ -101,30 +101,29 @@ contract MarginCalculator {
         // include all the checks for to ensure the vault is valid
         _checkIsValidVault(_vault, vaultDetails);
 
-        bool hasCollateral = _isNotEmpty(_vault.collateralAssets);
-        bool hasShort = _isNotEmpty(_vault.shortOtokens);
-        bool hasLong = _isNotEmpty(_vault.longOtokens);
-
         // if the vault contains no oTokens, return the amount of collateral
-        if (!hasShort && !hasLong) {
-            uint256 amount = hasCollateral ? _vault.collateralAmounts[0] : 0;
+        if (!vaultDetails.hasShort && !vaultDetails.hasLong) {
+            uint256 amount = vaultDetails.hasCollateral ? _vault.collateralAmounts[0] : 0;
             return (amount, true);
         }
 
         FPI.FixedPointInt memory collateralAmount = ZERO;
-        if (hasCollateral) {
-            uint256 collateralDecimals = uint256(ERC20Interface(_vault.collateralAssets[0]).decimals());
-            collateralAmount = FPI.fromScaledUint(_vault.collateralAmounts[0], collateralDecimals);
+        if (vaultDetails.hasCollateral) {
+            collateralAmount = FPI.fromScaledUint(_vault.collateralAmounts[0], vaultDetails.collateralDecimals);
         }
 
         // get required margin, denominated in collateral
-        FPI.FixedPointInt memory collateralRequired = _getMarginRequired(_vault, hasShort, hasLong);
+        FPI.FixedPointInt memory collateralRequired = _getMarginRequired(
+            _vault,
+            vaultDetails.hasShort,
+            vaultDetails.hasLong
+        );
         FPI.FixedPointInt memory excessCollateral = collateralAmount.sub(collateralRequired);
 
         bool isExcess = excessCollateral.isGreaterThanOrEqual(ZERO);
-
-        address otoken = hasLong ? _vault.longOtokens[0] : _vault.shortOtokens[0];
-        uint256 collateralDecimals = uint256(ERC20Interface(OtokenInterface(otoken).collateralAsset()).decimals());
+        uint256 collateralDecimals = vaultDetails.hasLong
+            ? vaultDetails.longCollateralDecimals
+            : vaultDetails.shortCollateralDecimals;
         // if is excess, truncate the tailing digits in excessCollateralExternal calculation
         uint256 excessCollateralExternal = excessCollateral.toScaledUint(collateralDecimals, isExcess);
         return (excessCollateralExternal, isExcess);
