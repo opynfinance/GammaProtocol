@@ -8,7 +8,6 @@ import {SafeMath} from "./packages/oz/SafeMath.sol";
 import {OtokenInterface} from "./interfaces/OtokenInterface.sol";
 import {OracleInterface} from "./interfaces/OracleInterface.sol";
 import {ERC20Interface} from "./interfaces/ERC20Interface.sol";
-import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
 import {FixedPointInt256 as FPI} from "./libs/FixedPointInt256.sol";
 import {MarginVault} from "./libs/MarginVault.sol";
 
@@ -21,7 +20,8 @@ contract MarginCalculator {
     using SafeMath for uint256;
     using FPI for FPI.FixedPointInt;
 
-    address public addressBook;
+    /// @dev oracle module
+    OracleInterface public oracle;
 
     /// @dev decimals used by strike price and oracle price
     uint256 internal constant BASE = 8;
@@ -50,10 +50,10 @@ contract MarginCalculator {
         bool hasCollateral;
     }
 
-    constructor(address _addressBook) public {
-        require(_addressBook != address(0), "MarginCalculator: invalid addressbook");
+    constructor(address _oracle) public {
+        require(_oracle != address(0), "MarginCalculator: invalid oracle address");
 
-        addressBook = _addressBook;
+        oracle = OracleInterface(_oracle);
     }
 
     /**
@@ -400,7 +400,6 @@ contract MarginCalculator {
         address _assetA,
         address _assetB
     ) internal view returns (FPI.FixedPointInt memory) {
-        OracleInterface oracle = OracleInterface(AddressBookInterface(addressBook).getOracle());
         if (_assetA == _assetB) {
             return _amount;
         }
@@ -428,7 +427,6 @@ contract MarginCalculator {
         if (_assetA == _assetB) {
             return _amount;
         }
-        OracleInterface oracle = OracleInterface(AddressBookInterface(addressBook).getOracle());
         (uint256 priceA, bool priceAFinalized) = oracle.getExpiryPrice(_assetA, _expiry);
         (uint256 priceB, bool priceBFinalized) = oracle.getExpiryPrice(_assetB, _expiry);
         require(priceAFinalized && priceBFinalized, "MarginCalculator: price at expiry not finalized yet.");

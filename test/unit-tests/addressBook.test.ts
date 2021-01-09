@@ -132,31 +132,6 @@ contract('AddressBook', ([owner, otokenImplAdd, marginPoolAdd, liquidationManage
     })
   })
 
-  describe('Set margin calculator', () => {
-    let marginCalculator: MarginCalculatorInstance
-
-    before(async () => {
-      marginCalculator = await MarginCalculator.new(addressBook.address)
-    })
-
-    it('should revert adding margin calculator address from non-owner address', async () => {
-      await expectRevert(
-        addressBook.setMarginCalculator(marginCalculator.address, {from: random}),
-        'Ownable: caller is not the owner',
-      )
-    })
-
-    it('should set margin calculator address', async () => {
-      await addressBook.setMarginCalculator(marginCalculator.address, {from: owner})
-
-      assert.equal(
-        marginCalculator.address,
-        await addressBook.getMarginCalculator(),
-        'Margin calculator implementation address mismatch',
-      )
-    })
-  })
-
   describe('Set liquidation manager', () => {
     it('should revert adding liquidation manager address from non-owner address', async () => {
       await expectRevert(
@@ -194,6 +169,32 @@ contract('AddressBook', ([owner, otokenImplAdd, marginPoolAdd, liquidationManage
       await addressBook.setOracle(oracle.address, {from: owner})
 
       assert.equal(oracle.address, await addressBook.getOracle(), 'Oracle module implementation address mismatch')
+    })
+  })
+
+  describe('Set margin calculator', () => {
+    let marginCalculator: MarginCalculatorInstance
+
+    before(async () => {
+      const oracleAddress = await addressBook.getOracle()
+      marginCalculator = await MarginCalculator.new(oracleAddress)
+    })
+
+    it('should revert adding margin calculator address from non-owner address', async () => {
+      await expectRevert(
+        addressBook.setMarginCalculator(marginCalculator.address, {from: random}),
+        'Ownable: caller is not the owner',
+      )
+    })
+
+    it('should set margin calculator address', async () => {
+      await addressBook.setMarginCalculator(marginCalculator.address, {from: owner})
+
+      assert.equal(
+        marginCalculator.address,
+        await addressBook.getMarginCalculator(),
+        'Margin calculator implementation address mismatch',
+      )
     })
   })
 
