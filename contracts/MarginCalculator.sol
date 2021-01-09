@@ -113,11 +113,7 @@ contract MarginCalculator {
         }
 
         // get required margin, denominated in collateral
-        FPI.FixedPointInt memory collateralRequired = _getMarginRequired(
-            _vault,
-            vaultDetails.hasShort,
-            vaultDetails.hasLong
-        );
+        FPI.FixedPointInt memory collateralRequired = _getMarginRequired(_vault, vaultDetails);
         FPI.FixedPointInt memory excessCollateral = collateralAmount.sub(collateralRequired);
 
         bool isExcess = excessCollateral.isGreaterThanOrEqual(ZERO);
@@ -165,26 +161,39 @@ contract MarginCalculator {
      * @param _vault theoretical vault that needs to be checked
      * @return marginRequired the minimal amount of collateral needed in a vault, denominated in collateral
      */
-    function _getMarginRequired(
-        MarginVault.Vault memory _vault,
-        bool _hasShort,
-        bool _hasLong
-    ) internal view returns (FPI.FixedPointInt memory) {
-        FPI.FixedPointInt memory shortAmount = _hasShort ? FPI.fromScaledUint(_vault.shortAmounts[0], BASE) : ZERO;
-        FPI.FixedPointInt memory longAmount = _hasLong ? FPI.fromScaledUint(_vault.longAmounts[0], BASE) : ZERO;
+    function _getMarginRequired(MarginVault.Vault memory _vault, VaultDetails memory _vaultDetails)
+        internal
+        view
+        returns (FPI.FixedPointInt memory)
+    {
+        FPI.FixedPointInt memory shortAmount = _vaultDetails.hasShort
+            ? FPI.fromScaledUint(_vault.shortAmounts[0], BASE)
+            : ZERO;
+        FPI.FixedPointInt memory longAmount = _vaultDetails.hasLong
+            ? FPI.fromScaledUint(_vault.longAmounts[0], BASE)
+            : ZERO;
 
-        OtokenInterface otoken = _hasShort
-            ? OtokenInterface(_vault.shortOtokens[0])
-            : OtokenInterface(_vault.longOtokens[0]);
-        bool expired = now > otoken.expiryTimestamp();
-        bool isPut = otoken.isPut();
+        address otokenUnderlyingAsset = _vaultDetails.hasShort
+            ? _vaultDetails.shortUnderlyingAsset
+            : _vaultDetails.longUnderlyingAsset;
+        address otokenCollateralAsset = _vaultDetails.hasShort
+            ? _vaultDetails.shortCollateralAsset
+            : _vaultDetails.longCollateralAsset;
+        address otokenStrikeAsset = _vaultDetails.hasShort
+            ? _vaultDetails.shortStrikeAsset
+            : _vaultDetails.longStrikeAsset;
+        uint256 otokenExpiry = _vaultDetails.hasShort
+            ? _vaultDetails.shortExpiryTimestamp
+            : _vaultDetails.longExpiryTimestamp;
+        bool expired = now > otokenExpiry;
+        bool isPut = _vaultDetails.hasShort ? _vaultDetails.shortType : _vaultDetails.longType;
 
         if (!expired) {
-            FPI.FixedPointInt memory shortStrike = _hasShort
-                ? FPI.fromScaledUint(OtokenInterface(_vault.shortOtokens[0]).strikePrice(), BASE)
+            FPI.FixedPointInt memory shortStrike = _vaultDetails.hasShort
+                ? FPI.fromScaledUint(_vaultDetails.shortStrikePrice, BASE)
                 : ZERO;
-            FPI.FixedPointInt memory longStrike = _hasLong
-                ? FPI.fromScaledUint(OtokenInterface(_vault.longOtokens[0]).strikePrice(), BASE)
+            FPI.FixedPointInt memory longStrike = _vaultDetails.hasLong
+                ? FPI.fromScaledUint(_vaultDetails.longStrikePrice, BASE)
                 : ZERO;
 
             if (isPut) {
@@ -195,7 +204,7 @@ contract MarginCalculator {
                     longStrike
                 );
                 // convert amount to be denominated in collateral
-                return _convertAmountOnLivePrice(strikeNeeded, otoken.strikeAsset(), otoken.collateralAsset());
+                return _convertAmountOnLivePrice(strikeNeeded, otokenStrikeAsset, otokenCollateralAsset);
             } else {
                 FPI.FixedPointInt memory underlyingNeeded = _getCallSpreadMarginRequired(
                     shortAmount,
@@ -204,11 +213,15 @@ contract MarginCalculator {
                     longStrike
                 );
                 // convert amount to be denominated in collateral
-                return _convertAmountOnLivePrice(underlyingNeeded, otoken.underlyingAsset(), otoken.collateralAsset());
+                return _convertAmountOnLivePrice(underlyingNeeded, otokenUnderlyingAsset, otokenCollateralAsset);
             }
         } else {
-            FPI.FixedPointInt memory shortCashValue = _hasShort ? _getExpiredCashValue(_vault.shortOtokens[0]) : ZERO;
-            FPI.FixedPointInt memory longCashValue = _hasLong ? _getExpiredCashValue(_vault.longOtokens[0]) : ZERO;
+            FPI.FixedPointInt memory shortCashValue = _vaultDetails.hasShort
+                ? _getExpiredCashValue(_vault.shortOtokens[0])
+                : ZERO;
+            FPI.FixedPointInt memory longCashValue = _vaultDetails.hasLong
+                ? _getExpiredCashValue(_vault.longOtokens[0])
+                : ZERO;
 
             FPI.FixedPointInt memory valueInStrike = _getExpiredSpreadCashValue(
                 shortAmount,
@@ -217,13 +230,7 @@ contract MarginCalculator {
                 longCashValue
             );
             // convert amount to be denominated in collateral
-            return
-                _convertAmountOnExpiryPrice(
-                    valueInStrike,
-                    otoken.strikeAsset(),
-                    otoken.collateralAsset(),
-                    otoken.expiryTimestamp()
-                );
+            return _convertAmountOnExpiryPrice(valueInStrike, otokenStrikeAsset, otokenCollateralAsset, otokenExpiry);
         }
     }
 
