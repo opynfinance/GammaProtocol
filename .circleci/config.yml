@@ -13,9 +13,9 @@ workflows:
       - lint:
           requires:
             - build
-      # - certora:
-      #     requires:
-      #       - build
+      - certora:
+          requires:
+            - build
       - size-check:
           requires:
             - build
@@ -108,21 +108,49 @@ jobs:
             sudo apt-get update || sudo apt-get update
             sudo apt-get install -y software-properties-common
             sudo apt-get install python3-pip
-            pip3 install certora-cli-beta
+            pip3 install certora-cli
             wget https://github.com/ethereum/solidity/releases/download/v0.6.10/solc-static-linux
             chmod +x solc-static-linux
             sudo mv solc-static-linux /usr/bin/solc
             chmod -R +x specs/
       - run:
+          name: Apply harnesses
+          command: |
+            ./specs/scripts/applyHarnesses.sh
+
+      - run:
           name: Test Whitelist privileged ops
           command: |
-            cd specs/whitelist
-            ./runPrivilegedWhitelist.sh
+            ./specs/scripts/runPrivilegedWhitelist.sh
       - run:
           name: Test MarginVault
           command: |
-            cd specs
-            ./runMarginVault.sh
+            ./specs/scripts/runMarginVault.sh
+
+      - run:
+          name: Test no Bankruptcy
+          command: |
+            ./specs/scripts/runNoBankruptcy.sh putOptionsPreExpiryCase1StartingWithAllCases
+            ./specs/scripts/runNoBankruptcy.sh putOptionsPreExpiryCase2StartingWithAllCases
+            ./specs/scripts/runNoBankruptcy.sh callOptionsPreExpiry
+
+      - run:
+          name: Test valid balances
+          command: |
+            ./specs/scripts/runValidBalances.sh validBalanceTotalCollateral
+            ./specs/scripts/runValidBalances.sh validBalanceTotalShort
+            ./specs/scripts/runValidBalances.sh validBalanceTotalLong
+
+      - run:
+          name: Test general rules
+          command: |
+            ./specs/scripts/runValidBalances.sh cantSettleUnexpiredVault
+            ./specs/scripts/runValidBalances.sh validBalanceOfTheSystem
+            ./specs/scripts/runValidBalances.sh assetIsNotOtoken
+            ./specs/scripts/runValidBalances.sh OtokenInVaultIsWhitelisted
+            ./specs/scripts/runValidBalances.sh onlyValidOtoken
+            ./specs/scripts/runController.sh onlyOneVaultModified
+
   size-check:
     working_directory: ~/gammaprotocol
     docker:
