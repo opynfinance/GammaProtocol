@@ -343,27 +343,6 @@ contract MarginCalculator {
         );
     }
 
-    // struct VaultDetails {
-    //     address shortUnderlyingAsset;
-    //     address shortStrikeAsset;
-    //     address shortCollateralAsset;
-    //     address longUnderlyingAsset;
-    //     address longStrikeAsset;
-    //     address longCollateralAsset;
-    //     uint256 shortStrikePrice;
-    //     uint256 shortExpiryTimestamp;
-    //     uint256 shortCollateralDecimals;
-    //     uint256 longStrikePrice;
-    //     uint256 longExpiryTimestamp;
-    //     uint256 longCollateralDecimals;
-    //     uint256 collateralDecimals;
-    //     bool shortType;
-    //     bool longType;
-    //     bool hasLong;
-    //     bool hasShort;
-    //     bool hasCollateral;
-    // }
-
     /**
      * @dev if there is a short option and a long option in the vault, ensure that the long option is able to be used as collateral for the short option
      * @param _vault the vault to check.
@@ -464,27 +443,6 @@ contract MarginCalculator {
     function _isNotEmpty(address[] memory _assets) internal pure returns (bool) {
         return _assets.length > 0 && _assets[0] != address(0);
     }
-
-    // struct VaultDetails {
-    //     address shortUnderlyingAsset;
-    //     address shortStrikeAsset;
-    //     address shortCollateralAsset;
-    //     address longUnderlyingAsset;
-    //     address longStrikeAsset;
-    //     address longCollateralAsset;
-    //     uint256 shortStrikePrice;
-    //     uint256 shortExpiryTimestamp;
-    //     uint256 shortCollateralDecimals;
-    //     uint256 longStrikePrice;
-    //     uint256 longExpiryTimestamp;
-    //     uint256 longCollateralDecimals;
-    //     uint256 collateralDecimals;
-    //     bool shortType;
-    //     bool longType;
-    //     bool hasLong;
-    //     bool hasShort;
-    //     bool hasCollateral;
-    // }
 
     function getVaultDetails(MarginVault.Vault memory _vault) internal view returns (VaultDetails memory) {
         VaultDetails memory vaultDetails = VaultDetails(
