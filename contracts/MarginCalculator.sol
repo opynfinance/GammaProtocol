@@ -164,7 +164,7 @@ contract MarginCalculator {
      * @param _strike otoken strike asset
      * @param _expiryTimestamp otoken expiry timestamp
      * @param _strikePrice otoken strike price
-     * @param __strikePrice true if otoken is put otherwise false
+     * @param _strikePrice true if otoken is put otherwise false
      * @return cash value of an expired otoken, denominated in the strike asset
      */
     function _getExpiredCashValue(
