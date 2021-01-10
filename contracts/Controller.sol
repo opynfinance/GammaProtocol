@@ -721,7 +721,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         address collateral = otoken.collateralAsset();
         uint256 expiry = otoken.expiryTimestamp();
 
-        require(now >= otoken.expiryTimestamp(), "Controller: can not redeem un-expired otoken");
+        require(now >= expiry, "Controller: can not redeem un-expired otoken");
         require(
             isSettlementAllowed(underlying, strike, collateral, expiry),
             "Controller: asset prices not finalized yet"
@@ -731,9 +731,9 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         otoken.burnOtoken(msg.sender, _args.amount);
 
-        pool.transferToUser(otoken.collateralAsset(), _args.receiver, payout);
+        pool.transferToUser(collateral, _args.receiver, payout);
 
-        emit Redeem(_args.otoken, msg.sender, _args.receiver, otoken.collateralAsset(), _args.amount, payout);
+        emit Redeem(_args.otoken, msg.sender, _args.receiver, collateral, _args.amount, payout);
     }
 
     /**
@@ -775,7 +775,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         delete vaults[_args.owner][_args.vaultId];
 
-        pool.transferToUser(otoken.collateralAsset(), _args.to, payout);
+        pool.transferToUser(collateral, _args.to, payout);
 
         emit VaultSettled(_args.owner, _args.to, address(otoken), _args.vaultId, payout);
     }
