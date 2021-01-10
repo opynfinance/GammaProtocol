@@ -43,8 +43,8 @@ contract MarginCalculator {
         uint256 longExpiryTimestamp;
         uint256 longCollateralDecimals;
         uint256 collateralDecimals;
-        bool shortType;
-        bool longType;
+        bool isShortPut;
+        bool isLongPut;
         bool hasLong;
         bool hasShort;
         bool hasCollateral;
@@ -160,6 +160,11 @@ contract MarginCalculator {
      * @notice return the cash value of an expired oToken, denominated in strike asset
      * @dev for a call, return Max (0, underlyingPriceInStrike - otoken.strikePrice)
      * @dev for a put, return Max(0, otoken.strikePrice - underlyingPriceInStrike)
+     * @param _underlying otoken underlying asset
+     * @param _strike otoken strike asset
+     * @param _expiryTimestamp otoken expiry timestamp
+     * @param _strikePrice otoken strike price
+     * @param __strikePrice true if otoken is put otherwise false
      * @return cash value of an expired otoken, denominated in the strike asset
      */
     function _getExpiredCashValue(
@@ -219,7 +224,7 @@ contract MarginCalculator {
             ? _vaultDetails.shortExpiryTimestamp
             : _vaultDetails.longExpiryTimestamp;
         bool expired = now > otokenExpiry;
-        bool isPut = _vaultDetails.hasShort ? _vaultDetails.shortType : _vaultDetails.longType;
+        bool isPut = _vaultDetails.hasShort ? _vaultDetails.isShortPut : _vaultDetails.isLongPut;
 
         if (!expired) {
             FPI.FixedPointInt memory shortStrike = _vaultDetails.hasShort
@@ -407,7 +412,7 @@ contract MarginCalculator {
             _vaultDetails.longStrikeAsset == _vaultDetails.shortStrikeAsset &&
             _vaultDetails.longCollateralAsset == _vaultDetails.shortCollateralAsset &&
             _vaultDetails.longExpiryTimestamp == _vaultDetails.shortExpiryTimestamp &&
-            _vaultDetails.longType == _vaultDetails.shortType;
+            _vaultDetails.isLongPut == _vaultDetails.isShortPut;
     }
 
     /**
@@ -522,7 +527,7 @@ contract MarginCalculator {
             vaultDetails.longStrikePrice = long.strikePrice();
             vaultDetails.longCollateralDecimals = uint256(ERC20Interface(long.collateralAsset()).decimals());
             vaultDetails.longExpiryTimestamp = long.expiryTimestamp();
-            vaultDetails.longType = long.isPut();
+            vaultDetails.isLongPut = long.isPut();
         }
 
         if (vaultDetails.hasShort) {
@@ -533,7 +538,7 @@ contract MarginCalculator {
             vaultDetails.shortStrikePrice = short.strikePrice();
             vaultDetails.shortCollateralDecimals = uint256(ERC20Interface(short.collateralAsset()).decimals());
             vaultDetails.shortExpiryTimestamp = short.expiryTimestamp();
-            vaultDetails.shortType = short.isPut();
+            vaultDetails.isShortPut = short.isPut();
         }
 
         if (vaultDetails.hasCollateral) {
