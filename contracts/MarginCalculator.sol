@@ -157,6 +157,38 @@ contract MarginCalculator {
     }
 
     /**
+     * @notice return the cash value of an expired oToken, denominated in strike asset
+     * @dev for a call, return Max (0, underlyingPriceInStrike - otoken.strikePrice)
+     * @dev for a put, return Max(0, otoken.strikePrice - underlyingPriceInStrike)
+     * @return cash value of an expired otoken, denominated in the strike asset
+     */
+    function _getExpiredCashValue(
+        address _underlying,
+        address _strike,
+        uint256 _expiryTimestamp,
+        uint256 _strikePrice,
+        bool _isPut
+    ) internal view returns (FPI.FixedPointInt memory) {
+        // strike price is denominated in strike asset
+        FPI.FixedPointInt memory strikePrice = FPI.fromScaledUint(_strikePrice, BASE);
+        FPI.FixedPointInt memory one = FPI.fromScaledUint(1, 0);
+
+        // calculate the value of the underlying asset in terms of the strike asset
+        FPI.FixedPointInt memory underlyingPriceInStrike = _convertAmountOnExpiryPrice(
+            one, // underlying price denominated in underlying
+            _underlying,
+            _strike,
+            _expiryTimestamp
+        );
+
+        if (_isPut) {
+            return strikePrice.isGreaterThan(underlyingPriceInStrike) ? strikePrice.sub(underlyingPriceInStrike) : ZERO;
+        } else {
+            return underlyingPriceInStrike.isGreaterThan(strikePrice) ? underlyingPriceInStrike.sub(strikePrice) : ZERO;
+        }
+    }
+
+    /**
      * @notice calculate the amount of collateral needed for a vault
      * @dev vault passed in has already passed the checkIsValidVault function
      * @param _vault theoretical vault that needs to be checked
@@ -218,10 +250,22 @@ contract MarginCalculator {
             }
         } else {
             FPI.FixedPointInt memory shortCashValue = _vaultDetails.hasShort
-                ? _getExpiredCashValue(_vault.shortOtokens[0])
+                ? _getExpiredCashValue(
+                    _vaultDetails.shortUnderlyingAsset,
+                    _vaultDetails.shortStrikeAsset,
+                    _vaultDetails.shortExpiryTimestamp,
+                    _vaultDetails.shortStrikePrice,
+                    isPut
+                )
                 : ZERO;
             FPI.FixedPointInt memory longCashValue = _vaultDetails.hasLong
-                ? _getExpiredCashValue(_vault.longOtokens[0])
+                ? _getExpiredCashValue(
+                    _vaultDetails.longUnderlyingAsset,
+                    _vaultDetails.longStrikeAsset,
+                    _vaultDetails.longExpiryTimestamp,
+                    _vaultDetails.longStrikePrice,
+                    isPut
+                )
                 : ZERO;
 
             FPI.FixedPointInt memory valueInStrike = _getExpiredSpreadCashValue(
@@ -230,6 +274,7 @@ contract MarginCalculator {
                 shortCashValue,
                 longCashValue
             );
+
             // convert amount to be denominated in collateral
             return _convertAmountOnExpiryPrice(valueInStrike, otokenStrikeAsset, otokenCollateralAsset, otokenExpiry);
         }
