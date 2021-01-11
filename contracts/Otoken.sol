@@ -42,7 +42,7 @@ contract Otoken is ERC20Initializable {
 
     /**
      * @notice initialize the oToken
-     * @param _addressbook addressbook module
+     * @param _addressBook addressbook module
      * @param _underlyingAsset asset that the option references
      * @param _strikeAsset asset that the strike price is denominated in
      * @param _collateralAsset asset that is held as collateral against short/written options
