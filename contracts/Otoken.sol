@@ -42,7 +42,7 @@ contract Otoken is ERC20Initializable {
 
     /**
      * @notice initialize the oToken
-     * @param _controller controller module address
+     * @param _addressbook addressbook module
      * @param _underlyingAsset asset that the option references
      * @param _strikeAsset asset that the strike price is denominated in
      * @param _collateralAsset asset that is held as collateral against short/written options
@@ -51,7 +51,7 @@ contract Otoken is ERC20Initializable {
      * @param _isPut True if a put option, False if a call option
      */
     function init(
-        address _controller,
+        address _addressbook,
         address _underlyingAsset,
         address _strikeAsset,
         address _collateralAsset,
@@ -59,7 +59,7 @@ contract Otoken is ERC20Initializable {
         uint256 _expiryTimestamp,
         bool _isPut
     ) external initializer {
-        controller = _controller;
+        controller = AddressBookInterface(_addressbook).getController();
         underlyingAsset = _underlyingAsset;
         strikeAsset = _strikeAsset;
         collateralAsset = _collateralAsset;

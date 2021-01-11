@@ -1,6 +1,7 @@
 pragma solidity =0.6.10;
 
 import {ERC20Initializable} from "../packages/oz/upgradeability/ERC20Initializable.sol";
+import {AddressBookInterface} from "../interfaces/AddressBookInterface.sol";
 
 /**
  * SPDX-License-Identifier: UNLICENSED
@@ -20,7 +21,7 @@ contract MockOtoken is ERC20Initializable {
     bool public inited = false;
 
     function init(
-        address _controller,
+        address _addressBook,
         address _underlyingAsset,
         address _strikeAsset,
         address _collateralAsset,
@@ -29,7 +30,7 @@ contract MockOtoken is ERC20Initializable {
         bool _isPut
     ) external {
         inited = true;
-        controller = _controller;
+        controller = AddressBookInterface(_addressBook).getController();
         underlyingAsset = _underlyingAsset;
         strikeAsset = _strikeAsset;
         collateralAsset = _collateralAsset;
