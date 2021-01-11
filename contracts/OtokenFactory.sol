@@ -84,10 +84,11 @@ contract OtokenFactory is OtokenSpawner {
         require(!_isPut || _strikePrice > 0, "OtokenFactory: Can't create a $0 strike put option");
 
         address otokenImpl = AddressBookInterface(addressBook).getOtokenImpl();
+        address controller = AddressBookInterface(addressBook).getController();
 
         bytes memory initializationCalldata = abi.encodeWithSelector(
             OtokenInterface(otokenImpl).init.selector,
-            addressBook,
+            controller,
             _underlyingAsset,
             _strikeAsset,
             _collateralAsset,
@@ -166,9 +167,11 @@ contract OtokenFactory is OtokenSpawner {
         bool _isPut
     ) external view returns (address) {
         address otokenImpl = AddressBookInterface(addressBook).getOtokenImpl();
+        address controller = AddressBookInterface(addressBook).getController();
+
         bytes memory initializationCalldata = abi.encodeWithSelector(
             OtokenInterface(otokenImpl).init.selector,
-            addressBook,
+            controller,
             _underlyingAsset,
             _strikeAsset,
             _collateralAsset,

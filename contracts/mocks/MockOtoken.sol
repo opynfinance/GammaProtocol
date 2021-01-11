@@ -7,7 +7,7 @@ import {ERC20Initializable} from "../packages/oz/upgradeability/ERC20Initializab
  * @dev The Otoken inherits ERC20Initializable because we need to use the init instead of constructor.
  */
 contract MockOtoken is ERC20Initializable {
-    address public addressBook;
+    address public controller;
     address public underlyingAsset;
     address public strikeAsset;
     address public collateralAsset;
@@ -20,7 +20,7 @@ contract MockOtoken is ERC20Initializable {
     bool public inited = false;
 
     function init(
-        address _addressBook,
+        address _controller,
         address _underlyingAsset,
         address _strikeAsset,
         address _collateralAsset,
@@ -29,7 +29,7 @@ contract MockOtoken is ERC20Initializable {
         bool _isPut
     ) external {
         inited = true;
-        addressBook = _addressBook;
+        controller = _controller;
         underlyingAsset = _underlyingAsset;
         strikeAsset = _strikeAsset;
         collateralAsset = _collateralAsset;
