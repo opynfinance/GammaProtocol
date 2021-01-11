@@ -30,18 +30,24 @@ contract MarginCalculator {
     FPI.FixedPointInt internal ZERO = FPI.fromScaledUint(0, BASE);
 
     struct VaultDetails {
+        address shortAsset;
         address shortUnderlyingAsset;
         address shortStrikeAsset;
         address shortCollateralAsset;
+        address longAsset;
         address longUnderlyingAsset;
         address longStrikeAsset;
         address longCollateralAsset;
+        address collateralAsset;
+        uint256 shortAmount;
         uint256 shortStrikePrice;
         uint256 shortExpiryTimestamp;
         uint256 shortCollateralDecimals;
+        uint256 longAmount;
         uint256 longStrikePrice;
         uint256 longExpiryTimestamp;
         uint256 longCollateralDecimals;
+        uint256 collateralAmount;
         uint256 collateralDecimals;
         bool isShortPut;
         bool isLongPut;
@@ -113,17 +119,17 @@ contract MarginCalculator {
 
         // if the vault contains no oTokens, return the amount of collateral
         if (!vaultDetails.hasShort && !vaultDetails.hasLong) {
-            uint256 amount = vaultDetails.hasCollateral ? _vault.collateralAmounts[0] : 0;
+            uint256 amount = vaultDetails.hasCollateral ? vaultDetails.collateralAmount : 0;
             return (amount, true);
         }
 
         FPI.FixedPointInt memory collateralAmount = ZERO;
         if (vaultDetails.hasCollateral) {
-            collateralAmount = FPI.fromScaledUint(_vault.collateralAmounts[0], vaultDetails.collateralDecimals);
+            collateralAmount = FPI.fromScaledUint(vaultDetails.collateralAmount, vaultDetails.collateralDecimals);
         }
 
         // get required margin, denominated in collateral
-        FPI.FixedPointInt memory collateralRequired = _getMarginRequired(_vault, vaultDetails);
+        FPI.FixedPointInt memory collateralRequired = _getMarginRequired(vaultDetails);
         FPI.FixedPointInt memory excessCollateral = collateralAmount.sub(collateralRequired);
 
         bool isExcess = excessCollateral.isGreaterThanOrEqual(ZERO);
@@ -175,19 +181,15 @@ contract MarginCalculator {
     /**
      * @notice calculate the amount of collateral needed for a vault
      * @dev vault passed in has already passed the checkIsValidVault function
-     * @param _vault theoretical vault that needs to be checked
+     * @param _vaultDetails theoretical vault that needs to be checked
      * @return marginRequired the minimal amount of collateral needed in a vault, denominated in collateral
      */
-    function _getMarginRequired(MarginVault.Vault memory _vault, VaultDetails memory _vaultDetails)
-        internal
-        view
-        returns (FPI.FixedPointInt memory)
-    {
+    function _getMarginRequired(VaultDetails memory _vaultDetails) internal view returns (FPI.FixedPointInt memory) {
         FPI.FixedPointInt memory shortAmount = _vaultDetails.hasShort
-            ? FPI.fromScaledUint(_vault.shortAmounts[0], BASE)
+            ? FPI.fromScaledUint(_vaultDetails.shortAmount, BASE)
             : ZERO;
         FPI.FixedPointInt memory longAmount = _vaultDetails.hasLong
-            ? FPI.fromScaledUint(_vault.longAmounts[0], BASE)
+            ? FPI.fromScaledUint(_vaultDetails.longAmount, BASE)
             : ZERO;
 
         address otokenUnderlyingAsset = _vaultDetails.hasShort
@@ -361,32 +363,25 @@ contract MarginCalculator {
         );
 
         // ensure the long asset is valid for the short asset
-        require(
-            _isMarginableLong(_vault, _vaultDetails),
-            "MarginCalculator: long asset not marginable for short asset"
-        );
+        require(_isMarginableLong(_vaultDetails), "MarginCalculator: long asset not marginable for short asset");
 
         // ensure that the collateral asset is valid for the short asset
         require(
-            _isMarginableCollateral(_vault, _vaultDetails),
+            _isMarginableCollateral(_vaultDetails),
             "MarginCalculator: collateral asset not marginable for short asset"
         );
     }
 
     /**
      * @dev if there is a short option and a long option in the vault, ensure that the long option is able to be used as collateral for the short option
-     * @param _vault the vault to check.
+     * @param _vaultDetails the vault details to check.
      */
-    function _isMarginableLong(MarginVault.Vault memory _vault, VaultDetails memory _vaultDetails)
-        internal
-        view
-        returns (bool)
-    {
+    function _isMarginableLong(VaultDetails memory _vaultDetails) internal view returns (bool) {
         // if vault is missing a long or a short, return True
         if (!_vaultDetails.hasLong || !_vaultDetails.hasShort) return true;
 
         return
-            _vault.longOtokens[0] != _vault.shortOtokens[0] &&
+            _vaultDetails.longAsset != _vaultDetails.shortAsset &&
             _vaultDetails.longUnderlyingAsset == _vaultDetails.shortUnderlyingAsset &&
             _vaultDetails.longStrikeAsset == _vaultDetails.shortStrikeAsset &&
             _vaultDetails.longCollateralAsset == _vaultDetails.shortCollateralAsset &&
@@ -396,21 +391,17 @@ contract MarginCalculator {
 
     /**
      * @dev if there is short option and collateral asset in the vault, ensure that the collateral asset is valid for the short option
-     * @param _vault the vault to check.
+     * @param _vaultDetails the vault details to check.
      */
-    function _isMarginableCollateral(MarginVault.Vault memory _vault, VaultDetails memory _vaultDetails)
-        internal
-        view
-        returns (bool)
-    {
+    function _isMarginableCollateral(VaultDetails memory _vaultDetails) internal view returns (bool) {
         bool isMarginable = true;
 
         if (!_vaultDetails.hasCollateral) return isMarginable;
 
         if (_vaultDetails.hasShort) {
-            isMarginable = _vaultDetails.shortCollateralAsset == _vault.collateralAssets[0];
+            isMarginable = _vaultDetails.shortCollateralAsset == _vaultDetails.collateralAsset;
         } else if (_vaultDetails.hasLong) {
-            isMarginable = _vaultDetails.longCollateralAsset == _vault.collateralAssets[0];
+            isMarginable = _vaultDetails.longCollateralAsset == _vaultDetails.collateralAsset;
         }
 
         return isMarginable;
@@ -472,6 +463,33 @@ contract MarginCalculator {
         return _assets.length > 0 && _assets[0] != address(0);
     }
 
+    // struct VaultDetails {
+    //     address shortAsset;
+    //     address shortUnderlyingAsset;
+    //     address shortStrikeAsset;
+    //     address shortCollateralAsset;
+    //     address longAsset;
+    //     address longUnderlyingAsset;
+    //     address longStrikeAsset;
+    //     address longCollateralAsset;
+    //     address collateralAsset;
+    //     uint256 shortAmount;
+    //     uint256 shortStrikePrice;
+    //     uint256 shortExpiryTimestamp;
+    //     uint256 shortCollateralDecimals;
+    //     uint256 longAmount;
+    //     uint256 longStrikePrice;
+    //     uint256 longExpiryTimestamp;
+    //     uint256 longCollateralDecimals;
+    //     uint256 collateralAmount;
+    //     uint256 collateralDecimals;
+    //     bool isShortPut;
+    //     bool isLongPut;
+    //     bool hasLong;
+    //     bool hasShort;
+    //     bool hasCollateral;
+    // }
+
     function getVaultDetails(MarginVault.Vault memory _vault) internal view returns (VaultDetails memory) {
         VaultDetails memory vaultDetails = VaultDetails(
             address(0),
@@ -480,6 +498,12 @@ contract MarginCalculator {
             address(0),
             address(0),
             address(0),
+            address(0),
+            address(0),
+            address(0),
+            0,
+            0,
+            0,
             0,
             0,
             0,
@@ -499,7 +523,9 @@ contract MarginCalculator {
         vaultDetails.hasCollateral = _isNotEmpty(_vault.collateralAssets);
 
         if (vaultDetails.hasLong) {
-            OtokenInterface long = OtokenInterface(_vault.longOtokens[0]);
+            vaultDetails.longAsset = _vault.longOtokens[0];
+            vaultDetails.longAmount = _vault.longAmounts[0];
+            OtokenInterface long = OtokenInterface(vaultDetails.longAsset);
             vaultDetails.longCollateralAsset = long.collateralAsset();
             vaultDetails.longUnderlyingAsset = long.underlyingAsset();
             vaultDetails.longStrikeAsset = long.strikeAsset();
@@ -510,7 +536,9 @@ contract MarginCalculator {
         }
 
         if (vaultDetails.hasShort) {
-            OtokenInterface short = OtokenInterface(_vault.shortOtokens[0]);
+            vaultDetails.shortAsset = _vault.shortOtokens[0];
+            vaultDetails.shortAmount = _vault.shortAmounts[0];
+            OtokenInterface short = OtokenInterface(vaultDetails.shortAsset);
             vaultDetails.shortCollateralAsset = short.collateralAsset();
             vaultDetails.shortUnderlyingAsset = short.underlyingAsset();
             vaultDetails.shortStrikeAsset = short.strikeAsset();
@@ -521,7 +549,9 @@ contract MarginCalculator {
         }
 
         if (vaultDetails.hasCollateral) {
-            vaultDetails.collateralDecimals = uint256(ERC20Interface(_vault.collateralAssets[0]).decimals());
+            vaultDetails.collateralAsset = _vault.collateralAssets[0];
+            vaultDetails.collateralAmount = _vault.collateralAmounts[0];
+            vaultDetails.collateralDecimals = uint256(ERC20Interface(vaultDetails.collateralAsset).decimals());
         }
 
         return vaultDetails;
