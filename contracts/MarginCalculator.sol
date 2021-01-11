@@ -135,36 +135,6 @@ contract MarginCalculator {
         return (excessCollateralExternal, isExcess);
     }
 
-    // /**
-    //  * @notice return the cash value of an expired oToken, denominated in strike asset
-    //  * @dev for a call, return Max (0, underlyingPriceInStrike - otoken.strikePrice)
-    //  * @dev for a put, return Max(0, otoken.strikePrice - underlyingPriceInStrike)
-    //  * @param _otoken oToken address
-    //  * @return cash value of an expired otoken, denominated in the strike asset
-    //  */
-    // function _getExpiredCashValue(address _otoken) internal view returns (FPI.FixedPointInt memory) {
-    //     OtokenInterface otoken = OtokenInterface(_otoken);
-
-    //     // strike price is denominated in strike asset
-    //     FPI.FixedPointInt memory strikePrice = FPI.fromScaledUint(otoken.strikePrice(), BASE);
-
-    //     FPI.FixedPointInt memory one = FPI.fromScaledUint(1, 0);
-
-    //     // calculate the value of the underlying asset in terms of the strike asset
-    //     FPI.FixedPointInt memory underlyingPriceInStrike = _convertAmountOnExpiryPrice(
-    //         one, // underlying price denominated in underlying
-    //         otoken.underlyingAsset(),
-    //         otoken.strikeAsset(),
-    //         otoken.expiryTimestamp()
-    //     );
-
-    //     if (otoken.isPut()) {
-    //         return strikePrice.isGreaterThan(underlyingPriceInStrike) ? strikePrice.sub(underlyingPriceInStrike) : ZERO;
-    //     } else {
-    //         return underlyingPriceInStrike.isGreaterThan(strikePrice) ? underlyingPriceInStrike.sub(strikePrice) : ZERO;
-    //     }
-    // }
-
     /**
      * @notice return the cash value of an expired oToken, denominated in strike asset
      * @dev for a call, return Max (0, underlyingPriceInStrike - otoken.strikePrice)
