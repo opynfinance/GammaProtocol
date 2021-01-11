@@ -51,7 +51,7 @@ contract Otoken is ERC20Initializable {
      * @param _isPut True if a put option, False if a call option
      */
     function init(
-        address _addressbook,
+        address _addressBook,
         address _underlyingAsset,
         address _strikeAsset,
         address _collateralAsset,
@@ -59,7 +59,7 @@ contract Otoken is ERC20Initializable {
         uint256 _expiryTimestamp,
         bool _isPut
     ) external initializer {
-        controller = AddressBookInterface(_addressbook).getController();
+        controller = AddressBookInterface(_addressBook).getController();
         underlyingAsset = _underlyingAsset;
         strikeAsset = _strikeAsset;
         collateralAsset = _collateralAsset;
