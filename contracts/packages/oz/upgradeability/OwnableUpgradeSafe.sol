@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.0;
 
-import "./ContextUpgradeSafe.sol";
+import "./GSN/ContextUpgradeable.sol";
 import "./Initializable.sol";
 
 /**
@@ -16,7 +16,7 @@ import "./Initializable.sol";
  * `onlyOwner`, which can be applied to your functions to restrict their use to
  * the owner.
  */
-contract OwnableUpgradeSafe is Initializable, ContextUpgradeSafe {
+contract OwnableUpgradeSafe is Initializable, ContextUpgradeable {
     address private _owner;
 
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
