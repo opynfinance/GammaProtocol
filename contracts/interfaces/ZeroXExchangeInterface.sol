@@ -37,6 +37,14 @@ interface IZeroXExchange {
         uint256 protocolFeePaid; // Total amount of fees paid by taker to the staking contract.
     }
 
+    struct Transaction {
+        uint256 salt; // Arbitrary number to facilitate uniqueness of the order's hash.
+        uint256 expirationTimeSeconds; // Timestamp in seconds at which order expires.
+        uint256 gasPrice;
+        address signerAddress;
+        bytes data;
+    }
+
     /// @dev Fills the input order.
     /// @param order Order struct containing order specifications.
     /// @param takerAssetFillAmount Desired amount of takerAsset to sell.
@@ -58,4 +66,20 @@ interface IZeroXExchange {
         uint256[] memory takerAssetFillAmounts,
         bytes[] memory signatures
     ) external payable returns (FillResults[] memory fillResults);
+
+    function executeTransaction(Transaction memory transaction, bytes memory signature)
+        external
+        payable
+        returns (bytes memory);
+
+    function preSign(bytes32 hash) external;
+
+    /// @dev Verifies that a signature for a transaction is valid.
+    /// @param transaction The transaction.
+    /// @param signature Proof that the order has been signed by signer.
+    /// @return isValid `true` if the signature is valid for the given transaction and signer.
+    function isValidTransactionSignature(Transaction memory transaction, bytes memory signature)
+        external
+        view
+        returns (bool isValid);
 }

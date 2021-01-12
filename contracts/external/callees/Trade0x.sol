@@ -60,7 +60,20 @@ contract Trade0x is CalleeInterface {
 
     function callFunction(address payable _sender, bytes memory _data) external override {
         require(msg.sender == controller, "sender not controller");
+        // _directlyTrade(_sender, _data);
+        _indirectlyTrade(_sender, _data);
+    }
 
+    function _indirectlyTrade(address payable _sender, bytes memory _data) internal {
+        (IZeroXExchange.Transaction memory transaction, bytes memory signature) = abi.decode(
+            _data,
+            (IZeroXExchange.Transaction, bytes)
+        );
+
+        exchange.executeTransaction(transaction, signature);
+    }
+
+    function _directlyTrade(address payable _sender, bytes memory _data) internal {
         (
             IZeroXExchange.Order[] memory order,
             uint256[] memory takerAssetFillAmount,
@@ -68,36 +81,63 @@ contract Trade0x is CalleeInterface {
             address feePayer
         ) = abi.decode(_data, (IZeroXExchange.Order[], uint256[], bytes[], address));
 
-        // for (uint256 i=0; i< order.length; i++) {
-        //     address takerAsset = decodeERC20Asset(order[i].takerAssetData);
-        //     // pull token from user
-        //     ERC20Interface(takerAsset).safeTransferFrom(_sender, address(this), takerAssetFillAmount[i]);
+        for (uint256 i = 0; i < order.length; i++) {
+            address takerAsset = decodeERC20Asset(order[i].takerAssetData);
+            // pull token from user
+            ERC20Interface(takerAsset).safeTransferFrom(_sender, address(this), takerAssetFillAmount[i]);
 
-        //     // approve the 0x ERC20 Proxy to move fund
-        //     ERC20Interface(takerAsset).safeIncreaseAllowance(assetProxy, takerAssetFillAmount[i]);
-        // }
+            // approve the 0x ERC20 Proxy to move fund
+            ERC20Interface(takerAsset).safeIncreaseAllowance(assetProxy, takerAssetFillAmount[i]);
+        }
 
-        // // pull weth (to pay 0x) from feePayer address
-        // uint256 protocolFee = tx.gasprice * PORTOCAL_FEE_BASE;
-        // weth.safeTransferFrom(feePayer, address(this), protocolFee);
+        // pull weth (to pay 0x) from feePayer address
+        uint256 protocolFee = tx.gasprice * PORTOCAL_FEE_BASE;
+        weth.safeTransferFrom(feePayer, address(this), protocolFee);
 
-        // IZeroXExchange.FillResults[] memory result = exchange.batchFillOrders(order, takerAssetFillAmount, signature);
+        IZeroXExchange.FillResults[] memory result = exchange.batchFillOrders(order, takerAssetFillAmount, signature);
 
-        // for (uint256 i=0; i< order.length; i++) {
-        //     // transfer token to sender
-        //     address makerAsset = decodeERC20Asset(order[i].makerAssetData);
-        //     uint256 balance = ERC20Interface(makerAsset).balanceOf(address(this));
-        //     ERC20Interface(makerAsset).safeTransfer(_sender, balance);
-        // }
+        for (uint256 i = 0; i < order.length; i++) {
+            // transfer swapped token to sender
+            address makerAsset = decodeERC20Asset(order[i].makerAssetData);
+            uint256 balance = ERC20Interface(makerAsset).balanceOf(address(this));
+            ERC20Interface(makerAsset).safeTransfer(_sender, balance);
 
-        // emit Trade(
-        //     _sender,
-        //     order.makerAddress,
-        //     takerAsset,
-        //     makerAsset,
-        //     takerAssetFillAmount,
-        //     result.makerAssetFilledAmount
-        // );
+            // transfer the taker asset back to the user if the order wasn't fully filled
+            address takerAsset = decodeERC20Asset(order[i].takerAssetData);
+            balance = ERC20Interface(takerAsset).balanceOf(address(this));
+            ERC20Interface(takerAsset).safeTransfer(_sender, balance);
+        }
+    }
+
+    function getTxHash(IZeroXExchange.Transaction memory transaction) external pure returns (bytes32 result) {
+
+            bytes32 _EIP712_ZEROEX_TRANSACTION_SCHEMA_HASH
+         = 0xec69816980a3a3ca4554410e60253953e9ff375ba4536a98adfa15cc71541508;
+        bytes32 schemaHash = _EIP712_ZEROEX_TRANSACTION_SCHEMA_HASH;
+        bytes memory data = transaction.data;
+        uint256 salt = transaction.salt;
+        uint256 expirationTimeSeconds = transaction.expirationTimeSeconds;
+        uint256 gasPrice = transaction.gasPrice;
+        address signerAddress = transaction.signerAddress;
+
+        assembly {
+            // Compute hash of data
+            let dataHash := keccak256(add(data, 32), mload(data))
+
+            // Load free memory pointer
+            let memPtr := mload(64)
+
+            mstore(memPtr, schemaHash) // hash of schema
+            mstore(add(memPtr, 32), salt) // salt
+            mstore(add(memPtr, 64), expirationTimeSeconds) // expirationTimeSeconds
+            mstore(add(memPtr, 96), gasPrice) // gasPrice
+            mstore(add(memPtr, 128), and(signerAddress, 0xffffffffffffffffffffffffffffffffffffffff)) // signerAddress
+            mstore(add(memPtr, 160), dataHash) // hash of data
+
+            // Compute hash
+            result := keccak256(memPtr, 192)
+        }
+        return result;
     }
 
     /**
