@@ -14,7 +14,7 @@ import {IERC20PermitUpgradeable} from "../../packages/oz/upgradeability/erc20-pe
  * @dev Contract for executing permit signature
  */
 contract PermitCallee is CalleeInterface {
-    function callFunction(address payable token, bytes memory _data) external override {
+    function callFunction(address payable _sender, bytes memory _data) external override {
         (
             address token,
             address owner,
