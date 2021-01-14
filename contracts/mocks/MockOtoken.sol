@@ -51,12 +51,4 @@ contract MockOtoken is ERC20PermitUpgradeable {
     function burnOtoken(address account, uint256 amount) external {
         _burn(account, amount);
     }
-
-    function getChainId() external view returns (uint256 chainId) {
-        this; // silence state mutability warning without generating bytecode - see https://github.com/ethereum/solidity/issues/2691
-        // solhint-disable-next-line no-inline-assembly
-        assembly {
-            chainId := chainid()
-        }
-    }
 }
