@@ -1,5 +1,6 @@
 // mainnet fork
-// use : 11608387 block number in the ganache fork
+// use : ganache-cli --fork https://mainnet.infura.io/v3/c4747046220e411c9e4d171fee3958f9@11608387 --unlock 0xbe0eb53f46cd790cd13851d5eff43d12404d33e8
+
 import BigNumber from 'bignumber.js'
 import {
   Trade0xInstance,
@@ -83,215 +84,218 @@ contract('Callee contract test', async ([deployer, user, controller, payabeProxy
     assert.isTrue(makerAllowance.gte('200000000'))
   })
 
-  xit("call the callee address with user's address as sender (direct test) ", async () => {
-    const data = web3.eth.abi.encodeParameters(
-      [
-        {
-          'Order[]': {
-            makerAddress: 'address',
-            takerAddress: 'address',
-            feeRecipientAddress: 'address',
-            senderAddress: 'address',
-
-            makerAssetAmount: 'uint256',
-            takerAssetAmount: 'uint256',
-            makerFee: 'uint256',
-            takerFee: 'uint256',
-            expirationTimeSeconds: 'uint256',
-            salt: 'uint256',
-
-            makerAssetData: 'bytes',
-            takerAssetData: 'bytes',
-            makerFeeAssetData: 'bytes',
-            takerFeeAssetData: 'bytes',
-          },
-        },
-        'uint256[]',
-        'bytes[]',
-        'address',
-      ],
-      [[order1], [fillAmount1.toString()], [signature1], payabeProxy],
-    )
-
-    const usdcBalanceBefore = new BigNumber(await usdc.balanceOf(user))
-    const oTokenBalanceBefore = new BigNumber(await otoken.balanceOf(user))
-
-    // pay protocol fee in ETH.
-    const gasPriceGWei = '50'
-    const gasPriceWei = web3.utils.toWei(gasPriceGWei, 'gwei')
-    // protocol require 70000 * gas price per fill
-    const feeAmount = new BigNumber(gasPriceWei).times(70000).toString()
-
-    // payabeProxy need to approve callee to pull weth
-    await weth.deposit({from: payabeProxy, value: feeAmount})
-    await weth.approve(callee.address, feeAmount, {from: payabeProxy})
-
-    await callee.callFunction(user, data, {
-      from: controller,
-      gasPrice: gasPriceWei,
-    })
-
-    const usdcBalanceAfter = new BigNumber(await usdc.balanceOf(user))
-    assert.equal(usdcBalanceBefore.minus(usdcBalanceAfter).toString(), fillAmount1.toString())
-
-    const oTokenBalanceAfter = new BigNumber(await otoken.balanceOf(user))
-    assert.equal(oTokenBalanceAfter.minus(oTokenBalanceBefore).toString(), '199324404')
-  })
-
-  it("call the callee address with user's address as sender (indirect test) ", async () => {
-    // encode the call data for the 0x transaction
-    const transactionCallData = web3.eth.abi.encodeFunctionCall(
-      {
-        name: 'batchFillOrders',
-        type: 'function',
-        inputs: [
+  describe('test a simple sell trade', async () => {
+    it("call the callee address with user's address as sender (direct test) ", async () => {
+      const data = web3.eth.abi.encodeParameters(
+        [
           {
-            components: [
-              {
-                internalType: 'address',
-                name: 'makerAddress',
-                type: 'address',
-              },
-              {
-                internalType: 'address',
-                name: 'takerAddress',
-                type: 'address',
-              },
-              {
-                internalType: 'address',
-                name: 'feeRecipientAddress',
-                type: 'address',
-              },
-              {
-                internalType: 'address',
-                name: 'senderAddress',
-                type: 'address',
-              },
-              {
-                internalType: 'uint256',
-                name: 'makerAssetAmount',
-                type: 'uint256',
-              },
-              {
-                internalType: 'uint256',
-                name: 'takerAssetAmount',
-                type: 'uint256',
-              },
-              {
-                internalType: 'uint256',
-                name: 'makerFee',
-                type: 'uint256',
-              },
-              {
-                internalType: 'uint256',
-                name: 'takerFee',
-                type: 'uint256',
-              },
-              {
-                internalType: 'uint256',
-                name: 'expirationTimeSeconds',
-                type: 'uint256',
-              },
-              {
-                internalType: 'uint256',
-                name: 'salt',
-                type: 'uint256',
-              },
-              {
-                internalType: 'bytes',
-                name: 'makerAssetData',
-                type: 'bytes',
-              },
-              {
-                internalType: 'bytes',
-                name: 'takerAssetData',
-                type: 'bytes',
-              },
-              {
-                internalType: 'bytes',
-                name: 'makerFeeAssetData',
-                type: 'bytes',
-              },
-              {
-                internalType: 'bytes',
-                name: 'takerFeeAssetData',
-                type: 'bytes',
-              },
-            ],
-            internalType: 'struct IZeroXExchange.Order[]',
-            name: 'orders',
-            type: 'tuple[]',
+            'Order[]': {
+              makerAddress: 'address',
+              takerAddress: 'address',
+              feeRecipientAddress: 'address',
+              senderAddress: 'address',
+
+              makerAssetAmount: 'uint256',
+              takerAssetAmount: 'uint256',
+              makerFee: 'uint256',
+              takerFee: 'uint256',
+              expirationTimeSeconds: 'uint256',
+              salt: 'uint256',
+
+              makerAssetData: 'bytes',
+              takerAssetData: 'bytes',
+              makerFeeAssetData: 'bytes',
+              takerFeeAssetData: 'bytes',
+            },
           },
-          {
-            internalType: 'uint256[]',
-            name: 'takerAssetFillAmounts',
-            type: 'uint256[]',
-          },
-          {
-            internalType: 'bytes[]',
-            name: 'signatures',
-            type: 'bytes[]',
-          },
+          'uint256[]',
+          'bytes[]',
+          'address',
         ],
-      },
-      [[order1], [fillAmount1.toString()], [signature1]],
-    )
+        [[order1], [fillAmount1.toString()], [signature1], payabeProxy],
+      )
 
-    const transaction1 = {
-      salt: order1.salt,
-      expirationTimeSeconds: order1.expirationTimeSeconds,
-      gasPrice: 50000000000,
-      signerAddress: user,
-      data: transactionCallData,
-    }
-    // hash and sign message
-    const hashTx = await callee.getTxHash(transaction1)
-    // TODO: figure out how to pass signature into tx
-    await exchange.preSign(hashTx, {from: user})
+      const usdcBalanceBefore = new BigNumber(await usdc.balanceOf(user))
+      const oTokenBalanceBefore = new BigNumber(await otoken.balanceOf(user))
 
-    const data = web3.eth.abi.encodeParameters(
-      [
-        {
-          Transaction: {
-            salt: 'uint256',
-            expirationTimeSeconds: 'uint256',
-            gasPrice: 'uint256',
-            signerAddress: 'address',
-            data: 'bytes',
-          },
-        },
-        'bytes',
-      ],
-      [transaction1, '0x0006'],
-    )
-    const usdcBalanceBefore = new BigNumber(await usdc.balanceOf(user))
-    const oTokenBalanceBefore = new BigNumber(await otoken.balanceOf(user))
+      // pay protocol fee in ETH.
+      const gasPriceGWei = '50'
+      const gasPriceWei = web3.utils.toWei(gasPriceGWei, 'gwei')
+      // protocol require 70000 * gas price per fill
+      const feeAmount = new BigNumber(gasPriceWei).times(70000).toString()
 
-    // pay protocol fee in ETH.
-    const gasPriceGWei = '50'
-    const gasPriceWei = web3.utils.toWei(gasPriceGWei, 'gwei')
-    // protocol require 70000 * gas price per fill
-    const feeAmount = new BigNumber(gasPriceWei).times(70000).toString()
+      // payabeProxy need to approve callee to pull weth
+      await weth.deposit({from: payabeProxy, value: feeAmount})
+      await weth.approve(callee.address, feeAmount, {from: payabeProxy})
 
-    // payabeProxy need to approve callee to pull weth
-    await weth.deposit({from: user, value: feeAmount})
-    await weth.approve(callee.address, feeAmount, {from: user})
+      await callee.callFunction(user, data, {
+        from: controller,
+        gasPrice: gasPriceWei,
+      })
 
-    // user approves 0x
-    await usdc.approve(exchange.address, fillAmount1, {from: user})
+      const usdcBalanceAfter = new BigNumber(await usdc.balanceOf(user))
+      assert.equal(usdcBalanceBefore.minus(usdcBalanceAfter).toString(), fillAmount1.toString())
 
-    console.log(await exchange.isValidTransactionSignature(transaction1, '0x0006'))
-
-    // call the exchange function
-    await callee.callFunction(user, data, {
-      from: controller,
-      gasPrice: gasPriceWei,
+      const oTokenBalanceAfter = new BigNumber(await otoken.balanceOf(user))
+      assert.equal(oTokenBalanceAfter.minus(oTokenBalanceBefore).toString(), '199324404')
     })
 
-    const usdcBalanceAfter = new BigNumber(await usdc.balanceOf(user))
-    assert.equal(usdcBalanceBefore.minus(usdcBalanceAfter).toString(), fillAmount1.toString())
+    xit("call the callee address with user's address as sender (indirect test) ", async () => {
+      // encode the call data for the 0x transaction
+      const transactionCallData = web3.eth.abi.encodeFunctionCall(
+        {
+          name: 'batchFillOrders',
+          type: 'function',
+          inputs: [
+            {
+              components: [
+                {
+                  internalType: 'address',
+                  name: 'makerAddress',
+                  type: 'address',
+                },
+                {
+                  internalType: 'address',
+                  name: 'takerAddress',
+                  type: 'address',
+                },
+                {
+                  internalType: 'address',
+                  name: 'feeRecipientAddress',
+                  type: 'address',
+                },
+                {
+                  internalType: 'address',
+                  name: 'senderAddress',
+                  type: 'address',
+                },
+                {
+                  internalType: 'uint256',
+                  name: 'makerAssetAmount',
+                  type: 'uint256',
+                },
+                {
+                  internalType: 'uint256',
+                  name: 'takerAssetAmount',
+                  type: 'uint256',
+                },
+                {
+                  internalType: 'uint256',
+                  name: 'makerFee',
+                  type: 'uint256',
+                },
+                {
+                  internalType: 'uint256',
+                  name: 'takerFee',
+                  type: 'uint256',
+                },
+                {
+                  internalType: 'uint256',
+                  name: 'expirationTimeSeconds',
+                  type: 'uint256',
+                },
+                {
+                  internalType: 'uint256',
+                  name: 'salt',
+                  type: 'uint256',
+                },
+                {
+                  internalType: 'bytes',
+                  name: 'makerAssetData',
+                  type: 'bytes',
+                },
+                {
+                  internalType: 'bytes',
+                  name: 'takerAssetData',
+                  type: 'bytes',
+                },
+                {
+                  internalType: 'bytes',
+                  name: 'makerFeeAssetData',
+                  type: 'bytes',
+                },
+                {
+                  internalType: 'bytes',
+                  name: 'takerFeeAssetData',
+                  type: 'bytes',
+                },
+              ],
+              internalType: 'struct IZeroXExchange.Order[]',
+              name: 'orders',
+              type: 'tuple[]',
+            },
+            {
+              internalType: 'uint256[]',
+              name: 'takerAssetFillAmounts',
+              type: 'uint256[]',
+            },
+            {
+              internalType: 'bytes[]',
+              name: 'signatures',
+              type: 'bytes[]',
+            },
+          ],
+        },
+        [[order1], [fillAmount1.toString()], [signature1]],
+      )
 
-    const oTokenBalanceAfter = new BigNumber(await otoken.balanceOf(user))
-    assert.equal(oTokenBalanceAfter.minus(oTokenBalanceBefore).toString(), '199324404')
+      // pay protocol fee in ETH.
+      const gasPriceGWei = '50'
+      const gasPriceWei = web3.utils.toWei(gasPriceGWei, 'gwei')
+
+      const transaction1 = {
+        salt: order1.salt,
+        expirationTimeSeconds: order1.expirationTimeSeconds,
+        gasPrice: gasPriceWei,
+        signerAddress: user,
+        data: transactionCallData,
+      }
+      // hash and sign message
+      const hashTx = await callee.getTxHash(transaction1)
+      // TODO: figure out how to pass signature into tx
+      await exchange.preSign(hashTx, {from: user})
+
+      const data = web3.eth.abi.encodeParameters(
+        [
+          {
+            Transaction: {
+              salt: 'uint256',
+              expirationTimeSeconds: 'uint256',
+              gasPrice: 'uint256',
+              signerAddress: 'address',
+              data: 'bytes',
+            },
+          },
+          'bytes',
+        ],
+        [transaction1, '0x0006'],
+      )
+      const usdcBalanceBefore = new BigNumber(await usdc.balanceOf(user))
+      const oTokenBalanceBefore = new BigNumber(await otoken.balanceOf(user))
+
+      // protocol require 70000 * gas price per fill
+      const feeAmount = new BigNumber(gasPriceWei).times(70000).toString()
+
+      // payabeProxy need to approve callee to pull weth
+      await weth.deposit({from: user, value: feeAmount})
+      await weth.approve(STAKING_ADDR, feeAmount, {from: user})
+
+      // user approves 0x
+      await usdc.approve(exchange.address, fillAmount1, {from: user})
+
+      console.log(await exchange.isValidTransactionSignature(transaction1, '0x0006'))
+
+      // call the exchange function
+      await callee.callFunction(user, data, {
+        from: controller,
+        gasPrice: gasPriceWei,
+      })
+
+      const usdcBalanceAfter = new BigNumber(await usdc.balanceOf(user))
+      assert.equal(usdcBalanceBefore.minus(usdcBalanceAfter).toString(), fillAmount1.toString())
+
+      const oTokenBalanceAfter = new BigNumber(await otoken.balanceOf(user))
+      assert.equal(oTokenBalanceAfter.minus(oTokenBalanceBefore).toString(), '199324404')
+    })
   })
 })
