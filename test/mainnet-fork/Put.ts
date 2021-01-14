@@ -8,6 +8,7 @@ import {
   WETH9Instance,
   IZeroXExchangeInstance,
   ControllerInstance,
+  PayableProxyControllerInstance,
 } from '../../build/types/truffle-types'
 
 import {createTokenAmount} from '../utils'
@@ -17,6 +18,7 @@ const ERC20 = artifacts.require('MockERC20')
 const WETH9 = artifacts.require('WETH9')
 const Exchange = artifacts.require('IZeroXExchange')
 const Controller = artifacts.require('Controller.sol')
+const PayableProxyController = artifacts.require('PayableProxyController.sol')
 
 enum ActionType {
   OpenVault,
@@ -47,7 +49,7 @@ const WETHAddress = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
 const put1Address = '0x75fA51D3a52C07bFe7c3f4f47C5c4991622268f2'
 const controllerProxyAddress = '0x4ccc2339F87F6c59c6893E1A678c2266cA58dC72'
 const marginPoolAddress = '0x5934807cC0654d46755eBd2848840b616256C6Ef'
-
+const payableProxyAddress = '0x8f7Dd610c457FC7Cb26B0f9Db4e77581f94F70aC'
 // the market maker bot's address
 const maker = '0x75ea4d5a32370f974d40b404e4ce0e00c1554979'
 
@@ -114,13 +116,14 @@ const callAsk = {
 const callAskSignature =
   '0x1ba69c5427de7cd10a68abbd8c01677d5a2d5c0e0e60deff810a062625efb17bf65a3bb3ddbfe3d0591ae3e5b5c33de12c52d3de641f68be00f17a8610b8cb3f4902'
 
-contract('Callee contract test', async ([deployer, user1, payabeProxy]) => {
+contract('Callee contract test', async ([deployer, user1]) => {
   let callee: Trade0xInstance
   let exchange: IZeroXExchangeInstance
   let usdc: MockERC20Instance
   let weth: WETH9Instance
   let put1: MockERC20Instance
   let controllerProxy: ControllerInstance
+  let payableProxyController: PayableProxyControllerInstance
 
   before('setup transfer account asset', async () => {
     // setup contracts
@@ -136,9 +139,10 @@ contract('Callee contract test', async ([deployer, user1, payabeProxy]) => {
     weth = await WETH9.at(WETHAddress)
 
     controllerProxy = await Controller.at(controllerProxyAddress)
+    payableProxyController = await PayableProxyController.at(payableProxyAddress)
 
-    // get 20000 USDC from the whale ;)
-    await usdc.transfer(user1, createTokenAmount(20000, 6), {from: usdcWhale})
+    // get money from the whale ;)
+    await usdc.transfer(user1, createTokenAmount(640, 6), {from: usdcWhale})
     // await weth.transfer(WETHAddress, createTokenAmount(20, 18), {from: WETHAddress})
 
     put1 = await ERC20.at(put1Address)
@@ -152,14 +156,22 @@ contract('Callee contract test', async ([deployer, user1, payabeProxy]) => {
   })
 
   describe('Combination positions for put options', async () => {
-    const vaultCounter = 1
-    it('sell a new put option', async () => {
+    it('user1 can mint + sell a 640 strike put option', async () => {
+      // parameters
+      const vaultCounter = 1
       const optionsToMint = createTokenAmount(1, 8)
-      //     // Keep track of owner and pool balances
-      //   const ownerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(user))
-      //   const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
-      //   const ownerOtokenBalanceBefore = new BigNumber(await ethPut.balanceOf(accountOwner1))
-      //   const oTokenSupplyBefore = new BigNumber(await ethPut.totalSupply())
+      const collateralToMint = createTokenAmount(640, 6)
+      const premium = createTokenAmount(
+        new BigNumber(putBid.makerAssetAmount).div(putBid.takerAssetAmount).times(100),
+        6,
+      )
+
+      // Keep track of user1, pool and mm bot balances
+      const user1UsdcBalanceBefore = new BigNumber(await usdc.balanceOf(user1))
+      const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPoolAddress))
+      const mmBotOtokenBalanceBefore = new BigNumber(await put1.balanceOf(maker))
+      const oTokenSupplyBefore = new BigNumber(await put1.totalSupply())
+
       const data = web3.eth.abi.encodeParameters(
         [
           {
@@ -186,7 +198,7 @@ contract('Callee contract test', async ([deployer, user1, payabeProxy]) => {
           'bytes[]',
           'address',
         ],
-        [[putBid], [optionsToMint], [putBidSignature], payabeProxy],
+        [[putBid], [optionsToMint], [putBidSignature], user1],
       )
 
       // pay protocol fee in ETH.
@@ -194,10 +206,6 @@ contract('Callee contract test', async ([deployer, user1, payabeProxy]) => {
       const gasPriceWei = web3.utils.toWei(gasPriceGWei, 'gwei')
       // protocol require 70000 * gas price per fill
       const feeAmount = new BigNumber(gasPriceWei).times(70000).toString()
-
-      // payabeProxy need to approve callee to pull weth
-      await weth.deposit({from: payabeProxy, value: feeAmount})
-      await weth.approve(callee.address, feeAmount, {from: payabeProxy})
 
       const actionArgs = [
         {
@@ -216,7 +224,7 @@ contract('Callee contract test', async ([deployer, user1, payabeProxy]) => {
           secondAddress: user1,
           asset: put1.address,
           vaultId: vaultCounter,
-          amount: createTokenAmount(1, 8),
+          amount: optionsToMint,
           index: '0',
           data: ZERO_ADDR,
         },
@@ -236,45 +244,54 @@ contract('Callee contract test', async ([deployer, user1, payabeProxy]) => {
           secondAddress: user1,
           asset: usdc.address,
           vaultId: vaultCounter,
-          amount: createTokenAmount(640, 6),
+          amount: collateralToMint,
           index: '0',
           data: ZERO_ADDR,
         },
       ]
       // user need to approve callee function
-      await usdc.approve(marginPoolAddress, createTokenAmount(640, 6), {from: user1})
-      // await weth.approve(marginPoolAddress, createTokenAmount(10, 18), {from:user1})
-      await put1.approve(callee.address, createTokenAmount(1, 8), {from: user1})
+      // TODO: figure this out
+      await weth.deposit({from: user1, value: feeAmount})
+      await weth.approve(callee.address, feeAmount, {from: user1})
+
+      // one time approvals needed
+      await controllerProxy.setOperator(payableProxyAddress, true, {from: user1})
+      await usdc.approve(marginPoolAddress, collateralToMint, {from: user1})
+      await put1.approve(callee.address, optionsToMint, {from: user1})
+
       await controllerProxy.operate(actionArgs, {from: user1, gasPrice: gasPriceWei})
 
-      //   // keep track of owner and pool balances after
-      //   const ownerUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
-      //   const marginPoolUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+      // keep track of owner and pool balances after
+      const user1UsdcBalanceAfter = new BigNumber(await usdc.balanceOf(user1))
+      const marginPoolUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(marginPoolAddress))
 
-      //   const ownerOtokenBalanceAfter = new BigNumber(await ethPut.balanceOf(accountOwner1))
-      //   const oTokenSupplyAfter = new BigNumber(await ethPut.totalSupply())
+      const mmBotOtokenBalanceAfter = new BigNumber(await put1.balanceOf(maker))
+      const oTokenSupplyAfter = new BigNumber(await put1.totalSupply())
 
-      //   // check balances before and after changed as expected
-      //   assert.equal(
-      //     ownerUsdcBalanceBefore.minus(scaledCollateralAmount).toString(),
-      //     ownerUsdcBalanceAfter.toString(),
-      //     "Incorrect change in owner's usdc balance",
-      //   )
-      //   assert.equal(
-      //     marginPoolUsdcBalanceBefore.plus(scaledCollateralAmount).toString(),
-      //     marginPoolUsdcBalanceAfter.toString(),
-      //     "Incorrect change in margin pool's usdc balance",
-      //   )
-      //   assert.equal(
-      //     ownerOtokenBalanceBefore.plus(scaledOptionsAmount).toString(),
-      //     ownerOtokenBalanceAfter.toString(),
-      //     "Incorrect change in owner's otoken balance",
-      //   )
-      //   assert.equal(
-      //     oTokenSupplyBefore.plus(scaledOptionsAmount).toString(),
-      //     oTokenSupplyAfter.toString(),
-      //     "Incorrect change in margin pool's otoken balance",
-      //   )
+      // check balances before and after changed as expected
+      assert.equal(
+        user1UsdcBalanceBefore
+          .minus(collateralToMint)
+          .plus(premium)
+          .toString(),
+        user1UsdcBalanceAfter.toString(),
+        "Incorrect change in owner's usdc balance",
+      )
+      assert.equal(
+        marginPoolUsdcBalanceBefore.plus(collateralToMint).toString(),
+        marginPoolUsdcBalanceAfter.toString(),
+        "Incorrect change in margin pool's usdc balance",
+      )
+      assert.equal(
+        mmBotOtokenBalanceBefore.plus(optionsToMint).toString(),
+        mmBotOtokenBalanceAfter.toString(),
+        "Incorrect change in owner's otoken balance",
+      )
+      assert.equal(
+        oTokenSupplyBefore.plus(optionsToMint).toString(),
+        oTokenSupplyAfter.toString(),
+        'Incorrect change in otoken supply',
+      )
     })
   })
 })
