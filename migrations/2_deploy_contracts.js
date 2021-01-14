@@ -120,7 +120,7 @@ module.exports = async function(deployer, network, accounts) {
     await deployer.link(MarginVault, Controller)
     await deployer.deploy(Controller, {from: deployerAddress})
     const controller = await Controller.deployed()
-    await addressbook.setController(controller.address)
+    // await addressbook.setController(controller.address)
   }
 
 }

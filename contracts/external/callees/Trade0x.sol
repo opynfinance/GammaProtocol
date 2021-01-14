@@ -69,7 +69,6 @@ contract Trade0x is CalleeInterface {
             _data,
             (IZeroXExchange.Transaction, bytes)
         );
-
         exchange.executeTransaction(transaction, signature);
     }
 
@@ -94,7 +93,7 @@ contract Trade0x is CalleeInterface {
         uint256 protocolFee = tx.gasprice * PORTOCAL_FEE_BASE;
         weth.safeTransferFrom(feePayer, address(this), protocolFee);
 
-        IZeroXExchange.FillResults[] memory result = exchange.batchFillOrders(order, takerAssetFillAmount, signature);
+        exchange.batchFillOrders(order, takerAssetFillAmount, signature);
 
         for (uint256 i = 0; i < order.length; i++) {
             // transfer swapped token to sender

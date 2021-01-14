@@ -1,6 +1,7 @@
 // mainnet fork
 // use : 11608387 block number in the ganache fork
 import BigNumber from 'bignumber.js'
+import {transactionHashUtils} from '@0x/contracts-test-utils'
 import {
   Trade0xInstance,
   MockERC20Instance,
@@ -47,9 +48,9 @@ const order1 = {
   takerFee: '0',
   takerFeeAssetData: '0x',
 }
-
 const signature1 =
   '0x1b83ae7e3dae7d335bac2e1594bc517f797d18cc0ddb67518f39cd422e0153d1ad21e8ddf039f9b04d4581fa1530e1a0b6f89eabce6f91c295ab5c46b75333ee9902'
+const preSignSignature = '0x06'
 
 contract('Callee contract test', async ([deployer, user, controller, payabeProxy]) => {
   let callee: Trade0xInstance
@@ -245,9 +246,21 @@ contract('Callee contract test', async ([deployer, user, controller, payabeProxy
       data: transactionCallData,
     }
     // hash and sign message
-    const hashTx = await callee.getTxHash(transaction1)
+    const hashTx = transactionHashUtils.getTransactionHashHex({
+      salt: new BigNumber(transaction1.salt),
+      expirationTimeSeconds: new BigNumber(transaction1.expirationTimeSeconds),
+      gasPrice: new BigNumber(transaction1.gasPrice),
+      signerAddress: transaction1.signerAddress,
+      data: transaction1.data,
+      domain: {
+        verifyingContract: EXCHANGE_ADDR,
+        chainId: 1,
+      },
+      signature: preSignSignature,
+    })
     // TODO: figure out how to pass signature into tx
     await exchange.preSign(hashTx, {from: user})
+    assert.isTrue(await exchange.isValidTransactionSignature(transaction1, preSignSignature))
 
     const data = web3.eth.abi.encodeParameters(
       [
@@ -262,7 +275,7 @@ contract('Callee contract test', async ([deployer, user, controller, payabeProxy
         },
         'bytes',
       ],
-      [transaction1, '0x0006'],
+      [transaction1, preSignSignature],
     )
     const usdcBalanceBefore = new BigNumber(await usdc.balanceOf(user))
     const oTokenBalanceBefore = new BigNumber(await otoken.balanceOf(user))
@@ -275,12 +288,10 @@ contract('Callee contract test', async ([deployer, user, controller, payabeProxy
 
     // payabeProxy need to approve callee to pull weth
     await weth.deposit({from: user, value: feeAmount})
-    await weth.approve(callee.address, feeAmount, {from: user})
+    await weth.approve(STAKING_ADDR, feeAmount, {from: user})
 
     // user approves 0x
     await usdc.approve(exchange.address, fillAmount1, {from: user})
-
-    console.log(await exchange.isValidTransactionSignature(transaction1, '0x0006'))
 
     // call the exchange function
     await callee.callFunction(user, data, {
