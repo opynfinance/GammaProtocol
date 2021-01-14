@@ -1,12 +1,13 @@
 pragma solidity =0.6.10;
 
 import {ERC20Upgradeable} from "../packages/oz/upgradeability/ERC20Upgradeable.sol";
+import {ERC20PermitUpgradeable} from "../packages/oz/upgradeability/erc20-permit/ERC20PermitUpgradeable.sol";
 
 /**
  * SPDX-License-Identifier: UNLICENSED
  * @dev The Otoken inherits ERC20Upgradeable because we need to use the init instead of constructor.
  */
-contract MockOtoken is ERC20Upgradeable {
+contract MockOtoken is ERC20PermitUpgradeable {
     address public addressBook;
     address public underlyingAsset;
     address public strikeAsset;
@@ -27,7 +28,7 @@ contract MockOtoken is ERC20Upgradeable {
         uint256 _strikePrice,
         uint256 _expiryTimestamp,
         bool _isPut
-    ) external {
+    ) external initializer {
         inited = true;
         addressBook = _addressBook;
         underlyingAsset = _underlyingAsset;
@@ -39,6 +40,7 @@ contract MockOtoken is ERC20Upgradeable {
         string memory tokenName = "ETHUSDC/1597511955/200P/USDC";
         string memory tokenSymbol = "oETHUSDCP";
         __ERC20_init_unchained(tokenName, tokenSymbol);
+        __ERC20Permit_init(tokenName);
         _setupDecimals(8);
     }
 
@@ -48,5 +50,13 @@ contract MockOtoken is ERC20Upgradeable {
 
     function burnOtoken(address account, uint256 amount) external {
         _burn(account, amount);
+    }
+
+    function getChainId() external view returns (uint256 chainId) {
+        this; // silence state mutability warning without generating bytecode - see https://github.com/ethereum/solidity/issues/2691
+        // solhint-disable-next-line no-inline-assembly
+        assembly {
+            chainId := chainid()
+        }
     }
 }
