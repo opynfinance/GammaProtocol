@@ -170,7 +170,7 @@ contract Otoken is ERC20Initializable {
 
         if (remainder == 0) return quotientStr;
 
-        uint256 trailingZeroes = 0;
+        uint256 trailingZeroes;
         while (remainder.mod(10) == 0) {
             remainder = remainder / 10;
             trailingZeroes += 1;
