@@ -3,7 +3,6 @@ pragma solidity =0.6.10;
 
 import {ERC20Upgradeable} from "./packages/oz/upgradeability/ERC20Upgradeable.sol";
 import {ERC20PermitUpgradeable} from "./packages/oz/upgradeability/erc20-permit/ERC20PermitUpgradeable.sol";
-import {SafeMath} from "./packages/oz/SafeMath.sol";
 import {Strings} from "./packages/oz/Strings.sol";
 import {BokkyPooBahsDateTimeLibrary} from "./packages/BokkyPooBahsDateTimeLibrary.sol";
 import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
@@ -15,8 +14,6 @@ import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
  * @dev The Otoken inherits ERC20Upgradeable because we need to use the init instead of constructor
  */
 contract Otoken is ERC20PermitUpgradeable {
-    using SafeMath for uint256;
-
     /// @notice address of the Controller module
     address public controller;
 
