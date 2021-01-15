@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: UNLICENSED */
 pragma solidity =0.6.10;
 
-import {ERC20Initializable} from "./packages/oz/upgradeability/ERC20Initializable.sol";
-import {SafeMath} from "./packages/oz/SafeMath.sol";
+import {ERC20Upgradeable} from "./packages/oz/upgradeability/ERC20Upgradeable.sol";
+import {ERC20PermitUpgradeable} from "./packages/oz/upgradeability/erc20-permit/ERC20PermitUpgradeable.sol";
 import {Strings} from "./packages/oz/Strings.sol";
 import {BokkyPooBahsDateTimeLibrary} from "./packages/BokkyPooBahsDateTimeLibrary.sol";
 import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
@@ -11,11 +11,9 @@ import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
  * @title Otoken
  * @author Opyn Team
  * @notice Otoken is the ERC20 token for an option
- * @dev The Otoken inherits ERC20Initializable because we need to use the init instead of constructor
+ * @dev The Otoken inherits ERC20Upgradeable because we need to use the init instead of constructor
  */
-contract Otoken is ERC20Initializable {
-    using SafeMath for uint256;
-
+contract Otoken is ERC20PermitUpgradeable {
     /// @notice address of the Controller module
     address public controller;
 
@@ -68,6 +66,7 @@ contract Otoken is ERC20Initializable {
         isPut = _isPut;
         (string memory tokenName, string memory tokenSymbol) = _getNameAndSymbol();
         __ERC20_init_unchained(tokenName, tokenSymbol);
+        __ERC20Permit_init(tokenName);
         _setupDecimals(8);
     }
 
@@ -100,9 +99,9 @@ contract Otoken is ERC20Initializable {
      * @return tokenSymbol (ex: oETHUSDC-05SEP20-200P)
      */
     function _getNameAndSymbol() internal view returns (string memory tokenName, string memory tokenSymbol) {
-        string memory underlying = ERC20Initializable(underlyingAsset).symbol();
-        string memory strike = ERC20Initializable(strikeAsset).symbol();
-        string memory collateral = ERC20Initializable(collateralAsset).symbol();
+        string memory underlying = ERC20Upgradeable(underlyingAsset).symbol();
+        string memory strike = ERC20Upgradeable(strikeAsset).symbol();
+        string memory collateral = ERC20Upgradeable(collateralAsset).symbol();
         string memory displayStrikePrice = _getDisplayedStrikePrice(strikePrice);
 
         // convert expiry to a readable string

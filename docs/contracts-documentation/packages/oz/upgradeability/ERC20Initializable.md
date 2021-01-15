@@ -1,6 +1,6 @@
-# `ERC20Initializable`
+# `ERC20Upgradeable`
 
-this contract was renamed from ERC20UpgradeSafe to ERC20Initializable
+this contract was renamed from ERC20UpgradeSafe to ERC20Upgradeable
 
 This implementation is agnostic to the way tokens are created. This means
 
