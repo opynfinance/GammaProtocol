@@ -16,8 +16,8 @@ import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
 contract Otoken is ERC20Initializable {
     using SafeMath for uint256;
 
-    /// @notice address of the AddressBook module
-    address public addressBook;
+    /// @notice address of the Controller module
+    address public controller;
 
     /// @notice asset that the option references
     address public underlyingAsset;
@@ -42,6 +42,7 @@ contract Otoken is ERC20Initializable {
 
     /**
      * @notice initialize the oToken
+     * @param _addressBook addressbook module
      * @param _underlyingAsset asset that the option references
      * @param _strikeAsset asset that the strike price is denominated in
      * @param _collateralAsset asset that is held as collateral against short/written options
@@ -58,7 +59,7 @@ contract Otoken is ERC20Initializable {
         uint256 _expiryTimestamp,
         bool _isPut
     ) external initializer {
-        addressBook = _addressBook;
+        controller = AddressBookInterface(_addressBook).getController();
         underlyingAsset = _underlyingAsset;
         strikeAsset = _strikeAsset;
         collateralAsset = _collateralAsset;
@@ -77,10 +78,7 @@ contract Otoken is ERC20Initializable {
      * @param amount amount to mint
      */
     function mintOtoken(address account, uint256 amount) external {
-        require(
-            msg.sender == AddressBookInterface(addressBook).getController(),
-            "Otoken: Only Controller can mint Otokens"
-        );
+        require(msg.sender == controller, "Otoken: Only Controller can mint Otokens");
         _mint(account, amount);
     }
 
@@ -91,10 +89,7 @@ contract Otoken is ERC20Initializable {
      * @param amount amount to burn
      */
     function burnOtoken(address account, uint256 amount) external {
-        require(
-            msg.sender == AddressBookInterface(addressBook).getController(),
-            "Otoken: Only Controller can burn Otokens"
-        );
+        require(msg.sender == controller, "Otoken: Only Controller can burn Otokens");
         _burn(account, amount);
     }
 
