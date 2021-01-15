@@ -72,7 +72,11 @@ contract('PermitCallee', ([caller, spender]) => {
         nonce.toString(),
         deadline.toString(),
       )
+      console.log('digest: ', digest)
       const {v, r, s} = ecsign(Buffer.from(digest.slice(2), 'hex'), wallet.getPrivateKey())
+      console.log('v: ', v)
+      console.log('r: ', r)
+      console.log('s: ', s)
       const callData = web3.eth.abi.encodeParameters(
         ['address', 'address', 'address', 'uint256', 'uint256', 'uint8', 'bytes', 'bytes'],
         [otoken.address, owner, spender, value.toString(), deadline.toString(), v, r, s],
