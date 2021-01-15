@@ -166,6 +166,7 @@ contract OtokenFactory is OtokenSpawner {
         bool _isPut
     ) external view returns (address) {
         address otokenImpl = AddressBookInterface(addressBook).getOtokenImpl();
+
         bytes memory initializationCalldata = abi.encodeWithSelector(
             OtokenInterface(otokenImpl).init.selector,
             addressBook,

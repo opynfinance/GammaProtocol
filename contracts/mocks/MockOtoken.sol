@@ -1,14 +1,15 @@
 pragma solidity =0.6.10;
 
-import {ERC20Upgradeable} from "../packages/oz/upgradeability/ERC20Upgradeable.sol";
 import {ERC20PermitUpgradeable} from "../packages/oz/upgradeability/erc20-permit/ERC20PermitUpgradeable.sol";
+import {AddressBookInterface} from "../interfaces/AddressBookInterface.sol";
 
 /**
  * SPDX-License-Identifier: UNLICENSED
- * @dev The Otoken inherits ERC20Upgradeable because we need to use the init instead of constructor.
+ * @dev The Otoken inherits ERC20PermitUpgradeable because we need to use the init instead of constructor.
  */
 contract MockOtoken is ERC20PermitUpgradeable {
     address public addressBook;
+    address public controller;
     address public underlyingAsset;
     address public strikeAsset;
     address public collateralAsset;
@@ -30,7 +31,7 @@ contract MockOtoken is ERC20PermitUpgradeable {
         bool _isPut
     ) external initializer {
         inited = true;
-        addressBook = _addressBook;
+        controller = AddressBookInterface(_addressBook).getController();
         underlyingAsset = _underlyingAsset;
         strikeAsset = _strikeAsset;
         collateralAsset = _collateralAsset;
