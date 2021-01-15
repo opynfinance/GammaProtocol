@@ -61,16 +61,6 @@ contract Trade0x is CalleeInterface {
     function callFunction(address payable _sender, bytes memory _data) external override {
         require(msg.sender == controller, "sender not controller");
         _directlyTrade(_sender, _data);
-        // _indirectlyTrade(_sender, _data);
-    }
-
-    function _indirectlyTrade(address payable _sender, bytes memory _data) internal {
-        (IZeroXExchange.Transaction memory transaction, bytes memory signature) = abi.decode(
-            _data,
-            (IZeroXExchange.Transaction, bytes)
-        );
-
-        exchange.executeTransaction(transaction, signature);
     }
 
     function _directlyTrade(address payable _sender, bytes memory _data) internal {
@@ -100,12 +90,16 @@ contract Trade0x is CalleeInterface {
             // transfer swapped token to sender
             address makerAsset = decodeERC20Asset(order[i].makerAssetData);
             uint256 balance = ERC20Interface(makerAsset).balanceOf(address(this));
-            ERC20Interface(makerAsset).safeTransfer(_sender, balance);
+            if (balance > 0) {
+                ERC20Interface(makerAsset).safeTransfer(_sender, balance);
+            }
 
             // transfer the taker asset back to the user if the order wasn't fully filled
             address takerAsset = decodeERC20Asset(order[i].takerAssetData);
             balance = ERC20Interface(takerAsset).balanceOf(address(this));
-            ERC20Interface(takerAsset).safeTransfer(_sender, balance);
+            if (balance > 0) {
+                ERC20Interface(takerAsset).safeTransfer(_sender, balance);
+            }
         }
     }
 
