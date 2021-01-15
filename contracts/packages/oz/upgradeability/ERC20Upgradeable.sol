@@ -1,19 +1,18 @@
 // SPDX-License-Identifier: MIT
-/* solhint-disable */
-pragma solidity ^0.6.0;
 
-import "./ContextUpgradeSafe.sol";
-import "../IERC20.sol";
-import "../SafeMath.sol";
-import "../Address.sol";
+pragma solidity >=0.6.0 <0.8.0;
+
+import "./GSN/ContextUpgradeable.sol";
+import "./IERC20Upgradeable.sol";
+import "./math/SafeMathUpgradeable.sol";
 import "./Initializable.sol";
 
 /**
  * @dev Implementation of the {IERC20} interface.
- * @notice this contract was renamed from ERC20UpgradeSafe to ERC20Initializable
+ *
  * This implementation is agnostic to the way tokens are created. This means
  * that a supply mechanism has to be added in a derived contract using {_mint}.
- * For a generic mechanism see {ERC20MinterPauser}.
+ * For a generic mechanism see {ERC20PresetMinterPauser}.
  *
  * TIP: For a detailed writeup see our guide
  * https://forum.zeppelin.solutions/t/how-to-implement-erc20-supply-mechanisms/226[How
@@ -32,9 +31,8 @@ import "./Initializable.sol";
  * functions have been added to mitigate the well-known issues around setting
  * allowances. See {IERC20-approve}.
  */
-contract ERC20Initializable is Initializable, ContextUpgradeSafe, IERC20 {
-    using SafeMath for uint256;
-    using Address for address;
+contract ERC20Upgradeable is Initializable, ContextUpgradeable, IERC20Upgradeable {
+    using SafeMathUpgradeable for uint256;
 
     mapping(address => uint256) private _balances;
 
@@ -55,15 +53,14 @@ contract ERC20Initializable is Initializable, ContextUpgradeSafe, IERC20 {
      * All three of these values are immutable: they can only be set once during
      * construction.
      */
-
-    function __ERC20_init(string memory name, string memory symbol) internal initializer {
+    function __ERC20_init(string memory name_, string memory symbol_) internal initializer {
         __Context_init_unchained();
-        __ERC20_init_unchained(name, symbol);
+        __ERC20_init_unchained(name_, symbol_);
     }
 
-    function __ERC20_init_unchained(string memory name, string memory symbol) internal initializer {
-        _name = name;
-        _symbol = symbol;
+    function __ERC20_init_unchained(string memory name_, string memory symbol_) internal initializer {
+        _name = name_;
+        _symbol = symbol_;
         _decimals = 18;
     }
 
@@ -149,9 +146,10 @@ contract ERC20Initializable is Initializable, ContextUpgradeSafe, IERC20 {
      * @dev See {IERC20-transferFrom}.
      *
      * Emits an {Approval} event indicating the updated allowance. This is not
-     * required by the EIP. See the note at the beginning of {ERC20};
+     * required by the EIP. See the note at the beginning of {ERC20}.
      *
      * Requirements:
+     *
      * - `sender` and `recipient` cannot be the zero address.
      * - `sender` must have a balance of at least `amount`.
      * - the caller must have allowance for ``sender``'s tokens of at least
@@ -245,7 +243,7 @@ contract ERC20Initializable is Initializable, ContextUpgradeSafe, IERC20 {
      *
      * Emits a {Transfer} event with `from` set to the zero address.
      *
-     * Requirements
+     * Requirements:
      *
      * - `to` cannot be the zero address.
      */
@@ -265,7 +263,7 @@ contract ERC20Initializable is Initializable, ContextUpgradeSafe, IERC20 {
      *
      * Emits a {Transfer} event with `to` set to the zero address.
      *
-     * Requirements
+     * Requirements:
      *
      * - `account` cannot be the zero address.
      * - `account` must have at least `amount` tokens.
@@ -281,9 +279,9 @@ contract ERC20Initializable is Initializable, ContextUpgradeSafe, IERC20 {
     }
 
     /**
-     * @dev Sets `amount` as the allowance of `spender` over the `owner`s tokens.
+     * @dev Sets `amount` as the allowance of `spender` over the `owner` s tokens.
      *
-     * This is internal function is equivalent to `approve`, and can be used to
+     * This internal function is equivalent to `approve`, and can be used to
      * e.g. set automatic allowances for certain subsystems, etc.
      *
      * Emits an {Approval} event.

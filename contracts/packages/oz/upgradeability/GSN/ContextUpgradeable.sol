@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
-/* solhint-disable */
-pragma solidity ^0.6.0;
-import "./Initializable.sol";
+pragma solidity >=0.6.0 <0.8.0;
+
+import "../Initializable.sol";
 
 /*
  * @dev Provides information about the current execution context, including the
@@ -13,10 +13,7 @@ import "./Initializable.sol";
  *
  * This contract is only required for intermediate, library-like contracts.
  */
-contract ContextUpgradeSafe is Initializable {
-    // Empty internal constructor, to prevent people from mistakenly deploying
-    // an instance of this contract, which should be used via inheritance.
-
+abstract contract ContextUpgradeable is Initializable {
     function __Context_init() internal initializer {
         __Context_init_unchained();
     }
