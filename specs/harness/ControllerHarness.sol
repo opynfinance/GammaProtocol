@@ -78,9 +78,11 @@ contract ControllerHarness is Controller {
 
   function isValidVault(address owner, uint256 vaultId) external view returns (bool) {
     MarginVault.Vault storage _vault = cheapGetVault(owner, vaultId);
-    (, bool isValidVault) = calculator.getExcessCollateral(_vault.shortAmounts[0],
-        _vault.longAmounts[0],
-        _vault.collateralAmounts[0]);
+    (, bool isValidVault) = calculator.getExcessCollateral(
+      _vault.shortAmounts[0],
+      _vault.longAmounts[0],
+      _vault.collateralAmounts[0]
+    );
     return isValidVault;
   }
 
@@ -230,7 +232,7 @@ contract ControllerHarness is Controller {
     uint256 index,
     uint256 amount
   ) external {
-    require(smallVault(owner,vaultId,1));
+    require(smallVault(owner, vaultId, 1));
     Actions.DepositArgs memory args = Actions.DepositArgs({
       owner: owner,
       vaultId: vaultId,
@@ -249,7 +251,7 @@ contract ControllerHarness is Controller {
     uint256 index,
     uint256 amount
   ) external {
-    require(smallVault(owner,vaultId,1));
+    require(smallVault(owner, vaultId, 1));
     Actions.WithdrawArgs memory args = Actions.WithdrawArgs({
       owner: owner,
       vaultId: vaultId,
@@ -268,7 +270,7 @@ contract ControllerHarness is Controller {
     uint256 index,
     uint256 amount
   ) external {
-    require(smallVault(owner,vaultId,1));
+    require(smallVault(owner, vaultId, 1));
     Actions.MintArgs memory args = Actions.MintArgs({
       owner: owner,
       vaultId: vaultId,
@@ -287,7 +289,7 @@ contract ControllerHarness is Controller {
     uint256 index,
     uint256 amount
   ) external {
-    require(smallVault(owner,vaultId,1));
+    require(smallVault(owner, vaultId, 1));
     Actions.MintArgs memory args = Actions.MintArgs({
       owner: owner,
       vaultId: vaultId,
@@ -306,7 +308,7 @@ contract ControllerHarness is Controller {
     uint256 index,
     uint256 amount
   ) external {
-    require(smallVault(owner,vaultId,1));
+    require(smallVault(owner, vaultId, 1));
     Actions.BurnArgs memory args = Actions.BurnArgs({
       owner: owner,
       vaultId: vaultId,
@@ -325,7 +327,7 @@ contract ControllerHarness is Controller {
     uint256 index,
     uint256 amount
   ) external {
-    require( smallVault(owner,vaultId,1));
+    require(smallVault(owner, vaultId, 1));
     Actions.BurnArgs memory args = Actions.BurnArgs({
       owner: owner,
       vaultId: vaultId,
@@ -362,7 +364,6 @@ contract ControllerHarness is Controller {
     _settleVault(args);
   }
 
-
   /**
     - change memory to storage: sed 's/MarginVault.Vault memory vault = getVault/MarginVault.Vault storage vault = cheapGetVault/g'
     - call with extended calculator: sed 's/getExcessCollateral\(vault/getExcessCollateral\(vault.shortAmounts[0],vault.longAmounts[0],vault.collateralAmounts[0]/g'
@@ -376,12 +377,11 @@ contract ControllerHarness is Controller {
         return netValue;
   }*/
 
-
   // For invariants
   function init_state() public {}
-  
+
   // In MarginPool:
   // sed 's/safeT/t/g'
-  
+
   // TODO: remove --staging everywhere in scripts
 }
