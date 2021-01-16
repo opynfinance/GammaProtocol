@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.6.10;
 
-import {ERC20Initializable} from "../packages/oz/upgradeability/ERC20Initializable.sol";
+import {ERC20Upgradeable} from "../packages/oz/upgradeability/ERC20Upgradeable.sol";
 
-contract MockERC20 is ERC20Initializable {
+contract MockERC20 is ERC20Upgradeable {
     constructor(
         string memory _name,
         string memory _symbol,

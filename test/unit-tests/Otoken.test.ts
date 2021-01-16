@@ -1,4 +1,4 @@
-import {OtokenInstance, MockERC20Instance} from '../../build/types/truffle-types'
+import {OtokenInstance, MockERC20Instance, MockAddressBookInstance} from '../../build/types/truffle-types'
 import {createTokenAmount} from '../utils'
 
 const {expectRevert} = require('@openzeppelin/test-helpers')
@@ -8,6 +8,7 @@ const MockERC20 = artifacts.require('MockERC20.sol')
 const MockAddressBook = artifacts.require('MockAddressBook')
 
 contract('Otoken', ([deployer, controller, user1, user2, random]) => {
+  let addressBook: MockAddressBookInstance
   let otoken: OtokenInstance
   let usdc: MockERC20Instance
   let weth: MockERC20Instance
@@ -20,7 +21,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
 
   before('Deployment', async () => {
     // Need another mock contract for addressbook when we add ERC20 operations.
-    const addressBook = await MockAddressBook.new()
+    addressBook = await MockAddressBook.new()
     addressBookAddr = addressBook.address
     await addressBook.setController(controller)
 
@@ -129,7 +130,9 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
       /* This behavior should've been banned by factory) */
       const put = await Otoken.new()
       await expectRevert(
-        put.init(addressBookAddr, random, usdc.address, usdc.address, strikePrice, expiry, isPut, {from: deployer}),
+        put.init(addressBookAddr, random, usdc.address, usdc.address, strikePrice, expiry, isPut, {
+          from: deployer,
+        }),
         'revert',
       )
     })

@@ -424,7 +424,7 @@
 <g id="node71" class="node">
 <title>62</title>
 <polygon fill="#f2f2f2" stroke="#000000" points="1175.1146,-1388.7 1175.1146,-1916.7 1610.2144,-1916.7 1610.2144,-1388.7 1175.1146,-1388.7"/>
-<text text-anchor="middle" x="1392.6645" y="-1900.1" font-family="Times,serif" font-size="14.00" fill="#000000">ERC20Initializable</text>
+<text text-anchor="middle" x="1392.6645" y="-1900.1" font-family="Times,serif" font-size="14.00" fill="#000000">ERC20Upgradeable</text>
 <polyline fill="none" stroke="#000000" points="1175.1146,-1891.9 1610.2144,-1891.9 "/>
 <text text-anchor="start" x="1183.1146" y="-1875.3" font-family="Times,serif" font-size="14.00" fill="#000000">Private:</text>
 <text text-anchor="start" x="1183.1146" y="-1858.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;_balances: mapping(address=&gt;uint256)</text>

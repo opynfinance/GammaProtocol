@@ -2,7 +2,7 @@
 
 SPDX-License-Identifier: UNLICENSED
 
-The Otoken inherits ERC20Initializable because we need to use the init instead of constructor.
+The Otoken inherits ERC20Upgradeable because we need to use the init instead of constructor.
 
 ## Functions:
 
