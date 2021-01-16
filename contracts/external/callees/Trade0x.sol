@@ -65,6 +65,7 @@ contract Trade0x is CalleeInterface {
 
     function _directlyTrade(address payable _sender, bytes memory _data) internal {
         (
+            address trader,
             IZeroXExchange.Order[] memory order,
             uint256[] memory takerAssetFillAmount,
             bytes[] memory signature,
@@ -72,14 +73,17 @@ contract Trade0x is CalleeInterface {
             uint8[] memory v,
             bytes32[] memory r,
             bytes32[] memory s
-        ) = abi.decode(_data, (IZeroXExchange.Order[], uint256[], bytes[], uint256[], uint8[], bytes32[], bytes32[]));
+        ) = abi.decode(
+            _data,
+            (address, IZeroXExchange.Order[], uint256[], bytes[], uint256[], uint8[], bytes32[], bytes32[])
+        );
 
         for (uint256 i = 0; i < order.length; i++) {
             address takerAsset = decodeERC20Asset(order[i].takerAssetData);
             // pull token from user
             // ERC20Interface(takerAsset).safeTransferFrom(trader, address(this), takerAssetFillAmount[i]);
             ERC20PermitUpgradeable(takerAsset).permit(
-                order[i].takerAddress,
+                trader,
                 address(this),
                 takerAssetFillAmount[i],
                 deadlines[i],
@@ -102,14 +106,14 @@ contract Trade0x is CalleeInterface {
             address makerAsset = decodeERC20Asset(order[i].makerAssetData);
             uint256 balance = ERC20Interface(makerAsset).balanceOf(address(this));
             if (balance > 0) {
-                ERC20Interface(makerAsset).safeTransfer(order[i].takerAddress, balance);
+                ERC20Interface(makerAsset).safeTransfer(trader, balance);
             }
 
             // transfer the taker asset back to the user if the order wasn't fully filled
             address takerAsset = decodeERC20Asset(order[i].takerAssetData);
             balance = ERC20Interface(takerAsset).balanceOf(address(this));
             if (balance > 0) {
-                ERC20Interface(takerAsset).safeTransfer(order[i].takerAddress, balance);
+                ERC20Interface(takerAsset).safeTransfer(trader, balance);
             }
         }
     }
