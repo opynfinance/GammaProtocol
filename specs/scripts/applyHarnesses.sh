@@ -14,7 +14,7 @@ perl -0777 -i -pe 's/for uint256;/for uint256; function cheapGetVault(address ow
 # Virtualize runActions
 perl -0777 -i -pe 's/function _runActions\(Actions.ActionArgs\[\] memory _actions\)/function _runActions\(Actions.ActionArgs\[\] memory _actions\) virtual/g' contracts/Controller.sol
 # _totalSupply should be internal
-perl -0777 -i -pe 's/uint256 private _totalSupply;/uint256 internal _totalSupply;/g' contracts/packages/oz/upgradeability/ERC20Initializable.sol
+perl -0777 -i -pe 's/uint256 private _totalSupply;/uint256 internal _totalSupply;/g' contracts/packages/oz/upgradeability/ERC20Upgradeable.sol
 # otoken.collateralAsset in settleVault should be dummyERC20C
 perl -0777 -i -pe 's/pool.transferToUser\(collateral, _args.to, payout\)/pool.transferToUser\(dummyERC20C, _args.to, payout\)/g' contracts/Controller.sol
 # MarginCalculatorInterface
