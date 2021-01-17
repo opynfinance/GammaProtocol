@@ -79,7 +79,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
     // deploy Oracle module
     oracle = await MockOracle.new(addressBook.address, {from: owner})
     // calculator deployment
-    calculator = await MarginCalculator.new(addressBook.address)
+    calculator = await MarginCalculator.new(oracle.address)
     // margin pool deployment
     marginPool = await MarginPool.new(addressBook.address)
     // whitelist module
