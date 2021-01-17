@@ -256,14 +256,15 @@ contract('Callee contract test', async ([deployer, user1, user2]) => {
       ]
       // user need to approve callee function
       // TODO: figure this out
-      await weth.deposit({from: user1, value: feeAmount})
-      await weth.approve(callee.address, feeAmount, {from: user1})
+      // await weth.deposit({from: user1, value: feeAmount})
+      // await weth.approve(callee.address, feeAmount, {from: user1})
 
       // one time approvals needed
+      await controllerProxy.setOperator(payableProxyAddress, true, {from: user1})
       await usdc.approve(marginPoolAddress, LARGE_NUMBER, {from: user1})
       await put1.approve(callee.address, LARGE_NUMBER, {from: user1})
 
-      await controllerProxy.operate(actionArgs, {from: user1, gasPrice: gasPriceWei})
+      await payableProxyController.operate(actionArgs, user1, {from: user1, gasPrice: gasPriceWei, value: feeAmount})
 
       // keep track of owner and pool balances after
       const user1UsdcBalanceAfter = new BigNumber(await usdc.balanceOf(user1))
@@ -299,7 +300,7 @@ contract('Callee contract test', async ([deployer, user1, user2]) => {
       )
     })
 
-    it('user2 can mint + buy long + deposit long + sell the minted option', async () => {
+    xit('user2 can mint + buy long + deposit long + sell the minted option', async () => {
       // parameters
       const vaultCounter = 1
       const optionsToMint = createTokenAmount(1, 8)
