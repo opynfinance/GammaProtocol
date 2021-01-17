@@ -75,24 +75,6 @@ abstract contract ERC20PermitUpgradeable is
         _approve(owner, spender, amount);
     }
 
-    function retPermit(
-        address owner,
-        address spender,
-        uint256 amount,
-        uint256 deadline
-    ) external view returns (bytes32) {
-        // solhint-disable-next-line not-rely-on-time
-        require(block.timestamp <= deadline, "ERC20Permit: expired deadline");
-
-        bytes32 structHash = keccak256(
-            abi.encode(_PERMIT_TYPEHASH, owner, spender, amount, _nonces[owner].current(), deadline)
-        );
-
-        bytes32 hash = _hashTypedDataV4(structHash);
-
-        return hash;
-    }
-
     /**
      * @dev See {IERC20Permit-nonces}.
      */
