@@ -62,13 +62,12 @@ contract('MarginCalculator', () => {
     expiry = now + time.duration.days(30).toNumber()
     // initiate addressbook first.
     addressBook = await MockAddressBook.new()
-    // setup calculator
-    calculator = await MarginCalculator.new(addressBook.address)
     // setup oracle
     oracle = await MockOracle.new()
     await addressBook.setOracle(oracle.address)
+    // setup calculator
+    calculator = await MarginCalculator.new(oracle.address)
     // setup usdc and weth
-
     usdc = await MockERC20.new('USDC', 'USDC', usdcDecimals)
     dai = await MockERC20.new('DAI', 'DAI', daiDecimals)
     weth = await MockERC20.new('WETH', 'WETH', wethDecimals)
@@ -120,7 +119,7 @@ contract('MarginCalculator', () => {
 
   describe('Deployment test', () => {
     it('should revert deploying Calculator with addressbook address equal to zero', async () => {
-      await expectRevert(MarginCalculator.new(ZERO_ADDR), 'MarginCalculator: invalid addressbook')
+      await expectRevert(MarginCalculator.new(ZERO_ADDR), 'MarginCalculator: invalid oracle address')
     })
   })
 
@@ -151,41 +150,71 @@ contract('MarginCalculator', () => {
     it('Should return cash value for put as strike price - eth price when strike > eth price', async () => {
       const ethPirce = scaleNum(200)
       await oracle.setExpiryPrice(weth.address, closeExpiry, ethPirce)
-      const cashedValue = await calculator.getExpiredCashValue(put.address)
+      const underlying = await put.underlyingAsset()
+      const strike = await put.strikeAsset()
+      const expiryTimestamp = await put.expiryTimestamp()
+      const strikePrice = await put.strikePrice()
+      const isPut = await put.isPut()
+      const cashedValue = await calculator.getExpiredCashValue(underlying, strike, expiryTimestamp, strikePrice, isPut)
       assert.equal(cashedValue.toString(), scaleNum(50))
     })
     it('Should return cash value for call as 0 when strike price when strike > eth price', async () => {
       const ethPirce = scaleNum(150)
       await oracle.setExpiryPrice(weth.address, closeExpiry, ethPirce)
-      const cashedValue = await calculator.getExpiredCashValue(call.address)
+      const underlying = await call.underlyingAsset()
+      const strike = await call.strikeAsset()
+      const expiryTimestamp = await call.expiryTimestamp()
+      const strikePrice = await call.strikePrice()
+      const isPut = await call.isPut()
+      const cashedValue = await calculator.getExpiredCashValue(underlying, strike, expiryTimestamp, strikePrice, isPut)
       assert.equal(cashedValue.toString(), '0')
     })
     it('Should return cash value for put as 0 when strike  < eth price', async () => {
       const ethPirce = scaleNum(300)
       await oracle.setExpiryPrice(weth.address, closeExpiry, ethPirce)
-      const cashedValue = await calculator.getExpiredCashValue(put.address)
+      const underlying = await put.underlyingAsset()
+      const strike = await put.strikeAsset()
+      const expiryTimestamp = await put.expiryTimestamp()
+      const strikePrice = await put.strikePrice()
+      const isPut = await put.isPut()
+      const cashedValue = await calculator.getExpiredCashValue(underlying, strike, expiryTimestamp, strikePrice, isPut)
       assert.equal(cashedValue.toString(), '0')
     })
     it('Should return cash value for call as underlying - strike when strike < eth price', async () => {
       const ethPirce = scaleNum(300)
       await oracle.setExpiryPrice(weth.address, closeExpiry, ethPirce)
-      const cashedValue = await calculator.getExpiredCashValue(call.address)
+      const underlying = await call.underlyingAsset()
+      const strike = await call.strikeAsset()
+      const expiryTimestamp = await call.expiryTimestamp()
+      const strikePrice = await call.strikePrice()
+      const isPut = await call.isPut()
+      const cashedValue = await calculator.getExpiredCashValue(underlying, strike, expiryTimestamp, strikePrice, isPut)
       assert.equal(cashedValue.toString(), scaleNum(50))
     })
     it('Should revert if underlying price is not finalized.', async () => {
       const ethPirce = scaleNum(200)
       await oracle.setExpiryPrice(weth.address, closeExpiry, ethPirce)
       await oracle.setIsFinalized(weth.address, closeExpiry, false)
+      const underlying = await call.underlyingAsset()
+      const strike = await call.strikeAsset()
+      const expiryTimestamp = await call.expiryTimestamp()
+      const strikePrice = await call.strikePrice()
+      const isPut = await call.isPut()
       await expectRevert(
-        calculator.getExpiredCashValue(call.address),
+        calculator.getExpiredCashValue(underlying, strike, expiryTimestamp, strikePrice, isPut),
         'MarginCalculator: price at expiry not finalized yet',
       )
     })
     it('Should revert if strike asset price is not finalized.', async () => {
       await oracle.setIsFinalized(weth.address, closeExpiry, true)
       await oracle.setIsFinalized(usdc.address, closeExpiry, false)
+      const underlying = await call.underlyingAsset()
+      const strike = await call.strikeAsset()
+      const expiryTimestamp = await call.expiryTimestamp()
+      const strikePrice = await call.strikePrice()
+      const isPut = await call.isPut()
       await expectRevert(
-        calculator.getExpiredCashValue(call.address),
+        calculator.getExpiredCashValue(underlying, strike, expiryTimestamp, strikePrice, isPut),
         'MarginCalculator: price at expiry not finalized yet',
       )
     })
