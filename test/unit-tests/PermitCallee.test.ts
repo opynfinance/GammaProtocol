@@ -6,25 +6,19 @@ import {
 } from '../../build/types/truffle-types'
 
 import BigNumber from 'bignumber.js'
-import {ecsign} from 'ethereumjs-util'
-import {createTokenAmount, getApprovalDigest} from '../utils'
-import {bigNumberify, hexlify, keccak256, defaultAbiCoder, toUtf8Bytes} from 'ethers/utils'
+import {createTokenAmount} from '../utils'
 
-const {time, BN, constants} = require('@openzeppelin/test-helpers')
+const {BN, constants, expectEvent, expectRevert, time} = require('@openzeppelin/test-helpers')
+const {fromRpcSig} = require('ethereumjs-util')
+const ethSigUtil = require('eth-sig-util')
 const Wallet = require('ethereumjs-wallet').default
+
+const {EIP712Domain, domainSeparator} = require('../eip712')
 
 const AddressBook = artifacts.require('AddressBook.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
 const MockOtoken = artifacts.require('MockOtoken.sol')
 const PermitCallee = artifacts.require('PermitCallee.sol')
-
-// OZ code
-const {fromRpcSig, ecrecover} = require('ethereumjs-util')
-const ethSigUtil = require('eth-sig-util')
-
-const {MAX_UINT256, ZERO_ADDRESS, ZERO_BYTES32} = constants
-
-const {EIP712Domain, domainSeparator} = require('../eip712')
 
 const Permit = [
   {name: 'owner', type: 'address'},
@@ -34,7 +28,7 @@ const Permit = [
   {name: 'deadline', type: 'uint256'},
 ]
 
-contract('PermitCallee', ([caller, spender]) => {
+contract('PermitCallee', ([controllerProxy, spender]) => {
   // ERC20 mock
   let usdc: MockERC20Instance
   let weth: MockERC20Instance
@@ -48,7 +42,6 @@ contract('PermitCallee', ([caller, spender]) => {
   const usdcDecimals = 6
   const wethDecimals = 18
   const name = 'ETHUSDC/1597511955/200P/USDC'
-  // OZ code
   const version = '1'
 
   before('Deployment', async () => {
@@ -75,42 +68,13 @@ contract('PermitCallee', ([caller, spender]) => {
 
   describe('Permit callFunction', async () => {
     it('Should increase allowance through callFunction', async () => {
-      // const wallet = Wallet.generate()
-      // const owner = wallet.getAddressString()
-      // const value = new BigNumber(42).multipliedBy(new BigNumber(10).pow(18))
-      // const nonce = new BigNumber(await otoken.nonces(owner))
-      // const deadline = new BigNumber(await time.latest()).plus(60 * 60 * 24)
-      // // give free options
-      // await otoken.mintOtoken(owner, new BigNumber('100'))
-      // const digest = await getApprovalDigest(
-      //   {name: otokenName, address: otoken.address},
-      //   {owner: owner, spender: spender, value: value.toString()},
-      //   nonce.toString(),
-      //   deadline.toString(),
-      // )
-      // console.log('digest: ', digest)
-      // const {v, r, s} = ecsign(Buffer.from(digest.slice(2), 'hex'), wallet.getPrivateKey())
-      // console.log('v: ', v)
-      // console.log('r: ', hexlify(r))
-      // console.log('s: ', hexlify(s))
-      // const callData = web3.eth.abi.encodeParameters(
-      //   ['address', 'address', 'address', 'uint256', 'uint256', 'uint8', 'bytes', 'bytes'],
-      //   [otoken.address, owner, spender, value.toString(), deadline.toString(), v, hexlify(r), hexlify(s)],
-      // )
-      // console.log("callData: ", callData)
-      // const spenderAllowanceBefore = await otoken.allowance(owner, spender)
-      // console.log(spenderAllowanceBefore.toString())
-      // await permitCallee.callFunction(owner, callData, {from: caller})
-      // const spenderAllowanceAfter = await otoken.allowance(owner, spender)
-      // console.log(spenderAllowanceAfter.toString())
-
       const wallet = Wallet.generate()
 
       const owner = wallet.getAddressString()
       const value = new BN(42)
       const nonce = 0
-      const maxDeadline = new BigNumber(await time.latest()).plus(60 * 60 * 24).toString()
       // const maxDeadline = MAX_UINT256;
+      const maxDeadline = new BigNumber(await time.latest()).plus(60 * 60 * 24).toString()
 
       const buildData = (chainId: number, verifyingContract: string, deadline = maxDeadline) => ({
         primaryType: 'Permit',
@@ -123,24 +87,22 @@ contract('PermitCallee', ([caller, spender]) => {
       const signature = ethSigUtil.signTypedMessage(wallet.getPrivateKey(), {data})
       const {v, r, s} = fromRpcSig(signature)
 
-      console.log('JS data: ', signature)
-      console.log('Solidity data: ', await otoken.retPermit(owner, spender, value, maxDeadline))
+      const spenderAllowanceBefore = new BigNumber(await otoken.allowance(owner, spender))
 
       const callData = web3.eth.abi.encodeParameters(
-        ['address', 'address', 'address', 'uint256', 'uint256', 'uint8', 'bytes', 'bytes'],
-        [otoken.address, owner, spender, value.toString(), maxDeadline, v, hexlify(r), hexlify(s)],
+        ['address', 'address', 'address', 'uint256', 'uint256', 'uint8', 'bytes32', 'bytes32'],
+        [otoken.address, owner, spender, value.toString(), maxDeadline, v, r, s],
       )
 
-      // const bufferedAddress = ecrecover(data, v, r, s, (await otoken.getChainId()).toNumber())
-      // console.log(bufferedAddress.toString('hex'))
+      await permitCallee.callFunction(owner, callData, {from: controllerProxy})
 
-      const spenderAllowanceBefore = await otoken.allowance(owner, spender)
-      console.log(spenderAllowanceBefore.toString())
+      const spenderAllowanceAfter = new BigNumber(await otoken.allowance(owner, spender))
 
-      await permitCallee.callFunction(owner, callData, {from: caller})
-
-      const spenderAllowanceAfter = await otoken.allowance(owner, spender)
-      console.log(spenderAllowanceAfter.toString())
+      assert.equal(
+        spenderAllowanceAfter.minus(spenderAllowanceBefore).toString(),
+        new BigNumber(value).toString(),
+        'Permitted amount mismatch',
+      )
     })
   })
 })
