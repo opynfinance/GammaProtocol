@@ -59,7 +59,7 @@ contract Trade0x is CalleeInterface {
      * @param _data abi-encoded order, fillamount, signature and _sender. fee payer is the address we pull weth from.
      */
     function callFunction(address payable _sender, bytes memory _data) external override {
-        require(msg.sender == controller, "sender not controller");
+        require(msg.sender == controller, "Trade0x: sender not controller");
         _directlyTrade(_sender, _data);
     }
 
@@ -78,10 +78,14 @@ contract Trade0x is CalleeInterface {
             (address, IZeroXExchange.Order[], uint256[], bytes[], uint256[], uint8[], bytes32[], bytes32[])
         );
 
+        require(
+            tx.origin == trader,
+            "Trade0x: funds can only be transferred in from the person sending the transaction"
+        );
+
         for (uint256 i = 0; i < order.length; i++) {
             address takerAsset = decodeERC20Asset(order[i].takerAssetData);
             // pull token from user
-            // ERC20Interface(takerAsset).safeTransferFrom(trader, address(this), takerAssetFillAmount[i]);
             ERC20PermitUpgradeable(takerAsset).permit(
                 trader,
                 address(this),
@@ -91,6 +95,8 @@ contract Trade0x is CalleeInterface {
                 r[i],
                 s[i]
             );
+
+            ERC20Interface(takerAsset).safeTransferFrom(trader, address(this), takerAssetFillAmount[i]);
             // approve the 0x ERC20 Proxy to move fund
             ERC20Interface(takerAsset).safeIncreaseAllowance(assetProxy, takerAssetFillAmount[i]);
         }
