@@ -123,6 +123,9 @@ contract('PermitCallee', ([caller, spender]) => {
       const signature = ethSigUtil.signTypedMessage(wallet.getPrivateKey(), {data})
       const {v, r, s} = fromRpcSig(signature)
 
+      console.log('JS data: ', signature)
+      console.log('Solidity data: ', await otoken.retPermit(owner, spender, value, maxDeadline))
+
       const callData = web3.eth.abi.encodeParameters(
         ['address', 'address', 'address', 'uint256', 'uint256', 'uint8', 'bytes', 'bytes'],
         [otoken.address, owner, spender, value.toString(), maxDeadline, v, hexlify(r), hexlify(s)],
