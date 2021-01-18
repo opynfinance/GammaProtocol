@@ -1,5 +1,4 @@
 import {MockERC20Instance} from '../build/types/truffle-types'
-
 import BigNumber from 'bignumber.js'
 
 export type vault = {

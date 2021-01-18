@@ -16,7 +16,7 @@ const MockERC20 = artifacts.require('MockERC20.sol')
 const MockOtoken = artifacts.require('MockOtoken.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
-contract('OTokenFactory', ([user1, user2]) => {
+contract('OTokenFactory', ([user1, user2, controller]) => {
   let firstOtoken: MockOtokenInstance
   let addressBook: MockAddressBookInstance
   let otokenFactory: OtokenFactoryInstance
@@ -46,6 +46,7 @@ contract('OTokenFactory', ([user1, user2]) => {
     addressBook = await MockAddressBook.new()
     await addressBook.setOtokenImpl(logic.address)
     await addressBook.setWhitelist(mockWhitelist.address)
+    await addressBook.setController(controller)
 
     otokenFactory = await OTokenFactory.new(addressBook.address)
   })

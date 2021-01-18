@@ -1,13 +1,15 @@
 pragma solidity =0.6.10;
 
-import {ERC20Initializable} from "../packages/oz/upgradeability/ERC20Initializable.sol";
+import {ERC20PermitUpgradeable} from "../packages/oz/upgradeability/erc20-permit/ERC20PermitUpgradeable.sol";
+import {AddressBookInterface} from "../interfaces/AddressBookInterface.sol";
 
 /**
  * SPDX-License-Identifier: UNLICENSED
- * @dev The Otoken inherits ERC20Initializable because we need to use the init instead of constructor.
+ * @dev The Otoken inherits ERC20PermitUpgradeable because we need to use the init instead of constructor.
  */
-contract MockOtoken is ERC20Initializable {
+contract MockOtoken is ERC20PermitUpgradeable {
     address public addressBook;
+    address public controller;
     address public underlyingAsset;
     address public strikeAsset;
     address public collateralAsset;
@@ -27,9 +29,9 @@ contract MockOtoken is ERC20Initializable {
         uint256 _strikePrice,
         uint256 _expiryTimestamp,
         bool _isPut
-    ) external {
+    ) external initializer {
         inited = true;
-        addressBook = _addressBook;
+        controller = AddressBookInterface(_addressBook).getController();
         underlyingAsset = _underlyingAsset;
         strikeAsset = _strikeAsset;
         collateralAsset = _collateralAsset;
@@ -39,6 +41,7 @@ contract MockOtoken is ERC20Initializable {
         string memory tokenName = "ETHUSDC/1597511955/200P/USDC";
         string memory tokenSymbol = "oETHUSDCP";
         __ERC20_init_unchained(tokenName, tokenSymbol);
+        __ERC20Permit_init(tokenName);
         _setupDecimals(8);
     }
 
@@ -48,5 +51,13 @@ contract MockOtoken is ERC20Initializable {
 
     function burnOtoken(address account, uint256 amount) external {
         _burn(account, amount);
+    }
+
+    function getChainId() external view returns (uint256 chainId) {
+        this; // silence state mutability warning without generating bytecode - see https://github.com/ethereum/solidity/issues/2691
+        // solhint-disable-next-line no-inline-assembly
+        assembly {
+            chainId := chainid()
+        }
     }
 }

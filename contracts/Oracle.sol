@@ -146,10 +146,16 @@ contract Oracle is Ownable {
      * @return True if locking period is over, False if not
      */
     function isLockingPeriodOver(address _asset, uint256 _expiryTimestamp) public view returns (bool) {
-        address pricer = assetPricer[_asset];
-        uint256 lockingPeriod = pricerLockingPeriod[pricer];
+        uint256 price = stablePrice[_asset];
 
-        return now > _expiryTimestamp.add(lockingPeriod);
+        if (price == 0) {
+            address pricer = assetPricer[_asset];
+            uint256 lockingPeriod = pricerLockingPeriod[pricer];
+
+            return now > _expiryTimestamp.add(lockingPeriod);
+        }
+
+        return true;
     }
 
     /**
@@ -159,15 +165,22 @@ contract Oracle is Ownable {
      * @return True if dispute period is over, False if not
      */
     function isDisputePeriodOver(address _asset, uint256 _expiryTimestamp) public view returns (bool) {
-        // check if the pricer has a price for this expiry timestamp
-        Price memory price = storedPrice[_asset][_expiryTimestamp];
-        if (price.timestamp == 0) {
-            return false;
+        uint256 price = stablePrice[_asset];
+
+        if (price == 0) {
+            // check if the pricer has a price for this expiry timestamp
+            Price memory price = storedPrice[_asset][_expiryTimestamp];
+            if (price.timestamp == 0) {
+                return false;
+            }
+
+            address pricer = assetPricer[_asset];
+            uint256 disputePeriod = pricerDisputePeriod[pricer];
+
+            return now > price.timestamp.add(disputePeriod);
         }
 
-        address pricer = assetPricer[_asset];
-        uint256 disputePeriod = pricerDisputePeriod[pricer];
-        return now > price.timestamp.add(disputePeriod);
+        return true;
     }
 
     /**

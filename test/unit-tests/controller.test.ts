@@ -3,7 +3,6 @@ import {
   MarginCalculatorInstance,
   MockOtokenInstance,
   MockERC20Instance,
-  MockPricerInstance,
   MockOracleInstance,
   MockWhitelistModuleInstance,
   MarginPoolInstance,
@@ -18,7 +17,6 @@ const {expectRevert, expectEvent, time} = require('@openzeppelin/test-helpers')
 
 const CallTester = artifacts.require('CallTester.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
-const MockPricer = artifacts.require('MockPricer.sol')
 const MockOtoken = artifacts.require('MockOtoken.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy.sol')
@@ -80,7 +78,7 @@ contract(
       // deploy Oracle module
       oracle = await MockOracle.new(addressBook.address, {from: owner})
       // calculator deployment
-      calculator = await MarginCalculator.new(addressBook.address)
+      calculator = await MarginCalculator.new(oracle.address)
       // margin pool deployment
       marginPool = await MarginPool.new(addressBook.address)
       // whitelist module
@@ -3838,9 +3836,14 @@ contract(
         await oracle.setIsDisputePeriodOver(weth.address, expiry, false)
         await oracle.setExpiryPrice(weth.address, expiry, priceMock)
 
+        const underlying = await expiredOtoken.underlyingAsset()
+        const strike = await expiredOtoken.strikeAsset()
+        const collateral = await expiredOtoken.collateralAsset()
+        const expiryTimestamp = await expiredOtoken.expiryTimestamp()
+
         const expectedResutl = false
         assert.equal(
-          await controllerProxy.isSettlementAllowed(expiredOtoken.address),
+          await controllerProxy.isSettlementAllowed(underlying, strike, collateral, expiryTimestamp),
           expectedResutl,
           'Price is not finalized because dispute period is not over yet',
         )
@@ -3865,9 +3868,14 @@ contract(
         await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, priceMock, true)
         await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1), true)
 
+        const underlying = await expiredOtoken.underlyingAsset()
+        const strike = await expiredOtoken.strikeAsset()
+        const collateral = await expiredOtoken.collateralAsset()
+        const expiryTimestamp = await expiredOtoken.expiryTimestamp()
+
         const expectedResutl = true
         assert.equal(
-          await controllerProxy.isSettlementAllowed(expiredOtoken.address),
+          await controllerProxy.isSettlementAllowed(underlying, strike, collateral, expiryTimestamp),
           expectedResutl,
           'Price is not finalized',
         )

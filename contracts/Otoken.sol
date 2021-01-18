@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: UNLICENSED */
 pragma solidity =0.6.10;
 
-import {ERC20Initializable} from "./packages/oz/upgradeability/ERC20Initializable.sol";
-import {SafeMath} from "./packages/oz/SafeMath.sol";
+import {ERC20Upgradeable} from "./packages/oz/upgradeability/ERC20Upgradeable.sol";
+import {ERC20PermitUpgradeable} from "./packages/oz/upgradeability/erc20-permit/ERC20PermitUpgradeable.sol";
 import {Strings} from "./packages/oz/Strings.sol";
 import {BokkyPooBahsDateTimeLibrary} from "./packages/BokkyPooBahsDateTimeLibrary.sol";
 import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
@@ -11,13 +11,11 @@ import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
  * @title Otoken
  * @author Opyn Team
  * @notice Otoken is the ERC20 token for an option
- * @dev The Otoken inherits ERC20Initializable because we need to use the init instead of constructor
+ * @dev The Otoken inherits ERC20Upgradeable because we need to use the init instead of constructor
  */
-contract Otoken is ERC20Initializable {
-    using SafeMath for uint256;
-
-    /// @notice address of the AddressBook module
-    address public addressBook;
+contract Otoken is ERC20PermitUpgradeable {
+    /// @notice address of the Controller module
+    address public controller;
 
     /// @notice asset that the option references
     address public underlyingAsset;
@@ -42,6 +40,7 @@ contract Otoken is ERC20Initializable {
 
     /**
      * @notice initialize the oToken
+     * @param _addressBook addressbook module
      * @param _underlyingAsset asset that the option references
      * @param _strikeAsset asset that the strike price is denominated in
      * @param _collateralAsset asset that is held as collateral against short/written options
@@ -58,7 +57,7 @@ contract Otoken is ERC20Initializable {
         uint256 _expiryTimestamp,
         bool _isPut
     ) external initializer {
-        addressBook = _addressBook;
+        controller = AddressBookInterface(_addressBook).getController();
         underlyingAsset = _underlyingAsset;
         strikeAsset = _strikeAsset;
         collateralAsset = _collateralAsset;
@@ -67,6 +66,7 @@ contract Otoken is ERC20Initializable {
         isPut = _isPut;
         (string memory tokenName, string memory tokenSymbol) = _getNameAndSymbol();
         __ERC20_init_unchained(tokenName, tokenSymbol);
+        __ERC20Permit_init(tokenName);
         _setupDecimals(8);
     }
 
@@ -77,10 +77,7 @@ contract Otoken is ERC20Initializable {
      * @param amount amount to mint
      */
     function mintOtoken(address account, uint256 amount) external {
-        require(
-            msg.sender == AddressBookInterface(addressBook).getController(),
-            "Otoken: Only Controller can mint Otokens"
-        );
+        require(msg.sender == controller, "Otoken: Only Controller can mint Otokens");
         _mint(account, amount);
     }
 
@@ -91,10 +88,7 @@ contract Otoken is ERC20Initializable {
      * @param amount amount to burn
      */
     function burnOtoken(address account, uint256 amount) external {
-        require(
-            msg.sender == AddressBookInterface(addressBook).getController(),
-            "Otoken: Only Controller can burn Otokens"
-        );
+        require(msg.sender == controller, "Otoken: Only Controller can burn Otokens");
         _burn(account, amount);
     }
 
@@ -105,9 +99,9 @@ contract Otoken is ERC20Initializable {
      * @return tokenSymbol (ex: oETHUSDC-05SEP20-200P)
      */
     function _getNameAndSymbol() internal view returns (string memory tokenName, string memory tokenSymbol) {
-        string memory underlying = ERC20Initializable(underlyingAsset).symbol();
-        string memory strike = ERC20Initializable(strikeAsset).symbol();
-        string memory collateral = ERC20Initializable(collateralAsset).symbol();
+        string memory underlying = ERC20Upgradeable(underlyingAsset).symbol();
+        string memory strike = ERC20Upgradeable(strikeAsset).symbol();
+        string memory collateral = ERC20Upgradeable(collateralAsset).symbol();
         string memory displayStrikePrice = _getDisplayedStrikePrice(strikePrice);
 
         // convert expiry to a readable string
@@ -170,7 +164,7 @@ contract Otoken is ERC20Initializable {
 
         if (remainder == 0) return quotientStr;
 
-        uint256 trailingZeroes = 0;
+        uint256 trailingZeroes;
         while (remainder.mod(10) == 0) {
             remainder = remainder / 10;
             trailingZeroes += 1;

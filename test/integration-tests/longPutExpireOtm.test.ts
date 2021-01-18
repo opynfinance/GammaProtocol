@@ -80,8 +80,6 @@ contract('Long Put Spread Option expires Otm flow', ([accountOwner1, nakedBuyer,
 
     // initiate addressbook first.
     addressBook = await AddressBook.new()
-    // setup calculator
-    calculator = await MarginCalculator.new(addressBook.address)
     // setup margin pool
     marginPool = await MarginPool.new(addressBook.address)
     // setup margin vault
@@ -91,6 +89,8 @@ contract('Long Put Spread Option expires Otm flow', ([accountOwner1, nakedBuyer,
     controllerImplementation = await Controller.new(addressBook.address)
     // setup mock Oracle module
     oracle = await MockOracle.new(addressBook.address)
+    // setup calculator
+    calculator = await MarginCalculator.new(oracle.address)
     // setup whitelist module
     whitelist = await Whitelist.new(addressBook.address)
     await whitelist.whitelistCollateral(usdc.address)

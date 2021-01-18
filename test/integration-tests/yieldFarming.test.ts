@@ -82,8 +82,6 @@ contract('Yield Farming: Naked Put Option closed before expiry flow', ([admin, a
 
     // initiate addressbook first.
     addressBook = await AddressBook.new()
-    // setup calculator
-    calculator = await MarginCalculator.new(addressBook.address)
     // setup margin pool
     marginPool = await MarginPool.new(addressBook.address)
     // setup margin account
@@ -93,6 +91,8 @@ contract('Yield Farming: Naked Put Option closed before expiry flow', ([admin, a
     controllerImplementation = await Controller.new(addressBook.address)
     // setup mock Oracle module
     oracle = await Oracle.new(addressBook.address)
+    // setup calculator
+    calculator = await MarginCalculator.new(oracle.address)
     // setup whitelist module
     whitelist = await Whitelist.new(addressBook.address)
     await whitelist.whitelistCollateral(usdc.address)
@@ -227,7 +227,6 @@ contract('Yield Farming: Naked Put Option closed before expiry flow', ([admin, a
     const cusdcDecimals = 8
     const compDecimals = 18
     let wethPricer: MockPricerInstance
-    let usdcPricer: MockPricerInstance
     let cusdcPricer: CompoundPricerInstance
     const lockingPeriod = time.duration.minutes(15).toNumber()
     const disputePeriod = time.duration.minutes(15).toNumber()
@@ -247,11 +246,9 @@ contract('Yield Farming: Naked Put Option closed before expiry flow', ([admin, a
       await oracle.setAssetPricer(weth.address, wethPricer.address)
       await oracle.setLockingPeriod(wethPricer.address, lockingPeriod)
       await oracle.setDisputePeriod(wethPricer.address, disputePeriod)
-      usdcPricer = await MockPricer.new(usdc.address, oracle.address)
-      await oracle.setAssetPricer(usdc.address, usdcPricer.address)
-      await oracle.setLockingPeriod(usdcPricer.address, lockingPeriod)
-      await oracle.setDisputePeriod(usdcPricer.address, disputePeriod)
-      cusdcPricer = await CompoundPricer.new(cusdc.address, usdc.address, usdcPricer.address, oracle.address)
+      // sett USDC stable price in oracle
+      await oracle.setStablePrice(usdc.address, createTokenAmount(1, 8))
+      cusdcPricer = await CompoundPricer.new(cusdc.address, usdc.address, oracle.address)
       await oracle.setAssetPricer(cusdc.address, cusdcPricer.address)
 
       await otokenFactory.createOtoken(
@@ -277,7 +274,7 @@ contract('Yield Farming: Naked Put Option closed before expiry flow', ([admin, a
       const cusdcPrice = 0.02
       const scaledCusdcPrice = createTokenAmount(cusdcPrice, 16) // 1 cToken = 0.02 USD
       const usdPrice = createTokenAmount(1)
-      await usdcPricer.setPrice(usdPrice)
+      await oracle.setStablePrice(usdc.address, usdPrice)
       await cusdc.setExchangeRate(scaledCusdcPrice)
 
       cusdcCollateralAmount = new BigNumber(usdcCollateralAmount).div(cusdcPrice)
@@ -418,7 +415,7 @@ contract('Yield Farming: Naked Put Option closed before expiry flow', ([admin, a
       const cusdcPrice = 0.025
       const scaledCusdcPrice = createTokenAmount(cusdcPrice, 16) // 1 cToken = 0.025 USD
       await cusdc.setExchangeRate(scaledCusdcPrice)
-      await usdcPricer.setExpiryPriceInOracle(expiry, scaledUSDCPrice)
+      await oracle.setStablePrice(usdc.address, scaledUSDCPrice)
       await wethPricer.setExpiryPriceInOracle(expiry, scaledETHPrice)
       await cusdcPricer.setExpiryPriceInOracle(expiry)
 
