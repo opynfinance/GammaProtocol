@@ -158,7 +158,7 @@ contract MarginPool is Ownable {
 
     /**
      * @notice function to collect the excess balance of a particular asset
-     * @dev can only be called by the farmer address
+     * @dev can only be called by the farmer address. Do not farm otokens.
      * @param _asset asset address
      * @param _receiver receiver address
      * @param _amount amount to remove from pool
