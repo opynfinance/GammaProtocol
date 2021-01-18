@@ -82,8 +82,6 @@ contract('Yield Farming: Naked Put Option closed before expiry flow', ([admin, a
 
     // initiate addressbook first.
     addressBook = await AddressBook.new()
-    // setup calculator
-    calculator = await MarginCalculator.new(addressBook.address)
     // setup margin pool
     marginPool = await MarginPool.new(addressBook.address)
     // setup margin account
@@ -93,6 +91,8 @@ contract('Yield Farming: Naked Put Option closed before expiry flow', ([admin, a
     controllerImplementation = await Controller.new(addressBook.address)
     // setup mock Oracle module
     oracle = await Oracle.new(addressBook.address)
+    // setup calculator
+    calculator = await MarginCalculator.new(oracle.address)
     // setup whitelist module
     whitelist = await Whitelist.new(addressBook.address)
     await whitelist.whitelistCollateral(usdc.address)
