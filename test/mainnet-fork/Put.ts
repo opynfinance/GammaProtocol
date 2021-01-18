@@ -10,6 +10,12 @@ import {
 } from '../../build/types/truffle-types'
 
 import {createTokenAmount} from '../utils'
+const {fromRpcSig} = require('ethereumjs-util')
+const ethSigUtil = require('eth-sig-util')
+const Wallet = require('ethereumjs-wallet').default
+const {BN, time} = require('@openzeppelin/test-helpers')
+
+const {EIP712Domain, domainSeparator} = require('../eip712')
 
 const TradeCallee = artifacts.require('Trade0x')
 const ERC20 = artifacts.require('MockERC20')
@@ -30,6 +36,14 @@ enum ActionType {
   Redeem,
   Call,
 }
+
+const Permit = [
+  {name: 'owner', type: 'address'},
+  {name: 'spender', type: 'address'},
+  {name: 'value', type: 'uint256'},
+  {name: 'nonce', type: 'uint256'},
+  {name: 'deadline', type: 'uint256'},
+]
 
 // unlock this address to get its USDC
 const usdcWhale = '0xBE0eB53F46cd790Cd13851d5EFf43D12404d33E8'
@@ -118,7 +132,7 @@ const putAsk1Signature =
 
 const LARGE_NUMBER = createTokenAmount(10, 27)
 
-contract('Callee contract test', async ([deployer, user1, user2]) => {
+contract('Callee contract test', async ([deployer, user2]) => {
   let callee: Trade0xInstance
   let exchange: IZeroXExchangeInstance
   let usdc: MockERC20Instance
@@ -127,6 +141,9 @@ contract('Callee contract test', async ([deployer, user1, user2]) => {
   let put2: MockERC20Instance
   let controllerProxy: ControllerInstance
   let payableProxyController: PayableProxyControllerInstance
+
+  const wallet = Wallet.generate()
+  const user1 = wallet.getAddressString()
 
   before('setup transfer account asset', async () => {
     // setup contracts
@@ -171,133 +188,156 @@ contract('Callee contract test', async ([deployer, user1, user2]) => {
         6,
       )
 
-      // Keep track of user1, pool and mm bot balances
-      const user1UsdcBalanceBefore = new BigNumber(await usdc.balanceOf(user1))
-      const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPoolAddress))
-      const mmBotOtokenBalanceBefore = new BigNumber(await put1.balanceOf(maker))
-      const oTokenSupplyBefore = new BigNumber(await put1.totalSupply())
+      const nonce = 0
+      const version = '1'
+      const chainId = '1'
+      const name = 'WETHUSDC 26-February-2021 640Put USDC Collateral '
+      // const maxDeadline = MAX_UINT256;
+      const maxDeadline = new BigNumber(await time.latest()).plus(60 * 60 * 24).toString()
 
-      const data = web3.eth.abi.encodeParameters(
-        [
-          {
-            'Order[]': {
-              makerAddress: 'address',
-              takerAddress: 'address',
-              feeRecipientAddress: 'address',
-              senderAddress: 'address',
+      const buildData = (spender: string, verifyingContract: string, deadline = maxDeadline) => ({
+        primaryType: 'Permit',
+        types: {EIP712Domain, Permit},
+        domain: {name, version, chainId, verifyingContract},
+        message: {user1, spender, optionsToMint, nonce, deadline},
+      })
 
-              makerAssetAmount: 'uint256',
-              takerAssetAmount: 'uint256',
-              makerFee: 'uint256',
-              takerFee: 'uint256',
-              expirationTimeSeconds: 'uint256',
-              salt: 'uint256',
+      const dataToSign = buildData(callee.address, put1.address)
+      // const signature = ethSigUtil.signTypedMessage(wallet.getPrivateKey(), {dataToSign})
+      // console.log(signature)
+      // const {v, r, s} = fromRpcSig(signature)
 
-              makerAssetData: 'bytes',
-              takerAssetData: 'bytes',
-              makerFeeAssetData: 'bytes',
-              takerFeeAssetData: 'bytes',
-            },
-          },
-          'uint256[]',
-          'bytes[]',
-          'address',
-        ],
-        [[putBid1], [optionsToMint], [putBid1Signature], user1],
-      )
+      // // Keep track of user1, pool and mm bot balances
+      // const user1UsdcBalanceBefore = new BigNumber(await usdc.balanceOf(user1))
+      // const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPoolAddress))
+      // const mmBotOtokenBalanceBefore = new BigNumber(await put1.balanceOf(maker))
+      // const oTokenSupplyBefore = new BigNumber(await put1.totalSupply())
 
-      // pay protocol fee in ETH.
-      const gasPriceGWei = '50'
-      const gasPriceWei = web3.utils.toWei(gasPriceGWei, 'gwei')
-      // protocol require 70000 * gas price per fill
-      const feeAmount = new BigNumber(gasPriceWei).times(70000).toString()
+      // const data = web3.eth.abi.encodeParameters(
+      //   [
+      //     'address',
+      //     {
+      //       'Order[]': {
+      //         makerAddress: 'address',
+      //         takerAddress: 'address',
+      //         feeRecipientAddress: 'address',
+      //         senderAddress: 'address',
 
-      const actionArgs = [
-        {
-          actionType: ActionType.OpenVault,
-          owner: user1,
-          secondAddress: user1,
-          asset: ZERO_ADDR,
-          vaultId: vaultCounter,
-          amount: '0',
-          index: '0',
-          data: ZERO_ADDR,
-        },
-        {
-          actionType: ActionType.MintShortOption,
-          owner: user1,
-          secondAddress: user1,
-          asset: put1.address,
-          vaultId: vaultCounter,
-          amount: optionsToMint,
-          index: '0',
-          data: ZERO_ADDR,
-        },
-        {
-          actionType: ActionType.Call,
-          owner: user1,
-          secondAddress: callee.address,
-          asset: ZERO_ADDR,
-          vaultId: vaultCounter,
-          amount: '0',
-          index: '0',
-          data: data,
-        },
-        {
-          actionType: ActionType.DepositCollateral,
-          owner: user1,
-          secondAddress: user1,
-          asset: usdc.address,
-          vaultId: vaultCounter,
-          amount: collateralToMint,
-          index: '0',
-          data: ZERO_ADDR,
-        },
-      ]
-      // user need to approve callee function
-      // TODO: figure this out
-      // await weth.deposit({from: user1, value: feeAmount})
-      // await weth.approve(callee.address, feeAmount, {from: user1})
+      //         makerAssetAmount: 'uint256',
+      //         takerAssetAmount: 'uint256',
+      //         makerFee: 'uint256',
+      //         takerFee: 'uint256',
+      //         expirationTimeSeconds: 'uint256',
+      //         salt: 'uint256',
 
-      // one time approvals needed
-      await controllerProxy.setOperator(payableProxyAddress, true, {from: user1})
-      await usdc.approve(marginPoolAddress, LARGE_NUMBER, {from: user1})
-      await put1.approve(callee.address, LARGE_NUMBER, {from: user1})
+      //         makerAssetData: 'bytes',
+      //         takerAssetData: 'bytes',
+      //         makerFeeAssetData: 'bytes',
+      //         takerFeeAssetData: 'bytes',
+      //       },
+      //     },
+      //     'uint256[]',
+      //     'bytes[]',
+      //     'uint256[]',
+      //     'uint8[]',
+      //     'bytes32[]',
+      //     'bytes32[]',
+      //   ],
+      //   [user1, [putBid1], [optionsToMint], [putBid1Signature], [maxDeadline], [v], [r], [s]]
+      // )
 
-      await payableProxyController.operate(actionArgs, user1, {from: user1, gasPrice: gasPriceWei, value: feeAmount})
+      // // pay protocol fee in ETH.
+      // const gasPriceGWei = '50'
+      // const gasPriceWei = web3.utils.toWei(gasPriceGWei, 'gwei')
+      // // protocol require 70000 * gas price per fill
+      // const feeAmount = new BigNumber(gasPriceWei).times(70000).toString()
 
-      // keep track of owner and pool balances after
-      const user1UsdcBalanceAfter = new BigNumber(await usdc.balanceOf(user1))
-      const marginPoolUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(marginPoolAddress))
+      // const actionArgs = [
+      //   {
+      //     actionType: ActionType.OpenVault,
+      //     owner: user1,
+      //     secondAddress: user1,
+      //     asset: ZERO_ADDR,
+      //     vaultId: vaultCounter,
+      //     amount: '0',
+      //     index: '0',
+      //     data: ZERO_ADDR,
+      //   },
+      //   {
+      //     actionType: ActionType.MintShortOption,
+      //     owner: user1,
+      //     secondAddress: user1,
+      //     asset: put1.address,
+      //     vaultId: vaultCounter,
+      //     amount: optionsToMint,
+      //     index: '0',
+      //     data: ZERO_ADDR,
+      //   },
+      //   {
+      //     actionType: ActionType.Call,
+      //     owner: user1,
+      //     secondAddress: callee.address,
+      //     asset: ZERO_ADDR,
+      //     vaultId: vaultCounter,
+      //     amount: '0',
+      //     index: '0',
+      //     data: data,
+      //   },
+      //   {
+      //     actionType: ActionType.DepositCollateral,
+      //     owner: user1,
+      //     secondAddress: user1,
+      //     asset: usdc.address,
+      //     vaultId: vaultCounter,
+      //     amount: collateralToMint,
+      //     index: '0',
+      //     data: ZERO_ADDR,
+      //   },
+      // ]
+      // // user need to approve callee function
+      // // TODO: figure this out
+      // // await weth.deposit({from: user1, value: feeAmount})
+      // // await weth.approve(callee.address, feeAmount, {from: user1})
 
-      const mmBotOtokenBalanceAfter = new BigNumber(await put1.balanceOf(maker))
-      const oTokenSupplyAfter = new BigNumber(await put1.totalSupply())
+      // // one time approvals needed
+      // await controllerProxy.setOperator(payableProxyAddress, true, {from: user1})
+      // await usdc.approve(marginPoolAddress, LARGE_NUMBER, {from: user1})
+      // // await put1.approve(callee.address, LARGE_NUMBER, {from: user1})
 
-      // check balances before and after changed as expected
-      assert.equal(
-        user1UsdcBalanceBefore
-          .minus(collateralToMint)
-          .plus(premium)
-          .minus(1)
-          .toString(),
-        user1UsdcBalanceAfter.toString(),
-        "Incorrect change in owner's usdc balance",
-      )
-      assert.equal(
-        marginPoolUsdcBalanceBefore.plus(collateralToMint).toString(),
-        marginPoolUsdcBalanceAfter.toString(),
-        "Incorrect change in margin pool's usdc balance",
-      )
-      assert.equal(
-        mmBotOtokenBalanceBefore.plus(optionsToMint).toString(),
-        mmBotOtokenBalanceAfter.toString(),
-        "Incorrect change in owner's otoken balance",
-      )
-      assert.equal(
-        oTokenSupplyBefore.plus(optionsToMint).toString(),
-        oTokenSupplyAfter.toString(),
-        'Incorrect change in otoken supply',
-      )
+      // await payableProxyController.operate(actionArgs, user1, {from: user1, gasPrice: gasPriceWei, value: feeAmount})
+
+      // // keep track of owner and pool balances after
+      // const user1UsdcBalanceAfter = new BigNumber(await usdc.balanceOf(user1))
+      // const marginPoolUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(marginPoolAddress))
+
+      // const mmBotOtokenBalanceAfter = new BigNumber(await put1.balanceOf(maker))
+      // const oTokenSupplyAfter = new BigNumber(await put1.totalSupply())
+
+      // // check balances before and after changed as expected
+      // assert.equal(
+      //   user1UsdcBalanceBefore
+      //     .minus(collateralToMint)
+      //     .plus(premium)
+      //     .minus(1)
+      //     .toString(),
+      //   user1UsdcBalanceAfter.toString(),
+      //   "Incorrect change in owner's usdc balance",
+      // )
+      // assert.equal(
+      //   marginPoolUsdcBalanceBefore.plus(collateralToMint).toString(),
+      //   marginPoolUsdcBalanceAfter.toString(),
+      //   "Incorrect change in margin pool's usdc balance",
+      // )
+      // assert.equal(
+      //   mmBotOtokenBalanceBefore.plus(optionsToMint).toString(),
+      //   mmBotOtokenBalanceAfter.toString(),
+      //   "Incorrect change in owner's otoken balance",
+      // )
+      // assert.equal(
+      //   oTokenSupplyBefore.plus(optionsToMint).toString(),
+      //   oTokenSupplyAfter.toString(),
+      //   'Incorrect change in otoken supply',
+      // )
     })
 
     xit('user2 can mint + buy long + deposit long + sell the minted option', async () => {

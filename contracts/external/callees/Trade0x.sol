@@ -78,10 +78,10 @@ contract Trade0x is CalleeInterface {
             (address, IZeroXExchange.Order[], uint256[], bytes[], uint256[], uint8[], bytes32[], bytes32[])
         );
 
-        require(
-            tx.origin == trader,
-            "Trade0x: funds can only be transferred in from the person sending the transaction"
-        );
+        // require(
+        //     tx.origin == trader,
+        //     "Trade0x: funds can only be transferred in from the person sending the transaction"
+        // );
 
         for (uint256 i = 0; i < order.length; i++) {
             address takerAsset = decodeERC20Asset(order[i].takerAssetData);
@@ -96,32 +96,32 @@ contract Trade0x is CalleeInterface {
                 s[i]
             );
 
-            ERC20Interface(takerAsset).safeTransferFrom(trader, address(this), takerAssetFillAmount[i]);
-            // approve the 0x ERC20 Proxy to move fund
-            ERC20Interface(takerAsset).safeIncreaseAllowance(assetProxy, takerAssetFillAmount[i]);
+            // ERC20Interface(takerAsset).safeTransferFrom(trader, address(this), takerAssetFillAmount[i]);
+            // // approve the 0x ERC20 Proxy to move fund
+            // ERC20Interface(takerAsset).safeIncreaseAllowance(assetProxy, takerAssetFillAmount[i]);
         }
 
         // pull weth (to pay 0x) from _sender address
-        uint256 protocolFee = tx.gasprice * PORTOCAL_FEE_BASE;
-        weth.safeTransferFrom(_sender, address(this), protocolFee);
+        // uint256 protocolFee = tx.gasprice * PORTOCAL_FEE_BASE;
+        // weth.safeTransferFrom(_sender, address(this), protocolFee);
 
-        IZeroXExchange.FillResults[] memory result = exchange.batchFillOrders(order, takerAssetFillAmount, signature);
+        // IZeroXExchange.FillResults[] memory result = exchange.batchFillOrders(order, takerAssetFillAmount, signature);
 
-        for (uint256 i = 0; i < order.length; i++) {
-            // transfer swapped token to sender
-            address makerAsset = decodeERC20Asset(order[i].makerAssetData);
-            uint256 balance = ERC20Interface(makerAsset).balanceOf(address(this));
-            if (balance > 0) {
-                ERC20Interface(makerAsset).safeTransfer(trader, balance);
-            }
+        // for (uint256 i = 0; i < order.length; i++) {
+        //     // transfer swapped token to sender
+        //     address makerAsset = decodeERC20Asset(order[i].makerAssetData);
+        //     uint256 balance = ERC20Interface(makerAsset).balanceOf(address(this));
+        //     if (balance > 0) {
+        //         ERC20Interface(makerAsset).safeTransfer(trader, balance);
+        //     }
 
-            // transfer the taker asset back to the user if the order wasn't fully filled
-            address takerAsset = decodeERC20Asset(order[i].takerAssetData);
-            balance = ERC20Interface(takerAsset).balanceOf(address(this));
-            if (balance > 0) {
-                ERC20Interface(takerAsset).safeTransfer(trader, balance);
-            }
-        }
+        //     // transfer the taker asset back to the user if the order wasn't fully filled
+        //     address takerAsset = decodeERC20Asset(order[i].takerAssetData);
+        //     balance = ERC20Interface(takerAsset).balanceOf(address(this));
+        //     if (balance > 0) {
+        //         ERC20Interface(takerAsset).safeTransfer(trader, balance);
+        //     }
+        // }
     }
 
     function getTxHash(IZeroXExchange.Transaction memory transaction) external pure returns (bytes32 result) {
