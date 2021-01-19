@@ -1,6 +1,9 @@
 import {MockERC20Instance} from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
+const util = require('@0x/order-utils')
+const ethSigUtil = require('eth-sig-util')
+
 export type vault = {
   shortAmounts: (BigNumber | string | number)[]
   longAmounts: (BigNumber | string | number)[]
@@ -91,4 +94,66 @@ export const changeAmountScaled = (num: number | string, fromDecimal: number, to
   } else {
     return numBN.div(new BigNumber(10).pow(fromDecimal - toDecimal)).integerValue()
   }
+}
+
+/**
+ *
+ * @param {string} makerAsset
+ * @param {string} takerAsset
+ * @param {BigNumber} makerAssetAmount
+ * @param {BigNumber} takerAssetAmount
+ */
+export const createOrder = (
+  exchangeAddress: string,
+  makerAddress: string,
+  makerAsset: string,
+  takerAsset: string,
+  makerAssetAmount: BigNumber,
+  takerAssetAmount: BigNumber,
+) => {
+  const expiry = (Date.now() / 1000 + 240).toFixed(0)
+  const salt = (Math.random() * 1000000000000000000).toFixed(0)
+  const order = {
+    senderAddress: '0x0000000000000000000000000000000000000000',
+    makerAddress: makerAddress,
+    takerAddress: '0x0000000000000000000000000000000000000000',
+    makerFee: '0',
+    takerFee: '0',
+    makerAssetAmount: makerAssetAmount.toString(),
+    takerAssetAmount: takerAssetAmount.toString(),
+    makerAssetData: util.assetDataUtils.encodeERC20AssetData(makerAsset),
+    takerAssetData: util.assetDataUtils.encodeERC20AssetData(takerAsset),
+    salt,
+    exchangeAddress: exchangeAddress,
+    feeRecipientAddress: '0x1000000000000000000000000000000000000011',
+    expirationTimeSeconds: expiry.toString(),
+    makerFeeAssetData: '0x',
+    chainId: 1,
+    takerFeeAssetData: '0x',
+  }
+  return order
+}
+
+export const signOrder = async (privateKey: string, order: any) => {
+  const typedData = util.eip712Utils.createOrderTypedData(order)
+
+  console.log('typedData.types')
+  console.log(typedData.types)
+
+  const dataToSign = {
+    domain: typedData.domain,
+    types: typedData.types,
+    message: typedData.message,
+  }
+
+  console.log('dataToSign')
+  console.log(dataToSign)
+  console.log('dataToSign.types')
+  console.log(dataToSign.types)
+
+  const signature = ethSigUtil.signTypedMessage(privateKey, {dataToSign})
+  const v = signature.slice(-2)
+  const rs = signature.slice(2, -2)
+  order.signature = `0x${v}${rs}02`
+  return order
 }

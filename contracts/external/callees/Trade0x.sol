@@ -20,13 +20,16 @@ import {ERC20PermitUpgradeable} from "../../packages/oz/upgradeability/erc20-per
  */
 contract Trade0x is CalleeInterface {
     using SafeERC20 for ERC20Interface;
+
+    ///@dev 0x portocal fee to fill 1 order
+    uint256 private PORTOCAL_FEE_BASE = 70000;
+
     IZeroXExchange public exchange;
     ERC20Interface public weth;
+
     address public controller;
     address public assetProxy;
     address public staking;
-    ///@dev 0x portocal fee to fill 1 order
-    uint256 private PORTOCAL_FEE_BASE = 70000;
 
     constructor(
         address _exchange,
