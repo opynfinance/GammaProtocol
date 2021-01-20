@@ -134,26 +134,16 @@ export const createOrder = (
   return order
 }
 
-export const signOrder = async (privateKey: string, order: any) => {
+export const signOrder = async (signer: any, order: any) => {
   const typedData = util.eip712Utils.createOrderTypedData(order)
+  const signature = await signer._signTypedData(typedData.domain, {Order: typedData.types.Order}, typedData.message)
+  console.log('signature')
+  console.log(signature)
 
-  console.log('typedData.types')
-  console.log(typedData.types)
-
-  const dataToSign = {
-    domain: typedData.domain,
-    types: typedData.types,
-    message: typedData.message,
-  }
-
-  console.log('dataToSign')
-  console.log(dataToSign)
-  console.log('dataToSign.types')
-  console.log(dataToSign.types)
-
-  const signature = ethSigUtil.signTypedMessage(privateKey, {dataToSign})
   const v = signature.slice(-2)
   const rs = signature.slice(2, -2)
+  // reverse signature from rsv to vrs, add 02 Enum (Signature.EIP712Signature)
+  // eslint-disable-next-line no-param-reassign
   order.signature = `0x${v}${rs}02`
   return order
 }
