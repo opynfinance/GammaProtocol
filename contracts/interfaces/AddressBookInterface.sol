@@ -22,6 +22,20 @@ interface AddressBookInterface {
 
     function getAddress(bytes32 _id) external view returns (address);
 
+    function getAddresses()
+        external
+        view
+        returns (
+            address,
+            address,
+            address,
+            address,
+            address,
+            address,
+            address,
+            address
+        );
+
     /* Setters */
 
     function setOtokenImpl(address _otokenImpl) external;

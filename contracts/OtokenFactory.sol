@@ -28,8 +28,13 @@ contract OtokenFactory is OtokenSpawner {
     /// @dev max expiry that BokkyPooBahsDateTimeLibrary can handle. (2345/12/31)
     uint256 private constant MAX_EXPIRY = 11865398400;
 
+    address otokenImpl;
+
+    address whitelist;
+
     constructor(address _addressBook) public {
         addressBook = _addressBook;
+        _refreshConfigInternal();
     }
 
     /// @notice emitted when the factory creates a new Option
@@ -70,7 +75,8 @@ contract OtokenFactory is OtokenSpawner {
         bytes32 id = _getOptionId(_underlyingAsset, _strikeAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
         require(idToAddress[id] == address(0), "OtokenFactory: Option already created");
 
-        address whitelist = AddressBookInterface(addressBook).getWhitelist();
+        // address whitelist = AddressBookInterface(addressBook).getWhitelist();
+        // (address otokenImpl,, address whiteList, ,,,,) =  AddressBookInterface(addressBook).getAddresses();
         require(
             WhitelistInterface(whitelist).isWhitelistedProduct(
                 _underlyingAsset,
@@ -83,7 +89,7 @@ contract OtokenFactory is OtokenSpawner {
 
         require(!_isPut || _strikePrice > 0, "OtokenFactory: Can't create a $0 strike put option");
 
-        address otokenImpl = AddressBookInterface(addressBook).getOtokenImpl();
+        // address otokenImpl = AddressBookInterface(addressBook).getOtokenImpl();
 
         bytes memory initializationCalldata = abi.encodeWithSelector(
             OtokenInterface(otokenImpl).init.selector,
@@ -165,7 +171,7 @@ contract OtokenFactory is OtokenSpawner {
         uint256 _expiry,
         bool _isPut
     ) external view returns (address) {
-        address otokenImpl = AddressBookInterface(addressBook).getOtokenImpl();
+        // address otokenImpl = AddressBookInterface(addressBook).getOtokenImpl();
 
         bytes memory initializationCalldata = abi.encodeWithSelector(
             OtokenInterface(otokenImpl).init.selector,
@@ -202,5 +208,19 @@ contract OtokenFactory is OtokenSpawner {
             keccak256(
                 abi.encodePacked(_underlyingAsset, _strikeAsset, _collateralAsset, _strikePrice, _expiry, _isPut)
             );
+    }
+
+    /**
+     * @dev updates the configuration
+     */
+    function refreshConfiguration() external {
+        _refreshConfigInternal();
+    }
+
+    /**
+     * @dev updates the internal configuration
+     */
+    function _refreshConfigInternal() internal {
+        (otokenImpl, , whitelist, , , , , ) = AddressBookInterface(addressBook).getAddresses();
     }
 }

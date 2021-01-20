@@ -182,6 +182,35 @@ contract AddressBook is Ownable {
     }
 
     /**
+     * @notice return all configured addresses
+     */
+    function getAddresses()
+        public
+        view
+        returns (
+            address,
+            address,
+            address,
+            address,
+            address,
+            address,
+            address,
+            address
+        )
+    {
+        return (
+            getAddress(OTOKEN_IMPL),
+            getAddress(OTOKEN_FACTORY),
+            getAddress(WHITELIST),
+            getAddress(CONTROLLER),
+            getAddress(MARGIN_POOL),
+            getAddress(MARGIN_CALCULATOR),
+            getAddress(LIQUIDATION_MANAGER),
+            getAddress(ORACLE)
+        );
+    }
+
+    /**
      * @notice set a specific address for a specific key
      * @dev can only be called by the addressbook owner
      * @param _key key

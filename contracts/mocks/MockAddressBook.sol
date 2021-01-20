@@ -10,6 +10,7 @@ contract MockAddressBook {
     address private _oracleImpl;
     address private _calculatorImpl;
     address private _marginPool;
+    address private _liquidationManager;
 
     function setOtokenImpl(address _newImpl) external {
         _otokenImpl = _newImpl;
@@ -39,6 +40,10 @@ contract MockAddressBook {
         _marginPool = _pool;
     }
 
+    function setLiquidationManager(address _liqManager) external {
+        _liquidationManager = _liqManager;
+    }
+
     function getOtokenImpl() external view returns (address) {
         return _otokenImpl;
     }
@@ -65,5 +70,35 @@ contract MockAddressBook {
 
     function getMarginPool() external view returns (address) {
         return _marginPool;
+    }
+
+    function getLiquidationManager() external view returns (address) {
+        return _liquidationManager;
+    }
+
+    function getAddresses()
+        public
+        view
+        returns (
+            address,
+            address,
+            address,
+            address,
+            address,
+            address,
+            address,
+            address
+        )
+    {
+        return (
+            _otokenImpl,
+            _otokenFactoryImpl,
+            _whitelist,
+            _controllerImpl,
+            _marginPool,
+            _calculatorImpl,
+            _liquidationManager,
+            _oracleImpl
+        );
     }
 }

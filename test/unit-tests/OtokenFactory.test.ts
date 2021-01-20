@@ -297,6 +297,7 @@ contract('OTokenFactory', ([user1, user2, controller]) => {
     it('Should revert on token creation', async () => {
       // Set the otoken Impl contract to a wrong address
       await addressBook.setOtokenImpl(otokenFactory.address)
+      await otokenFactory.refreshConfiguration()
       // Try to create a 250 strike (use the 200 strike will throw "Option Created" error first.)
       const newStrikePrice = 250
       await expectRevert(
