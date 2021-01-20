@@ -75,8 +75,6 @@ contract OtokenFactory is OtokenSpawner {
         bytes32 id = _getOptionId(_underlyingAsset, _strikeAsset, _collateralAsset, _strikePrice, _expiry, _isPut);
         require(idToAddress[id] == address(0), "OtokenFactory: Option already created");
 
-        // address whitelist = AddressBookInterface(addressBook).getWhitelist();
-        // (address otokenImpl,, address whiteList, ,,,,) =  AddressBookInterface(addressBook).getAddresses();
         require(
             WhitelistInterface(whitelist).isWhitelistedProduct(
                 _underlyingAsset,
@@ -88,8 +86,6 @@ contract OtokenFactory is OtokenSpawner {
         );
 
         require(!_isPut || _strikePrice > 0, "OtokenFactory: Can't create a $0 strike put option");
-
-        // address otokenImpl = AddressBookInterface(addressBook).getOtokenImpl();
 
         bytes memory initializationCalldata = abi.encodeWithSelector(
             OtokenInterface(otokenImpl).init.selector,
@@ -171,8 +167,6 @@ contract OtokenFactory is OtokenSpawner {
         uint256 _expiry,
         bool _isPut
     ) external view returns (address) {
-        // address otokenImpl = AddressBookInterface(addressBook).getOtokenImpl();
-
         bytes memory initializationCalldata = abi.encodeWithSelector(
             OtokenInterface(otokenImpl).init.selector,
             addressBook,
