@@ -1,4 +1,4 @@
-// mainnet fork
+// mainnet fork for 0x trading through 0xCallee
 import {
   Trade0xInstance,
   MockERC20Instance,
@@ -150,6 +150,7 @@ contract('Callee contract test', async ([deployer, user2]) => {
   let usdc: MockERC20Instance
   let weth: WETH9Instance
   let addressbook: AddressBookInstance
+  let otoken: OtokenInstance
   let otokenFactory: OtokenFactoryInstance
   let calculator: MarginCalculatorInstance
   let whitelist: WhitelistInstance
@@ -181,6 +182,10 @@ contract('Callee contract test', async ([deployer, user2]) => {
     whitelist = await Whitelist.new(addressbook.address)
     // otoken factory
     otokenFactory = await OtokenFactory.new(addressbook.address)
+    // Otoken implementation
+    otoken = await Otoken.new()
+    // set Otoken impl in addressbook
+    await addressbook.setOtokenImpl(otoken.address)
     // set margin pool in addressbook
     await addressbook.setMarginPool(marginPool.address)
     // set calculator in addressbook
@@ -228,7 +233,6 @@ contract('Callee contract test', async ([deployer, user2]) => {
     expiryDate.setUTCMinutes(0)
     expiryDate.setUTCSeconds(0)
 
-    console.log(expiryDate.getTime())
     expiry = new BigNumber(Math.floor(expiryDate.getTime() / 1000))
 
     // deploy options
@@ -249,7 +253,21 @@ contract('Callee contract test', async ([deployer, user2]) => {
   describe('Configuration', async () => {
     it('verify deployment', async () => {
       const proxy = await trade0xCallee.assetProxy()
-      assert.equal(proxy.toLowerCase(), ERC20PROXY_ADDR.toLowerCase())
+      assert.equal(proxy.toLowerCase(), ERC20PROXY_ADDR.toLowerCase(), 'Asset proxy address mismatch')
+
+      assert.equal(await whitelist.isWhitelistedCollateral(usdc.address), true, 'USDC collateral not whitelisted')
+      assert.equal(await whitelist.isWhitelistedCollateral(weth.address), true, 'WETH collateral not whitelisted')
+      assert.equal(await whitelist.isWhitelistedCallee(trade0xCallee.address), true, '0x trade callee not whitelisted')
+      assert.equal(
+        await whitelist.isWhitelistedProduct(weth.address, usdc.address, usdc.address, true),
+        true,
+        'WETH-USDC-USDC-PUT product not whitelisted',
+      )
+      assert.equal(
+        await whitelist.isWhitelistedProduct(weth.address, usdc.address, weth.address, false),
+        true,
+        'WETH-USDC-WETH-CALL product not whitelisted',
+      )
     })
   })
 
@@ -263,6 +281,7 @@ contract('Callee contract test', async ([deployer, user2]) => {
       //   6,
       // )
 
+      // create order to sell put1 for USDC
       const order = createOrder(
         exchange.address,
         user1.address,
@@ -271,31 +290,121 @@ contract('Callee contract test', async ([deployer, user2]) => {
         new BigNumber(optionsToMint),
         new BigNumber(0),
       )
-      const signedOrder = signOrder(user1, order)
+      const signedOrder = await signOrder(user1, order)
 
-      // const nonce = (await put1.nonces(user1)).toNumber()
-      // const version = '1'
-      // const chainId = 1
-      // const name = await put1.name()
-      // // const maxDeadline = MAX_UINT256;
-      // const maxDeadline = new BigNumber(await time.latest()).plus(60 * 60 * 24).toString()
+      const nonce = (await put1.nonces(user1.address)).toNumber()
+      const version = '1'
+      const chainId = 1
+      const name = await put1.name()
+      const maxDeadline = new BigNumber(await time.latest()).plus(60 * 60 * 24).toString()
 
-      // const buildData = (chainId: number, verifyingContract: string, owner: string, spender: string, value: BN, deadline = maxDeadline) => ({
-      //   primaryType: 'Permit',
-      //   types: {EIP712Domain, Permit},
-      //   domain: {name, version, chainId, verifyingContract},
-      //   message: {owner, spender, value, nonce, deadline},
-      // })
+      const buildData = (
+        chainId: number,
+        verifyingContract: string,
+        owner: string,
+        spender: string,
+        value: BN,
+        deadline = maxDeadline,
+      ) => ({
+        primaryType: 'Permit',
+        types: {EIP712Domain, Permit},
+        domain: {name, version, chainId, verifyingContract},
+        message: {owner, spender, value, nonce, deadline},
+      })
+      const data = buildData(chainId, put1.address, user1.address, trade0xCallee.address, new BN(optionsToMint))
+      const wallet = Wallet.fromPrivateKey(Buffer.from(user1._signingKey().privateKey.substring(2, 66), 'hex'))
+      const signature = ethSigUtil.signTypedMessage(wallet.getPrivateKey(), {data})
+      const {v, r, s} = fromRpcSig(signature)
 
-      // console.log(chainId)
-      // console.log(user1.address)
+      console.log('signed order')
+      console.log(signedOrder)
 
-      // const dataToSign = buildData(chainId, put1.address, user1.address, trade0xCallee.address, new BN(optionsToMint))
+      const callData = web3.eth.abi.encodeParameters(
+        [
+          'address',
+          {
+            'Order[]': {
+              makerAddress: 'address',
+              takerAddress: 'address',
+              feeRecipientAddress: 'address',
+              senderAddress: 'address',
+              makerAssetAmount: 'uint256',
+              takerAssetAmount: 'uint256',
+              makerFee: 'uint256',
+              takerFee: 'uint256',
+              expirationTimeSeconds: 'uint256',
+              salt: 'uint256',
+              makerAssetData: 'bytes',
+              takerAssetData: 'bytes',
+              makerFeeAssetData: 'bytes',
+              takerFeeAssetData: 'bytes',
+            },
+          },
+          'uint256[]',
+          'bytes[]',
+          'uint256[]',
+          'uint8[]',
+          'bytes32[]',
+          'bytes32[]',
+        ],
+        [user2, [order], [optionsToMint], [signedOrder.signature], [maxDeadline], [v], [r], [s]],
+      )
 
-      // console.log(dataToSign)
-      // const signature = ethSigUtil.signTypedMessage(user1.privateKey, {dataToSign})
-      // console.log(signature)
-      // const {v, r, s} = fromRpcSig(signature)
+      const actionArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: user1,
+          secondAddress: user1,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounter,
+          amount: '0',
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.MintShortOption,
+          owner: user1,
+          secondAddress: user1,
+          asset: put1.address,
+          vaultId: vaultCounter,
+          amount: optionsToMint,
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.Call,
+          owner: user1,
+          secondAddress: trade0xCallee.address,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounter,
+          amount: '0',
+          index: '0',
+          data: data,
+        },
+        {
+          actionType: ActionType.DepositCollateral,
+          owner: user1,
+          secondAddress: user1,
+          asset: usdc.address,
+          vaultId: vaultCounter,
+          amount: collateralToMint,
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+
+      // pay protocol fee in ETH.
+      const gasPriceGWei = '50'
+      const gasPriceWei = web3.utils.toWei(gasPriceGWei, 'gwei')
+      // protocol require 70000 * gas price per fill
+      const feeAmount = new BigNumber(gasPriceWei).times(70000).toString()
+
+      // await weth.deposit({from: user1, value: feeAmount})
+      // await weth.approve(callee.address, feeAmount, {from: user1})
+
+      // await controllerProxy.setOperator(payableProxyController.address, true, {from: user1.address})
+      // await usdc.approve(marginPoolAddress, LARGE_NUMBER, {from: user1})
+      // await put1.approve(callee.address, LARGE_NUMBER, {from: user1})
     })
   })
 })

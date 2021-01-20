@@ -127,9 +127,9 @@ export const createOrder = (
     exchangeAddress: exchangeAddress,
     feeRecipientAddress: '0x1000000000000000000000000000000000000011',
     expirationTimeSeconds: expiry.toString(),
-    makerFeeAssetData: '0x',
+    makerFeeAssetData: '0x0000000000000000000000000000000000000000',
     chainId: 1,
-    takerFeeAssetData: '0x',
+    takerFeeAssetData: '0x0000000000000000000000000000000000000000',
   }
   return order
 }
@@ -137,8 +137,6 @@ export const createOrder = (
 export const signOrder = async (signer: any, order: any) => {
   const typedData = util.eip712Utils.createOrderTypedData(order)
   const signature = await signer._signTypedData(typedData.domain, {Order: typedData.types.Order}, typedData.message)
-  console.log('signature')
-  console.log(signature)
 
   const v = signature.slice(-2)
   const rs = signature.slice(2, -2)
