@@ -21,7 +21,7 @@ const ethers = require('ethers')
 const {fromRpcSig} = require('ethereumjs-util')
 const ethSigUtil = require('eth-sig-util')
 const Wallet = require('ethereumjs-wallet').default
-const {BN, time, ADDRESS_ZERO} = require('@openzeppelin/test-helpers')
+const {BN, time} = require('@openzeppelin/test-helpers')
 
 const {EIP712Domain, domainSeparator} = require('../eip712')
 
@@ -145,7 +145,7 @@ const Permit = [
 const LARGE_NUMBER = createTokenAmount(10, 27)
 const expiryTime = new BigNumber(60 * 60 * 24) // after 1 day
 
-contract('Callee contract test', async ([deployer, user2]) => {
+contract('Callee contract test', async ([deployer, user2, marketMaker]) => {
   let exchange: IZeroXExchangeInstance
   let usdc: MockERC20Instance
   let weth: WETH9Instance
@@ -165,9 +165,14 @@ contract('Callee contract test', async ([deployer, user2]) => {
   // const wallet = Wallet.generate()
   // const user1 = wallet.getAddressString()
 
+  // private keys from local-ganache, do not change nor change the addresses order above
   const user1PrivateKey = '0xb0057716d5917badaf911b193b12b910811c1497b5bada8d7711f758981c3773'
-  // const user1 = ethers.Wallet.createRandom()
+  const marketMakerPrivateKey = '0x6370fd033278c143179d81c5526140625662b8daa446c22ee2d73db3707e620c'
+
   const user1 = new ethers.Wallet(user1PrivateKey)
+
+  const usdcDecimals = 6
+  const wethDecimals = 18
 
   before('Deploy protocol', async () => {
     // setup contracts
@@ -277,29 +282,34 @@ contract('Callee contract test', async ([deployer, user2]) => {
     it('user1 can mint + sell a 640 strike put option', async () => {
       const vaultCounter = 1
       const optionsToMint = createTokenAmount(1, 8)
-      const collateralToMint = createTokenAmount(640, 6)
+      const collateralToDeposit = createTokenAmount(640, 6)
       // const premium = createTokenAmount(
       //   new BigNumber(putBid1.makerAssetAmount).div(putBid1.takerAssetAmount).times(100),
       //   6,
       // )
 
-      // create order to sell put1 for USDC
+      // marketMaker signer
+      const marketMakerSigner = new ethers.Wallet(marketMakerPrivateKey)
+      // make order
       const order = createOrder(
         exchange.address,
-        user1.address,
+        marketMaker,
+        usdc.address,
         put1.address,
-        ZERO_ADDR,
+        new BigNumber(createTokenAmount(1, 6)),
         new BigNumber(optionsToMint),
-        new BigNumber(0),
       )
-      const signedOrder = await signOrder(user1, order)
+      const signedOrder = await signOrder(marketMakerSigner, order)
 
+      console.log('Signed order')
+      console.log(signedOrder)
+
+      // sign permit() for put1 transfer
       const nonce = (await put1.nonces(user1.address)).toNumber()
       const version = '1'
       const chainId = 1
       const name = await put1.name()
       const maxDeadline = new BigNumber(await time.latest()).plus(60 * 60 * 24).toString()
-
       const buildData = (
         chainId: number,
         verifyingContract: string,
@@ -317,9 +327,6 @@ contract('Callee contract test', async ([deployer, user2]) => {
       const wallet = Wallet.fromPrivateKey(Buffer.from(user1._signingKey().privateKey.substring(2, 66), 'hex'))
       const signature = ethSigUtil.signTypedMessage(wallet.getPrivateKey(), {data})
       const {v, r, s} = fromRpcSig(signature)
-
-      console.log('signed order')
-      console.log(signedOrder)
 
       const callData = web3.eth.abi.encodeParameters(
         [
@@ -349,14 +356,14 @@ contract('Callee contract test', async ([deployer, user2]) => {
           'bytes32[]',
           'bytes32[]',
         ],
-        [user2, [order], [optionsToMint], [signedOrder.signature], [maxDeadline], [v], [r], [s]],
+        [user1.address, [order], [optionsToMint], [signedOrder.signature], [maxDeadline], [v], [r], [s]],
       )
 
       const actionArgs = [
         {
           actionType: ActionType.OpenVault,
-          owner: user1,
-          secondAddress: user1,
+          owner: user1.address,
+          secondAddress: ZERO_ADDR,
           asset: ZERO_ADDR,
           vaultId: vaultCounter,
           amount: '0',
@@ -365,8 +372,8 @@ contract('Callee contract test', async ([deployer, user2]) => {
         },
         {
           actionType: ActionType.MintShortOption,
-          owner: user1,
-          secondAddress: user1,
+          owner: user1.address,
+          secondAddress: user1.address,
           asset: put1.address,
           vaultId: vaultCounter,
           amount: optionsToMint,
@@ -375,21 +382,21 @@ contract('Callee contract test', async ([deployer, user2]) => {
         },
         {
           actionType: ActionType.Call,
-          owner: user1,
+          owner: user1.address,
           secondAddress: trade0xCallee.address,
           asset: ZERO_ADDR,
           vaultId: vaultCounter,
           amount: '0',
           index: '0',
-          data: data,
+          data: callData,
         },
         {
           actionType: ActionType.DepositCollateral,
-          owner: user1,
-          secondAddress: user1,
+          owner: user1.address,
+          secondAddress: user1.address,
           asset: usdc.address,
           vaultId: vaultCounter,
-          amount: collateralToMint,
+          amount: collateralToDeposit,
           index: '0',
           data: ZERO_ADDR,
         },
@@ -405,8 +412,21 @@ contract('Callee contract test', async ([deployer, user2]) => {
       // await weth.approve(callee.address, feeAmount, {from: user1})
 
       await controllerProxy.setOperator(payableProxyController.address, true, {from: user1.address})
-      // await usdc.approve(marginPoolAddress, LARGE_NUMBER, {from: user1})
-      // await put1.approve(callee.address, LARGE_NUMBER, {from: user1})
+      await usdc.approve(marginPool.address, collateralToDeposit, {from: user1.address})
+      // await put1.approve(trade0xCallee.address, optionsToMint, {from: user1})
+
+      await payableProxyController.operate(actionArgs, user1.address, {
+        from: user1.address,
+        gasPrice: gasPriceWei,
+        value: feeAmount,
+      })
+
+      const user1UsdcBalanceAfter = new BigNumber(await usdc.balanceOf(user1.address))
+      const marginPoolUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+      const user1Put1BalanceAfter = new BigNumber(await put1.balanceOf(user1.address))
+      const oTokenSupplyAfter = new BigNumber(await put1.totalSupply())
+
+      console.log(user1UsdcBalanceAfter.toString())
     })
   })
 })

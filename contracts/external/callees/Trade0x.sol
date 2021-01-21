@@ -110,21 +110,21 @@ contract Trade0x is CalleeInterface {
 
         IZeroXExchange.FillResults[] memory result = exchange.batchFillOrders(order, takerAssetFillAmount, signature);
 
-        for (uint256 i = 0; i < order.length; i++) {
-            //     // transfer swapped token to sender
-            address makerAsset = decodeERC20Asset(order[i].makerAssetData);
-            uint256 balance = ERC20Interface(makerAsset).balanceOf(address(this));
-            if (balance > 0) {
-                ERC20Interface(makerAsset).safeTransfer(trader, balance);
-            }
+        // for (uint256 i = 0; i < order.length; i++) {
+        //     // transfer swapped token to sender
+        //     address makerAsset = decodeERC20Asset(order[i].makerAssetData);
+        //     uint256 balance = ERC20Interface(makerAsset).balanceOf(address(this));
+        //     if (balance > 0) {
+        //         ERC20Interface(makerAsset).safeTransfer(trader, balance);
+        //     }
 
-            //     // transfer the taker asset back to the user if the order wasn't fully filled
-            address takerAsset = decodeERC20Asset(order[i].takerAssetData);
-            balance = ERC20Interface(takerAsset).balanceOf(address(this));
-            if (balance > 0) {
-                ERC20Interface(takerAsset).safeTransfer(trader, balance);
-            }
-        }
+        //     // transfer the taker asset back to the user if the order wasn't fully filled
+        //     address takerAsset = decodeERC20Asset(order[i].takerAssetData);
+        //     balance = ERC20Interface(takerAsset).balanceOf(address(this));
+        //     if (balance > 0) {
+        //         ERC20Interface(takerAsset).safeTransfer(trader, balance);
+        //     }
+        // }
     }
 
     function getTxHash(IZeroXExchange.Transaction memory transaction) external pure returns (bytes32 result) {
