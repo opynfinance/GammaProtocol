@@ -540,6 +540,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         require(_args.vaultId == vaultId, "Controller: can not run actions on inexistent vault");
 
         accountVaultCounter[_args.owner] = vaultId;
+
+        emit VaultOpened(_args.owner, vaultId);
     }
 
     /**
