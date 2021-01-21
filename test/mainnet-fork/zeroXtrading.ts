@@ -165,7 +165,9 @@ contract('Callee contract test', async ([deployer, user2]) => {
   // const wallet = Wallet.generate()
   // const user1 = wallet.getAddressString()
 
-  const user1 = ethers.Wallet.createRandom()
+  const user1PrivateKey = '0xb0057716d5917badaf911b193b12b910811c1497b5bada8d7711f758981c3773'
+  // const user1 = ethers.Wallet.createRandom()
+  const user1 = new ethers.Wallet(user1PrivateKey)
 
   before('Deploy protocol', async () => {
     // setup contracts
@@ -402,7 +404,7 @@ contract('Callee contract test', async ([deployer, user2]) => {
       // await weth.deposit({from: user1, value: feeAmount})
       // await weth.approve(callee.address, feeAmount, {from: user1})
 
-      // await controllerProxy.setOperator(payableProxyController.address, true, {from: user1.address})
+      await controllerProxy.setOperator(payableProxyController.address, true, {from: user1.address})
       // await usdc.approve(marginPoolAddress, LARGE_NUMBER, {from: user1})
       // await put1.approve(callee.address, LARGE_NUMBER, {from: user1})
     })
