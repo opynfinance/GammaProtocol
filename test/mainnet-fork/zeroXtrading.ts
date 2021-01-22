@@ -1,5 +1,6 @@
 // mainnet fork for 0x trading through 0xCallee
 import {
+  PermitCalleeInstance,
   Trade0xInstance,
   MockERC20Instance,
   OtokenInstance,
@@ -39,6 +40,7 @@ const Whitelist = artifacts.require('Whitelist.sol')
 const Controller = artifacts.require('Controller.sol')
 const PayableProxyController = artifacts.require('PayableProxyController.sol')
 const Trade0x = artifacts.require('Trade0x')
+const PermitCallee = artifacts.require('PermitCallee')
 
 /**
  * Mainnet Addresses
@@ -159,6 +161,7 @@ contract('Callee contract test', async ([deployer, user2, marketMaker]) => {
   let controllerProxy: ControllerInstance
   let payableProxyController: PayableProxyControllerInstance
   let trade0xCallee: Trade0xInstance
+  let permitCallee: PermitCalleeInstance
   let put1: OtokenInstance
   let put2: OtokenInstance
 
@@ -226,11 +229,13 @@ contract('Callee contract test', async ([deployer, user2, marketMaker]) => {
         from: deployer,
       },
     )
+    permitCallee = await PermitCallee.new()
 
     // whitelist collateral
     await whitelist.whitelistCollateral(usdc.address)
     await whitelist.whitelistCollateral(weth.address)
     await whitelist.whitelistCallee(trade0xCallee.address)
+    await whitelist.whitelistCallee(permitCallee.address)
     await whitelist.whitelistProduct(weth.address, usdc.address, usdc.address, true)
     await whitelist.whitelistProduct(weth.address, usdc.address, weth.address, false)
 
@@ -328,11 +333,16 @@ contract('Callee contract test', async ([deployer, user2, marketMaker]) => {
       const signature = ethSigUtil.signTypedMessage(wallet.getPrivateKey(), {data})
       const {v, r, s} = fromRpcSig(signature)
 
-      const callData = web3.eth.abi.encodeParameters(
+      const permitCallData = web3.eth.abi.encodeParameters(
+        ['address', 'address', 'address', 'uint256', 'uint256', 'uint8', 'bytes32', 'bytes32'],
+        [put1.address, user1.address, trade0xCallee.address, optionsToMint, maxDeadline, v, r, s],
+      )
+
+      const tradeCallData = web3.eth.abi.encodeParameters(
         [
           'address',
           {
-            'Order[]': {
+            Order: {
               makerAddress: 'address',
               takerAddress: 'address',
               feeRecipientAddress: 'address',
@@ -349,14 +359,10 @@ contract('Callee contract test', async ([deployer, user2, marketMaker]) => {
               takerFeeAssetData: 'bytes',
             },
           },
-          'uint256[]',
-          'bytes[]',
-          'uint256[]',
-          'uint8[]',
-          'bytes32[]',
-          'bytes32[]',
+          'uint256',
+          'bytes',
         ],
-        [user1.address, [order], [optionsToMint], [signedOrder.signature], [maxDeadline], [v], [r], [s]],
+        [user1.address, order, optionsToMint, signedOrder.signature],
       )
 
       const actionArgs = [
@@ -383,12 +389,22 @@ contract('Callee contract test', async ([deployer, user2, marketMaker]) => {
         {
           actionType: ActionType.Call,
           owner: user1.address,
+          secondAddress: permitCallee.address,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounter,
+          amount: '0',
+          index: '0',
+          data: permitCallData,
+        },
+        {
+          actionType: ActionType.Call,
+          owner: user1.address,
           secondAddress: trade0xCallee.address,
           asset: ZERO_ADDR,
           vaultId: vaultCounter,
           amount: '0',
           index: '0',
-          data: callData,
+          data: tradeCallData,
         },
         {
           actionType: ActionType.DepositCollateral,
@@ -413,7 +429,6 @@ contract('Callee contract test', async ([deployer, user2, marketMaker]) => {
 
       await controllerProxy.setOperator(payableProxyController.address, true, {from: user1.address})
       await usdc.approve(marginPool.address, collateralToDeposit, {from: user1.address})
-      // await put1.approve(trade0xCallee.address, optionsToMint, {from: user1})
 
       await payableProxyController.operate(actionArgs, user1.address, {
         from: user1.address,
@@ -427,6 +442,7 @@ contract('Callee contract test', async ([deployer, user2, marketMaker]) => {
       const oTokenSupplyAfter = new BigNumber(await put1.totalSupply())
 
       console.log(user1UsdcBalanceAfter.toString())
+      console.log(new BigNumber(await put1.balanceOf(trade0xCallee.address)).toString())
     })
   })
 })

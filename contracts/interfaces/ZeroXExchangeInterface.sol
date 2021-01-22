@@ -1,14 +1,13 @@
 /**
  * SPDX-License-Identifier: UNLICENSED
  */
-
 pragma solidity 0.6.10;
+
 pragma experimental ABIEncoderV2;
 
 /**
  * @dev ZeroX Exchange contract interface.
  */
-
 interface IZeroXExchange {
     // solhint-disable max-line-length
     /// @dev Canonical order structure.

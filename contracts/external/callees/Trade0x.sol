@@ -67,48 +67,41 @@ contract Trade0x is CalleeInterface {
     }
 
     function _directlyTrade(address payable _sender, bytes memory _data) internal {
-        (
-            address trader,
-            IZeroXExchange.Order[] memory order,
-            uint256[] memory takerAssetFillAmount,
-            bytes[] memory signature,
-            uint256[] memory deadlines,
-            uint8[] memory v,
-            bytes32[] memory r,
-            bytes32[] memory s
-        ) = abi.decode(
-            _data,
-            (address, IZeroXExchange.Order[], uint256[], bytes[], uint256[], uint8[], bytes32[], bytes32[])
-        );
+        (address trader, IZeroXExchange.Order memory order, uint256 takerAssetFillAmount, bytes memory signature) = abi
+            .decode(_data, (address, IZeroXExchange.Order, uint256, bytes));
 
         require(
             tx.origin == trader,
             "Trade0x: funds can only be transferred in from the person sending the transaction"
         );
 
-        for (uint256 i = 0; i < order.length; i++) {
-            address takerAsset = decodeERC20Asset(order[i].takerAssetData);
-            // pull token from user
-            ERC20PermitUpgradeable(takerAsset).permit(
-                trader,
-                address(this),
-                takerAssetFillAmount[i],
-                deadlines[i],
-                v[i],
-                r[i],
-                s[i]
-            );
+        // for (uint256 i = 0; i < order.length; i++) {
+        //     address takerAsset = decodeERC20Asset(order[i].takerAssetData);
+        //     // transfer takerAsset from trader to this contract
+        //     ERC20Interface(takerAsset).safeTransferFrom(trader, address(this), takerAssetFillAmount[i]);
+        //     // approe the 0x ERC20 Proxy to transfer takerAsset from this contract
+        //     ERC20Interface(takerAsset).safeIncreaseAllowance(assetProxy, takerAssetFillAmount[i]);
+        // }
 
-            ERC20Interface(takerAsset).safeTransferFrom(trader, address(this), takerAssetFillAmount[i]);
-            // approve the 0x ERC20 Proxy to move fund
-            ERC20Interface(takerAsset).safeIncreaseAllowance(assetProxy, takerAssetFillAmount[i]);
-        }
+        address takerAsset = decodeERC20Asset(order.takerAssetData);
+
+        // just for test, will remove later
+        require(
+            ERC20Interface(takerAsset).allowance(trader, address(this)) == takerAssetFillAmount,
+            "approve not working man!"
+        );
+
+        // transfer takerAsset from taker address to this contract
+        ERC20Interface(takerAsset).safeTransferFrom(trader, address(this), takerAssetFillAmount);
+        // approe the 0x ERC20 Proxy to transfer takerAsset from this contract
+        ERC20Interface(takerAsset).safeIncreaseAllowance(assetProxy, takerAssetFillAmount);
 
         // pull weth (to pay 0x) from _sender address
         uint256 protocolFee = tx.gasprice * PORTOCAL_FEE_BASE;
         weth.safeTransferFrom(_sender, address(this), protocolFee);
 
-        IZeroXExchange.FillResults[] memory result = exchange.batchFillOrders(order, takerAssetFillAmount, signature);
+        IZeroXExchange.FillResults memory result = exchange.fillOrder(order, takerAssetFillAmount, signature);
+        // IZeroXExchange.FillResults[] memory result = exchange.batchFillOrders(order, takerAssetFillAmount, signature);
 
         // for (uint256 i = 0; i < order.length; i++) {
         //     // transfer swapped token to sender
