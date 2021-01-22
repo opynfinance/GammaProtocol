@@ -345,7 +345,7 @@ contract('Callee contract test', async ([deployer, user2, marketMaker]) => {
         [
           'address',
           {
-            Order: {
+            'Order[]': {
               makerAddress: 'address',
               takerAddress: 'address',
               feeRecipientAddress: 'address',
@@ -362,10 +362,10 @@ contract('Callee contract test', async ([deployer, user2, marketMaker]) => {
               takerFeeAssetData: 'bytes',
             },
           },
-          'uint256',
-          'bytes',
+          'uint256[]',
+          'bytes[]',
         ],
-        [user1.address, signedOrder, optionsToMint, signedOrder.signature],
+        [user1.address, [signedOrder], [optionsToMint], [signedOrder.signature]],
       )
 
       const actionArgs = [
@@ -426,9 +426,6 @@ contract('Callee contract test', async ([deployer, user2, marketMaker]) => {
       const gasPriceWei = web3.utils.toWei(gasPriceGWei, 'gwei')
       // protocol require 70000 * gas price per fill
       const feeAmount = new BigNumber(gasPriceWei).times(70000).toString()
-
-      // await weth.deposit({from: user1, value: feeAmount})
-      // await weth.approve(callee.address, feeAmount, {from: user1})
 
       await controllerProxy.setOperator(payableProxyController.address, true, {from: user1.address})
       await usdc.approve(marginPool.address, collateralToDeposit, {from: user1.address})
