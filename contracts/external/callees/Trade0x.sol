@@ -100,6 +100,9 @@ contract Trade0x is CalleeInterface {
         uint256 protocolFee = tx.gasprice * PORTOCAL_FEE_BASE;
         weth.safeTransferFrom(_sender, address(this), protocolFee);
 
+        // for test, will remove it later
+        require(exchange.isValidOrderSignature(order, signature), "order signature not valid");
+
         IZeroXExchange.FillResults memory result = exchange.fillOrder(order, takerAssetFillAmount, signature);
         // IZeroXExchange.FillResults[] memory result = exchange.batchFillOrders(order, takerAssetFillAmount, signature);
 

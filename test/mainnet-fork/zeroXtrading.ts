@@ -306,6 +306,9 @@ contract('Callee contract test', async ([deployer, user2, marketMaker]) => {
       )
       const signedOrder = await signOrder(marketMakerSigner, order)
 
+      console.log('order')
+      console.log(order)
+
       console.log('Signed order')
       console.log(signedOrder)
 
@@ -362,7 +365,7 @@ contract('Callee contract test', async ([deployer, user2, marketMaker]) => {
           'uint256',
           'bytes',
         ],
-        [user1.address, order, optionsToMint, signedOrder.signature],
+        [user1.address, signedOrder, optionsToMint, signedOrder.signature],
       )
 
       const actionArgs = [

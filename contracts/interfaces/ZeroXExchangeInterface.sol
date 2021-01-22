@@ -81,4 +81,10 @@ interface IZeroXExchange {
         external
         view
         returns (bool isValid);
+
+    /// @dev Verifies that a signature for an order is valid.
+    /// @param order The order.
+    /// @param signature Proof that the order has been signed by signer.
+    /// @return isValid `true` if the signature is valid for the given order and signer.
+    function isValidOrderSignature(Order memory order, bytes memory signature) external view returns (bool isValid);
 }
