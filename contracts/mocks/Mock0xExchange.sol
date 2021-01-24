@@ -29,11 +29,22 @@ contract Mock0xExchange {
         IZeroXExchange.Order memory _order,
         uint256 _takerAssetFillAmount,
         bytes memory _signature
-    ) external payable returns (IZeroXExchange.FillResults memory fillResults) {
+    ) public payable returns (IZeroXExchange.FillResults memory fillResults) {
         takerAmount = _order.takerAssetAmount;
         makerAmount = _order.makerAssetAmount;
         signature = _signature;
         fillAmount = _takerAssetFillAmount;
+        return IZeroXExchange.FillResults(0, 0, 0, 0, 0);
+    }
+
+    function batchFillOrders(
+        IZeroXExchange.Order[] memory _orders,
+        uint256[] memory _takerAssetFillAmounts,
+        bytes[] memory _signatures
+    ) external payable returns (IZeroXExchange.FillResults memory fillResults) {
+        for (uint256 i = 0; i < _orders.length; i++) {
+            fillOrder(_orders[i], _takerAssetFillAmounts[i], _signatures[i]);
+        }
         return IZeroXExchange.FillResults(0, 0, 0, 0, 0);
     }
 }

@@ -82,14 +82,14 @@ contract Trade0x is CalleeInterface {
         for (uint256 i = 0; i < order.length; i++) {
             address takerAsset = decodeERC20Asset(order[i].takerAssetData);
 
-            // just for test, will remove later
-            require(
-                ERC20Interface(takerAsset).allowance(trader, address(this)) == takerAssetFillAmount[i],
-                "approve not working man!"
-            );
+            // // just for test, will remove later
+            // require(
+            //     ERC20Interface(takerAsset).allowance(trader, address(this)) == takerAssetFillAmount[i],
+            //     "approve not working man!"
+            // );
 
-            // for test, will remove it later
-            require(exchange.isValidOrderSignature(order[i], signature[i]), "order signature not valid");
+            // // for test, will remove it later
+            // require(exchange.isValidOrderSignature(order[i], signature[i]), "order signature not valid");
 
             // transfer takerAsset from trader to this contract
             ERC20Interface(takerAsset).safeTransferFrom(trader, address(this), takerAssetFillAmount[i]);
