@@ -8,7 +8,7 @@ pragma experimental ABIEncoderV2;
 /**
  * @dev ZeroX Exchange contract interface.
  */
-interface IZeroXExchange {
+interface ZeroXExchangeInterface {
     // solhint-disable max-line-length
     /// @dev Canonical order structure.
     struct Order {

@@ -7,7 +7,7 @@ pragma solidity 0.6.10;
 pragma experimental ABIEncoderV2;
 
 import {CalleeInterface} from "../../interfaces/CalleeInterface.sol";
-import {IZeroXExchange} from "../../interfaces/ZeroXExchangeInterface.sol";
+import {ZeroXExchangeInterface} from "../../interfaces/ZeroXExchangeInterface.sol";
 import {SafeERC20} from "../../packages/oz/SafeERC20.sol";
 import {ERC20Interface} from "../../interfaces/ERC20Interface.sol";
 import {WETH9} from "../canonical-weth/WETH9.sol";
@@ -63,6 +63,7 @@ contract Trade0x is CalleeInterface {
      */
     function callFunction(address payable _sender, bytes memory _data) external override {
         require(msg.sender == controller, "Trade0x: sender not controller");
+
         _directlyTrade(_sender, _data);
     }
 
@@ -81,16 +82,6 @@ contract Trade0x is CalleeInterface {
 
         for (uint256 i = 0; i < order.length; i++) {
             address takerAsset = decodeERC20Asset(order[i].takerAssetData);
-
-            // // just for test, will remove later
-            // require(
-            //     ERC20Interface(takerAsset).allowance(trader, address(this)) == takerAssetFillAmount[i],
-            //     "approve not working man!"
-            // );
-
-            // // for test, will remove it later
-            // require(exchange.isValidOrderSignature(order[i], signature[i]), "order signature not valid");
-
             // transfer takerAsset from trader to this contract
             ERC20Interface(takerAsset).safeTransferFrom(trader, address(this), takerAssetFillAmount[i]);
             // approe the 0x ERC20 Proxy to transfer takerAsset from this contract
@@ -101,7 +92,7 @@ contract Trade0x is CalleeInterface {
         uint256 protocolFee = tx.gasprice * PORTOCAL_FEE_BASE;
         weth.safeTransferFrom(_sender, address(this), protocolFee);
 
-        IZeroXExchange.FillResults[] memory result = exchange.batchFillOrders(order, takerAssetFillAmount, signature);
+        exchange.batchFillOrders(order, takerAssetFillAmount, signature);
 
         for (uint256 i = 0; i < order.length; i++) {
             address asset = decodeERC20Asset(order[i].makerAssetData);

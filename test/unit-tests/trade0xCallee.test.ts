@@ -107,18 +107,5 @@ contract('Trade0xCallee', ([payableProxy, taker, staking, random]) => {
         'Trade0x: funds can only be transferred in from the person sending the transaction',
       )
     })
-
-    it('should allow taker to selling token2 for token1', async () => {
-      // pay protocol fee in ETH.
-      const gasPriceGWei = '50'
-      const gasPriceWei = web3.utils.toWei(gasPriceGWei, 'gwei')
-      // protocol require 70000 * gas price per fill
-      const feeAmount = new BigNumber(gasPriceWei).times(70000).toString()
-      await weth.deposit({from: taker, value: feeAmount})
-      await weth.approve(callee.address, feeAmount, {from: taker})
-
-      await token2.approve(callee.address, LARGE_NUMBER, {from: taker})
-      await controller.test0xCallee(callee.address, data, {from: taker, gasPrice: gasPriceWei})
-    })
   })
 })
