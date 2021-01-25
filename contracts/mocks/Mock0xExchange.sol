@@ -41,10 +41,10 @@ contract Mock0xExchange {
         ZeroXExchangeInterface.Order[] memory _orders,
         uint256[] memory _takerAssetFillAmounts,
         bytes[] memory _signatures
-    ) external payable returns (ZeroXExchangeInterface.FillResults memory fillResults) {
+    ) external payable returns (ZeroXExchangeInterface.FillResults[] memory fillResults) {
         for (uint256 i = 0; i < _orders.length; i++) {
-            fillOrder(_orders[i], _takerAssetFillAmounts[i], _signatures[i]);
+            fillResults[i] = fillOrder(_orders[i], _takerAssetFillAmounts[i], _signatures[i]);
         }
-        return ZeroXExchangeInterface.FillResults(0, 0, 0, 0, 0);
+        return fillResults;
     }
 }
