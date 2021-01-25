@@ -4,7 +4,6 @@ import {
   Trade0xInstance,
   MockERC20Instance,
   WETH9Instance,
-  IZeroXExchangeInstance,
   PayableProxyControllerInstance,
   ControllerInstance,
   MockControllerInstance,
@@ -15,7 +14,6 @@ import {createTokenAmount} from '../utils'
 const TradeCallee = artifacts.require('Trade0x')
 const ERC20 = artifacts.require('MockERC20')
 const WETH9 = artifacts.require('WETH9')
-const Exchange = artifacts.require('IZeroXExchange')
 const Controller = artifacts.require('Controller.sol')
 const PayableProxyController = artifacts.require('PayableProxyController.sol')
 const MockController = artifacts.require('MockController.sol')
@@ -73,7 +71,6 @@ enum ActionType {
 
 contract('Callee contract test', async ([deployer, user, controller]) => {
   let callee: Trade0xInstance
-  let exchange: IZeroXExchangeInstance
   let usdc: MockERC20Instance
   let weth: WETH9Instance
   let otoken: MockERC20Instance
@@ -83,7 +80,6 @@ contract('Callee contract test', async ([deployer, user, controller]) => {
 
   before('setup transfer account asset', async () => {
     // setup contracts
-    exchange = await Exchange.at(EXCHANGE_ADDR)
     mockController = await MockController.new()
     callee = await TradeCallee.new(EXCHANGE_ADDR, ERC20PROXY_ADDR, WETHAddress, STAKING_ADDR, controllerProxyAddress, {
       from: deployer,
