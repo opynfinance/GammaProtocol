@@ -4,7 +4,6 @@ import {
   Trade0xInstance,
   MockERC20Instance,
   WETH9Instance,
-  IZeroXExchangeInstance,
   PayableProxyControllerInstance,
   ControllerInstance,
   MockControllerInstance,
@@ -73,7 +72,6 @@ enum ActionType {
 
 contract('Callee contract test', async ([deployer, user, controller]) => {
   let callee: Trade0xInstance
-  let exchange: IZeroXExchangeInstance
   let usdc: MockERC20Instance
   let weth: WETH9Instance
   let otoken: MockERC20Instance
@@ -83,7 +81,6 @@ contract('Callee contract test', async ([deployer, user, controller]) => {
 
   before('setup transfer account asset', async () => {
     // setup contracts
-    exchange = await Exchange.at(EXCHANGE_ADDR)
     mockController = await MockController.new()
     callee = await TradeCallee.new(EXCHANGE_ADDR, ERC20PROXY_ADDR, WETHAddress, STAKING_ADDR, controllerProxyAddress, {
       from: deployer,

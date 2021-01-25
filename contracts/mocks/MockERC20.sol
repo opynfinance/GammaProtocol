@@ -16,13 +16,4 @@ contract MockERC20 is ERC20Upgradeable {
     function mint(address account, uint256 amount) public {
         _mint(account, amount);
     }
-
-    function transferFrom(
-        address sender,
-        address recipient,
-        uint256 amount
-    ) public override returns (bool) {
-        _transfer(sender, recipient, amount);
-        return true;
-    }
 }
