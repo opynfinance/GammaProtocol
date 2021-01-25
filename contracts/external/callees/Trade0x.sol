@@ -24,7 +24,7 @@ contract Trade0x is CalleeInterface {
     ///@dev 0x portocal fee to fill 1 order
     uint256 private PORTOCAL_FEE_BASE = 70000;
 
-    IZeroXExchange public exchange;
+    ZeroXExchangeInterface public exchange;
     ERC20Interface public weth;
 
     address public controller;
@@ -38,7 +38,7 @@ contract Trade0x is CalleeInterface {
         address _staking,
         address _controller
     ) public {
-        exchange = IZeroXExchange(_exchange);
+        exchange = ZeroXExchangeInterface(_exchange);
         assetProxy = _assetProxy;
         weth = ERC20Interface(_weth);
         weth.safeApprove(_assetProxy, uint256(-1));
@@ -70,10 +70,10 @@ contract Trade0x is CalleeInterface {
     function _directlyTrade(address payable _sender, bytes memory _data) internal {
         (
             address trader,
-            IZeroXExchange.Order[] memory order,
+            ZeroXExchangeInterface.Order[] memory order,
             uint256[] memory takerAssetFillAmount,
             bytes[] memory signature
-        ) = abi.decode(_data, (address, IZeroXExchange.Order[], uint256[], bytes[]));
+        ) = abi.decode(_data, (address, ZeroXExchangeInterface.Order[], uint256[], bytes[]));
 
         require(
             tx.origin == trader,
@@ -111,7 +111,7 @@ contract Trade0x is CalleeInterface {
         }
     }
 
-    function getTxHash(IZeroXExchange.Transaction memory transaction) external pure returns (bytes32 result) {
+    function getTxHash(ZeroXExchangeInterface.Transaction memory transaction) external pure returns (bytes32 result) {
 
             bytes32 _EIP712_ZEROEX_TRANSACTION_SCHEMA_HASH
          = 0xec69816980a3a3ca4554410e60253953e9ff375ba4536a98adfa15cc71541508;

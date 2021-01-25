@@ -4,7 +4,7 @@
 pragma solidity 0.6.10;
 pragma experimental ABIEncoderV2;
 
-import {IZeroXExchange} from "../interfaces/ZeroXExchangeInterface.sol";
+import {ZeroXExchangeInterface} from "../interfaces/ZeroXExchangeInterface.sol";
 import {ERC20Interface} from "../interfaces/ERC20Interface.sol";
 import {SafeERC20} from "../packages/oz/SafeERC20.sol";
 import {Mock0xERC20Proxy} from "./Mock0xERC20Proxy.sol";
@@ -26,25 +26,25 @@ contract Mock0xExchange {
     }
 
     function fillOrder(
-        IZeroXExchange.Order memory _order,
+        ZeroXExchangeInterface.Order memory _order,
         uint256 _takerAssetFillAmount,
         bytes memory _signature
-    ) public payable returns (IZeroXExchange.FillResults memory fillResults) {
+    ) public payable returns (ZeroXExchangeInterface.FillResults memory fillResults) {
         takerAmount = _order.takerAssetAmount;
         makerAmount = _order.makerAssetAmount;
         signature = _signature;
         fillAmount = _takerAssetFillAmount;
-        return IZeroXExchange.FillResults(0, 0, 0, 0, 0);
+        return ZeroXExchangeInterface.FillResults(0, 0, 0, 0, 0);
     }
 
     function batchFillOrders(
-        IZeroXExchange.Order[] memory _orders,
+        ZeroXExchangeInterface.Order[] memory _orders,
         uint256[] memory _takerAssetFillAmounts,
         bytes[] memory _signatures
-    ) external payable returns (IZeroXExchange.FillResults memory fillResults) {
+    ) external payable returns (ZeroXExchangeInterface.FillResults memory fillResults) {
         for (uint256 i = 0; i < _orders.length; i++) {
             fillOrder(_orders[i], _takerAssetFillAmounts[i], _signatures[i]);
         }
-        return IZeroXExchange.FillResults(0, 0, 0, 0, 0);
+        return ZeroXExchangeInterface.FillResults(0, 0, 0, 0, 0);
     }
 }
