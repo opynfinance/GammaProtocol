@@ -63,6 +63,7 @@ contract Trade0x is CalleeInterface {
      */
     function callFunction(address payable _sender, bytes memory _data) external override {
         require(msg.sender == controller, "Trade0x: sender not controller");
+
         _directlyTrade(_sender, _data);
     }
 
