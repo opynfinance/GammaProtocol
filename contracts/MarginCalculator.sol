@@ -66,19 +66,21 @@ contract MarginCalculator {
         require(_otoken != address(0), "MarginCalculator: Invalid token address");
 
         OtokenInterface otoken = OtokenInterface(_otoken);
-        uint256 expiry = otoken.expiryTimestamp();
+
+        (
+            address collateral,
+            address underlying,
+            address strikeAsset,
+            uint256 strikePrice,
+            uint256 expiry,
+            bool isPut
+        ) = otoken.getOtokenDetails();
 
         require(now > expiry, "MarginCalculator: Otoken not expired yet");
 
-        address underlying = otoken.underlyingAsset();
-        address strike = otoken.strikeAsset();
-        address collateral = otoken.collateralAsset();
-        uint256 strikePrice = otoken.strikePrice();
-        bool isPut = otoken.isPut();
-
         FPI.FixedPointInt memory cashValueInStrike = _getExpiredCashValue(
             underlying,
-            strike,
+            strikeAsset,
             expiry,
             strikePrice,
             isPut
@@ -86,7 +88,7 @@ contract MarginCalculator {
 
         FPI.FixedPointInt memory cashValueInCollateral = _convertAmountOnExpiryPrice(
             cashValueInStrike,
-            strike,
+            strikeAsset,
             collateral,
             expiry
         );
