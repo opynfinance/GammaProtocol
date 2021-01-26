@@ -500,24 +500,30 @@ contract MarginCalculator {
 
         if (vaultDetails.hasLong) {
             OtokenInterface long = OtokenInterface(_vault.longOtokens[0]);
-            vaultDetails.longCollateralAsset = long.collateralAsset();
-            vaultDetails.longUnderlyingAsset = long.underlyingAsset();
-            vaultDetails.longStrikeAsset = long.strikeAsset();
-            vaultDetails.longStrikePrice = long.strikePrice();
-            vaultDetails.longCollateralDecimals = uint256(ERC20Interface(long.collateralAsset()).decimals());
-            vaultDetails.longExpiryTimestamp = long.expiryTimestamp();
-            vaultDetails.isLongPut = long.isPut();
+            (
+                vaultDetails.longCollateralAsset,
+                vaultDetails.longUnderlyingAsset,
+                vaultDetails.longStrikeAsset,
+                vaultDetails.longStrikePrice,
+                vaultDetails.longExpiryTimestamp,
+                vaultDetails.isLongPut
+            ) = long.getOtokenDetails();
+            vaultDetails.longCollateralDecimals = uint256(ERC20Interface(vaultDetails.longCollateralAsset).decimals());
         }
 
         if (vaultDetails.hasShort) {
             OtokenInterface short = OtokenInterface(_vault.shortOtokens[0]);
-            vaultDetails.shortCollateralAsset = short.collateralAsset();
-            vaultDetails.shortUnderlyingAsset = short.underlyingAsset();
-            vaultDetails.shortStrikeAsset = short.strikeAsset();
-            vaultDetails.shortStrikePrice = short.strikePrice();
-            vaultDetails.shortCollateralDecimals = uint256(ERC20Interface(short.collateralAsset()).decimals());
-            vaultDetails.shortExpiryTimestamp = short.expiryTimestamp();
-            vaultDetails.isShortPut = short.isPut();
+            (
+                vaultDetails.shortCollateralAsset,
+                vaultDetails.shortUnderlyingAsset,
+                vaultDetails.shortStrikeAsset,
+                vaultDetails.shortStrikePrice,
+                vaultDetails.shortExpiryTimestamp,
+                vaultDetails.isShortPut
+            ) = short.getOtokenDetails();
+            vaultDetails.shortCollateralDecimals = uint256(
+                ERC20Interface(vaultDetails.shortCollateralAsset).decimals()
+            );
         }
 
         if (vaultDetails.hasCollateral) {
