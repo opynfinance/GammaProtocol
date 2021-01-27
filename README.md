@@ -104,6 +104,25 @@ Transaction hash: 0xebf12fc6603ee857bcabe1c0c6194XX82639a9888776f7ff6e83a409XXXX
 Deployed contract address: 0x669cC97687c792fc5369d7bdd38cXXXXXXXXXX
 ```
 
+### Permit Callee Deployment
+
+The `PermitCallee.sol` contract allow user to call `permit()` function through the Controller Call action.
+To deploy a new `PermitCallee.sol`, it is recommended to use the `deployPermitCallee` truffle script inside the `scripts` folder.
+
+**Input**
+```sh
+truffle exec scripts/deployPermitCallee.js --network kovan --gas 50000000000
+```
+
+### Trade0x Callee Deployment
+the `Trade0x.sol` contract allow to batch 0x trading transactions with Gamma operate actions through the Call action.
+To deploy a new `Trade0x.sol`, it is recommended to use the `deployTrade0x` truffle script inside the `scripts` folder.
+
+**Input**
+```sh
+truffle exec scripts/deployTrade0x.js --network kovan --exchange 0xf1ec7d0ba42f15fb5c9e3adbe86431973e44764c --assetproxy 0xaa460127562482faa5df42f2c39a025cd4a1cc0a --staking 0xe94cb304b3f515be7c95fedcfa249a84995fd748 --weth 0xd0A1E359811322d97991E03f863a0C30C2cF029C --controller 0xdEE7D0f8CcC0f7AC7e45Af454e5e7ec1552E8e4e --gas 50000000000
+```
+
 ## Linting
 
 Clean code is the best code, so we've provided tools to automatically lint your projects.
