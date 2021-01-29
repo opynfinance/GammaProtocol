@@ -1,6 +1,11 @@
+/**
+ * Kovan tests for Trade0x.sol
+ * To run: truffle exec scripts/trade0x-kovan.js --network kovan --makerPrivateKey 0xaa...
+ * Need to have ETH in Taker account to mint Call option and pay for transaction and 0x fees
+ * Need to have USDC in Maker account to make 0x order and see USDC for Otoken (1USDC for 1 Call)
+ */
 const yargs = require("yargs");
 
-// kovan tests for Trade0x.sol
 const {createTokenAmount, createOrder, signOrder} = require('./../test/utils')
 const BigNumber = require('bignumber.js')
 
@@ -62,15 +67,15 @@ const usdcDecimals = 6
 const wethDecimals = 18
 
 const cmd = yargs
-  .option("signerPrivateKey", { describe: "Signer Private Key", type: "string", demandOption: true })
+  .option("makerPrivateKey", { describe: "0x Maker Private Key, wallet account[1]", type: "string", demandOption: true })
   .argv;
 
 // create signer etherJS Object
-const signerEtherJS = new ethers.Wallet(cmd.signerPrivateKey)
+const makerEtherJS = new ethers.Wallet(cmd.makerPrivateKey)
 
 async function runExport() {
-  console.log("🔥🔥🔥STARTING 0x TRADING SCRIPT🔥🔥🔥")
-  console.log("Signer address: ", signerEtherJS.address)
+  console.log("🔥🔥🔥 STARTING 0x TRADING SCRIPT 🔥🔥🔥")
+  console.log("0x order signer address: 🖋️ ", makerEtherJS.address)
 
   let trade0xCallee = await Trade0x.at(trade0xAddress)
   let otokenFactory = await OtokenFactory.at(otokenFactoryAddress)
@@ -81,7 +86,15 @@ async function runExport() {
   let weth = await WETH9.at(wethAddress);
 
   const account = await web3.eth.getAccounts()
-  console.log(account)
+  const taker = account[0]
+  const maker = account[1]
+
+  console.log("Taker address: ", taker)
+
+  if (makerEtherJS.address != maker) {
+    console.log("0x Maker address does not correspond to private key 🔴")
+    return;
+  }
 
   const latestBlock = new BigNumber((await web3.eth.getBlock('latest')).timestamp);
   let expiry = new BigNumber(latestBlock).plus(expiryTime)
@@ -95,7 +108,7 @@ async function runExport() {
   let otokenAddress = await otokenFactory.getOtoken(weth.address, usdc.address, weth.address, createTokenAmount(640), expiry, false);
   
   if(otokenAddress == ZERO_ADDR) {
-    console.log("Otoken not found, creating one now!")
+    console.log("Otoken not found, creating one now! ⚡")
     // deploy call option
     await otokenFactory.createOtoken(weth.address, usdc.address, weth.address, createTokenAmount(640), expiry, false)
     callOption1 = await Otoken.at(
@@ -108,29 +121,27 @@ async function runExport() {
 
   console.log(await callOption1.name() + " " + callOption1.address)
 
-  const vaultCounter = new BigNumber((await controllerProxy.getAccountVaultCounter(signerEtherJS.address))).plus(1)
+  const vaultCounter = new BigNumber((await controllerProxy.getAccountVaultCounter(taker))).plus(1)
   const optionsToMint = createTokenAmount(1, 8)
   const collateralToDeposit = createTokenAmount(1, wethDecimals)
 
-  // create market maker etherJS signer
-  const marketMakerSigner = new ethers.Wallet(cmd.signerPrivateKey)
   // create 0x order
   const order = createOrder(
     EXCHANGE_ADDR,
-    marketMakerSigner.address,
+    makerEtherJS.address,
     usdc.address,
     callOption1.address,
     new BigNumber(createTokenAmount(1, 6)),
     new BigNumber(optionsToMint),
     42
   )
-  const signedOrder = await signOrder(marketMakerSigner, order)
-  await usdc.approve(ERC20PROXY_ADDR, createTokenAmount(1, 6), {from: signerEtherJS.address})
+  const signedOrder = await signOrder(makerEtherJS, order)
+  await usdc.approve(ERC20PROXY_ADDR, createTokenAmount(1, 6), {from: makerEtherJS.address})
 
-  console.log("Signer maker 0x order with signature:", signedOrder.signature)
+  console.log("Signed 0x order with signature: 🖋️ ", signedOrder.signature)
 
-  if(!(await controllerProxy.isOperator(signerEtherJS.address, payableProxyController.address))) {
-    await controllerProxy.setOperator(payableProxyController.address, true, {from: signerEtherJS.address})
+  if(!(await controllerProxy.isOperator(taker, payableProxyController.address))) {
+    await controllerProxy.setOperator(payableProxyController.address, true, {from: taker})
   }
 
   const tradeCallData = web3.eth.abi.encodeParameters(
@@ -157,13 +168,13 @@ async function runExport() {
       'uint256[]',
       'bytes[]',
     ],
-    [signerEtherJS.address, [signedOrder], [optionsToMint], [signedOrder.signature]],
+    [taker, [signedOrder], [optionsToMint], [signedOrder.signature]],
   )
 
   const actionArgs = [
     {
       actionType: ActionType.OpenVault,
-      owner: signerEtherJS.address,
+      owner: taker,
       secondAddress: ZERO_ADDR,
       asset: ZERO_ADDR,
       vaultId: vaultCounter.toString(),
@@ -173,8 +184,8 @@ async function runExport() {
     },
     {
       actionType: ActionType.MintShortOption,
-      owner: signerEtherJS.address,
-      secondAddress: signerEtherJS.address,
+      owner: taker,
+      secondAddress: taker,
       asset: callOption1.address,
       vaultId: vaultCounter.toString(),
       amount: optionsToMint,
@@ -183,7 +194,7 @@ async function runExport() {
     },
     {
       actionType: ActionType.Call,
-      owner: signerEtherJS.address,
+      owner: taker,
       secondAddress: trade0xCallee.address,
       asset: ZERO_ADDR,
       vaultId: vaultCounter.toString(),
@@ -193,7 +204,7 @@ async function runExport() {
     },
     {
       actionType: ActionType.DepositCollateral,
-      owner: signerEtherJS.address,
+      owner: taker,
       secondAddress: payableProxyController.address,
       asset: weth.address,
       vaultId: vaultCounter.toString(),
@@ -210,32 +221,44 @@ async function runExport() {
   const feeAmount = new BigNumber(gasPriceWei).times(70000)
   const operateValue = feeAmount.plus(new BigNumber(collateralToDeposit))
 
-  const user1UsdcBalanceBefore = new BigNumber(await usdc.balanceOf(signerEtherJS.address))
+  console.log("ETH needed: 💰 ", operateValue.toString())
+
+  const user1UsdcBalanceBefore = new BigNumber(await usdc.balanceOf(taker))
   const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
-  const user1Call1BalanceBefore = new BigNumber(await callOption1.balanceOf(signerEtherJS.address))
+  const user1Call1BalanceBefore = new BigNumber(await callOption1.balanceOf(taker))
   const oTokenSupplyBefore = new BigNumber(await callOption1.totalSupply())
+  const makerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(maker))
+  const makerCall1BalanceBefore = new BigNumber(await callOption1.balanceOf(maker))
 
-  console.log("MarginPool WETH balance before: ", marginPoolWethBalanceBefore.toString())
-  console.log("Signer USDC balance before: ", user1UsdcBalanceBefore.toString())
-  console.log("Signer Otoken balance before: ", user1Call1BalanceBefore.toString())
-  console.log("Otoken total supply before: ", oTokenSupplyBefore.toString())
+  console.log("MarginPool WETH balance before: 📊", marginPoolWethBalanceBefore.toString())
+  console.log("Maker USDC balance before: 📊", makerUsdcBalanceBefore.toString())
+  console.log("Maker Otoken balance before: 📊", makerCall1BalanceBefore.toString())
+  console.log("Taker USDC balance before: 📊", user1UsdcBalanceBefore.toString())
+  console.log("Taker Otoken balance before: 📊", user1Call1BalanceBefore.toString())
+  console.log("Otoken total supply before: 📊", oTokenSupplyBefore.toString())
 
-  await callOption1.approve(trade0xCallee.address, optionsToMint, {from: signerEtherJS.address})
-  await payableProxyController.operate(actionArgs, signerEtherJS.address, {
-    from: signerEtherJS.address,
+  console.log("Approving 0x Callee and calling Operate 🚀")
+
+  await callOption1.approve(trade0xCallee.address, optionsToMint, {from: taker})
+  await payableProxyController.operate(actionArgs, taker, {
+    from: taker,
     gasPrice: gasPriceWei,
     value: operateValue,
   })
 
-  const user1UsdcBalanceAfter = new BigNumber(await usdc.balanceOf(signerEtherJS.address))
+  const user1UsdcBalanceAfter = new BigNumber(await usdc.balanceOf(taker))
   const marginPoolWethBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
-  const user1Call1BalanceAfter = new BigNumber(await callOption1.balanceOf(signerEtherJS.address))
+  const user1Call1BalanceAfter = new BigNumber(await callOption1.balanceOf(taker))
   const oTokenSupplyAfter = new BigNumber(await callOption1.totalSupply())
+  const makerUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(maker))
+  const makerCall1BalanceAfter = new BigNumber(await callOption1.balanceOf(taker))
 
-  console.log("MarginPool WETH balance after: ", marginPoolWethBalanceAfter.toString())
-  console.log("Signer USDC balance after: ", user1UsdcBalanceAfter.toString())
-  console.log("Signer Otoken balance after: ", user1Call1BalanceAfter.toString())
-  console.log("Otoken total supply after: ", oTokenSupplyAfter.toString())
+  console.log("MarginPool WETH balance after: 📈", marginPoolWethBalanceAfter.toString())
+  console.log("Maker USDC balance after: 📉", makerUsdcBalanceAfter.toString())
+  console.log("Maker Otoken balance after: 📈 ", makerCall1BalanceAfter.toString())
+  console.log("Taker USDC balance after: 📈", user1UsdcBalanceAfter.toString())
+  console.log("Taker Otoken balance after: 📊", user1Call1BalanceAfter.toString())
+  console.log("Otoken total supply after: 📈", oTokenSupplyAfter.toString())
 }
 
 run = async function(callback) {
@@ -250,33 +273,3 @@ run = async function(callback) {
 // in order to allow the script to be executed through both truffle and a test runner.
 run.runExport = runExport;
 module.exports = run;
-  
-
-//       // sign permit() for put1 transfer
-//       const nonce = (await put1.nonces(user1.address)).toNumber()
-//       const version = '1'
-//       const chainId = 1
-//       const name = await put1.name()
-//       const maxDeadline = new BigNumber(await time.latest()).plus(60 * 60 * 24).toString()
-//       const buildData = (
-//         chainId: number,
-//         verifyingContract: string,
-//         owner: string,
-//         spender: string,
-//         value: BN,
-//         deadline = maxDeadline,
-//       ) => ({
-//         primaryType: 'Permit',
-//         types: {EIP712Domain, Permit},
-//         domain: {name, version, chainId, verifyingContract},
-//         message: {owner, spender, value, nonce, deadline},
-//       })
-//       const data = buildData(chainId, put1.address, user1.address, trade0xCallee.address, new BN(optionsToMint))
-//       const wallet = Wallet.fromPrivateKey(Buffer.from(user1._signingKey().privateKey.substring(2, 66), 'hex'))
-//       const signature = ethSigUtil.signTypedMessage(wallet.getPrivateKey(), {data})
-//       const {v, r, s} = fromRpcSig(signature)
-
-//       const permitCallData = web3.eth.abi.encodeParameters(
-//         ['address', 'address', 'address', 'uint256', 'uint256', 'uint8', 'bytes32', 'bytes32'],
-//         [put1.address, user1.address, trade0xCallee.address, optionsToMint, maxDeadline, v, r, s],
-//       )
