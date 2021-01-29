@@ -63,6 +63,7 @@ contract('Trade0xCallee', ([payableProxy, taker, staking, random]) => {
       token2.address,
       new BigNumber(token1Amount),
       new BigNumber(createTokenAmount(100, 8)),
+      1,
     )
     const signedOrder = await signOrder(maker, order)
 
