@@ -5,6 +5,8 @@ pragma solidity 0.6.10;
 
 // import "../packages/oz/upgradeability/VersionedInitializable.sol";
 import "../interfaces/OtokenInterface.sol";
+import "../interfaces/CalleeInterface.sol";
+import "../interfaces/ERC20Interface.sol";
 
 /**
  * @author Opyn Team
@@ -45,5 +47,12 @@ contract MockController {
         uint256 _amount
     ) external {
         OtokenInterface(_otoken).burnOtoken(_account, _amount);
+    }
+
+    /**
+     * @dev this function is used to test if controller can be the only msg.sender to the 0xcallee
+     */
+    function test0xCallee(address _callee, bytes memory _data) external {
+        CalleeInterface(_callee).callFunction(msg.sender, _data);
     }
 }
