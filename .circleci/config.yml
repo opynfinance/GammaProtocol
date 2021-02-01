@@ -24,11 +24,11 @@ workflows:
             - build
       - integration-test:
           requires:
-            - unit-test
-      # - e2e-test:
-      #     context: COVERALLS_REPO_TOKEN
-      #     requires:
-      #       - build
+            - build
+      - e2e-test:
+          context: COVERALLS_REPO_TOKEN
+          requires:
+            - build
       - coverage:
           context: COVERALLS_REPO_TOKEN
           requires:
