@@ -1,1 +1,3 @@
-$(npm bin)/ganache-cli --fork https://mainnet.infura.io/v3/$INFURA_KEY --unlock 0xbe0eb53f46cd790cd13851d5eff43d12404d33e8 > /dev/null 2>&1 & sleep 10 && node --max-old-space-size=4096 $(npm bin)/truffle test ./test/e2e/*.ts
+#!/bin/bash
+
+$(npm bin)/ganache-cli --deterministic "myth like bonus scare over problem client lizard pioneer submit female collect" --port 8545 --fork https://mainnet.infura.io/v3/$INFURA_KEY@11608387 --unlock 0xbe0eb53f46cd790cd13851d5eff43d12404d33e8 --unlock 0x638E5DA0EEbbA58c67567bcEb4Ab2dc8D34853FB > /dev/null 2>&1 & sleep 10 && node --max-old-space-size=4096 $(npm bin)/truffle test ./test/e2e/*.ts
