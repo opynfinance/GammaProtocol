@@ -59,7 +59,7 @@ methods {
     longOtoken.collateralAsset() returns address envfree
     
     // summarized functions
-    expiryTimestamp() => CONSTANT
+    getOtokenDetails() => CONSTANT
     burnOtoken(address, uint256) => CONSTANT
 }
 

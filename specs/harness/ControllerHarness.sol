@@ -145,7 +145,8 @@ contract ControllerHarness is Controller {
     bool hasShorts = _isNotEmpty(vault.shortOtokens);
     bool hasLongs = _isNotEmpty(vault.longOtokens);
     address otoken = hasShorts ? vault.shortOtokens[0] : vault.longOtokens[0];
-    return ((hasShorts || hasLongs) && now >= OtokenInterface(otoken).expiryTimestamp());
+    (, , , , uint256 expiry, ) = OtokenInterface(otoken).getOtokenDetails();
+    return ((hasShorts || hasLongs) && now >= expiry);
   }
 
   function openVault(address owner, uint256 vaultId) external {
