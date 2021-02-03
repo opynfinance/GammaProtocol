@@ -45,6 +45,21 @@ contract MockOtoken is ERC20PermitUpgradeable {
         _setupDecimals(8);
     }
 
+    function getOtokenDetails()
+        external
+        view
+        returns (
+            address,
+            address,
+            address,
+            uint256,
+            uint256,
+            bool
+        )
+    {
+        return (collateralAsset, underlyingAsset, strikeAsset, strikePrice, expiryTimestamp, isPut);
+    }
+
     function mintOtoken(address _to, uint256 _amount) external {
         _mint(_to, _amount);
     }

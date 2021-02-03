@@ -499,7 +499,7 @@ rule callOptionsPreExpiry(
     // based on Mathematica proof:
     mathint _debt = 0;
     mathint temp = _shortAmount - _longAmount;
-    if temp > _debt {
+    if temp > 0 {
         _debt = temp;
     }
     /**
@@ -508,13 +508,16 @@ rule callOptionsPreExpiry(
      *                             long strike
      */
 
-    temp = (longPrice - shortPrice) * _shortAmount / longPrice;
-    if temp > _debt {
-        _debt = temp;
+    mathint temp2 = (longPrice - shortPrice) * _shortAmount / longPrice;
+    mathint _debt2;
+    if temp2 > _debt {
+        _debt2 = temp2;
+    } else {
+        _debt2 = _debt;
     }
 
     //assume vault is in a valid state
-    require _collateral >= _debt ;
+    require _collateral >= _debt2 ;
 
     ////assume valid state based on  valid balances rules
     require ( _totalSupplyShortOtoken >= _poolShortOtokenBalance + _shortAmount) &&
@@ -556,9 +559,9 @@ rule callOptionsPreExpiry(
 
 
     mathint debt_ = 0;
-    temp = shortAmount_ - longAmount_;
-    if temp > debt_ {
-         debt_ = temp;
+    mathint temp3 = shortAmount_ - longAmount_;
+    if temp3 > 0 {
+         debt_ = temp3;
     }
        /**
         *             (long strike - short strike) * short amount
@@ -566,11 +569,14 @@ rule callOptionsPreExpiry(
         *                             long strike
         */
 
-    temp = (longPrice - shortPrice) * shortAmount_ / longPrice;
-    if temp > debt_ {
-      debt_ = temp;
+    mathint temp4 = (longPrice - shortPrice) * shortAmount_ / longPrice;
+    mathint debt_2;
+    if temp4 > debt_ {
+      debt_2 = temp4;
+    } else {
+        debt_2 = debt_;
     }
-    require ( collateral_ >= debt_ );
+    require ( collateral_ >= debt_2 );
 
     // valid state 
     require  (totalSupplyShortOtoken_ >=  poolShortOtokenBalance_ + shortAmount_) &&
