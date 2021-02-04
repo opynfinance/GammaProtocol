@@ -54,6 +54,7 @@ contract('Trade0xCallee', ([payableProxy, taker, staking, random]) => {
     proxyAddr = await mockExchange.proxy()
     // deploy AddressBook token
     callee = await Trade0x.new(mockExchange.address, proxyAddr, weth.address, staking, controller.address)
+    const chainId = 1
 
     // create an order
     order = createOrder(
@@ -63,6 +64,7 @@ contract('Trade0xCallee', ([payableProxy, taker, staking, random]) => {
       token2.address,
       new BigNumber(token1Amount),
       new BigNumber(createTokenAmount(100, 8)),
+      chainId,
     )
     const signedOrder = await signOrder(maker, order)
 

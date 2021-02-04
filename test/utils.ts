@@ -110,6 +110,7 @@ export const createOrder = (
   takerAsset: string,
   makerAssetAmount: BigNumber,
   takerAssetAmount: BigNumber,
+  chainId: number,
 ) => {
   const expiry = (Date.now() / 1000 + 240).toFixed(0)
   const salt = (Math.random() * 1000000000000000000).toFixed(0)
@@ -128,7 +129,7 @@ export const createOrder = (
     feeRecipientAddress: '0x1000000000000000000000000000000000000011',
     expirationTimeSeconds: expiry.toString(),
     makerFeeAssetData: '0x0000000000000000000000000000000000000000',
-    chainId: 1,
+    chainId: chainId,
     takerFeeAssetData: '0x0000000000000000000000000000000000000000',
   }
   return order
