@@ -124,6 +124,7 @@ async function runExport() {
   const vaultCounter = new BigNumber((await controllerProxy.getAccountVaultCounter(taker))).plus(1)
   const optionsToMint = createTokenAmount(1, 8)
   const collateralToDeposit = createTokenAmount(1, wethDecimals)
+  const chainId = 42
 
   // create 0x order
   const order = createOrder(
@@ -133,7 +134,7 @@ async function runExport() {
     callOption1.address,
     new BigNumber(createTokenAmount(1, 6)),
     new BigNumber(optionsToMint),
-    42
+    chainId
   )
   const signedOrder = await signOrder(makerEtherJS, order)
   await usdc.approve(ERC20PROXY_ADDR, createTokenAmount(1, 6), {from: makerEtherJS.address})
