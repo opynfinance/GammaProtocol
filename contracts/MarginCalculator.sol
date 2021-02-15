@@ -129,11 +129,8 @@ contract MarginCalculator {
         FPI.FixedPointInt memory excessCollateral = collateralAmount.sub(collateralRequired);
 
         bool isExcess = excessCollateral.isGreaterThanOrEqual(ZERO);
-        uint256 collateralDecimals = vaultDetails.hasLong
-            ? vaultDetails.longCollateralDecimals
-            : vaultDetails.shortCollateralDecimals;
         // if is excess, truncate the tailing digits in excessCollateralExternal calculation
-        uint256 excessCollateralExternal = excessCollateral.toScaledUint(collateralDecimals, isExcess);
+        uint256 excessCollateralExternal = excessCollateral.toScaledUint(vaultDetails.collateralDecimals, isExcess);
         return (excessCollateralExternal, isExcess);
     }
 
