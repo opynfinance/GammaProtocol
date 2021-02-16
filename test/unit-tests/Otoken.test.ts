@@ -51,6 +51,16 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
       assert.equal((await otoken.decimals()).toNumber(), 8)
     })
 
+    it('should get correct otoken details', async () => {
+      const otokenDetails = await otoken.getOtokenDetails()
+      assert.equal(otokenDetails[0], usdc.address, 'getOtokenDetails collateral asset mismatch')
+      assert.equal(otokenDetails[1], weth.address, 'getOtokenDetails underlying asset mismatch')
+      assert.equal(otokenDetails[2], usdc.address, 'getOtokenDetails strike asset mismatch')
+      assert.equal(otokenDetails[3].toString(), strikePrice.toString(), 'getOtokenDetails strike price mismatch')
+      assert.equal(otokenDetails[4].toNumber(), expiry, 'getOtokenDetails expiry mismatch')
+      assert.equal(otokenDetails[5], isPut, 'getOtokenDetails isPut mismatch')
+    })
+
     it('should revert when init is called again with the same parameters', async () => {
       await expectRevert(
         otoken.init(addressBookAddr, weth.address, usdc.address, usdc.address, strikePrice, expiry, isPut),

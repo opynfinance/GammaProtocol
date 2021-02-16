@@ -535,14 +535,13 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         notPartiallyPaused
         onlyAuthorized(msg.sender, _args.owner)
     {
-        accountVaultCounter[_args.owner] = accountVaultCounter[_args.owner].add(1);
+        uint256 vaultId = accountVaultCounter[_args.owner].add(1);
 
-        require(
-            _args.vaultId == accountVaultCounter[_args.owner],
-            "Controller: can not run actions on inexistent vault"
-        );
+        require(_args.vaultId == vaultId, "Controller: can not run actions on inexistent vault");
 
-        emit VaultOpened(_args.owner, accountVaultCounter[_args.owner]);
+        accountVaultCounter[_args.owner] = vaultId;
+
+        emit VaultOpened(_args.owner, vaultId);
     }
 
     /**
@@ -716,10 +715,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         require(whitelist.isWhitelistedOtoken(_args.otoken), "Controller: otoken is not whitelisted to be redeemed");
 
-        address underlying = otoken.underlyingAsset();
-        address strike = otoken.strikeAsset();
-        address collateral = otoken.collateralAsset();
-        uint256 expiry = otoken.expiryTimestamp();
+        (address collateral, address underlying, address strike, , uint256 expiry, ) = otoken.getOtokenDetails();
 
         require(now >= expiry, "Controller: can not redeem un-expired otoken");
         require(
@@ -754,10 +750,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             ? OtokenInterface(vault.shortOtokens[0])
             : OtokenInterface(vault.longOtokens[0]);
 
-        address underlying = otoken.underlyingAsset();
-        address strike = otoken.strikeAsset();
-        address collateral = otoken.collateralAsset();
-        uint256 expiry = otoken.expiryTimestamp();
+        (address collateral, address underlying, address strike, , uint256 expiry, ) = otoken.getOtokenDetails();
 
         require(now >= expiry, "Controller: can not settle vault with un-expired otoken");
         require(

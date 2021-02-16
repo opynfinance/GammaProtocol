@@ -26,6 +26,18 @@ interface OtokenInterface {
         bool _isPut
     ) external;
 
+    function getOtokenDetails()
+        external
+        view
+        returns (
+            address,
+            address,
+            address,
+            uint256,
+            uint256,
+            bool
+        );
+
     function mintOtoken(address account, uint256 amount) external;
 
     function burnOtoken(address account, uint256 amount) external;
