@@ -7,7 +7,7 @@ module.exports = async function(callback) {
         const options = yargs
             .usage("Usage: --network <network> --gas <gasPrice>")
             .option("network", { describe: "0x exchange address", type: "string", demandOption: true })
-            .option("gas", { describe: "Gas price in WEI", type: "string", demandOption: true })
+            .option("gas", { describe: "Gas price in WEI", type: "string", demandOption: false })
             .argv;
 
         console.log(`Deploying Permit callee contract on ${options.network} 🍕`)

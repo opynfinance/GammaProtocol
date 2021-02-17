@@ -12,7 +12,7 @@ module.exports = async function(callback) {
             .option("staking", { describe: "0x staking address", type: "string", demandOption: true })
             .option("weth", { describe: "WETH address", type: "string", demandOption: true })
             .option("controller", { describe: "Gamma controller address", type: "string", demandOption: true })
-            .option("gas", { describe: "Gas price in WEI", type: "string", demandOption: true })
+            .option("gas", { describe: "Gas price in WEI", type: "string", demandOption: false })
             .argv;
 
         console.log(`Deploying Trade0x callee contract on ${options.network} 🍕`)

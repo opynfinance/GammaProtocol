@@ -55,6 +55,7 @@
     "deploy:development": "npm run build && npm run migrate -- --network development",
     "deploy:mainnet": "npm run build && npm run migrate -- --network mainnet",
     "deploy:rinkeby": "npm run build && npm run migrate -- --network rinkeby",
+    "deploy:kovan": "npm run build && npm run migrate -- --network kovan",
     "lint:tests": "eslint 'test/**/*.ts'",
     "lint:tests:fix": "npm run lint:tests -- --fix",
     "lint:sol": "solhint -f table contracts/**/*.sol",
