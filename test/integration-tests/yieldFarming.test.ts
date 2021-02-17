@@ -220,7 +220,7 @@ contract('Yield Farming: Naked Put Option closed before expiry flow', ([admin, a
     })
   })
 
-  describe('Integration Test: Compound yield farming', async () => {
+  xdescribe('Integration Test: Compound yield farming', async () => {
     let cusdcEthPut: OtokenInstance
     let cusdc: MockCTokenInstance
     let comp: MockERC20Instance
