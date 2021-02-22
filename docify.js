@@ -62,7 +62,7 @@ const args = [
     "--output="        + OUTPUT_DIR,
     "--templates="     + CONFIG_DIR,
     '--solc-module='   + 'solc-0.6.10',
-    "--solc-settings=" + JSON.stringify({optimizer: {enabled: true, runs: 200},})
+    "--solc-settings=" + JSON.stringify({optimizer: {enabled: true, runs: 10000},})
 ];
 
 const result = spawnSync("node", args, {stdio: ["inherit", "inherit", "pipe"]});
