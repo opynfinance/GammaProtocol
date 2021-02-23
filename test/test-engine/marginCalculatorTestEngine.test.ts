@@ -35,10 +35,10 @@ contract('MarginCalculator Test Engine', () => {
     expiry = now + time.duration.days(30).toNumber()
     // initiate addressbook first.
     addressBook = await MockAddressBook.new()
-    // setup calculator
-    calculator = await MarginCalculator.new(addressBook.address)
     // setup oracle
     oracle = await MockOracle.new()
+    // setup calculator
+    calculator = await MarginCalculator.new(oracle.address)
     await addressBook.setOracle(oracle.address)
     // setup usdc and weth
     usdc = await MockERC20.new('USDC', 'USDC', usdcDecimals)

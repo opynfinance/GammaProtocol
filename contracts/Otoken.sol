@@ -70,6 +70,21 @@ contract Otoken is ERC20PermitUpgradeable {
         _setupDecimals(8);
     }
 
+    function getOtokenDetails()
+        external
+        view
+        returns (
+            address,
+            address,
+            address,
+            uint256,
+            uint256,
+            bool
+        )
+    {
+        return (collateralAsset, underlyingAsset, strikeAsset, strikePrice, expiryTimestamp, isPut);
+    }
+
     /**
      * @notice mint oToken for an account
      * @dev Controller only method where access control is taken care of by _beforeTokenTransfer hook

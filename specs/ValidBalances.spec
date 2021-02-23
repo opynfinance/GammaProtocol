@@ -16,7 +16,8 @@ methods {
     shortOtoken.totalSupply() returns uint256 envfree
     collateralToken.balanceOf(address) returns uint256 envfree
     longOtoken.balanceOf(address) returns uint256 envfree
-    longOtoken.collateralAsset() returns address envfree
+    longOtoken.collateralAsset() returns address envfree => CONSTANT
+    shortOtoken.collateralAsset() returns address envfree => CONSTANT
 
     // get the cash value for an otoken afte rexpiry
     getPayout(address, uint256) returns uint256 envfree
@@ -56,12 +57,10 @@ methods {
     longOtoken.strikeAsset() returns address envfree
     shortOtoken.collateralAsset() returns address envfree
     longOtoken.collateralAsset() returns address envfree
-}
-
-summaries {
-    expiryTimestamp() => CONSTANT;
-    burnOtoken(address, uint256) => CONSTANT;
-    collateralAsset() => CONSTANT;
+    
+    // summarized functions
+    getOtokenDetails() => CONSTANT
+    burnOtoken(address, uint256) => CONSTANT
 }
 
 function links() {

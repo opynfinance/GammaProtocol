@@ -43,11 +43,10 @@ methods {
     assetTotalSupply(address) returns uint256 envfree
     whitelist.isWhitelistedOtoken(address) returns bool envfree
     whitelist.isWhitelistedCollateral(address) returns bool envfree
-}
 
-summaries {
-    expiryTimestamp() => CONSTANT;
-    burnOtoken(address, uint256) => CONSTANT;
+    // summarized functions
+    expiryTimestamp() => CONSTANT
+    burnOtoken(address, uint256) => CONSTANT
 }
 
 rule settleVault (address owner, uint256 vaultId, uint256 index, address oToken, address to, address collateral) {

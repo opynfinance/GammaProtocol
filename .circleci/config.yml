@@ -15,7 +15,7 @@ workflows:
             - build
       - certora:
           requires:
-            - build
+            - coverage
       - size-check:
           requires:
             - build
@@ -25,14 +25,14 @@ workflows:
       - integration-test:
           requires:
             - build
-      # - e2e-test:
-      #     context: COVERALLS_REPO_TOKEN
-      #     requires:
-      #       - build
-      - coverage:
+      - e2e-test:
           context: COVERALLS_REPO_TOKEN
           requires:
             - build
+      - coverage:
+          context: COVERALLS_REPO_TOKEN
+          requires:
+            - integration-test
       - gas-report:
           context: COVERALLS_REPO_TOKEN
           requires:
