@@ -76,7 +76,7 @@ contract MarginCalculator {
             bool isPut
         ) = otoken.getOtokenDetails();
 
-        require(now > expiry, "MarginCalculator: Otoken not expired yet");
+        require(now >= expiry, "MarginCalculator: Otoken not expired yet");
 
         FPI.FixedPointInt memory cashValueInStrike = _getExpiredCashValue(
             underlying,
@@ -204,7 +204,7 @@ contract MarginCalculator {
         uint256 otokenExpiry = _vaultDetails.hasShort
             ? _vaultDetails.shortExpiryTimestamp
             : _vaultDetails.longExpiryTimestamp;
-        bool expired = now > otokenExpiry;
+        bool expired = now >= otokenExpiry;
         bool isPut = _vaultDetails.hasShort ? _vaultDetails.isShortPut : _vaultDetails.isLongPut;
 
         if (!expired) {

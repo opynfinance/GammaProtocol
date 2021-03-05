@@ -135,6 +135,10 @@ contract Whitelist is Ownable {
         bool _isPut
     ) external onlyOwner {
         require(whitelistedCollateral[_collateral], "Whitelist: Collateral is not whitelisted");
+        require(
+            (_isPut && (_strike == _collateral)) || (!_isPut && (_collateral == _underlying)),
+            "Whitelist: Only allow fully collateralized products"
+        );
 
         bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
 
@@ -167,7 +171,7 @@ contract Whitelist is Ownable {
 
     /**
      * @notice allows the owner to whitelist a collateral address
-     * @dev can only be called from the owner address
+     * @dev can only be called from the owner address. This function is used to whitelist any asset other than Otoken as collateral. WhitelistOtoken() is used to whitelist Otoken contracts.
      * @param _collateral collateral asset address
      */
     function whitelistCollateral(address _collateral) external onlyOwner {
