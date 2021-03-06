@@ -89,7 +89,7 @@ contract Trade0x is CalleeInterface {
         }
 
         // pull weth (to pay 0x) from _sender address
-        uint256 protocolFee = tx.gasprice * PORTOCAL_FEE_BASE;
+        uint256 protocolFee = tx.gasprice * PORTOCAL_FEE_BASE * order.length;
         weth.safeTransferFrom(_sender, address(this), protocolFee);
 
         exchange.batchFillOrders(order, takerAssetFillAmount, signature);
