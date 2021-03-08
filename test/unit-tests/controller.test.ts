@@ -267,6 +267,28 @@ contract(
         )
       })
 
+      it('should revert opening a vault with vault type other than 0 or 1', async () => {
+        const invalidVault = web3.eth.abi.encodeParameter('uint256', 2)
+
+        const actionArgs = [
+          {
+            actionType: ActionType.OpenVault,
+            owner: accountOwner1,
+            secondAddress: accountOwner1,
+            asset: ZERO_ADDR,
+            vaultId: '1',
+            amount: '0',
+            index: '0',
+            data: invalidVault,
+          },
+        ]
+
+        await expectRevert(
+          controllerProxy.operate(actionArgs, {from: accountOwner1}),
+          'Actions: cannot open vault with an invalid type',
+        )
+      })
+
       it('should revert opening multiple vaults for different owners in the same operate call', async () => {
         await controllerProxy.setOperator(accountOwner1, true, {from: accountOwner2})
         const actionArgs = [
