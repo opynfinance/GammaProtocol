@@ -82,6 +82,8 @@ library Actions {
         address owner;
         // vault id to create
         uint256 vaultId;
+        // vault type, 0 for spread/max loss and 1 for naked margin vault
+        uint256 vaultType;
     }
 
     struct DepositArgs {
@@ -150,7 +152,13 @@ library Actions {
         require(_args.actionType == ActionType.OpenVault, "Actions: can only parse arguments for open vault actions");
         require(_args.owner != address(0), "Actions: cannot open vault for an invalid account");
 
-        return OpenVaultArgs({owner: _args.owner, vaultId: _args.vaultId});
+        // decode vault type from _args.data
+        uint256 vaultType = abi.decode(_args.data, (uint256));
+
+        // for now we only have 2 vault types
+        require(vaultType < 2, "Actions: cannot open vault with an invalid type");
+
+        return OpenVaultArgs({owner: _args.owner, vaultId: _args.vaultId, vaultType: vaultType});
     }
 
     /**

@@ -60,6 +60,13 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /// @dev mapping between an account owner and their approved or unapproved account operators
     mapping(address => mapping(address => bool)) internal operators;
 
+    /******************************************************************** V2.0.0 storage upgrade ******************************************************/
+
+    /// @dev mapping to map vault by each vault type, naked margin vault should be set to 1, spread/max loss vault should be set to 0
+    mapping(address => mapping(uint256 => uint256)) internal vaultType;
+    /// @dev mapping to store vault latest update timestamp, will be updated in every action that change vault state or when calling sync()
+    mapping(address => mapping(uint256 => uint256)) internal vaultLatestUpdate;
+
     /// @notice emits an event when an account operator is updated for a specific account owner
     event AccountOperatorUpdated(address indexed accountOwner, address indexed operator, bool isSet);
     /// @notice emits an event when a new vault is opened
@@ -523,6 +530,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         (, bool isValidVault) = calculator.getExcessCollateral(_vault);
 
         require(isValidVault, "Controller: invalid final vault state");
+
+        vaultLatestUpdate[_owner][_vaultId] = now;
     }
 
     /**
@@ -540,6 +549,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         require(_args.vaultId == vaultId, "Controller: can not run actions on inexistent vault");
 
         accountVaultCounter[_args.owner] = vaultId;
+        vaultType[_args.owner][vaultId] = _args.vaultType;
 
         emit VaultOpened(_args.owner, vaultId);
     }
