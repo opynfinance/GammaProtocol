@@ -70,7 +70,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /// @notice emits an event when an account operator is updated for a specific account owner
     event AccountOperatorUpdated(address indexed accountOwner, address indexed operator, bool isSet);
     /// @notice emits an event when a new vault is opened
-    event VaultOpened(address indexed accountOwner, uint256 vaultId);
+    event VaultOpened(address indexed accountOwner, uint256 vaultId, uint256 indexed vaultType);
     /// @notice emits an event when a long oToken is deposited into a vault
     event LongOtokenDeposited(
         address indexed otoken,
@@ -552,7 +552,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         accountVaultCounter[_args.owner] = vaultId;
         vaultType[_args.owner][vaultId] = _args.vaultType;
 
-        emit VaultOpened(_args.owner, vaultId);
+        emit VaultOpened(_args.owner, vaultId, _args.vaultType);
     }
 
     /**
