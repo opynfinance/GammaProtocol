@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js'
 import {ActionTesterInstance} from '../../build/types/truffle-types'
 
 const {BN, expectRevert} = require('@openzeppelin/test-helpers')
@@ -165,7 +166,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
       const vaultId = '1'
       const amount = '10'
       const index = '0'
-      const bytesArgs = ZERO_ADDR
+      const bytesArgs = web3.eth.abi.encodeParameter('uint256', 0)
 
       const data = {
         actionType: actionType,
@@ -182,6 +183,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
 
       const depositArgs = await actionTester.getOpenVaultArgs()
       assert.equal(depositArgs.owner, owner)
+      assert.equal(depositArgs.vaultType, new BigNumber(0))
     })
   })
 
