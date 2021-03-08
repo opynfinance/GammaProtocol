@@ -346,7 +346,10 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     function operate(Actions.ActionArgs[] memory _actions) external nonReentrant notFullyPaused {
         (bool vaultUpdated, address vaultOwner, uint256 vaultId) = _runActions(_actions);
-        if (vaultUpdated) _verifyFinalState(vaultOwner, vaultId);
+        if (vaultUpdated) {
+            _verifyFinalState(vaultOwner, vaultId);
+            vaultLatestUpdate[vaultOwner][vaultId] = now;
+        }
     }
 
     /**
@@ -530,8 +533,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         (, bool isValidVault) = calculator.getExcessCollateral(_vault);
 
         require(isValidVault, "Controller: invalid final vault state");
-
-        vaultLatestUpdate[_owner][_vaultId] = now;
     }
 
     /**
