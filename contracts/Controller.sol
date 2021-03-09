@@ -401,7 +401,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @return amount of collateral that can be taken out
      */
     function getProceed(address _owner, uint256 _vaultId) external view returns (uint256) {
-        MarginVault.Vault memory vault = getVault(_owner, _vaultId);
+        (MarginVault.Vault memory vault, uint256 vaultType) = getVault(_owner, _vaultId);
 
         (uint256 netValue, ) = calculator.getExcessCollateral(vault);
         return netValue;
@@ -463,10 +463,10 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @notice return a specific vault
      * @param _owner account owner
      * @param _vaultId vault id of vault to return
-     * @return Vault struct that corresponds to the _vaultId of _owner
+     * @return Vault struct that corresponds to the _vaultId of _owner and vault type
      */
-    function getVault(address _owner, uint256 _vaultId) public view returns (MarginVault.Vault memory) {
-        return vaults[_owner][_vaultId];
+    function getVault(address _owner, uint256 _vaultId) public view returns (MarginVault.Vault memory, uint256) {
+        return (vaults[_owner][_vaultId], vaultType[_owner][_vaultId]);
     }
 
     /**
@@ -541,8 +541,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _vaultId vault id of the final vault
      */
     function _verifyFinalState(address _owner, uint256 _vaultId) internal view {
-        MarginVault.Vault memory _vault = getVault(_owner, _vaultId);
-        (, bool isValidVault) = calculator.getExcessCollateral(_vault);
+        (MarginVault.Vault memory vault, uint256 vaultType) = getVault(_owner, _vaultId);
+        (, bool isValidVault) = calculator.getExcessCollateral(vault);
 
         require(isValidVault, "Controller: invalid final vault state");
     }
@@ -662,16 +662,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     {
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
 
-        MarginVault.Vault memory vault = getVault(_args.owner, _args.vaultId);
-        if (_isNotEmpty(vault.shortOtokens)) {
-            OtokenInterface otoken = OtokenInterface(vault.shortOtokens[0]);
-
-            require(
-                now < otoken.expiryTimestamp(),
-                "Controller: can not withdraw collateral from a vault with an expired short otoken"
-            );
-        }
-
         vaults[_args.owner][_args.vaultId].removeCollateral(_args.asset, _args.amount, _args.index);
 
         pool.transferToUser(_args.asset, _args.to, _args.amount);
@@ -763,7 +753,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     function _settleVault(Actions.SettleVaultArgs memory _args) internal onlyAuthorized(msg.sender, _args.owner) {
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
 
-        MarginVault.Vault memory vault = getVault(_args.owner, _args.vaultId);
+        (MarginVault.Vault memory vault, ) = getVault(_args.owner, _args.vaultId);
 
         OtokenInterface otoken;
 
