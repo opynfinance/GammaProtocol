@@ -353,6 +353,18 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
+     * @notice sync vault latest update timestamp
+     * @dev anyone can update the latest time the vault was touched by calling this function
+     * vaultLatestUpdate will sync if the vault is well collateralized
+     * @param _owner vault owner address
+     * @param _vaultId vault id
+     */
+    function sync(address _owner, uint256 _vaultId) external {
+        _verifyFinalState(_owner, _vaultId);
+        vaultLatestUpdate[_owner][_vaultId] = now;
+    }
+
+    /**
      * @notice check if a specific address is an operator for an owner account
      * @param _owner account owner address
      * @param _operator account operator address
