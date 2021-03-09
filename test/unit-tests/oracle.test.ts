@@ -308,6 +308,16 @@ contract('Oracle', ([owner, disputer, random, collateral, strike]) => {
       )
     })
 
+    it('should return hitorical price for stable asset', async () => {
+      const randomRoundId = 10
+
+      assert.equal(
+        (await oracle.getChainlinkRoundData(usdc.address, randomRoundId))[0].toString(),
+        stablePrice,
+        'Historical stable price mismatch',
+      )
+    })
+
     it('should return true for checking if lockign period is over', async () => {
       const isOver = await oracle.isLockingPeriodOver(usdc.address, await time.latest())
       const expectedResult = true

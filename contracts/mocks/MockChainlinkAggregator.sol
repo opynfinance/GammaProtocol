@@ -25,6 +25,8 @@ contract MockChainlinkAggregator {
             uint80 answeredInRound
         )
     {
+        require(roundTimestamp[_roundId] != 0, "No data present");
+
         return (_roundId, roundAnswer[_roundId], roundTimestamp[_roundId], roundTimestamp[_roundId], _roundId);
     }
 

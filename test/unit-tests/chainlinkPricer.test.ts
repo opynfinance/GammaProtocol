@@ -146,4 +146,33 @@ contract('ChainlinkPricer', ([owner, bot, random]) => {
       )
     })
   })
+
+  describe('get historical price', async () => {
+    let t0: number
+    // p0 = price at t0 ... etc
+    const p0 = createTokenAmount(100, 8)
+
+    before('setup history in aggregator', async () => {
+      t0 = (await time.latest()).toNumber()
+      // set round answers
+      await wethAggregator.setRoundAnswer(0, p0)
+
+      // set round timestamps
+      await wethAggregator.setRoundTimestamp(0, t0)
+    })
+
+    it('should return historical price with timestamp', async () => {
+      const roundData = await pricer.getHistoricalPrice(0)
+
+      assert.equal(roundData[0].toString(), p0, 'Historical round price mismatch')
+
+      assert.equal(roundData[1].toNumber(), t0, 'Historical round timestamp mismatch')
+    })
+
+    it('should revert when no data round available', async () => {
+      const invalidRoundId = 1050
+
+      await expectRevert(pricer.getHistoricalPrice(invalidRoundId), 'No data present')
+    })
+  })
 })
