@@ -10,7 +10,7 @@ import {SafeMath} from "../packages/oz/SafeMath.sol";
 /**
  * @notice A Pricer contract for a Compound cToken
  */
-contract CompoundPricer is OpynPricerInterface {
+abstract contract CompoundPricer is OpynPricerInterface {
     using SafeMath for uint256;
 
     /// @notice opyn oracle address
