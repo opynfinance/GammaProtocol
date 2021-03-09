@@ -773,9 +773,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
             require(hasShort || hasLong, "Controller: Can't settle vault with no otoken");
 
-            OtokenInterface otoken = hasShort
-                ? OtokenInterface(vault.shortOtokens[0])
-                : OtokenInterface(vault.longOtokens[0]);
+            otoken = hasShort ? OtokenInterface(vault.shortOtokens[0]) : OtokenInterface(vault.longOtokens[0]);
 
             if (hasLong) {
                 OtokenInterface longOtoken = OtokenInterface(vault.longOtokens[0]);
@@ -794,7 +792,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         (uint256 payout, bool isValidVault) = calculator.getExcessCollateral(vault);
 
-        require(isValidVault, "Controller: can not undercollateralized vault");
+        require(isValidVault, "Controller: can not settle undercollateralized vault");
 
         delete vaults[_args.owner][_args.vaultId];
 
