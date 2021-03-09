@@ -160,7 +160,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
       })
 
       const marginPoolBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
-      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const vaultAfter = (await controllerProxy.getVault(accountOwner1, vaultCounter))[0]
 
       assert.equal(
         marginPoolBalanceAfter.minus(marginPoolBalanceBefore).toString(),
@@ -216,7 +216,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
       })
 
       const marginPoolBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
-      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const vaultAfter = (await controllerProxy.getVault(accountOwner1, vaultCounter))[0]
 
       assert.equal(
         marginPoolBalanceAfter.minus(marginPoolBalanceBefore).toString(),

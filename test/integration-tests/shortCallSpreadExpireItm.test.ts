@@ -282,7 +282,7 @@ contract('Short Call Spread Option expires Itm flow', ([accountOwner1, nakedBuye
       const longOtokenSupplyBefore = new BigNumber(await higherStrikeCall.totalSupply())
 
       // Check that we start at a valid state
-      const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter1)
+      const vaultBefore = (await controllerProxy.getVault(accountOwner1, vaultCounter1))[0]
       const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore)
       assert.equal(vaultStateBefore[0].toString(), '0')
       assert.equal(vaultStateBefore[1], true)
@@ -343,7 +343,7 @@ contract('Short Call Spread Option expires Itm flow', ([accountOwner1, nakedBuye
       )
 
       // Check that we end at a valid state
-      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter1)
+      const vaultAfter = (await controllerProxy.getVault(accountOwner1, vaultCounter1))[0]
       const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
       assert.equal(vaultStateAfter[0].toString(), '0')
       assert.equal(vaultStateAfter[1], true)
@@ -416,7 +416,7 @@ contract('Short Call Spread Option expires Itm flow', ([accountOwner1, nakedBuye
       const shortOtokenSupplyBefore = new BigNumber(await higherStrikeCall.totalSupply())
 
       // Check that we start at a valid state
-      const vaultBefore = await controllerProxy.getVault(accountOwner2, vaultCounter2)
+      const vaultBefore = (await controllerProxy.getVault(accountOwner2, vaultCounter2))[0]
 
       const strikePriceChange = Math.max(expirySpotPrice - higherStrike, 0)
       const collateralAmount = optionsAmount
@@ -458,7 +458,7 @@ contract('Short Call Spread Option expires Itm flow', ([accountOwner1, nakedBuye
       assert.equal(shortOtokenSupplyBefore.toString(), shortOtokenSupplyAfter.toString())
 
       // Check that we end at a valid state
-      const vaultAfter = await controllerProxy.getVault(accountOwner2, vaultCounter2)
+      const vaultAfter = (await controllerProxy.getVault(accountOwner2, vaultCounter2))[0]
       const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
       assert.equal(vaultStateAfter[0].toString(), '0')
       assert.equal(vaultStateAfter[1], true)
