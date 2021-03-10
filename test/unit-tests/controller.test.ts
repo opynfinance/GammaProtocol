@@ -4032,6 +4032,26 @@ contract(
       })
     })
 
+    describe('Sync vault latest update timestamp', () => {
+      it('should update vault latest update timestamp', async () => {
+        const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
+        const timestampBefore = new BigNumber(
+          (await controllerProxy.getVault(accountOwner1, vaultCounter.toNumber()))[2],
+        )
+
+        await controllerProxy.sync(accountOwner1, vaultCounter.toNumber(), {from: random})
+
+        const timestampAfter = new BigNumber(
+          (await controllerProxy.getVault(accountOwner1, vaultCounter.toNumber()))[2],
+        )
+        assert.isAbove(
+          timestampAfter.toNumber(),
+          timestampBefore.toNumber(),
+          'Vault latest update timestamp did not sync',
+        )
+      })
+    })
+
     describe('Pause mechanism', () => {
       let shortOtoken: MockOtokenInstance
 
