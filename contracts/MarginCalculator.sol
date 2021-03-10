@@ -36,6 +36,7 @@ contract MarginCalculator is Ownable {
         uint256 longExpiryTimestamp;
         uint256 longCollateralDecimals;
         uint256 collateralDecimals;
+        uint256 vaultType;
         bool isShortPut;
         bool isLongPut;
         bool hasLong;
@@ -219,13 +220,18 @@ contract MarginCalculator is Ownable {
      * @notice returns the amount of collateral that can be removed from an actual or a theoretical vault
      * @dev return amount is denominated in the collateral asset for the oToken in the vault, or the collateral asset in the vault
      * @param _vault theoretical vault that needs to be checked
+     * @param _vaultType vault type (0 for spread/max loss, 1 for naked margin)
      * @return excessCollateral the amount by which the margin is above or below the required amount
      * @return isExcess True if there is excess margin in the vault, False if there is a deficit of margin in the vault
      * if True, collateral can be taken out from the vault, if False, additional collateral needs to be added to vault
      */
-    function getExcessCollateral(MarginVault.Vault memory _vault) public view returns (uint256, bool) {
+    function getExcessCollateral(MarginVault.Vault memory _vault, uint256 _vaultType)
+        public
+        view
+        returns (uint256, bool)
+    {
         // get vault details
-        VaultDetails memory vaultDetails = getVaultDetails(_vault);
+        VaultDetails memory vaultDetails = getVaultDetails(_vault, _vaultType);
         // include all the checks for to ensure the vault is valid
         _checkIsValidVault(_vault, vaultDetails);
 
@@ -566,7 +572,11 @@ contract MarginCalculator is Ownable {
         return _amount.mul(FPI.fromScaledUint(priceA, BASE)).div(FPI.fromScaledUint(priceB, BASE));
     }
 
-    function getVaultDetails(MarginVault.Vault memory _vault) internal view returns (VaultDetails memory) {
+    function getVaultDetails(MarginVault.Vault memory _vault, uint256 _vaultType)
+        internal
+        view
+        returns (VaultDetails memory)
+    {
         VaultDetails memory vaultDetails = VaultDetails(
             address(0),
             address(0),
@@ -574,6 +584,7 @@ contract MarginCalculator is Ownable {
             address(0),
             address(0),
             address(0),
+            0,
             0,
             0,
             0,
@@ -591,6 +602,8 @@ contract MarginCalculator is Ownable {
         vaultDetails.hasLong = _isNotEmpty(_vault.longOtokens);
         vaultDetails.hasShort = _isNotEmpty(_vault.shortOtokens);
         vaultDetails.hasCollateral = _isNotEmpty(_vault.collateralAssets);
+
+        vaultDetails.vaultType = _vaultType;
 
         if (vaultDetails.hasLong) {
             OtokenInterface long = OtokenInterface(_vault.longOtokens[0]);

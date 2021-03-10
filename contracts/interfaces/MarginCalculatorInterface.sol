@@ -10,7 +10,7 @@ interface MarginCalculatorInterface {
 
     function getExpiredPayoutRate(address _otoken) external view returns (uint256);
 
-    function getExcessCollateral(MarginVault.Vault calldata _vault)
+    function getExcessCollateral(MarginVault.Vault calldata _vault, uint256 _vaultType)
         external
         view
         returns (uint256 netValue, bool isExcess);

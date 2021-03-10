@@ -401,9 +401,9 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @return amount of collateral that can be taken out
      */
     function getProceed(address _owner, uint256 _vaultId) external view returns (uint256) {
-        (MarginVault.Vault memory vault, uint256 vaultType, ) = getVault(_owner, _vaultId);
+        (MarginVault.Vault memory vault, uint256 typeVault, ) = getVault(_owner, _vaultId);
 
-        (uint256 netValue, ) = calculator.getExcessCollateral(vault);
+        (uint256 netValue, ) = calculator.getExcessCollateral(vault, typeVault);
         return netValue;
     }
 
@@ -549,8 +549,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _vaultId vault id of the final vault
      */
     function _verifyFinalState(address _owner, uint256 _vaultId) internal view {
-        (MarginVault.Vault memory vault, uint256 vaultType, ) = getVault(_owner, _vaultId);
-        (, bool isValidVault) = calculator.getExcessCollateral(vault);
+        (MarginVault.Vault memory vault, uint256 typeVault, ) = getVault(_owner, _vaultId);
+        (, bool isValidVault) = calculator.getExcessCollateral(vault, typeVault);
 
         require(isValidVault, "Controller: invalid final vault state");
     }
@@ -761,7 +761,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     function _settleVault(Actions.SettleVaultArgs memory _args) internal onlyAuthorized(msg.sender, _args.owner) {
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
 
-        (MarginVault.Vault memory vault, , ) = getVault(_args.owner, _args.vaultId);
+        (MarginVault.Vault memory vault, uint256 typeVault, ) = getVault(_args.owner, _args.vaultId);
 
         OtokenInterface otoken;
 
@@ -788,7 +788,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             "Controller: asset prices not finalized yet"
         );
 
-        (uint256 payout, bool isValidVault) = calculator.getExcessCollateral(vault);
+        (uint256 payout, bool isValidVault) = calculator.getExcessCollateral(vault, typeVault);
 
         require(isValidVault, "Controller: can not settle undercollateralized vault");
 
