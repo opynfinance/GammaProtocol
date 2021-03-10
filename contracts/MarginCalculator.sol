@@ -5,6 +5,7 @@ pragma solidity 0.6.10;
 pragma experimental ABIEncoderV2;
 
 import {SafeMath} from "./packages/oz/SafeMath.sol";
+import {Ownable} from "./packages/oz/Ownable.sol";
 import {OtokenInterface} from "./interfaces/OtokenInterface.sol";
 import {OracleInterface} from "./interfaces/OracleInterface.sol";
 import {ERC20Interface} from "./interfaces/ERC20Interface.sol";
@@ -16,19 +17,11 @@ import {MarginVault} from "./libs/MarginVault.sol";
  * @author Opyn
  * @notice Calculator module that checks if a given vault is valid, calculates margin requirements, and settlement proceeds
  */
-contract MarginCalculator {
+contract MarginCalculator is Ownable {
     using SafeMath for uint256;
     using FPI for FPI.FixedPointInt;
 
-    /// @dev oracle module
-    OracleInterface public oracle;
-
-    /// @dev decimals used by strike price and oracle price
-    uint256 internal constant BASE = 8;
-
-    /// @dev FixedPoint 0
-    FPI.FixedPointInt internal ZERO = FPI.fromScaledUint(0, BASE);
-
+    /// @dev struct to store all needed vault details
     struct VaultDetails {
         address shortUnderlyingAsset;
         address shortStrikeAsset;
@@ -50,10 +43,121 @@ contract MarginCalculator {
         bool hasCollateral;
     }
 
+    /// @dev oracle module
+    OracleInterface public oracle;
+
+    /// @dev decimals used by strike price and oracle price
+    uint256 internal constant BASE = 8;
+
+    /// @dev FixedPoint 0
+    FPI.FixedPointInt internal ZERO = FPI.fromScaledUint(0, BASE);
+
+    /// @dev mapping to store dust amount per option collateral asset
+    mapping(address => uint256) internal dust;
+
+    /// @dev mapping to store array of time to expiry per product
+    mapping(bytes32 => uint256[]) internal productTimeToExpiry;
+
+    /// @dev mapping to store option upper bound value at specific time to expiry per product
+    mapping(bytes32 => mapping(uint256 => uint256)) internal timeToExpiryValue;
+
+    /// @dev mapping to store shock value for spot price per product
+    mapping(bytes32 => uint256) internal spotShock;
+
+    /// @notice emits an event when collateral dust is updated
+    event CollateralDustUpdated(address indexed collateral, uint256 dust);
+    /// @notice emits an event when new time to expiry is added for a specific product
+    event ProductTimeToExpiryAdded(bytes32 indexed productHash, uint256 timeToExpiry);
+    /// @notice emits an event when new upper bound value is added for a specific time to expiry timestamp
+    event TimeToExpiryValueAdded(bytes32 indexed productHash, uint256 timeToExpiry, uint256 value);
+    /// @notice emits an event when spot shock value is updated for a specific product
+    event SpotShockUpdated(bytes32 indexed product, uint256 spotShock);
+
     constructor(address _oracle) public {
         require(_oracle != address(0), "MarginCalculator: invalid oracle address");
 
         oracle = OracleInterface(_oracle);
+    }
+
+    /**
+     * @notice set dust amount for collateral asset (1e27)
+     * @dev can only be called by owner
+     * @param _collateral collateral asset address
+     * @param _dust dust amount
+     */
+    function setCollateralDust(address _collateral, uint256 _dust) external onlyOwner {
+        dust[_collateral] = _dust;
+    }
+
+    /**
+     * @notice set new time to expiry for specific product (1e27)
+     * @dev can only be called by owner
+     * @param _underlying otoken underlying asset
+     * @param _strike otoken strike asset
+     * @param _collateral otoken collateral asset
+     * @param _isPut otoken type
+     * @param _timeToExpiry option time to expiry timestamp
+     */
+    function setProductTimeToExpiry(
+        address _underlying,
+        address _strike,
+        address _collateral,
+        bool _isPut,
+        uint256 _timeToExpiry
+    ) external onlyOwner {
+        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
+        uint256[] storage expiryArray = productTimeToExpiry[productHash];
+
+        require(_timeToExpiry > expiryArray[expiryArray.length - 1], "MarginCalculator: expiry array is not in order");
+        require(timeToExpiryValue[productHash][_timeToExpiry] != 0, "MarginCalculator: no expiry value found");
+
+        expiryArray.push(_timeToExpiry);
+    }
+
+    /**
+     * @notice set option upper bound value for specific time to expiry (1e27)
+     * @dev can only be called by owner
+     * @param _underlying otoken underlying asset
+     * @param _strike otoken strike asset
+     * @param _collateral otoken collateral asset
+     * @param _isPut otoken type
+     * @param _timeToExpiry option time to expiry timestamp
+     * @param _value upper bound value
+     */
+    function setTimeToExpiryValue(
+        address _underlying,
+        address _strike,
+        address _collateral,
+        bool _isPut,
+        uint256 _timeToExpiry,
+        uint256 _value
+    ) external onlyOwner {
+        require(_value > 0, "MarginCalculator: invalid value");
+
+        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
+
+        timeToExpiryValue[productHash][_timeToExpiry] = _value;
+    }
+
+    /**
+     * @notice set spot shock value (1e27)
+     * @dev can only be called by owner
+     * @param _underlying otoken underlying asset
+     * @param _strike otoken strike asset
+     * @param _collateral otoken collateral asset
+     * @param _isPut otoken type
+     * @param _shockValue spot shock value
+     */
+    function setSpotShock(
+        address _undelrying,
+        address _strike,
+        address _collateral,
+        bool _isPut,
+        uint256 _shockValue
+    ) external onlyOwner {
+        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
+
+        spotShock[productHash] = _shockValue;
     }
 
     /**
@@ -319,22 +423,6 @@ contract MarginCalculator {
     }
 
     /**
-     * @dev calculate the cash value obligation for an expired vault, where a positive number is an obligation
-     *
-     * Formula: net = (short cash value * short amount) - ( long cash value * long Amount )
-     *
-     * @return cash value obligation denominated in the strike asset
-     */
-    function _getExpiredSpreadCashValue(
-        FPI.FixedPointInt memory _shortAmount,
-        FPI.FixedPointInt memory _longAmount,
-        FPI.FixedPointInt memory _shortCashValue,
-        FPI.FixedPointInt memory _longCashValue
-    ) internal pure returns (FPI.FixedPointInt memory) {
-        return _shortCashValue.mul(_shortAmount).sub(_longCashValue.mul(_longAmount));
-    }
-
-    /**
      * @dev ensure that:
      * a) at most 1 asset type used as collateral
      * b) at most 1 series of option used as the long option
@@ -466,14 +554,6 @@ contract MarginCalculator {
         return _amount.mul(FPI.fromScaledUint(priceA, BASE)).div(FPI.fromScaledUint(priceB, BASE));
     }
 
-    /**
-     * @dev check if asset array contain a token address
-     * @return True if the array is not empty
-     */
-    function _isNotEmpty(address[] memory _assets) internal pure returns (bool) {
-        return _assets.length > 0 && _assets[0] != address(0);
-    }
-
     function getVaultDetails(MarginVault.Vault memory _vault) internal view returns (VaultDetails memory) {
         VaultDetails memory vaultDetails = VaultDetails(
             address(0),
@@ -533,5 +613,29 @@ contract MarginCalculator {
         }
 
         return vaultDetails;
+    }
+
+    /**
+     * @dev calculate the cash value obligation for an expired vault, where a positive number is an obligation
+     *
+     * Formula: net = (short cash value * short amount) - ( long cash value * long Amount )
+     *
+     * @return cash value obligation denominated in the strike asset
+     */
+    function _getExpiredSpreadCashValue(
+        FPI.FixedPointInt memory _shortAmount,
+        FPI.FixedPointInt memory _longAmount,
+        FPI.FixedPointInt memory _shortCashValue,
+        FPI.FixedPointInt memory _longCashValue
+    ) internal pure returns (FPI.FixedPointInt memory) {
+        return _shortCashValue.mul(_shortAmount).sub(_longCashValue.mul(_longAmount));
+    }
+
+    /**
+     * @dev check if asset array contain a token address
+     * @return True if the array is not empty
+     */
+    function _isNotEmpty(address[] memory _assets) internal pure returns (bool) {
+        return _assets.length > 0 && _assets[0] != address(0);
     }
 }
