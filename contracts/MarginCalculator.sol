@@ -49,11 +49,11 @@ contract MarginCalculator is Ownable {
     /// @dev decimals used by strike price and oracle price
     uint256 internal constant BASE = 8;
 
+    /// oracle deviation value (1e27)
+    uint256 internal oracleDeviation;
+
     /// @dev FixedPoint 0
     FPI.FixedPointInt internal ZERO = FPI.fromScaledUint(0, BASE);
-
-    /// oracle deviation value (1e27)
-    FPI.FixedPointInt internal oracleDeviation;
 
     /// @dev mapping to store dust amount per option collateral asset (1e27)
     mapping(address => uint256) internal dust;
