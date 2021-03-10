@@ -52,13 +52,16 @@ contract MarginCalculator is Ownable {
     /// @dev FixedPoint 0
     FPI.FixedPointInt internal ZERO = FPI.fromScaledUint(0, BASE);
 
-    /// @dev mapping to store dust amount per option collateral asset
+    /// oracle deviation value (1e27)
+    FPI.FixedPointInt internal oracleDeviation;
+
+    /// @dev mapping to store dust amount per option collateral asset (1e27)
     mapping(address => uint256) internal dust;
 
     /// @dev mapping to store array of time to expiry per product
     mapping(bytes32 => uint256[]) internal productTimeToExpiry;
 
-    /// @dev mapping to store option upper bound value at specific time to expiry per product
+    /// @dev mapping to store option upper bound value at specific time to expiry per product (1e27)
     mapping(bytes32 => mapping(uint256 => uint256)) internal timeToExpiryValue;
 
     /// @dev mapping to store shock value for spot price per product
@@ -158,6 +161,15 @@ contract MarginCalculator is Ownable {
         bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
 
         spotShock[productHash] = _shockValue;
+    }
+
+    /**
+     * @notice set oracle deviation (1e27)
+     * @dev can only be called by owner
+     * @param _deviation deviation value
+     */
+    function setOracleDeviation(uint256 _deviation) external onlyOwner {
+        oracleDeviation = _deviation;
     }
 
     /**
