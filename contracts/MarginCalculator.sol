@@ -149,7 +149,7 @@ contract MarginCalculator is Ownable {
      * @param _shockValue spot shock value
      */
     function setSpotShock(
-        address _undelrying,
+        address _underlying,
         address _strike,
         address _collateral,
         bool _isPut,
