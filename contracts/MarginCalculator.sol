@@ -113,7 +113,7 @@ contract MarginCalculator is Ownable {
         uint256[] storage expiryArray = productTimeToExpiry[productHash];
 
         require(
-            (expiryArray.length == 0) || (_timeToExpiry > expiryArray[expiryArray.length - 1]),
+            (expiryArray.length == 0) || (_timeToExpiry > expiryArray[expiryArray.length.sub(1)]),
             "MarginCalculator: expiry array is not in order"
         );
         require(
@@ -572,17 +572,14 @@ contract MarginCalculator is Ownable {
         uint256 optionTimeToExpiry = _expiryTimestamp.sub(now);
 
         require(
-            timesToExpiry[timesToExpiry.length - 1] >= optionTimeToExpiry,
+            timesToExpiry[timesToExpiry.length.sub(1)] >= optionTimeToExpiry,
             "MarginCalculator: product have no upper bound value"
         );
 
-        uint256 i;
-
-        while ((i < timesToExpiry.length) && (timesToExpiry[i] < optionTimeToExpiry)) {
-            i++;
+        for (uint8 i = 0; i < timesToExpiry.length; i++) {
+            if (timesToExpiry[i] >= optionTimeToExpiry)
+                return FPI.fromScaledUint(timeToExpiryValue[_productHash][timesToExpiry[i]], 27);
         }
-
-        return FPI.fromScaledUint(timeToExpiryValue[_productHash][timesToExpiry[i]], 27);
     }
 
     /**
@@ -635,90 +632,6 @@ contract MarginCalculator is Ownable {
         FPI.FixedPointInt memory secondPart = FPI.max(_shortAmount.sub(_longAmount), ZERO);
 
         return FPI.max(firstPart, secondPart);
-    }
-
-    /**
-     * @dev ensure that:
-     * a) at most 1 asset type used as collateral
-     * b) at most 1 series of option used as the long option
-     * c) at most 1 series of option used as the short option
-     * d) asset array lengths match for long, short and collateral
-     * e) long option and collateral asset is acceptable for margin with short asset
-     * @param _vault the vault to check
-     */
-    function _checkIsValidVault(MarginVault.Vault memory _vault, VaultDetails memory _vaultDetails) internal view {
-        // ensure all the arrays in the vault are valid
-        require(_vault.shortOtokens.length <= 1, "MarginCalculator: Too many short otokens in the vault");
-        require(_vault.longOtokens.length <= 1, "MarginCalculator: Too many long otokens in the vault");
-        require(_vault.collateralAssets.length <= 1, "MarginCalculator: Too many collateral assets in the vault");
-
-        require(
-            _vault.shortOtokens.length == _vault.shortAmounts.length,
-            "MarginCalculator: Short asset and amount mismatch"
-        );
-        require(
-            _vault.longOtokens.length == _vault.longAmounts.length,
-            "MarginCalculator: Long asset and amount mismatch"
-        );
-        require(
-            _vault.collateralAssets.length == _vault.collateralAmounts.length,
-            "MarginCalculator: Collateral asset and amount mismatch"
-        );
-
-        // ensure the long asset is valid for the short asset
-        require(
-            _isMarginableLong(_vault, _vaultDetails),
-            "MarginCalculator: long asset not marginable for short asset"
-        );
-
-        // ensure that the collateral asset is valid for the short asset
-        require(
-            _isMarginableCollateral(_vault, _vaultDetails),
-            "MarginCalculator: collateral asset not marginable for short asset"
-        );
-    }
-
-    /**
-     * @dev if there is a short option and a long option in the vault, ensure that the long option is able to be used as collateral for the short option
-     * @param _vault the vault to check.
-     */
-    function _isMarginableLong(MarginVault.Vault memory _vault, VaultDetails memory _vaultDetails)
-        internal
-        view
-        returns (bool)
-    {
-        // if vault is missing a long or a short, return True
-        if (!_vaultDetails.hasLong || !_vaultDetails.hasShort) return true;
-
-        return
-            _vault.longOtokens[0] != _vault.shortOtokens[0] &&
-            _vaultDetails.longUnderlyingAsset == _vaultDetails.shortUnderlyingAsset &&
-            _vaultDetails.longStrikeAsset == _vaultDetails.shortStrikeAsset &&
-            _vaultDetails.longCollateralAsset == _vaultDetails.shortCollateralAsset &&
-            _vaultDetails.longExpiryTimestamp == _vaultDetails.shortExpiryTimestamp &&
-            _vaultDetails.isLongPut == _vaultDetails.isShortPut;
-    }
-
-    /**
-     * @dev if there is short option and collateral asset in the vault, ensure that the collateral asset is valid for the short option
-     * @param _vault the vault to check.
-     */
-    function _isMarginableCollateral(MarginVault.Vault memory _vault, VaultDetails memory _vaultDetails)
-        internal
-        view
-        returns (bool)
-    {
-        bool isMarginable = true;
-
-        if (!_vaultDetails.hasCollateral) return isMarginable;
-
-        if (_vaultDetails.hasShort) {
-            isMarginable = _vaultDetails.shortCollateralAsset == _vault.collateralAssets[0];
-        } else if (_vaultDetails.hasLong) {
-            isMarginable = _vaultDetails.longCollateralAsset == _vault.collateralAssets[0];
-        }
-
-        return isMarginable;
     }
 
     /**
@@ -859,5 +772,89 @@ contract MarginCalculator is Ownable {
      */
     function _isNotEmpty(address[] memory _assets) internal pure returns (bool) {
         return _assets.length > 0 && _assets[0] != address(0);
+    }
+
+    /**
+     * @dev ensure that:
+     * a) at most 1 asset type used as collateral
+     * b) at most 1 series of option used as the long option
+     * c) at most 1 series of option used as the short option
+     * d) asset array lengths match for long, short and collateral
+     * e) long option and collateral asset is acceptable for margin with short asset
+     * @param _vault the vault to check
+     */
+    function _checkIsValidVault(MarginVault.Vault memory _vault, VaultDetails memory _vaultDetails) internal pure {
+        // ensure all the arrays in the vault are valid
+        require(_vault.shortOtokens.length <= 1, "MarginCalculator: Too many short otokens in the vault");
+        require(_vault.longOtokens.length <= 1, "MarginCalculator: Too many long otokens in the vault");
+        require(_vault.collateralAssets.length <= 1, "MarginCalculator: Too many collateral assets in the vault");
+
+        require(
+            _vault.shortOtokens.length == _vault.shortAmounts.length,
+            "MarginCalculator: Short asset and amount mismatch"
+        );
+        require(
+            _vault.longOtokens.length == _vault.longAmounts.length,
+            "MarginCalculator: Long asset and amount mismatch"
+        );
+        require(
+            _vault.collateralAssets.length == _vault.collateralAmounts.length,
+            "MarginCalculator: Collateral asset and amount mismatch"
+        );
+
+        // ensure the long asset is valid for the short asset
+        require(
+            _isMarginableLong(_vault, _vaultDetails),
+            "MarginCalculator: long asset not marginable for short asset"
+        );
+
+        // ensure that the collateral asset is valid for the short asset
+        require(
+            _isMarginableCollateral(_vault, _vaultDetails),
+            "MarginCalculator: collateral asset not marginable for short asset"
+        );
+    }
+
+    /**
+     * @dev if there is a short option and a long option in the vault, ensure that the long option is able to be used as collateral for the short option
+     * @param _vault the vault to check.
+     */
+    function _isMarginableLong(MarginVault.Vault memory _vault, VaultDetails memory _vaultDetails)
+        internal
+        pure
+        returns (bool)
+    {
+        // if vault is missing a long or a short, return True
+        if (!_vaultDetails.hasLong || !_vaultDetails.hasShort) return true;
+
+        return
+            _vault.longOtokens[0] != _vault.shortOtokens[0] &&
+            _vaultDetails.longUnderlyingAsset == _vaultDetails.shortUnderlyingAsset &&
+            _vaultDetails.longStrikeAsset == _vaultDetails.shortStrikeAsset &&
+            _vaultDetails.longCollateralAsset == _vaultDetails.shortCollateralAsset &&
+            _vaultDetails.longExpiryTimestamp == _vaultDetails.shortExpiryTimestamp &&
+            _vaultDetails.isLongPut == _vaultDetails.isShortPut;
+    }
+
+    /**
+     * @dev if there is short option and collateral asset in the vault, ensure that the collateral asset is valid for the short option
+     * @param _vault the vault to check.
+     */
+    function _isMarginableCollateral(MarginVault.Vault memory _vault, VaultDetails memory _vaultDetails)
+        internal
+        pure
+        returns (bool)
+    {
+        bool isMarginable = true;
+
+        if (!_vaultDetails.hasCollateral) return isMarginable;
+
+        if (_vaultDetails.hasShort) {
+            isMarginable = _vaultDetails.shortCollateralAsset == _vault.collateralAssets[0];
+        } else if (_vaultDetails.hasLong) {
+            isMarginable = _vaultDetails.longCollateralAsset == _vault.collateralAssets[0];
+        }
+
+        return isMarginable;
     }
 }

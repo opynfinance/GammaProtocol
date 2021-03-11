@@ -5,7 +5,7 @@ import {
   MockOracleInstance,
   MockOtokenInstance,
 } from '../../build/types/truffle-types'
-import {createVault, createScaledNumber as scaleNum, createTokenAmount} from '../utils'
+import {createScaledNumber as scaleNum} from '../utils'
 import {assert} from 'chai'
 import BigNumber from 'bignumber.js'
 
@@ -51,7 +51,7 @@ contract('MarginCalculator', ([owner, random]) => {
 
   describe('Collateral dust', async () => {
     it('only owner should be able to set collateral dust amunt', async () => {
-      const wethDust = createTokenAmount(1, 27)
+      const wethDust = scaleNum(1, 27)
       await calculator.setCollateralDust(weth.address, wethDust, {from: owner})
 
       const dustAmount = new BigNumber(await calculator.getCollateralDust(weth.address))
@@ -60,7 +60,7 @@ contract('MarginCalculator', ([owner, random]) => {
     })
 
     it('should revert setting collateral dust from address other than owner', async () => {
-      const wethDust = createTokenAmount(0, 27)
+      const wethDust = scaleNum(0, 27)
 
       await expectRevert(
         calculator.setCollateralDust(weth.address, wethDust, {from: random}),
@@ -80,7 +80,7 @@ contract('MarginCalculator', ([owner, random]) => {
     })
 
     it('should revert setting time to expiry value when caller is not owner', async () => {
-      const upperBoundValue = createTokenAmount(0.5, 27)
+      const upperBoundValue = scaleNum(0.5, 27)
       const timeToExpiry = 60 * 24 * 7
 
       await expectRevert(
@@ -92,7 +92,7 @@ contract('MarginCalculator', ([owner, random]) => {
     })
 
     it('should revert setting time to expiry value when value is equal to zero', async () => {
-      const upperBoundValue = createTokenAmount(0, 27)
+      const upperBoundValue = scaleNum(0, 27)
       const timeToExpiry = 60 * 24 * 7
 
       await expectRevert(
@@ -113,7 +113,7 @@ contract('MarginCalculator', ([owner, random]) => {
     })
 
     it('should set time to expiry value when caller is not owner', async () => {
-      const upperBoundValue = createTokenAmount(0.5, 27)
+      const upperBoundValue = scaleNum(0.5, 27)
       const timeToExpiry = 60 * 24 * 7
 
       await calculator.setTimeToExpiryValue(
@@ -163,7 +163,7 @@ contract('MarginCalculator', ([owner, random]) => {
 
   describe('Spot shock value', async () => {
     it('should revert setting spot shock value when sender is not owner', async () => {
-      const spotShockValue = createTokenAmount(0.75, 27)
+      const spotShockValue = scaleNum(0.75, 27)
 
       await expectRevert(
         calculator.setSpotShock(weth.address, usdc.address, usdc.address, true, spotShockValue, {from: random}),
@@ -172,7 +172,7 @@ contract('MarginCalculator', ([owner, random]) => {
     })
 
     it('should set spot shock value', async () => {
-      const spotShockValue = createTokenAmount(0.75, 27)
+      const spotShockValue = scaleNum(0.75, 27)
 
       await calculator.setSpotShock(weth.address, usdc.address, usdc.address, true, spotShockValue, {from: owner})
 
@@ -186,7 +186,7 @@ contract('MarginCalculator', ([owner, random]) => {
 
   describe('Oracle deviation value', async () => {
     it('should revert setting oracle deviation value when sender is not owner', async () => {
-      const oracleDeviationValue = createTokenAmount(0.05, 27)
+      const oracleDeviationValue = scaleNum(0.05, 27)
 
       await expectRevert(
         calculator.setOracleDeviation(oracleDeviationValue, {from: random}),
@@ -195,7 +195,7 @@ contract('MarginCalculator', ([owner, random]) => {
     })
 
     it('should set oracle deviation value', async () => {
-      const oracleDeviationValue = createTokenAmount(0.05, 27)
+      const oracleDeviationValue = scaleNum(0.05, 27)
 
       await calculator.setOracleDeviation(oracleDeviationValue, {from: owner})
 
@@ -204,6 +204,62 @@ contract('MarginCalculator', ([owner, random]) => {
         oracleDeviationValue.toString(),
         'Oracle deviation value mismatch',
       )
+    })
+  })
+
+  describe('Find upper bound value', async () => {
+    it('should revert when product have an emptry time to expiry array', async () => {
+      const optionExpiry = 60 * 24 * 7
+
+      await expectRevert(
+        calculator.findUpperBoundValue(weth.address, weth.address, weth.address, true, optionExpiry),
+        'MarginCalculator: product have no expiry values',
+      )
+    })
+
+    it('should revert when product have no upper bound value', async () => {
+      const timeToExpiy = 60 * 24 * 10000
+      const optionExpiry = new BigNumber(await time.latest()).plus(timeToExpiy)
+
+      await expectRevert(
+        calculator.findUpperBoundValue(weth.address, usdc.address, usdc.address, true, optionExpiry),
+        'MarginCalculator: product have no upper bound value',
+      )
+    })
+
+    describe('find upper bound value', async () => {
+      // array of time to expiry
+      const timeToExpiry = [60 * 24, 60 * 24 * 7, 60 * 24 * 14, 60 * 24 * 30]
+      // array of upper bound value correspond to time to expiry
+      const expiryToValue = [scaleNum(0.3, 27), scaleNum(0.4, 27), scaleNum(0.2, 27), scaleNum(0.06, 27)]
+
+      before(async () => {
+        // set time to expiry and each upper bound value
+        for (let i = 0; i < expiryToValue.length; i++) {
+          await calculator.setTimeToExpiryValue(
+            weth.address,
+            usdc.address,
+            weth.address,
+            false,
+            timeToExpiry[i],
+            expiryToValue[i],
+            {from: owner},
+          )
+          await calculator.setProductTimeToExpiry(weth.address, usdc.address, weth.address, false, timeToExpiry[i], {
+            from: owner,
+          })
+        }
+      })
+
+      it('should return the upper bound value for the specific time to expiry', async () => {
+        const optionExpiry = new BigNumber(await time.latest()).plus(timeToExpiry[1])
+
+        const upperBoundValue = new BigNumber(
+          await calculator.findUpperBoundValue(weth.address, usdc.address, weth.address, false, optionExpiry),
+        )
+
+        assert.equal(upperBoundValue.toString(), expiryToValue[1].toString(), 'Upper bound value found mismatch')
+      })
     })
   })
 })
