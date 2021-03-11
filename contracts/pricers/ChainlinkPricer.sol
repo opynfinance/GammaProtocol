@@ -12,6 +12,12 @@ import {SafeMath} from "../packages/oz/SafeMath.sol";
 contract ChainLinkPricer is OpynPricerInterface {
     using SafeMath for uint256;
 
+    /// @dev base decimals
+    uint256 internal constant BASE = 8;
+
+    /// @notice chainlink response decimals
+    uint256 public aggregatorDecimals;
+
     /// @notice the opyn oracle address
     OracleInterface public oracle;
     /// @notice the aggregator for an asset
@@ -42,6 +48,8 @@ contract ChainLinkPricer is OpynPricerInterface {
         oracle = OracleInterface(_oracle);
         aggregator = AggregatorInterface(_aggregator);
         asset = _asset;
+
+        aggregatorDecimals = uint256(aggregator.decimals());
     }
 
     /**
@@ -62,7 +70,7 @@ contract ChainLinkPricer is OpynPricerInterface {
         (, int256 answer, , , ) = aggregator.latestRoundData();
         require(answer > 0, "ChainLinkPricer: price is lower than 0");
         // chainlink's answer is already 1e8
-        return uint256(answer);
+        return _scaleToBase(uint256(answer));
     }
 
     /**
@@ -76,6 +84,23 @@ contract ChainLinkPricer is OpynPricerInterface {
 
         require(_expiryTimestamp <= roundTimestamp, "ChainLinkPricer: invalid roundId");
 
-        oracle.setExpiryPrice(asset, _expiryTimestamp, uint256(price));
+        oracle.setExpiryPrice(asset, _expiryTimestamp, _scaleToBase(uint256(price)));
+    }
+
+    /**
+     * @notice scale aggregator response to base decimals (1e8)
+     * @param _price aggregator price
+     * @return price scaled to 1e8
+     */
+    function _scaleToBase(uint256 _price) internal view returns (uint256) {
+        if (aggregatorDecimals > BASE) {
+            uint256 exp = aggregatorDecimals.sub(BASE);
+            _price = _price.div(10**exp);
+        } else if (aggregatorDecimals < BASE) {
+            uint256 exp = BASE.sub(aggregatorDecimals);
+            _price = _price.mul(10**exp);
+        }
+
+        return _price;
     }
 }

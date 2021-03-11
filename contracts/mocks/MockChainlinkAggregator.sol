@@ -7,6 +7,8 @@ pragma solidity 0.6.10;
  * @notice Chainlink oracle mock
  */
 contract MockChainlinkAggregator {
+    uint256 public decimals = 8;
+
     /// @dev mock for round timestmap
     mapping(uint256 => uint256) internal roundTimestamp;
     /// @dev mock for round price
