@@ -160,4 +160,50 @@ contract('MarginCalculator', ([owner, random]) => {
       )
     })
   })
+
+  describe('Spot shock value', async () => {
+    it('should revert setting spot shock value when sender is not owner', async () => {
+      const spotShockValue = createTokenAmount(0.75, 27)
+
+      await expectRevert(
+        calculator.setSpotShock(weth.address, usdc.address, usdc.address, true, spotShockValue, {from: random}),
+        'Ownable: caller is not the owner',
+      )
+    })
+
+    it('should set spot shock value', async () => {
+      const spotShockValue = createTokenAmount(0.75, 27)
+
+      await calculator.setSpotShock(weth.address, usdc.address, usdc.address, true, spotShockValue, {from: owner})
+
+      assert.equal(
+        new BigNumber(await calculator.getSpotShock(weth.address, usdc.address, usdc.address, true)).toString(),
+        spotShockValue.toString(),
+        'Weth spot shock value mismatch',
+      )
+    })
+  })
+
+  describe('Oracle deviation value', async () => {
+    it('should revert setting oracle deviation value when sender is not owner', async () => {
+      const oracleDeviationValue = createTokenAmount(0.05, 27)
+
+      await expectRevert(
+        calculator.setOracleDeviation(oracleDeviationValue, {from: random}),
+        'Ownable: caller is not the owner',
+      )
+    })
+
+    it('should set oracle deviation value', async () => {
+      const oracleDeviationValue = createTokenAmount(0.05, 27)
+
+      await calculator.setOracleDeviation(oracleDeviationValue, {from: owner})
+
+      assert.equal(
+        new BigNumber(await calculator.getOracleDeviation()).toString(),
+        oracleDeviationValue.toString(),
+        'Oracle deviation value mismatch',
+      )
+    })
+  })
 })
