@@ -94,7 +94,7 @@ contract MarginCalculator is Ownable {
     }
 
     /**
-     * @notice set new time to expiry for specific product (1e27)
+     * @notice set new time to expiry for specific product
      * @dev can only be called by owner
      * @param _underlying otoken underlying asset
      * @param _strike otoken strike asset
@@ -112,8 +112,14 @@ contract MarginCalculator is Ownable {
         bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
         uint256[] storage expiryArray = productTimeToExpiry[productHash];
 
-        require(_timeToExpiry > expiryArray[expiryArray.length - 1], "MarginCalculator: expiry array is not in order");
-        require(timeToExpiryValue[productHash][_timeToExpiry] != 0, "MarginCalculator: no expiry value found");
+        require(
+            (expiryArray.length == 0) || (_timeToExpiry > expiryArray[expiryArray.length - 1]),
+            "MarginCalculator: expiry array is not in order"
+        );
+        require(
+            timeToExpiryValue[productHash][_timeToExpiry] != 0,
+            "MarginCalculator: no expiry upper bound value found"
+        );
 
         expiryArray.push(_timeToExpiry);
     }
@@ -136,7 +142,7 @@ contract MarginCalculator is Ownable {
         uint256 _timeToExpiry,
         uint256 _value
     ) external onlyOwner {
-        require(_value > 0, "MarginCalculator: invalid value");
+        require(_value > 0, "MarginCalculator: invalid option upper bound value");
 
         bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
 
@@ -171,6 +177,81 @@ contract MarginCalculator is Ownable {
      */
     function setOracleDeviation(uint256 _deviation) external onlyOwner {
         oracleDeviation = _deviation;
+    }
+
+    /**
+     * @notice get dust amount for collateral asset
+     * @param _collateral collateral asset address
+     * @return dust amount (1e27)
+     */
+    function getCollateralDust(address _collateral) external view returns (uint256) {
+        return dust[_collateral];
+    }
+
+    /**
+     * @notice get time to expiry for specific product
+     * @param _underlying otoken underlying asset
+     * @param _strike otoken strike asset
+     * @param _collateral otoken collateral asset
+     * @param _isPut otoken type
+     * @return array of times to expiry
+     */
+    function getProductTimeToExpiry(
+        address _underlying,
+        address _strike,
+        address _collateral,
+        bool _isPut
+    ) external view returns (uint256[] memory) {
+        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
+        return productTimeToExpiry[productHash];
+    }
+
+    /**
+     * @notice get option upper bound value for specific time to expiry
+     * @param _underlying otoken underlying asset
+     * @param _strike otoken strike asset
+     * @param _collateral otoken collateral asset
+     * @param _isPut otoken type
+     * @param _timeToExpiry option time to expiry timestamp
+     * @return option upper bound value (1e27)
+     */
+    function getTimeToExpiryValue(
+        address _underlying,
+        address _strike,
+        address _collateral,
+        bool _isPut,
+        uint256 _timeToExpiry
+    ) external view returns (uint256) {
+        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
+
+        return timeToExpiryValue[productHash][_timeToExpiry];
+    }
+
+    /**
+     * @notice get spot shock value
+     * @param _underlying otoken underlying asset
+     * @param _strike otoken strike asset
+     * @param _collateral otoken collateral asset
+     * @param _isPut otoken type
+     * @return _shockValue spot shock value (1e27)
+     */
+    function getSpotShock(
+        address _underlying,
+        address _strike,
+        address _collateral,
+        bool _isPut
+    ) external view returns (uint256) {
+        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
+
+        return spotShock[productHash];
+    }
+
+    /**
+     * @notice get oracle deviation
+     * @return oracle deviation value (1e27)
+     */
+    function getOracleDeviation() external view returns (uint256) {
+        return oracleDeviation;
     }
 
     /**
