@@ -64,7 +64,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
     /// @dev mapping to map vault by each vault type, naked margin vault should be set to 1, spread/max loss vault should be set to 0
     mapping(address => mapping(uint256 => uint256)) internal vaultType;
-    /// @dev mapping to store vault latest update timestamp, will be updated in every action that change vault state or when calling sync()
+    /// @dev mapping to store the timestamp at which the vault was last updated, will be updated in every action that changes the vault state or when calling sync()
     mapping(address => mapping(uint256 => uint256)) internal vaultLatestUpdate;
 
     /// @notice emits an event when an account operator is updated for a specific account owner
