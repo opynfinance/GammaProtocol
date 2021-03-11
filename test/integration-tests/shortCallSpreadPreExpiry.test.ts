@@ -70,6 +70,8 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
   const usdcDecimals = 6
   const wethDecimals = 18
 
+  const openVaultBytes = web3.eth.abi.encodeParameter('uint256', 0)
+
   before('set up contracts', async () => {
     const now = (await time.latest()).toNumber()
     expiry = createValidExpiry(now, 30)
@@ -190,7 +192,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
           vaultId: vaultCounter2,
           amount: '0',
           index: '0',
-          data: ZERO_ADDR,
+          data: openVaultBytes,
         },
         {
           actionType: ActionType.MintShortOption,
@@ -259,7 +261,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
           vaultId: vaultCounter1,
           amount: '0',
           index: '0',
-          data: ZERO_ADDR,
+          data: openVaultBytes,
         },
         {
           actionType: ActionType.MintShortOption,

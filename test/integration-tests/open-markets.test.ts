@@ -66,6 +66,8 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
   const isPut = true
   let expiry: number
 
+  const openVaultBytes = web3.eth.abi.encodeParameter('uint256', 0)
+
   before('Deploy addressBook, otoken logic, whitelist, Factory contract', async () => {
     expiry = createValidExpiry(Number(await time.latest()), 100)
     usdc = await MockERC20.new('USDC', 'USDC', 6)
@@ -243,7 +245,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
           vaultId: vaultCounter,
           amount: '0',
           index: '0',
-          data: ZERO_ADDR,
+          data: openVaultBytes,
         },
         {
           actionType: ActionType.MintShortOption,
