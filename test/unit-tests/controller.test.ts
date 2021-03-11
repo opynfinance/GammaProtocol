@@ -2019,9 +2019,9 @@ contract(
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-          const vaultBefore = (await controllerProxy.getVault(accountOwner1, vaultCounter))[0]
+          const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
 
-          const [netValue, isExcess] = await calculator.getExcessCollateral(vaultBefore)
+          const [netValue, isExcess] = await calculator.getExcessCollateral(vaultBefore[0], vaultBefore[1])
 
           const proceed = await controllerProxy.getProceed(accountOwner1, vaultCounter)
           assert.equal(netValue.toString(), proceed.toString())
@@ -2029,7 +2029,7 @@ contract(
           assert.equal(netValue.toString(), '0', 'Position net value mistmatch')
           assert.equal(isExcess, true, 'Position collateral excess mismatch')
 
-          const collateralToWithdraw = new BigNumber(vaultBefore.collateralAmounts[0])
+          const collateralToWithdraw = new BigNumber(vaultBefore[0].collateralAmounts[0])
           const actionArgs = [
             {
               actionType: ActionType.WithdrawCollateral,
@@ -2070,11 +2070,11 @@ contract(
           await usdc.approve(marginPool.address, excessCollateralToDeposit, {from: accountOwner1})
           await controllerProxy.operate(firstActionArgs, {from: accountOwner1})
 
-          const vaultBefore = (await controllerProxy.getVault(accountOwner1, vaultCounter))[0]
+          const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
           const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
           const withdrawerBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
 
-          const [netValue, isExcess] = await calculator.getExcessCollateral(vaultBefore)
+          const [netValue, isExcess] = await calculator.getExcessCollateral(vaultBefore[0], vaultBefore[1])
 
           const proceed = await controllerProxy.getProceed(accountOwner1, vaultCounter)
           assert.equal(netValue.toString(), proceed.toString())
@@ -2113,7 +2113,7 @@ contract(
           )
           assert.equal(vaultAfter.collateralAssets.length, 1, 'Vault collateral asset array length mismatch')
           assert.equal(
-            new BigNumber(vaultBefore.collateralAmounts[0])
+            new BigNumber(vaultBefore[0].collateralAmounts[0])
               .minus(new BigNumber(vaultAfter.collateralAmounts[0]))
               .toString(),
             excessCollateralToDeposit.toString(),

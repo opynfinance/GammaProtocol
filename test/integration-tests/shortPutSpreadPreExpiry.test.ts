@@ -233,23 +233,27 @@ contract('Short Put Spread Option closed before expiry flow', ([accountOwner1, n
       const marginPoolLongOtokenBalanceBefore = new BigNumber(await lowerStrikePut.balanceOf(marginPool.address))
 
       // Check that we start at a valid state
-      const vaultBefore = (await controllerProxy.getVault(accountOwner1, vaultCounter1))[0]
-      const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore)
+      const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter1)
+      const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore[0], vaultBefore[1])
       assert.equal(vaultStateBefore[0].toString(), '0')
       assert.equal(vaultStateBefore[1], true)
 
       // Check the vault balances stored in the contract
-      assert.equal(vaultBefore.shortOtokens.length, 0, 'Length of the short otoken array in the vault is incorrect')
-      assert.equal(vaultBefore.collateralAssets.length, 0, 'Length of the collateral array in the vault is incorrect')
-      assert.equal(vaultBefore.longOtokens.length, 0, 'Length of the long otoken array in the vault is incorrect')
-
-      assert.equal(vaultBefore.shortAmounts.length, 0, 'Length of the short amounts array in the vault is incorrect')
+      assert.equal(vaultBefore[0].shortOtokens.length, 0, 'Length of the short otoken array in the vault is incorrect')
       assert.equal(
-        vaultBefore.collateralAmounts.length,
+        vaultBefore[0].collateralAssets.length,
+        0,
+        'Length of the collateral array in the vault is incorrect',
+      )
+      assert.equal(vaultBefore[0].longOtokens.length, 0, 'Length of the long otoken array in the vault is incorrect')
+
+      assert.equal(vaultBefore[0].shortAmounts.length, 0, 'Length of the short amounts array in the vault is incorrect')
+      assert.equal(
+        vaultBefore[0].collateralAmounts.length,
         0,
         'Length of the collateral amounts array in the vault is incorrect',
       )
-      assert.equal(vaultBefore.longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
+      assert.equal(vaultBefore[0].longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
 
       const actionArgs = [
         {
@@ -334,40 +338,40 @@ contract('Short Put Spread Option closed before expiry flow', ([accountOwner1, n
       )
 
       // Check that we end at a valid state
-      const vaultAfter = (await controllerProxy.getVault(accountOwner1, vaultCounter1))[0]
-      const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
+      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter1)
+      const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter[0], vaultAfter[1])
       assert.equal(vaultStateAfter[0].toString(), '0')
       assert.equal(vaultStateAfter[1], true)
 
       // Check the vault balances stored in the contract
-      assert.equal(vaultAfter.shortOtokens.length, 1, 'Length of the short otoken array in the vault is incorrect')
-      assert.equal(vaultAfter.collateralAssets.length, 1, 'Length of the collateral array in the vault is incorrect')
-      assert.equal(vaultAfter.longOtokens.length, 1, 'Length of the long otoken array in the vault is incorrect')
+      assert.equal(vaultAfter[0].shortOtokens.length, 1, 'Length of the short otoken array in the vault is incorrect')
+      assert.equal(vaultAfter[0].collateralAssets.length, 1, 'Length of the collateral array in the vault is incorrect')
+      assert.equal(vaultAfter[0].longOtokens.length, 1, 'Length of the long otoken array in the vault is incorrect')
 
-      assert.equal(vaultAfter.shortOtokens[0], higherStrikePut.address, 'Incorrect short otoken in the vault')
-      assert.equal(vaultAfter.collateralAssets[0], usdc.address, 'Incorrect collateral asset in the vault')
-      assert.equal(vaultAfter.longOtokens[0], lowerStrikePut.address, 'Incorrect long otoken in the vault')
+      assert.equal(vaultAfter[0].shortOtokens[0], higherStrikePut.address, 'Incorrect short otoken in the vault')
+      assert.equal(vaultAfter[0].collateralAssets[0], usdc.address, 'Incorrect collateral asset in the vault')
+      assert.equal(vaultAfter[0].longOtokens[0], lowerStrikePut.address, 'Incorrect long otoken in the vault')
 
-      assert.equal(vaultAfter.shortAmounts.length, 1, 'Length of the short amounts array in the vault is incorrect')
+      assert.equal(vaultAfter[0].shortAmounts.length, 1, 'Length of the short amounts array in the vault is incorrect')
       assert.equal(
-        vaultAfter.collateralAmounts.length,
+        vaultAfter[0].collateralAmounts.length,
         1,
         'Length of the collateral amounts array in the vault is incorrect',
       )
-      assert.equal(vaultAfter.longAmounts.length, 1, 'Length of the long amounts array in the vault is incorrect')
+      assert.equal(vaultAfter[0].longAmounts.length, 1, 'Length of the long amounts array in the vault is incorrect')
 
       assert.equal(
-        vaultAfter.shortAmounts[0].toString(),
+        vaultAfter[0].shortAmounts[0].toString(),
         scaledOptionsAmount,
         'Incorrect amount of short options stored in the vault',
       )
       assert.equal(
-        vaultAfter.collateralAmounts[0].toString(),
+        vaultAfter[0].collateralAmounts[0].toString(),
         scaledCollateralAmount,
         'Incorrect amount of collateral stored in the vault',
       )
       assert.equal(
-        vaultAfter.longAmounts[0].toString(),
+        vaultAfter[0].longAmounts[0].toString(),
         scaledOptionsAmount,
         'Incorrect amount of long options stored in the vault',
       )
@@ -385,8 +389,8 @@ contract('Short Put Spread Option closed before expiry flow', ([accountOwner1, n
       const marginPoolLongOtokenBalanceBefore = new BigNumber(await lowerStrikePut.balanceOf(marginPool.address))
 
       // Check that we start at a valid state
-      const vaultBefore = (await controllerProxy.getVault(accountOwner1, vaultCounter1))[0]
-      const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore)
+      const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter1)
+      const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore[0], vaultBefore[1])
       assert.equal(vaultStateBefore[0].toString(), '0')
       assert.equal(vaultStateBefore[1], true)
 
@@ -462,35 +466,35 @@ contract('Short Put Spread Option closed before expiry flow', ([accountOwner1, n
       )
 
       // Check that we end at a valid state
-      const vaultAfter = (await controllerProxy.getVault(accountOwner1, vaultCounter1))[0]
-      const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
+      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter1)
+      const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter[0], vaultAfter[1])
       assert.equal(vaultStateAfter[0].toString(), '0')
       assert.equal(vaultStateAfter[1], true)
 
       // Check the vault balances stored in the contract
-      assert.equal(vaultAfter.shortOtokens.length, 1, 'Length of the short otoken array in the vault is incorrect')
-      assert.equal(vaultAfter.collateralAssets.length, 1, 'Length of the collateral array in the vault is incorrect')
-      assert.equal(vaultAfter.longOtokens.length, 1, 'Length of the long otoken array in the vault is incorrect')
+      assert.equal(vaultAfter[0].shortOtokens.length, 1, 'Length of the short otoken array in the vault is incorrect')
+      assert.equal(vaultAfter[0].collateralAssets.length, 1, 'Length of the collateral array in the vault is incorrect')
+      assert.equal(vaultAfter[0].longOtokens.length, 1, 'Length of the long otoken array in the vault is incorrect')
 
-      assert.equal(vaultAfter.shortOtokens[0], ZERO_ADDR, 'Incorrect short otoken in the vault')
-      assert.equal(vaultAfter.collateralAssets[0], ZERO_ADDR, 'Incorrect collateral asset in the vault')
-      assert.equal(vaultAfter.longOtokens[0], ZERO_ADDR, 'Incorrect long otoken in the vault')
+      assert.equal(vaultAfter[0].shortOtokens[0], ZERO_ADDR, 'Incorrect short otoken in the vault')
+      assert.equal(vaultAfter[0].collateralAssets[0], ZERO_ADDR, 'Incorrect collateral asset in the vault')
+      assert.equal(vaultAfter[0].longOtokens[0], ZERO_ADDR, 'Incorrect long otoken in the vault')
 
-      assert.equal(vaultAfter.shortAmounts.length, 1, 'Length of the short amounts array in the vault is incorrect')
+      assert.equal(vaultAfter[0].shortAmounts.length, 1, 'Length of the short amounts array in the vault is incorrect')
       assert.equal(
-        vaultAfter.collateralAmounts.length,
+        vaultAfter[0].collateralAmounts.length,
         1,
         'Length of the collateral amounts array in the vault is incorrect',
       )
-      assert.equal(vaultAfter.longAmounts.length, 1, 'Length of the long amounts array in the vault is incorrect')
+      assert.equal(vaultAfter[0].longAmounts.length, 1, 'Length of the long amounts array in the vault is incorrect')
 
-      assert.equal(vaultAfter.shortAmounts[0].toString(), '0', 'Incorrect amount of short stored in the vault')
+      assert.equal(vaultAfter[0].shortAmounts[0].toString(), '0', 'Incorrect amount of short stored in the vault')
       assert.equal(
-        vaultAfter.collateralAmounts[0].toString(),
+        vaultAfter[0].collateralAmounts[0].toString(),
         '0',
         'Incorrect amount of collateral stored in the vault',
       )
-      assert.equal(vaultAfter.longAmounts[0].toString(), '0', 'Incorrect amount of long stored in the vault')
+      assert.equal(vaultAfter[0].longAmounts[0].toString(), '0', 'Incorrect amount of long stored in the vault')
     })
     it('accountOwner2 should be able to close out the naked short put position before expiry', async () => {
       const collateralAmount = lowerStrike * optionsAmount
@@ -504,8 +508,8 @@ contract('Short Put Spread Option closed before expiry flow', ([accountOwner1, n
       const lowerStrikePutSupplyBefore = new BigNumber(await lowerStrikePut.totalSupply())
 
       // Check that we start at a valid state
-      const vaultBefore = (await controllerProxy.getVault(accountOwner2, vaultCounter2))[0]
-      const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore)
+      const vaultBefore = await controllerProxy.getVault(accountOwner2, vaultCounter2)
+      const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore[0], vaultBefore[1])
       assert.equal(vaultStateBefore[0].toString(), '0')
       assert.equal(vaultStateBefore[1], true)
 
@@ -557,30 +561,30 @@ contract('Short Put Spread Option closed before expiry flow', ([accountOwner1, n
       )
 
       // Check that we end at a valid state
-      const vaultAfter = (await controllerProxy.getVault(accountOwner2, vaultCounter2))[0]
-      const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
+      const vaultAfter = await controllerProxy.getVault(accountOwner2, vaultCounter2)
+      const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter[0], vaultAfter[1])
       assert.equal(vaultStateAfter[0].toString(), '0')
       assert.equal(vaultStateAfter[1], true)
 
       // Check the vault balances stored in the contract
-      assert.equal(vaultAfter.shortOtokens.length, 1, 'Length of the short otoken array in the vault is incorrect')
-      assert.equal(vaultAfter.collateralAssets.length, 1, 'Length of the collateral array in the vault is incorrect')
-      assert.equal(vaultAfter.longOtokens.length, 0, 'Length of the long otoken array in the vault is incorrect')
+      assert.equal(vaultAfter[0].shortOtokens.length, 1, 'Length of the short otoken array in the vault is incorrect')
+      assert.equal(vaultAfter[0].collateralAssets.length, 1, 'Length of the collateral array in the vault is incorrect')
+      assert.equal(vaultAfter[0].longOtokens.length, 0, 'Length of the long otoken array in the vault is incorrect')
 
-      assert.equal(vaultAfter.shortOtokens[0], ZERO_ADDR, 'Incorrect short otoken in the vault')
-      assert.equal(vaultAfter.collateralAssets[0], ZERO_ADDR, 'Incorrect collateral asset in the vault')
+      assert.equal(vaultAfter[0].shortOtokens[0], ZERO_ADDR, 'Incorrect short otoken in the vault')
+      assert.equal(vaultAfter[0].collateralAssets[0], ZERO_ADDR, 'Incorrect collateral asset in the vault')
 
-      assert.equal(vaultAfter.shortAmounts.length, 1, 'Length of the short amounts array in the vault is incorrect')
+      assert.equal(vaultAfter[0].shortAmounts.length, 1, 'Length of the short amounts array in the vault is incorrect')
       assert.equal(
-        vaultAfter.collateralAmounts.length,
+        vaultAfter[0].collateralAmounts.length,
         1,
         'Length of the collateral amounts array in the vault is incorrect',
       )
-      assert.equal(vaultAfter.longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
+      assert.equal(vaultAfter[0].longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
 
-      assert.equal(vaultAfter.shortAmounts[0].toString(), '0', 'Incorrect amount of short stored in the vault')
+      assert.equal(vaultAfter[0].shortAmounts[0].toString(), '0', 'Incorrect amount of short stored in the vault')
       assert.equal(
-        vaultAfter.collateralAmounts[0].toString(),
+        vaultAfter[0].collateralAmounts[0].toString(),
         '0',
         'Incorrect amount of collateral stored in the vault',
       )

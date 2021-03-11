@@ -112,7 +112,7 @@ contract('MarginCalculator Test Engine', () => {
           vaultCollateralAmount,
         )
         // Check that the test passes, only fail if it doesn't
-        const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
+        const [netValue, isExcess] = await calculator.getExcessCollateral(vault, 0)
         assert.equal(netValue.toString(), createTokenAmount(expectedNetValue, usdcDecimals), testToString(tests[i]))
         assert.equal(isExcess, expectedIsExcess, testToString(tests[i]))
       }
@@ -163,7 +163,7 @@ contract('MarginCalculator Test Engine', () => {
           createTokenAmount(collateral, wethDecimals),
         )
 
-        const [netValue, isExcess] = await calculator.getExcessCollateral(vaultWithCollateral)
+        const [netValue, isExcess] = await calculator.getExcessCollateral(vaultWithCollateral, 0)
         assert.equal(netValue.toString(), createTokenAmount(expectedNetValue, wethDecimals), testToString(tests[i]))
         assert.equal(isExcess, expectedIsExcess, testToString(tests[i]))
       }
@@ -230,7 +230,7 @@ contract('MarginCalculator Test Engine', () => {
         )
 
         // Check that the test passes, only fail if it doesn't
-        const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
+        const [netValue, isExcess] = await calculator.getExcessCollateral(vault, 0)
         assert.equal(netValue.toString(), createTokenAmount(expectedNetValue, usdcDecimals), testToString(tests[i]))
         assert.equal(isExcess, expectedIsExcess, testToString(tests[i]))
       }
@@ -298,7 +298,7 @@ contract('MarginCalculator Test Engine', () => {
         )
 
         // Check that the test passes, only fail if it doesn't
-        const [netValue, isExcess] = await calculator.getExcessCollateral(vault)
+        const [netValue, isExcess] = await calculator.getExcessCollateral(vault, 0)
         assert.equal(netValue.toString(), createTokenAmount(expectedNetValue, wethDecimals), testToString(tests[i]))
         assert.equal(isExcess, expectedIsExcess, testToString(tests[i]))
       }

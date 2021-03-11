@@ -270,8 +270,8 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
       const longOtokenSupplyBefore = new BigNumber(await lowerStrikeCall.totalSupply())
 
       // Check that we start at a valid state
-      const vaultBefore = (await controllerProxy.getVault(accountOwner1, vaultCounter1))[0]
-      const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore)
+      const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter1)
+      const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore[0], vaultBefore[1])
       assert.equal(vaultStateBefore[0].toString(), '0')
       assert.equal(vaultStateBefore[1], true)
 
@@ -288,7 +288,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
       const collateralPayout = Math.max(strikePriceChange * (optionsAmount / expirySpotPrice), 0)
 
       // Check that after expiry, the vault excess balance has updated as expected
-      const vaultStateBeforeSettlement = await calculator.getExcessCollateral(vaultBefore)
+      const vaultStateBeforeSettlement = await calculator.getExcessCollateral(vaultBefore[0], vaultBefore[1])
 
       assert.equal(
         new BigNumber(vaultStateBeforeSettlement[0]).toString(),
@@ -338,23 +338,23 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
       assert.equal(longOtokenSupplyBefore.minus(scaledOptionsAmount).toString(), longOtokenSupplyAfter.toString())
 
       // Check that we end at a valid state
-      const vaultAfter = (await controllerProxy.getVault(accountOwner1, vaultCounter1))[0]
-      const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
+      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter1)
+      const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter[0], vaultAfter[1])
       assert.equal(vaultStateAfter[0].toString(), '0')
       assert.equal(vaultStateAfter[1], true)
 
       // Check the vault balances stored in the contract
-      assert.equal(vaultAfter.shortOtokens.length, 0, 'Length of the short otoken array in the vault is incorrect')
-      assert.equal(vaultAfter.collateralAssets.length, 0, 'Length of the collateral array in the vault is incorrect')
-      assert.equal(vaultAfter.longOtokens.length, 0, 'Length of the long otoken array in the vault is incorrect')
+      assert.equal(vaultAfter[0].shortOtokens.length, 0, 'Length of the short otoken array in the vault is incorrect')
+      assert.equal(vaultAfter[0].collateralAssets.length, 0, 'Length of the collateral array in the vault is incorrect')
+      assert.equal(vaultAfter[0].longOtokens.length, 0, 'Length of the long otoken array in the vault is incorrect')
 
-      assert.equal(vaultAfter.shortAmounts.length, 0, 'Length of the short amounts array in the vault is incorrect')
+      assert.equal(vaultAfter[0].shortAmounts.length, 0, 'Length of the short amounts array in the vault is incorrect')
       assert.equal(
-        vaultAfter.collateralAmounts.length,
+        vaultAfter[0].collateralAmounts.length,
         0,
         'Length of the collateral amounts array in the vault is incorrect',
       )
-      assert.equal(vaultAfter.longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
+      assert.equal(vaultAfter[0].longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
     })
 
     it('nakedBuyer: redeem the higher strike ITM call option after expiry', async () => {
@@ -432,8 +432,8 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
       const lowerStrikeCallSupplyBefore = new BigNumber(await lowerStrikeCall.totalSupply())
 
       // Check that we start at a valid state
-      const vaultBefore = (await controllerProxy.getVault(accountOwner2, vaultCounter2))[0]
-      const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore)
+      const vaultBefore = await controllerProxy.getVault(accountOwner2, vaultCounter2)
+      const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore[0], vaultBefore[1])
       assert.equal(vaultStateBefore[0].toString(), scaledCollateralAmount)
       assert.equal(vaultStateBefore[1], true)
 
@@ -473,23 +473,23 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
       assert.equal(lowerStrikeCallSupplyBefore.toString(), lowerStrikeCallSupplyAfter.toString())
 
       // Check that we end at a valid state
-      const vaultAfter = (await controllerProxy.getVault(accountOwner2, vaultCounter2))[0]
-      const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
+      const vaultAfter = await controllerProxy.getVault(accountOwner2, vaultCounter2)
+      const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter[0], vaultAfter[1])
       assert.equal(vaultStateAfter[0].toString(), '0')
       assert.equal(vaultStateAfter[1], true)
 
       // Check the vault balances stored in the contract
-      assert.equal(vaultAfter.shortOtokens.length, 0, 'Length of the short otoken array in the vault is incorrect')
-      assert.equal(vaultAfter.collateralAssets.length, 0, 'Length of the collateral array in the vault is incorrect')
-      assert.equal(vaultAfter.longOtokens.length, 0, 'Length of the long otoken array in the vault is incorrect')
+      assert.equal(vaultAfter[0].shortOtokens.length, 0, 'Length of the short otoken array in the vault is incorrect')
+      assert.equal(vaultAfter[0].collateralAssets.length, 0, 'Length of the collateral array in the vault is incorrect')
+      assert.equal(vaultAfter[0].longOtokens.length, 0, 'Length of the long otoken array in the vault is incorrect')
 
-      assert.equal(vaultAfter.shortAmounts.length, 0, 'Length of the short amounts array in the vault is incorrect')
+      assert.equal(vaultAfter[0].shortAmounts.length, 0, 'Length of the short amounts array in the vault is incorrect')
       assert.equal(
-        vaultAfter.collateralAmounts.length,
+        vaultAfter[0].collateralAmounts.length,
         0,
         'Length of the collateral amounts array in the vault is incorrect',
       )
-      assert.equal(vaultAfter.longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
+      assert.equal(vaultAfter[0].longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
     })
   })
 })
