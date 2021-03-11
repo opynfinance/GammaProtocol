@@ -253,7 +253,7 @@ contract Oracle is Ownable {
     }
 
     /**
-     * @notice get historical asset price
+     * @notice get historical asset price and timestamp
      * @dev if asset is a stable asset, will return stored price and timestamp equal to now
      * @param _asset asset address to get it's historical price
      * @param _roundId chainlink round id
