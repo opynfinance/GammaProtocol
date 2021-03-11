@@ -7,16 +7,34 @@ pragma solidity 0.6.10;
  * @dev Interface of the Chainlink aggregator
  */
 interface AggregatorInterface {
-    function latestAnswer() external view returns (int256);
+    function decimals() external view returns (uint8);
 
-    function latestTimestamp() external view returns (uint256);
+    function description() external view returns (string memory);
 
-    function latestRound() external view returns (uint256);
+    function version() external view returns (uint256);
 
-    function getAnswer(uint256 roundId) external view returns (int256);
+    // getRoundData and latestRoundData should both raise "No data present"
+    // if they do not have data to report, instead of returning unset values
+    // which could be misinterpreted as actual reported values.
+    function getRoundData(uint80 _roundId)
+        external
+        view
+        returns (
+            uint80 roundId,
+            int256 answer,
+            uint256 startedAt,
+            uint256 updatedAt,
+            uint80 answeredInRound
+        );
 
-    function getTimestamp(uint256 roundId) external view returns (uint256);
-
-    event AnswerUpdated(int256 indexed current, uint256 indexed roundId, uint256 timestamp);
-    event NewRound(uint256 indexed roundId, address indexed startedBy, uint256 startedAt);
+    function latestRoundData()
+        external
+        view
+        returns (
+            uint80 roundId,
+            int256 answer,
+            uint256 startedAt,
+            uint256 updatedAt,
+            uint80 answeredInRound
+        );
 }
