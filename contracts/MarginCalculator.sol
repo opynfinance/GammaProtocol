@@ -370,7 +370,7 @@ contract MarginCalculator is Ownable {
                 // return amount of collateral in vault and needed collateral amount for margin
                 return (
                     collateralAmount,
-                    getNakedMarginRequired(
+                    _getNakedMarginRequired(
                         productHash,
                         shortAmount,
                         shortStrike,
@@ -461,7 +461,7 @@ contract MarginCalculator is Ownable {
     /**
      * @notice get required collateral for naked margin position
      */
-    function getNakedMarginRequired(
+    function _getNakedMarginRequired(
         bytes32 _productHash,
         FPI.FixedPointInt memory _shortAmount,
         FPI.FixedPointInt memory _strikePrice,
@@ -470,6 +470,38 @@ contract MarginCalculator is Ownable {
         bool _isPut
     ) internal view returns (FPI.FixedPointInt memory) {
         return ZERO;
+    }
+
+    /**
+     * @notice find upper bound value for product by specific expiry timestamp
+     * @dev should return the upper bound value that correspond to option time to expiry, of if not found should return the next greater one, revert if no value found
+     * @param _productHash product hash
+     * @param _expiryTimestamp expiry timestamp
+     * @return option upper bound value
+     */
+    function _findUpperBoundValue(bytes32 _productHash, uint256 _expiryTimestamp)
+        internal
+        view
+        returns (FPI.FixedPointInt memory)
+    {
+        uint256[] memory timesToExpiry = productTimeToExpiry[_productHash];
+
+        require(timesToExpiry.length != 0, "MarginCalculator: product have no expiry values");
+
+        uint256 optionTimeToExpiry = _expiryTimestamp.sub(now);
+
+        require(
+            timesToExpiry[timesToExpiry.length - 1] >= optionTimeToExpiry,
+            "MarginCalculator: product have no upper bound value"
+        );
+
+        uint256 i;
+
+        while ((i < timesToExpiry.length) && (timesToExpiry[i] < optionTimeToExpiry)) {
+            i++;
+        }
+
+        return FPI.fromScaledUint(timeToExpiryValue[_productHash][timesToExpiry[i]], 27);
     }
 
     /**
