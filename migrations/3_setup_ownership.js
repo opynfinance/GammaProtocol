@@ -1,15 +1,15 @@
 // import contract
-const Whitelist = artifacts.require("Whitelist")
-const Oracle = artifacts.require("Oracle")
-const MarginPool = artifacts.require("MarginPool")
-const AddressBook = artifacts.require("AddressBook")
-const Controller = artifacts.require("Controller")
+const Whitelist = artifacts.require('Whitelist')
+const Oracle = artifacts.require('Oracle')
+const MarginPool = artifacts.require('MarginPool')
+const AddressBook = artifacts.require('AddressBook')
+const Controller = artifacts.require('Controller')
 
 // import config file
-const deploymentConfig = require("./deployment-config.json");
+const deploymentConfig = require('./deployment-config.json')
 
 module.exports = async function(deployer, network, accounts) {
-  const [deployerAddress] = accounts;
+  const [deployerAddress] = accounts
 
   // new protocol owner
   const newOwner = deploymentConfig.MULTISIG
