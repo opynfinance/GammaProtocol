@@ -65,7 +65,7 @@ contract MarginCalculator is Ownable {
     /// @dev mapping to store option upper bound value at specific time to expiry per product (1e27)
     mapping(bytes32 => mapping(uint256 => uint256)) internal timeToExpiryValue;
 
-    /// @dev mapping to store shock value for spot price per product
+    /// @dev mapping to store shock value for spot price per product (1e27)
     mapping(bytes32 => uint256) internal spotShock;
 
     /// @notice emits an event when collateral dust is updated
@@ -541,6 +541,14 @@ contract MarginCalculator is Ownable {
 
     /**
      * @notice get required collateral for naked margin position
+     * if put:
+     * a = min(strike price, spot shock * underlying price)
+     * b = max(strike price - spot shock * underlying price, 0)
+     * marginRequired = ( option upper bound value * a + b) * short amount
+     * if call:
+     * a = min(1, strike price / (underlying price / spot shock value))
+     * b = max(1- (strike price / (underlying price / 0.75)), 0)
+     * marginRequired = (option upper bound value * a + b) * short amount
      */
     function _getNakedMarginRequired(
         bytes32 _productHash,
@@ -550,7 +558,25 @@ contract MarginCalculator is Ownable {
         uint256 _shortExpiryTimestamp,
         bool _isPut
     ) internal view returns (FPI.FixedPointInt memory) {
-        return ZERO;
+        FPI.FixedPointInt memory optionUpperBoundValue = _findUpperBoundValue(_productHash, _shortExpiryTimestamp);
+        FPI.FixedPointInt memory spotShockValue = FPI.fromScaledUint(spotShock[_productHash], 27);
+
+        FPI.FixedPointInt memory a;
+        FPI.FixedPointInt memory b;
+        FPI.FixedPointInt memory marginRequired;
+
+        if (_isPut) {
+            a = FPI.min(_strikePrice, spotShockValue.mul(_underlyingPrice));
+            b = FPI.max(_strikePrice.sub(spotShockValue.mul(_underlyingPrice)), ZERO);
+            marginRequired = optionUpperBoundValue.mul(a).add(b).mul(_shortAmount);
+        } else {
+            FPI.FixedPointInt memory one = FPI.fromScaledUint(1e27, 27);
+            a = FPI.min(one, _strikePrice.div(_underlyingPrice.div(spotShockValue)));
+            b = FPI.max(one.sub(_strikePrice.div(_underlyingPrice.div(spotShockValue))), ZERO);
+            marginRequired = optionUpperBoundValue.mul(a).add(b).mul(_shortAmount);
+        }
+
+        return marginRequired;
     }
 
     /**
