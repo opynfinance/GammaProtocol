@@ -401,6 +401,7 @@ contract MarginCalculator is Ownable {
                 _vaultDetails.hasShort ? _vaultDetails.isShortPut : _vaultDetails.isLongPut
             );
 
+        // check if expired
         if (!(now >= otokenDetails.otokenExpiry)) {
             // check if vault is naked margin vault
             if (_vaultDetails.vaultType == 1) {
