@@ -51,8 +51,10 @@ contract CalculatorTester is MarginCalculator {
 
         FixedPointInt256.FixedPointInt memory shortAmount = FixedPointInt256.fromScaledUint(_shortAmount, BASE);
         FixedPointInt256.FixedPointInt memory shortStrike = FixedPointInt256.fromScaledUint(_strikePrice, BASE);
-        FixedPointInt256.FixedPointInt memory shortUnderlyingPrice =
-            FixedPointInt256.fromScaledUint(_underlyingPrice, BASE);
+        FixedPointInt256.FixedPointInt memory shortUnderlyingPrice = FixedPointInt256.fromScaledUint(
+            _underlyingPrice,
+            BASE
+        );
 
         return
             FixedPointInt256.toScaledUint(
