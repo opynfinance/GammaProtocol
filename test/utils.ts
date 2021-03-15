@@ -1,4 +1,4 @@
-import {MockERC20Instance} from '../build/types/truffle-types'
+import { MockERC20Instance } from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
 const util = require('@0x/order-utils')
@@ -50,7 +50,7 @@ export const createVault = (
   }
 }
 
-BigNumber.config({EXPONENTIAL_AT: 60})
+BigNumber.config({ EXPONENTIAL_AT: 60 })
 
 export const createTokenAmount = (num: number | BigNumber, decimals = 8) => {
   const amount = new BigNumber(num).times(new BigNumber(10).pow(decimals))
@@ -63,6 +63,14 @@ export const createTokenAmount = (num: number | BigNumber, decimals = 8) => {
  */
 export const createScaledNumber = (num: number, decimals = 8): string => {
   return new BigNumber(num).times(new BigNumber(10).pow(decimals)).toString()
+}
+
+/**
+ * Create a number string that scales numbers to 1e18
+ * @param num
+ */
+export const createScaledBigNumber = (num: number, decimals = 8): BigNumber => {
+  return new BigNumber(num).times(new BigNumber(10).pow(decimals))
 }
 
 export const underlyingPriceToCtokenPrice = async (
@@ -137,7 +145,7 @@ export const createOrder = (
 
 export const signOrder = async (signer: any, order: any) => {
   const typedData = util.eip712Utils.createOrderTypedData(order)
-  const signature = await signer._signTypedData(typedData.domain, {Order: typedData.types.Order}, typedData.message)
+  const signature = await signer._signTypedData(typedData.domain, { Order: typedData.types.Order }, typedData.message)
 
   const v = signature.slice(-2)
   const rs = signature.slice(2, -2)
