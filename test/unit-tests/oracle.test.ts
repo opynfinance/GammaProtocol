@@ -101,6 +101,26 @@ contract('Oracle', ([owner, disputer, random, collateral, strike]) => {
     })
   })
 
+  describe('Get chainlink round data', async () => {
+    it('should revert getting historical price if asset is not stable asset and have no pricer', async () => {
+      const trx = await MockERC20.new('TRX', 'TRX', 18)
+      const randomRoundId = 1
+
+      await expectRevert(
+        oracle.getChainlinkRoundData(trx.address, randomRoundId),
+        'Oracle: Pricer for this asset not set',
+      )
+    })
+
+    it('should return historical price', async () => {
+      const randomMockRoundId = 1
+      const price1 = createTokenAmount(235)
+      await wethPricer.setPrice(price1)
+      const oracleHistoricalData = await oracle.getChainlinkRoundData(weth.address, randomMockRoundId)
+      assert.equal(oracleHistoricalData[0].toString(), price1)
+    })
+  })
+
   describe('Oracle locking period', () => {
     const lockingPeriod = new BigNumber(60 * 15) // 15min
 
@@ -305,6 +325,16 @@ contract('Oracle', ([owner, disputer, random, collateral, strike]) => {
         (await oracle.getExpiryPrice(usdc.address, otokenExpiry))[0].toString(),
         stablePrice,
         'Stable price mismatch',
+      )
+    })
+
+    it('should return hitorical price for stable asset', async () => {
+      const randomRoundId = 10
+
+      assert.equal(
+        (await oracle.getChainlinkRoundData(usdc.address, randomRoundId))[0].toString(),
+        stablePrice,
+        'Historical stable price mismatch',
       )
     })
 

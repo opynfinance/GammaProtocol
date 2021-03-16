@@ -62,6 +62,20 @@ contract ChainLinkPricer is OpynPricerInterface {
     }
 
     /**
+     * @notice set the expiry price in the oracle, can only be called by Bot address
+     * @dev a roundId must be provided to confirm price validity, which is the first Chainlink price provided after the expiryTimestamp
+     * @param _expiryTimestamp expiry to set a price for
+     * @param _roundId the first roundId after expiryTimestamp
+     */
+    function setExpiryPriceInOracle(uint256 _expiryTimestamp, uint80 _roundId) external onlyBot {
+        (, int256 price, , uint256 roundTimestamp, ) = aggregator.getRoundData(_roundId);
+
+        require(_expiryTimestamp <= roundTimestamp, "ChainLinkPricer: invalid roundId");
+
+        oracle.setExpiryPrice(asset, _expiryTimestamp, uint256(price));
+    }
+
+    /**
      * @notice get the live price for the asset
      * @dev overides the getPrice function in OpynPricerInterface
      * @return price of the asset in USD, scaled by 1e8
@@ -74,17 +88,13 @@ contract ChainLinkPricer is OpynPricerInterface {
     }
 
     /**
-     * @notice set the expiry price in the oracle, can only be called by Bot address
-     * @dev a roundId must be provided to confirm price validity, which is the first Chainlink price provided after the expiryTimestamp
-     * @param _expiryTimestamp expiry to set a price for
-     * @param _roundId the first roundId after expiryTimestamp
+     * @notice get historical chainlink price
+     * @param _roundId chainlink round id
+     * @return round price and timestamp
      */
-    function setExpiryPriceInOracle(uint256 _expiryTimestamp, uint80 _roundId) external onlyBot {
+    function getHistoricalPrice(uint80 _roundId) external override view returns (uint256, uint256) {
         (, int256 price, , uint256 roundTimestamp, ) = aggregator.getRoundData(_roundId);
-
-        require(_expiryTimestamp <= roundTimestamp, "ChainLinkPricer: invalid roundId");
-
-        oracle.setExpiryPrice(asset, _expiryTimestamp, _scaleToBase(uint256(price)));
+        return (_scaleToBase(uint256(price)), roundTimestamp);
     }
 
     /**

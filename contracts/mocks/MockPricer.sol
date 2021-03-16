@@ -25,4 +25,8 @@ contract MockPricer {
     function setExpiryPriceInOracle(uint256 _expiryTimestamp, uint256 _price) external {
         oracle.setExpiryPrice(asset, _expiryTimestamp, _price);
     }
+
+    function getHistoricalPrice(uint80 _roundId) external view returns (uint256, uint256) {
+        return (price, now);
+    }
 }
