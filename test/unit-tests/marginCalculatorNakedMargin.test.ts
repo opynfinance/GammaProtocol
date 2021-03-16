@@ -5,7 +5,13 @@ import {
   MockOracleInstance,
   MockOtokenInstance,
 } from '../../build/types/truffle-types'
-import {createScaledNumber as scaleNum, createScaledBigNumber as scaleBigNum} from '../utils'
+import {
+  createScaledNumber as scaleNum,
+  createScaledBigNumber as scaleBigNum,
+  createVault,
+  createScaledBigNumber,
+  createScaledNumber,
+} from '../utils'
 import {assert} from 'chai'
 import BigNumber from 'bignumber.js'
 
@@ -64,6 +70,8 @@ contract('MarginCalculator', ([owner, random]) => {
   const usdcDecimals = 6
   const daiDecimals = 8
   const wethDecimals = 18
+
+  const vaultType = 1
 
   before('set up contracts', async () => {
     // setup usdc and weth
@@ -375,6 +383,63 @@ contract('MarginCalculator', ([owner, random]) => {
         requiredMargin.dividedBy(1e27).toNumber(),
         expectedRequiredNakedMargin,
         'Required naked margin for put mismatch',
+      )
+    })
+
+    it('should revert if naked margin vault have long otoken', async () => {
+      const optionExpiry = new BigNumber(await time.latest()).plus(timeToExpiry[1])
+
+      const shortOtoken = await MockOtoken.new()
+      await shortOtoken.init(
+        addressBook.address,
+        weth.address,
+        usdc.address,
+        usdc.address,
+        scaleNum(200),
+        optionExpiry,
+        true,
+      )
+      const longOtoken = await MockOtoken.new()
+      await longOtoken.init(
+        addressBook.address,
+        weth.address,
+        usdc.address,
+        usdc.address,
+        scaleNum(250),
+        optionExpiry,
+        true,
+      )
+
+      const vault = createVault(shortOtoken.address, longOtoken.address, undefined, scaleNum(1), scaleNum(1), undefined)
+
+      await expectRevert(
+        calculator.getExcessCollateral(vault, vaultType),
+        'MarginCalculator: naked margin vault cannot have long otoken',
+      )
+    })
+
+    it('should revert if naked margin vault have collateral amount less than dust amount', async () => {
+      // set dust amount for USDC
+      const usdcDustAmount = createScaledBigNumber(30, 27)
+      await calculator.setCollateralDust(usdc.address, usdcDustAmount, {from: owner})
+
+      const optionExpiry = new BigNumber(await time.latest()).plus(timeToExpiry[1])
+      const shortOtoken = await MockOtoken.new()
+      await shortOtoken.init(
+        addressBook.address,
+        weth.address,
+        usdc.address,
+        usdc.address,
+        scaleNum(200),
+        optionExpiry,
+        true,
+      )
+      const collateralAmount = scaleNum(10, usdcDecimals)
+      const vault = createVault(shortOtoken.address, undefined, usdc.address, scaleNum(1), undefined, collateralAmount)
+
+      await expectRevert(
+        calculator.getExcessCollateral(vault, vaultType),
+        'MarginCalculator: naked margin vault should have collateral amount greater than dust amount',
       )
     })
   })
