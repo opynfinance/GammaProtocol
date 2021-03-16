@@ -5,11 +5,11 @@ import {
   MockOracleInstance,
   MockOtokenInstance,
 } from '../../build/types/truffle-types'
-import { createScaledNumber as scaleNum, createScaledBigNumber as scaleBigNum } from '../utils'
-import { assert } from 'chai'
+import {createScaledNumber as scaleNum, createScaledBigNumber as scaleBigNum} from '../utils'
+import {assert} from 'chai'
 import BigNumber from 'bignumber.js'
 
-const { expectRevert, time } = require('@openzeppelin/test-helpers')
+const {expectRevert, time} = require('@openzeppelin/test-helpers')
 const MockAddressBook = artifacts.require('MockAddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const MockOtoken = artifacts.require('MockOtoken.sol')
@@ -79,13 +79,13 @@ contract('MarginCalculator', ([owner, random]) => {
     oracle = await MockOracle.new()
     await addressBook.setOracle(oracle.address)
     // setup calculator
-    calculator = await MarginCalculator.new(oracle.address, { from: owner })
+    calculator = await MarginCalculator.new(oracle.address, {from: owner})
   })
 
   describe('Collateral dust', async () => {
     it('only owner should be able to set collateral dust amunt', async () => {
       const wethDust = scaleNum(1, 27)
-      await calculator.setCollateralDust(weth.address, wethDust, { from: owner })
+      await calculator.setCollateralDust(weth.address, wethDust, {from: owner})
 
       const dustAmount = new BigNumber(await calculator.getCollateralDust(weth.address))
 
@@ -96,7 +96,7 @@ contract('MarginCalculator', ([owner, random]) => {
       const wethDust = scaleNum(0, 27)
 
       await expectRevert(
-        calculator.setCollateralDust(weth.address, wethDust, { from: random }),
+        calculator.setCollateralDust(weth.address, wethDust, {from: random}),
         'Ownable: caller is not the owner',
       )
     })
@@ -160,7 +160,7 @@ contract('MarginCalculator', ([owner, random]) => {
         true,
         timeToExpiry,
         upperBoundValue,
-        { from: owner },
+        {from: owner},
       )
 
       assert.equal(
@@ -205,7 +205,7 @@ contract('MarginCalculator', ([owner, random]) => {
       const spotShockValue = scaleNum(0.75, 27)
 
       await expectRevert(
-        calculator.setSpotShock(weth.address, usdc.address, usdc.address, true, spotShockValue, { from: random }),
+        calculator.setSpotShock(weth.address, usdc.address, usdc.address, true, spotShockValue, {from: random}),
         'Ownable: caller is not the owner',
       )
     })
@@ -213,7 +213,7 @@ contract('MarginCalculator', ([owner, random]) => {
     it('should set spot shock value', async () => {
       const spotShockValue = scaleNum(0.75, 27)
 
-      await calculator.setSpotShock(weth.address, usdc.address, usdc.address, true, spotShockValue, { from: owner })
+      await calculator.setSpotShock(weth.address, usdc.address, usdc.address, true, spotShockValue, {from: owner})
 
       assert.equal(
         new BigNumber(await calculator.getSpotShock(weth.address, usdc.address, usdc.address, true)).toString(),
@@ -228,7 +228,7 @@ contract('MarginCalculator', ([owner, random]) => {
       const oracleDeviationValue = scaleNum(0.05, 27)
 
       await expectRevert(
-        calculator.setOracleDeviation(oracleDeviationValue, { from: random }),
+        calculator.setOracleDeviation(oracleDeviationValue, {from: random}),
         'Ownable: caller is not the owner',
       )
     })
@@ -236,7 +236,7 @@ contract('MarginCalculator', ([owner, random]) => {
     it('should set oracle deviation value', async () => {
       const oracleDeviationValue = scaleNum(0.05, 27)
 
-      await calculator.setOracleDeviation(oracleDeviationValue, { from: owner })
+      await calculator.setOracleDeviation(oracleDeviationValue, {from: owner})
 
       assert.equal(
         new BigNumber(await calculator.getOracleDeviation()).toString(),
@@ -282,7 +282,7 @@ contract('MarginCalculator', ([owner, random]) => {
             false,
             timeToExpiry[i],
             expiryToValue[i],
-            { from: owner },
+            {from: owner},
           )
           await calculator.setProductTimeToExpiry(weth.address, usdc.address, weth.address, false, timeToExpiry[i], {
             from: owner,
@@ -311,7 +311,7 @@ contract('MarginCalculator', ([owner, random]) => {
 
     before(async () => {
       // setup new calculator
-      calculator = await MarginCalculator.new(oracle.address, { from: owner })
+      calculator = await MarginCalculator.new(oracle.address, {from: owner})
 
       // set product spot shock value
       await calculator.setSpotShock(weth.address, usdc.address, usdc.address, true, productSpotShockValue)
@@ -325,7 +325,7 @@ contract('MarginCalculator', ([owner, random]) => {
           true,
           timeToExpiry[i],
           expiryToValue[i],
-          { from: owner },
+          {from: owner},
         )
         await calculator.setProductTimeToExpiry(weth.address, usdc.address, usdc.address, true, timeToExpiry[i], {
           from: owner,
