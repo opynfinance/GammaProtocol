@@ -1,4 +1,5 @@
 require('ts-node/register')
+const wrapProvider = require('arb-ethers-web3-bridge').wrapProvider
 require('dotenv').config()
 
 const HDWalletProvider = require('@truffle/hdwallet-provider')
@@ -61,6 +62,14 @@ module.exports = {
       timeoutBlocks: 50,
       skipDryRun: false,
       gasPrice: 100000000000,
+    },
+    arbitrum: {
+      provider: function() {
+        // return wrapped provider:
+        return wrapProvider(new HDWalletProvider(mnemonic, 'https://kovan3.arbitrum.io/rpc'))
+      },
+      network_id: '79377087078960',
+      gasPrice: 0,
     },
   },
 
