@@ -577,7 +577,7 @@ contract MarginCalculator is Ownable {
             b = FPI.max(_strikePrice.sub(spotShockValue.mul(_underlyingPrice)), ZERO);
             marginRequired = optionUpperBoundValue.mul(a).add(b).mul(_shortAmount);
         } else {
-            FPI.FixedPointInt memory one = FPI.fromScaledUint(1, SCALING_FACTOR);
+            FPI.FixedPointInt memory one = FPI.fromScaledUint(1e27, SCALING_FACTOR);
             a = FPI.min(one, _strikePrice.div(_underlyingPrice.div(spotShockValue)));
             b = FPI.max(one.sub(_strikePrice.div(_underlyingPrice.div(spotShockValue))), ZERO);
             marginRequired = optionUpperBoundValue.mul(a).add(b).mul(_shortAmount);
