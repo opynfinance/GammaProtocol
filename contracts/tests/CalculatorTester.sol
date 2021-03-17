@@ -45,7 +45,8 @@ contract CalculatorTester is MarginCalculator {
         uint256 _strikePrice,
         uint256 _underlyingPrice,
         uint256 _shortExpiryTimestamp,
-        bool _isPut
+        bool _isPut,
+        uint256 _marginDecimal
     ) external view returns (uint256) {
         bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
 
@@ -66,8 +67,8 @@ contract CalculatorTester is MarginCalculator {
                     _shortExpiryTimestamp,
                     _isPut
                 ),
-                27,
-                true
+                _marginDecimal,
+                false
             );
     }
 }

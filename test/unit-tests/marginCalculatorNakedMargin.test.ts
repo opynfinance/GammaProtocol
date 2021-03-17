@@ -346,6 +346,7 @@ contract('MarginCalculator', ([owner, random]) => {
 
       // set time to expiry and each upper bound value
       for (let i = 0; i < expiryToValue.length; i++) {
+        // set for put product
         await calculator.setTimeToExpiryValue(
           weth.address,
           usdc.address,
@@ -356,6 +357,20 @@ contract('MarginCalculator', ([owner, random]) => {
           {from: owner},
         )
         await calculator.setProductTimeToExpiry(weth.address, usdc.address, usdc.address, true, timeToExpiry[i], {
+          from: owner,
+        })
+
+        // set for call product
+        await calculator.setTimeToExpiryValue(
+          weth.address,
+          usdc.address,
+          weth.address,
+          false,
+          timeToExpiry[i],
+          expiryToValue[i],
+          {from: owner},
+        )
+        await calculator.setProductTimeToExpiry(weth.address, usdc.address, weth.address, false, timeToExpiry[i], {
           from: owner,
         })
       }
@@ -377,7 +392,7 @@ contract('MarginCalculator', ([owner, random]) => {
         .dividedBy(1e27)
         .toNumber()
 
-      // console.log("Upper boudn value found: ", upperBoundValue.toString())
+      console.log('Upper boudn value found: ', upperBoundValue.toString())
       // expected required margin
       const expectedRequiredNakedMargin = expectedRequiredMargin(
         shortAmount,
@@ -398,19 +413,80 @@ contract('MarginCalculator', ([owner, random]) => {
           scaledUnderlyingPrice,
           optionExpiry,
           isPut,
+          usdcDecimals,
         ),
       )
 
-      // console.log("Expected margin: ",expectedRequiredNakedMargin.toString())
-      // console.log("Contract margin: ",requiredMargin.toString())
+      console.log('Expected margin: ', expectedRequiredNakedMargin.toString())
+      console.log('Contract margin: ', requiredMargin.toString())
       assert.equal(
-        requiredMargin.dividedBy(1e27).toNumber(),
+        requiredMargin.dividedBy(10 ** usdcDecimals).toNumber(),
         expectedRequiredNakedMargin,
         'Required naked margin for put mismatch',
       )
 
       assert.isAtMost(
-        calcRelativeDiff(new BigNumber('16.77778677'), requiredMargin.dividedBy(1e27)).toNumber(),
+        calcRelativeDiff(new BigNumber('16.77778677'), requiredMargin.dividedBy(10 ** usdcDecimals)).toNumber(),
+        errorDelta,
+        'big error delta',
+      )
+    })
+
+    it('should return required margin for naked margin vault: 10 options 2500$ WETH call option with 1800 spot price and 1 week to expiry', async () => {
+      // set product shock value
+      const spotShockValue = scaleNum(0.75, 27)
+      await calculator.setSpotShock(weth.address, usdc.address, weth.address, false, spotShockValue, {from: owner})
+
+      const shortAmount = 1
+      const shortStrike = 2500
+      const underlyingPrice = 1800
+      const scaledShortAmount = scaleBigNum(shortAmount, 8)
+      const scaledShortStrike = scaleBigNum(shortStrike, 8)
+      const scaledUnderlyingPrice = scaleBigNum(underlyingPrice, 8)
+      const isPut = false
+      const optionExpiry = new BigNumber(await time.latest()).plus(timeToExpiry[0])
+      // get option upper bound value
+      const upperBoundValue = new BigNumber(
+        await calculator.findUpperBoundValue(weth.address, usdc.address, weth.address, false, optionExpiry),
+      )
+        .dividedBy(1e27)
+        .toNumber()
+
+      console.log('Upper boudn value found: ', upperBoundValue.toString())
+      // expected required margin
+      const expectedRequiredNakedMargin = expectedRequiredMargin(
+        shortAmount,
+        shortStrike,
+        underlyingPrice,
+        isPut,
+        upperBoundValue,
+        productSpotShockValue.dividedBy(1e27).toNumber(),
+      )
+
+      const requiredMargin = new BigNumber(
+        await calculator.getNakedMarginRequired(
+          weth.address,
+          usdc.address,
+          weth.address,
+          scaledShortAmount,
+          scaledShortStrike,
+          scaledUnderlyingPrice,
+          optionExpiry,
+          isPut,
+          wethDecimals,
+        ),
+      )
+
+      console.log('Expected margin: ', expectedRequiredNakedMargin.toString())
+      console.log('Contract margin: ', requiredMargin.toString())
+      assert.equal(
+        requiredMargin.dividedBy(10 ** wethDecimals).toNumber(),
+        expectedRequiredNakedMargin,
+        'Required naked margin for put mismatch',
+      )
+
+      assert.isAtMost(
+        calcRelativeDiff(new BigNumber('0.1677778677'), requiredMargin.dividedBy(10 ** wethDecimals)).toNumber(),
         errorDelta,
         'big error delta',
       )
@@ -432,6 +508,8 @@ contract('MarginCalculator', ([owner, random]) => {
         .dividedBy(1e27)
         .toNumber()
 
+      console.log('Upper boudn value found: ', upperBoundValue.toString())
+
       // expected required margin
       const expectedRequiredNakedMargin = expectedRequiredMargin(
         shortAmount,
@@ -452,17 +530,20 @@ contract('MarginCalculator', ([owner, random]) => {
           scaledUnderlyingPrice,
           optionExpiry,
           isPut,
+          usdcDecimals,
         ),
       )
 
+      console.log('Expected margin: ', expectedRequiredNakedMargin.toString())
+      console.log('Contract margin: ', requiredMargin.toString())
       assert.equal(
-        requiredMargin.dividedBy(1e27).toNumber(),
+        requiredMargin.dividedBy(10 ** usdcDecimals).toNumber(),
         expectedRequiredNakedMargin,
         'Required naked margin for put mismatch',
       )
 
       assert.isAtMost(
-        calcRelativeDiff(new BigNumber('23.6996538'), requiredMargin.dividedBy(1e27)).toNumber(),
+        calcRelativeDiff(new BigNumber('23.6996538'), requiredMargin.dividedBy(10 ** usdcDecimals)).toNumber(),
         errorDelta,
         'big error delta',
       )
