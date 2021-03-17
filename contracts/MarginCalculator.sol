@@ -391,7 +391,7 @@ contract MarginCalculator is Ownable {
      * @notice calculate the amount of collateral needed for a vault
      * @dev vault passed in has already passed the checkIsValidVault function
      * @param _vault theoretical vault that needs to be checked
-     * @return marginRequired the minimal amount of collateral needed in a vault, denominated in collateral
+     * @return the vault collateral amount, and marginRequired the minimal amount of collateral needed in a vault, denominated in collateral
      */
     function _getMarginRequired(MarginVault.Vault memory _vault, VaultDetails memory _vaultDetails)
         internal
