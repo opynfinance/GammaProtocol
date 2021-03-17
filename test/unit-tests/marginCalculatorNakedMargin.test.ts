@@ -46,14 +46,25 @@ const expectedRequiredMargin = (
   if (isPut) {
     a = Math.min(strikePrice, spotShockValue * underlyingPrice)
     b = Math.max(strikePrice - spotShockValue * underlyingPrice, 0)
-    marginRequired = upperBoundValue * a + b
+    marginRequired = (upperBoundValue * a + b) * shortAmount
   } else {
     a = Math.min(1, strikePrice / (underlyingPrice / spotShockValue))
     b = Math.max(1 - strikePrice / (underlyingPrice / spotShockValue), 0)
-    marginRequired = upperBoundValue * a + b
+    marginRequired = (upperBoundValue * a + b) * shortAmount
   }
 
   return marginRequired
+}
+
+const calcRelativeDiff = (expected: BigNumber, actual: BigNumber) => {
+  let diff: BigNumber
+
+  if (actual.isGreaterThan(expected)) {
+    diff = actual.minus(expected)
+  } else {
+    diff = expected.minus(actual)
+  }
+  return diff
 }
 
 contract('MarginCalculator', ([owner, random]) => {
@@ -72,6 +83,8 @@ contract('MarginCalculator', ([owner, random]) => {
   const wethDecimals = 18
 
   const vaultType = 1
+
+  const errorDelta = 0.1
 
   before('set up contracts', async () => {
     // setup usdc and weth
@@ -313,9 +326,16 @@ contract('MarginCalculator', ([owner, random]) => {
   describe('Get naked margin requirement', async () => {
     const productSpotShockValue = scaleBigNum(0.75, 27)
     // array of time to expiry
-    const timeToExpiry = [60 * 24, 60 * 24 * 7, 60 * 24 * 14, 60 * 24 * 30]
+    const day = 60 * 24
+    const timeToExpiry = [day * 7, day * 14, day * 28, day * 42, day * 56]
     // array of upper bound value correspond to time to expiry
-    const expiryToValue = [scaleNum(0.3, 27), scaleNum(0.4, 27), scaleNum(0.2, 27), scaleNum(0.06, 27)]
+    const expiryToValue = [
+      scaleNum(0.1678, 27),
+      scaleNum(0.237, 27),
+      scaleNum(0.3326, 27),
+      scaleNum(0.4032, 27),
+      scaleNum(0.4603, 27),
+    ]
 
     before(async () => {
       // setup new calculator
@@ -341,7 +361,62 @@ contract('MarginCalculator', ([owner, random]) => {
       }
     })
 
-    it('should return required margin for naked vault for a put option', async () => {
+    it('should return required margin for naked vault for a 100$ WETH put option with 150 spot price and 1 week to expiry', async () => {
+      const shortAmount = 1
+      const shortStrike = 100
+      const underlyingPrice = 150
+      const scaledShortAmount = scaleBigNum(shortAmount, 8)
+      const scaledShortStrike = scaleBigNum(shortStrike, 8)
+      const scaledUnderlyingPrice = scaleBigNum(underlyingPrice, 8)
+      const isPut = true
+      const optionExpiry = new BigNumber(await time.latest()).plus(timeToExpiry[0])
+      // get option upper bound value
+      const upperBoundValue = new BigNumber(
+        await calculator.findUpperBoundValue(weth.address, usdc.address, usdc.address, true, optionExpiry),
+      )
+        .dividedBy(1e27)
+        .toNumber()
+
+      // console.log("Upper boudn value found: ", upperBoundValue.toString())
+      // expected required margin
+      const expectedRequiredNakedMargin = expectedRequiredMargin(
+        shortAmount,
+        shortStrike,
+        underlyingPrice,
+        isPut,
+        upperBoundValue,
+        productSpotShockValue.dividedBy(1e27).toNumber(),
+      )
+
+      const requiredMargin = new BigNumber(
+        await calculator.getNakedMarginRequired(
+          weth.address,
+          usdc.address,
+          usdc.address,
+          scaledShortAmount,
+          scaledShortStrike,
+          scaledUnderlyingPrice,
+          optionExpiry,
+          isPut,
+        ),
+      )
+
+      // console.log("Expected margin: ",expectedRequiredNakedMargin.toString())
+      // console.log("Contract margin: ",requiredMargin.toString())
+      assert.equal(
+        requiredMargin.dividedBy(1e27).toNumber(),
+        expectedRequiredNakedMargin,
+        'Required naked margin for put mismatch',
+      )
+
+      assert.isAtMost(
+        calcRelativeDiff(new BigNumber('16.77778677'), requiredMargin.dividedBy(1e27)).toNumber(),
+        errorDelta,
+        'big error delta',
+      )
+    })
+
+    it('should return required margin for naked vault for a 100$ WETH put option with 150 spot price and 2 weeks to expiry', async () => {
       const shortAmount = 1
       const shortStrike = 100
       const underlyingPrice = 150
@@ -356,6 +431,7 @@ contract('MarginCalculator', ([owner, random]) => {
       )
         .dividedBy(1e27)
         .toNumber()
+
       // expected required margin
       const expectedRequiredNakedMargin = expectedRequiredMargin(
         shortAmount,
@@ -383,6 +459,12 @@ contract('MarginCalculator', ([owner, random]) => {
         requiredMargin.dividedBy(1e27).toNumber(),
         expectedRequiredNakedMargin,
         'Required naked margin for put mismatch',
+      )
+
+      assert.isAtMost(
+        calcRelativeDiff(new BigNumber('23.6996538'), requiredMargin.dividedBy(1e27)).toNumber(),
+        errorDelta,
+        'big error delta',
       )
     })
 

@@ -67,7 +67,7 @@ contract CalculatorTester is MarginCalculator {
                     _isPut
                 ),
                 27,
-                false
+                true
             );
     }
 }
