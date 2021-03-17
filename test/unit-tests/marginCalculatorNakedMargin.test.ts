@@ -56,7 +56,7 @@ const expectedRequiredMargin = (
   return marginRequired
 }
 
-const calcRelativeDiff = (expected: BigNumber, actual: BigNumber) => {
+const calcRelativeDiff = (expected: BigNumber, actual: BigNumber): BigNumber => {
   let diff: BigNumber
 
   if (actual.isGreaterThan(expected)) {
@@ -361,7 +361,7 @@ contract('MarginCalculator', ([owner, random]) => {
       }
     })
 
-    it('should return required margin for naked vault for a 100$ WETH put option with 150 spot price and 1 week to expiry', async () => {
+    it('should return required margin for naked margin vault: 100$ WETH put option with 150 spot price and 1 week to expiry', async () => {
       const shortAmount = 1
       const shortStrike = 100
       const underlyingPrice = 150
@@ -416,7 +416,7 @@ contract('MarginCalculator', ([owner, random]) => {
       )
     })
 
-    it('should return required margin for naked vault for a 100$ WETH put option with 150 spot price and 2 weeks to expiry', async () => {
+    it('should return required margin for naked margin vault: 100$ WETH put option with 150 spot price and 2 weeks to expiry', async () => {
       const shortAmount = 1
       const shortStrike = 100
       const underlyingPrice = 150
@@ -523,6 +523,128 @@ contract('MarginCalculator', ([owner, random]) => {
         calculator.getExcessCollateral(vault, vaultType),
         'MarginCalculator: naked margin vault should have collateral amount greater than dust amount',
       )
+    })
+
+    it('should return correct excess value for naked margin vault: 100$ WETH put option with 150 spot price, 1 week to expiry, 16.78 USDC collateral and 0 USDC excess', async () => {
+      const shortAmount = 1
+      const shortStrike = 100
+      const underlyingPrice = 150
+      const scaledUnderlyingPrice = scaleBigNum(underlyingPrice, 8)
+      const isPut = true
+      const optionExpiry = new BigNumber(await time.latest()).plus(timeToExpiry[0])
+      // get option upper bound value
+      const upperBoundValue = new BigNumber(
+        await calculator.findUpperBoundValue(weth.address, usdc.address, usdc.address, true, optionExpiry),
+      )
+        .dividedBy(1e27)
+        .toNumber()
+
+      console.log('Upper boudn value found: ', upperBoundValue.toString())
+      // expected required margin
+      const expectedRequiredNakedMargin = expectedRequiredMargin(
+        shortAmount,
+        shortStrike,
+        underlyingPrice,
+        isPut,
+        upperBoundValue,
+        productSpotShockValue.dividedBy(1e27).toNumber(),
+      )
+
+      console.log('expectedRequiredNakedMargin: ', expectedRequiredNakedMargin)
+
+      assert.isAtMost(
+        calcRelativeDiff(new BigNumber('16.77778677'), new BigNumber(expectedRequiredNakedMargin)).toNumber(),
+        errorDelta,
+        'big error delta',
+      )
+
+      const shortOtoken = await MockOtoken.new()
+      await shortOtoken.init(
+        addressBook.address,
+        weth.address,
+        usdc.address,
+        usdc.address,
+        scaleNum(100),
+        optionExpiry,
+        true,
+      )
+
+      // update dust amount for this test case to work
+      const usdcDust = scaleNum(expectedRequiredNakedMargin - 0.5, 27)
+      await calculator.setCollateralDust(usdc.address, usdcDust, {from: owner})
+
+      // set underlying price in oracle
+      await oracle.setRealTimePrice(weth.address, scaledUnderlyingPrice)
+
+      const collateralAmount = scaleNum(expectedRequiredNakedMargin, usdcDecimals)
+      const vault = createVault(shortOtoken.address, undefined, usdc.address, scaleNum(1), undefined, collateralAmount)
+
+      const getExcessCollateralResult = await calculator.getExcessCollateral(vault, vaultType)
+
+      assert.equal(getExcessCollateralResult[0].toString(), '0', 'Excess collateral value mismatch')
+      assert.equal(getExcessCollateralResult[1], true, 'isValid vault result mismatch')
+    })
+
+    it('should return correct excess value for naked margin vault: 100$ WETH put option with 150 spot price, 1 week to expiry, 30 USDC collateral and 13.22 USDC excess', async () => {
+      const shortAmount = 1
+      const shortStrike = 100
+      const underlyingPrice = 150
+      const scaledUnderlyingPrice = scaleBigNum(underlyingPrice, 8)
+      const isPut = true
+      const optionExpiry = new BigNumber(await time.latest()).plus(timeToExpiry[0])
+      // get option upper bound value
+      const upperBoundValue = new BigNumber(
+        await calculator.findUpperBoundValue(weth.address, usdc.address, usdc.address, true, optionExpiry),
+      )
+        .dividedBy(1e27)
+        .toNumber()
+
+      console.log('Upper boudn value found: ', upperBoundValue.toString())
+      // expected required margin
+      const expectedRequiredNakedMargin = expectedRequiredMargin(
+        shortAmount,
+        shortStrike,
+        underlyingPrice,
+        isPut,
+        upperBoundValue,
+        productSpotShockValue.dividedBy(1e27).toNumber(),
+      )
+
+      console.log('expectedRequiredNakedMargin: ', expectedRequiredNakedMargin)
+
+      assert.isAtMost(
+        calcRelativeDiff(new BigNumber('16.77778677'), new BigNumber(expectedRequiredNakedMargin)).toNumber(),
+        errorDelta,
+        'big error delta',
+      )
+
+      const shortOtoken = await MockOtoken.new()
+      await shortOtoken.init(
+        addressBook.address,
+        weth.address,
+        usdc.address,
+        usdc.address,
+        scaleNum(100),
+        optionExpiry,
+        true,
+      )
+
+      // set underlying price in oracle
+      await oracle.setRealTimePrice(weth.address, scaledUnderlyingPrice)
+
+      const collateralAmount = scaleNum(30, usdcDecimals)
+      const vault = createVault(shortOtoken.address, undefined, usdc.address, scaleNum(1), undefined, collateralAmount)
+
+      const getExcessCollateralResult = await calculator.getExcessCollateral(vault, vaultType)
+
+      console.log('excess: ', getExcessCollateralResult[0].toString())
+
+      assert.equal(
+        getExcessCollateralResult[0].toString(),
+        new BigNumber(collateralAmount).minus(expectedRequiredNakedMargin * 10 ** usdcDecimals).toString(),
+        'Excess collateral value mismatch',
+      )
+      assert.equal(getExcessCollateralResult[1], true, 'isValid vault result mismatch')
     })
   })
 })
