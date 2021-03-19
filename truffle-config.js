@@ -24,12 +24,19 @@ module.exports = {
       port: 8545,
       network_id: '*',
     },
+    rinkeby: {
+      provider: () => new HDWalletProvider(mnemonic, `https://rinkeby.infura.io/v3/${key}`),
+      network_id: 4,
+      timeoutBlocks: 2000,
+      skipDryRun: true,
+      gasPrice: 100000000000,
+    },
     ropsten: {
       provider: () => new HDWalletProvider(mnemonic, `https://ropsten.infura.io/v3/${key}`),
       network_id: 3,
-      timeoutBlocks: 120000,
+      timeoutBlocks: 2000,
       skipDryRun: true,
-      gasPrice: 10000000000,
+      gasPrice: 100000000000,
     },
     kovan: {
       provider: () => {
