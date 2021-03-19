@@ -258,6 +258,51 @@ contract MarginCalculator is Ownable {
     }
 
     /**
+     * @notice return the collateral required for naked margin vault, in collateral asset decimals
+     * @dev _shortAmount, _strikePrice and _underlyingPrice should be scaled by 1e8
+     * @param _underlying underlying asset address
+     * @param _strike strike asset address
+     * @param _collateral collateral asset address
+     * @param _shortAmount amount of short otoken
+     * @param  _strikePrice otoken strike price
+     * @param _underlyingPrice otoken underlying price
+     * @param _shortExpiryTimestamp otoken expiry timestamp
+     * @param _collateralDecimals otoken collateral asset decimals
+     * @param _isPut otoken type
+     */
+    function getNakedMarginRequired(
+        address _underlying,
+        address _strike,
+        address _collateral,
+        uint256 _shortAmount,
+        uint256 _strikePrice,
+        uint256 _underlyingPrice,
+        uint256 _shortExpiryTimestamp,
+        uint256 _collateralDecimals,
+        bool _isPut
+    ) external view returns (uint256) {
+        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
+
+        FPI.FixedPointInt memory shortAmount = FPI.fromScaledUint(_shortAmount, BASE);
+        FPI.FixedPointInt memory shortStrike = FPI.fromScaledUint(_strikePrice, BASE);
+        FPI.FixedPointInt memory shortUnderlyingPrice = FPI.fromScaledUint(_underlyingPrice, BASE);
+
+        return
+            FPI.toScaledUint(
+                _getNakedMarginRequired(
+                    productHash,
+                    shortAmount,
+                    shortStrike,
+                    shortUnderlyingPrice,
+                    _shortExpiryTimestamp,
+                    _isPut
+                ),
+                _collateralDecimals,
+                false
+            );
+    }
+
+    /**
      * @notice return the cash value of an expired oToken, denominated in collateral
      * @param _otoken oToken address
      * @return how much collateral can be taken out by 1 otoken unit, scaled by 1e8,
