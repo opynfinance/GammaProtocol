@@ -61,14 +61,13 @@ module.exports = {
       confirmations: 2,
       timeoutBlocks: 50,
       skipDryRun: false,
-      gasPrice: 100000000000,
+      gasPrice: 120000000000,
     },
     arbitrum: {
       provider: function() {
-        // return wrapped provider:
         return wrapProvider(new HDWalletProvider(mnemonic, 'https://kovan3.arbitrum.io/rpc'))
       },
-      network_id: '79377087078960',
+      network_id: '*', // Match any network id
       gasPrice: 0,
     },
   },
