@@ -68,8 +68,6 @@ contract(
     const usdcDecimals = 6
     const wethDecimals = 18
 
-    const openVaultBytes = web3.eth.abi.encodeParameter('uint256', 0)
-
     before('Deployment', async () => {
       // addressbook deployment
       addressBook = await AddressBook.new()
@@ -209,7 +207,7 @@ contract(
             vaultId: '1',
             amount: '0',
             index: '0',
-            data: openVaultBytes,
+            data: ZERO_ADDR,
           },
         ]
         await expectRevert(
@@ -228,7 +226,7 @@ contract(
             vaultId: '0',
             amount: '0',
             index: '0',
-            data: openVaultBytes,
+            data: ZERO_ADDR,
           },
         ]
         await expectRevert(
@@ -247,7 +245,7 @@ contract(
             vaultId: '1',
             amount: '0',
             index: '0',
-            data: openVaultBytes,
+            data: ZERO_ADDR,
           },
           {
             actionType: ActionType.OpenVault,
@@ -257,7 +255,7 @@ contract(
             vaultId: '2',
             amount: '0',
             index: '0',
-            data: openVaultBytes,
+            data: ZERO_ADDR,
           },
         ]
 
@@ -300,7 +298,7 @@ contract(
             vaultId: '1',
             amount: '0',
             index: '0',
-            data: openVaultBytes,
+            data: ZERO_ADDR,
           },
           {
             actionType: ActionType.OpenVault,
@@ -310,7 +308,7 @@ contract(
             vaultId: '1',
             amount: '0',
             index: '0',
-            data: openVaultBytes,
+            data: ZERO_ADDR,
           },
         ]
 
@@ -333,7 +331,7 @@ contract(
             vaultId: vaultCounterBefore.toNumber() + 1,
             amount: '0',
             index: '0',
-            data: openVaultBytes,
+            data: ZERO_ADDR,
           },
         ]
         await controllerProxy.operate(actionArgs, {from: accountOwner1})
@@ -361,7 +359,7 @@ contract(
             vaultId: vaultCounterBefore.toNumber() + 1,
             amount: '0',
             index: '0',
-            data: openVaultBytes,
+            data: ZERO_ADDR,
           },
         ]
         await controllerProxy.operate(actionArgs, {from: accountOperator1})
@@ -742,7 +740,7 @@ contract(
               vaultId: '1',
               amount: '0',
               index: '0',
-              data: openVaultBytes,
+              data: ZERO_ADDR,
             },
             {
               actionType: ActionType.DepositLongOption,
@@ -2174,7 +2172,7 @@ contract(
                 vaultId: '1',
                 amount: '0',
                 index: '0',
-                data: openVaultBytes,
+                data: ZERO_ADDR,
               },
               {
                 actionType: ActionType.MintShortOption,
@@ -2245,7 +2243,7 @@ contract(
                 vaultId: vaultId,
                 amount: '0',
                 index: '0',
-                data: openVaultBytes,
+                data: ZERO_ADDR,
               },
               {
                 actionType: ActionType.MintShortOption,
@@ -2275,7 +2273,7 @@ contract(
                 vaultId: vaultId,
                 amount: '0',
                 index: '0',
-                data: openVaultBytes,
+                data: ZERO_ADDR,
               },
               {
                 actionType: ActionType.MintShortOption,
@@ -2521,7 +2519,7 @@ contract(
               vaultId: vaultCounter.toNumber(),
               amount: '0',
               index: '0',
-              data: openVaultBytes,
+              data: ZERO_ADDR,
             },
             {
               actionType: ActionType.MintShortOption,
@@ -2589,7 +2587,7 @@ contract(
                 vaultId: vaultCounterBefore.toNumber() + 1,
                 amount: '0',
                 index: '0',
-                data: openVaultBytes,
+                data: ZERO_ADDR,
               },
               {
                 actionType: ActionType.MintShortOption,
@@ -2775,7 +2773,7 @@ contract(
             vaultId: vaultCounter.toNumber(),
             amount: '0',
             index: '0',
-            data: openVaultBytes,
+            data: ZERO_ADDR,
           },
           {
             actionType: ActionType.MintShortOption,
@@ -2995,7 +2993,7 @@ contract(
             vaultId: vaultCounter.toNumber(),
             amount: '0',
             index: '0',
-            data: openVaultBytes,
+            data: ZERO_ADDR,
           },
           {
             actionType: ActionType.DepositCollateral,
@@ -3080,7 +3078,7 @@ contract(
             vaultId: vaultCounter.toNumber(),
             amount: '0',
             index: '0',
-            data: openVaultBytes,
+            data: ZERO_ADDR,
           },
           {
             actionType: ActionType.MintShortOption,
@@ -3178,7 +3176,7 @@ contract(
               vaultId: vaultCounter.toNumber(),
               amount: '0',
               index: '0',
-              data: openVaultBytes,
+              data: ZERO_ADDR,
             },
             {
               actionType: ActionType.MintShortOption,
@@ -3214,7 +3212,7 @@ contract(
               vaultId: vaultCounter.toNumber(),
               amount: '0',
               index: '0',
-              data: openVaultBytes,
+              data: ZERO_ADDR,
             },
             {
               actionType: ActionType.MintShortOption,
@@ -3356,7 +3354,7 @@ contract(
             vaultId: vaultCounter.toNumber(),
             amount: '0',
             index: '0',
-            data: openVaultBytes,
+            data: ZERO_ADDR,
           },
           {
             actionType: ActionType.DepositCollateral,
@@ -3564,7 +3562,7 @@ contract(
             vaultId: vaultCounter.toNumber(),
             amount: '0',
             index: '0',
-            data: openVaultBytes,
+            data: ZERO_ADDR,
           },
           {
             actionType: ActionType.MintShortOption,
@@ -3602,7 +3600,7 @@ contract(
             vaultId: newVulatId,
             amount: '0',
             index: '0',
-            data: openVaultBytes,
+            data: ZERO_ADDR,
           },
           {
             actionType: ActionType.DepositLongOption,
@@ -3696,7 +3694,7 @@ contract(
               vaultId: vaultCounter.toNumber(),
               amount: '0',
               index: '0',
-              data: openVaultBytes,
+              data: ZERO_ADDR,
             },
             {
               actionType: ActionType.MintShortOption,
@@ -3748,7 +3746,7 @@ contract(
               vaultId: vaultCounter.toNumber(),
               amount: '0',
               index: '0',
-              data: openVaultBytes,
+              data: ZERO_ADDR,
             },
             {
               actionType: ActionType.MintShortOption,
@@ -4084,7 +4082,7 @@ contract(
             vaultId: vaultCounterBefore.toNumber() + 1,
             amount: '0',
             index: '0',
-            data: openVaultBytes,
+            data: ZERO_ADDR,
           },
           {
             actionType: ActionType.MintShortOption,
@@ -4179,7 +4177,7 @@ contract(
             vaultId: vaultCounter.toNumber() + 1,
             amount: '0',
             index: '0',
-            data: openVaultBytes,
+            data: ZERO_ADDR,
           },
         ]
         await expectRevert(
@@ -4410,7 +4408,7 @@ contract(
             vaultId: vaultCounterBefore.toNumber() + 1,
             amount: '0',
             index: '0',
-            data: openVaultBytes,
+            data: ZERO_ADDR,
           },
           {
             actionType: ActionType.MintShortOption,
@@ -4499,7 +4497,7 @@ contract(
             vaultId: vaultCounter.toNumber() + 1,
             amount: '0',
             index: '0',
-            data: openVaultBytes,
+            data: ZERO_ADDR,
           },
         ]
         await expectRevert(

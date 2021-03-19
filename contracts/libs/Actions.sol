@@ -152,8 +152,13 @@ library Actions {
         require(_args.actionType == ActionType.OpenVault, "Actions: can only parse arguments for open vault actions");
         require(_args.owner != address(0), "Actions: cannot open vault for an invalid account");
 
-        // decode vault type from _args.data
-        uint256 vaultType = abi.decode(_args.data, (uint256));
+        // if not _args.data included, vault type will be 0 by default
+        uint256 vaultType;
+
+        if (_args.data.length == 32) {
+            // decode vault type from _args.data
+            vaultType = abi.decode(_args.data, (uint256));
+        }
 
         // for now we only have 2 vault types
         require(vaultType < 2, "Actions: cannot open vault with an invalid type");
