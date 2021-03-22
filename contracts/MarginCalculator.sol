@@ -112,7 +112,7 @@ contract MarginCalculator is Ownable {
         bool _isPut,
         uint256 _timeToExpiry
     ) external onlyOwner {
-        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
+        bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
         uint256[] storage expiryArray = productTimeToExpiry[productHash];
 
         require(
@@ -147,7 +147,7 @@ contract MarginCalculator is Ownable {
     ) external onlyOwner {
         require(_value > 0, "MarginCalculator: invalid option upper bound value");
 
-        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
+        bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
 
         timeToExpiryValue[productHash][_timeToExpiry] = _value;
     }
@@ -168,7 +168,7 @@ contract MarginCalculator is Ownable {
         bool _isPut,
         uint256 _shockValue
     ) external onlyOwner {
-        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
+        bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
 
         spotShock[productHash] = _shockValue;
     }
@@ -205,7 +205,7 @@ contract MarginCalculator is Ownable {
         address _collateral,
         bool _isPut
     ) external view returns (uint256[] memory) {
-        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
+        bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
         return productTimeToExpiry[productHash];
     }
 
@@ -225,7 +225,7 @@ contract MarginCalculator is Ownable {
         bool _isPut,
         uint256 _timeToExpiry
     ) external view returns (uint256) {
-        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
+        bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
 
         return timeToExpiryValue[productHash][_timeToExpiry];
     }
@@ -244,7 +244,7 @@ contract MarginCalculator is Ownable {
         address _collateral,
         bool _isPut
     ) external view returns (uint256) {
-        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
+        bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
 
         return spotShock[productHash];
     }
@@ -281,7 +281,7 @@ contract MarginCalculator is Ownable {
         uint256 _collateralDecimals,
         bool _isPut
     ) external view returns (uint256) {
-        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
+        bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
 
         FPI.FixedPointInt memory shortAmount = FPI.fromScaledUint(_shortAmount, BASE);
         FPI.FixedPointInt memory shortStrike = FPI.fromScaledUint(_strikePrice, BASE);
@@ -491,13 +491,11 @@ contract MarginCalculator is Ownable {
                 );
 
                 // encode product hash
-                bytes32 productHash = keccak256(
-                    abi.encode(
-                        _vaultDetails.shortUnderlyingAsset,
-                        _vaultDetails.shortStrikeAsset,
-                        _vaultDetails.shortCollateralAsset,
-                        _vaultDetails.isShortPut
-                    )
+                bytes32 productHash = _getProductHash(
+                    _vaultDetails.shortUnderlyingAsset,
+                    _vaultDetails.shortStrikeAsset,
+                    _vaultDetails.shortCollateralAsset,
+                    _vaultDetails.isShortPut
                 );
 
                 // return amount of collateral in vault and needed collateral amount for margin
@@ -934,5 +932,22 @@ contract MarginCalculator is Ownable {
         }
 
         return isMarginable;
+    }
+
+    /**
+     * @notice get a product hash
+     * @param _underlying option underlying asset
+     * @param _strike option strike asset
+     * @param _collateral option collateral asset
+     * @param _isPut option type
+     * @return product hash
+     */
+    function _getProductHash(
+        address _underlying,
+        address _strike,
+        address _collateral,
+        bool _isPut
+    ) internal pure returns (bytes32) {
+        return keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
     }
 }
