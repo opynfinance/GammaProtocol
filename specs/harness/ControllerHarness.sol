@@ -150,7 +150,7 @@ contract ControllerHarness is Controller {
   }
 
   function openVault(address owner, uint256 vaultId) external {
-    Actions.OpenVaultArgs memory args = Actions.OpenVaultArgs({owner: owner, vaultId: vaultId});
+    Actions.OpenVaultArgs memory args = Actions.OpenVaultArgs({owner: owner, vaultId: vaultId, vaultType: 0});
     _openVault(args);
   }
 
