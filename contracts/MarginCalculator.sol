@@ -468,8 +468,6 @@ contract MarginCalculator is Ownable {
         if (!(now >= otokenDetails.otokenExpiry)) {
             // check if vault is naked margin vault
             if (_vaultDetails.vaultType == 1) {
-                require(!_vaultDetails.hasLong, "MarginCalculator: naked margin vault cannot have long otoken");
-
                 // fetch dust amount for otoken collateral asset as FixedPointInt, assuming dust is already scaled to 1e27
                 FPI.FixedPointInt memory dustAmount = FPI.fromScaledUint(
                     dust[_vaultDetails.shortCollateralAsset],
@@ -902,6 +900,9 @@ contract MarginCalculator is Ownable {
     {
         // if vault is missing a long or a short, return True
         if (!_vaultDetails.hasLong || !_vaultDetails.hasShort) return true;
+
+        if (_vaultDetails.vaultType == 1)
+            require(!_vaultDetails.hasLong, "MarginCalculator: naked margin vault cannot have long otoken");
 
         return
             _vault.longOtokens[0] != _vault.shortOtokens[0] &&
