@@ -402,7 +402,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _strike oToken strike asset
      * @param _collateral oToken collateral asset
      * @param _expiry otoken expiry timestamp
-     * @return True if the oToken has expired AND all oracle prices at the expiry timestamp have been finalized, False if not
+     * @return True if all oracle prices at the expiry timestamp have been finalized, False if not
      */
     function isSettlementAllowed(
         address _underlying,
