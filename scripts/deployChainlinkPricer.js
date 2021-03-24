@@ -2,7 +2,7 @@ const yargs = require('yargs')
 
 const ChainlinkPricer = artifacts.require('ChainlinkPricer.sol')
 
-module.exports = async function(callback, k) {
+module.exports = async function(callback) {
   try {
     const options = yargs
       .usage(
@@ -19,8 +19,8 @@ module.exports = async function(callback, k) {
     console.log(`Deploying chainlink pricer contract on ${options.network} 🍕`)
 
     const tx = await ChainlinkPricer.new(options.bot, options.asset, options.aggregator, options.oracle, {
-      gasPrice: options.gas,
-      gas: options.gasLimit ? options.gasLimit : 470000,
+      gasPrice: options.gasPrice,
+      gas: options.gasLimit,
     })
 
     console.log('Chainlink pricer deployed! 🎉')
