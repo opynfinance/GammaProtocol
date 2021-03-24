@@ -6,20 +6,21 @@ module.exports = async function(callback, k) {
   try {
     const options = yargs
       .usage(
-        'Usage: --network <network> --bot <bot> --asset <asset> --aggregator <aggregator> --oracle <oracle> --gas <gasPrice>',
+        'Usage: --network <network> --bot <bot> --asset <asset> --aggregator <aggregator> --oracle <oracle> --gasPrice <gasPrice> --gasLimit <gasLimit>',
       )
       .option('network', {describe: 'Network name', type: 'string', demandOption: true})
       .option('bot', {describe: 'Bot address', type: 'string', demandOption: true})
       .option('asset', {describe: 'Asset address', type: 'string', demandOption: true})
       .option('aggregator', {describe: 'Chainlink aggregator address', type: 'string', demandOption: true})
       .option('oracle', {describe: 'Oracle module address', type: 'string', demandOption: true})
-      .option('gas', {describe: 'Gas price in WEI', type: 'string', demandOption: false}).argv
+      .option('gasPrice', {describe: 'Gas price in WEI', type: 'string', demandOption: false})
+      .option('gasLimit', {describe: 'Gas Limit in WEI', type: 'string', demandOption: false}).argv
 
     console.log(`Deploying chainlink pricer contract on ${options.network} 🍕`)
 
     const tx = await ChainlinkPricer.new(options.bot, options.asset, options.aggregator, options.oracle, {
       gasPrice: options.gas,
-      gas: 470000,
+      gas: options.gasLimit ? options.gasLimit : 470000,
     })
 
     console.log('Chainlink pricer deployed! 🎉')
