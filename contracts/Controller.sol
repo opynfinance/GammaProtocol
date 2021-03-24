@@ -30,7 +30,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
     AddressBookInterface public addressbook;
     WhitelistInterface public whitelist;
-    OracleInterface public oracle;
+    address public oracle;
     MarginCalculatorInterface public calculator;
     MarginPoolInterface public pool;
 
@@ -410,11 +410,19 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         address _collateral,
         uint256 _expiry
     ) public view returns (bool) {
-        bool isUnderlyingFinalized = oracle.isDisputePeriodOver(_underlying, _expiry);
-        bool isStrikeFinalized = oracle.isDisputePeriodOver(_strike, _expiry);
-        bool isCollateralFinalized = oracle.isDisputePeriodOver(_collateral, _expiry);
+        bool isUnderlyingFinalized = _isDisputePeriodOver(_underlying, _expiry); //oracle.isDisputePeriodOver(_underlying, _expiry);
+        bool isStrikeFinalized = _isDisputePeriodOver(_strike, _expiry);
+        bool isCollateralFinalized = _isDisputePeriodOver(_collateral, _expiry); //oracle.isDisputePeriodOver(_collateral, _expiry);
 
         return isUnderlyingFinalized && isStrikeFinalized && isCollateralFinalized;
+    }
+
+    function _isDisputePeriodOver(address _asset, uint256 _expiry) private view returns (bool) {
+        (bool success, bytes memory data) = oracle.staticcall(
+            abi.encodeWithSelector(OracleInterface.isDisputePeriodOver.selector, _asset, _expiry)
+        );
+        require(success && data.length >= 2);
+        return abi.decode(data, (bool));
     }
 
     /**
@@ -817,7 +825,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     function _refreshConfigInternal() internal {
         whitelist = WhitelistInterface(addressbook.getWhitelist());
-        oracle = OracleInterface(addressbook.getOracle());
+        oracle = addressbook.getOracle();
         calculator = MarginCalculatorInterface(addressbook.getMarginCalculator());
         pool = MarginPoolInterface(addressbook.getMarginPool());
     }
