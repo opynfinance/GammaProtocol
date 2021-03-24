@@ -505,7 +505,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             if (
                 (actionType != Actions.ActionType.SettleVault) &&
                 (actionType != Actions.ActionType.Redeem) &&
-                (actionType != Actions.ActionType.Call)
+                (actionType != Actions.ActionType.Call) &&
+                (actionType != Actions.ActionType.Liquidate)
             ) {
                 // check if this action is manipulating the same vault as all other actions, if a vault has already been updated
                 if (vaultUpdated) {
