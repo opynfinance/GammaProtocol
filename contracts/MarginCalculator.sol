@@ -27,7 +27,7 @@ contract MarginCalculator {
     uint256 internal constant BASE = 8;
 
     /// @dev FixedPoint 0
-    FPI.FixedPointInt internal ZERO = FPI.fromScaledUint(0, BASE);
+    // FPI.FixedPointInt internal ZERO = FPI.fromScaledUint(0, BASE);
 
     struct VaultDetails {
         address shortUnderlyingAsset;
@@ -119,7 +119,9 @@ contract MarginCalculator {
             return (amount, true);
         }
 
-        FPI.FixedPointInt memory collateralAmount = ZERO;
+        FPI.FixedPointInt memory _zero = FPI.fromScaledUint(0, 8); // sload for gas optimization
+
+        FPI.FixedPointInt memory collateralAmount = _zero;
         if (vaultDetails.hasCollateral) {
             collateralAmount = FPI.fromScaledUint(_vault.collateralAmounts[0], vaultDetails.collateralDecimals);
         }
@@ -128,7 +130,7 @@ contract MarginCalculator {
         FPI.FixedPointInt memory collateralRequired = _getMarginRequired(_vault, vaultDetails);
         FPI.FixedPointInt memory excessCollateral = collateralAmount.sub(collateralRequired);
 
-        bool isExcess = excessCollateral.isGreaterThanOrEqual(ZERO);
+        bool isExcess = excessCollateral.isGreaterThanOrEqual(_zero);
         uint256 collateralDecimals = vaultDetails.hasLong
             ? vaultDetails.longCollateralDecimals
             : vaultDetails.shortCollateralDecimals;
@@ -158,6 +160,7 @@ contract MarginCalculator {
         // strike price is denominated in strike asset
         FPI.FixedPointInt memory strikePrice = FPI.fromScaledUint(_strikePrice, BASE);
         FPI.FixedPointInt memory one = FPI.fromScaledUint(1, 0);
+        FPI.FixedPointInt memory _zero = FPI.fromScaledUint(0, 8); // sload for gas optimization
 
         // calculate the value of the underlying asset in terms of the strike asset
         FPI.FixedPointInt memory underlyingPriceInStrike = _convertAmountOnExpiryPrice(
@@ -168,9 +171,11 @@ contract MarginCalculator {
         );
 
         if (_isPut) {
-            return strikePrice.isGreaterThan(underlyingPriceInStrike) ? strikePrice.sub(underlyingPriceInStrike) : ZERO;
+            return
+                strikePrice.isGreaterThan(underlyingPriceInStrike) ? strikePrice.sub(underlyingPriceInStrike) : _zero;
         } else {
-            return underlyingPriceInStrike.isGreaterThan(strikePrice) ? underlyingPriceInStrike.sub(strikePrice) : ZERO;
+            return
+                underlyingPriceInStrike.isGreaterThan(strikePrice) ? underlyingPriceInStrike.sub(strikePrice) : _zero;
         }
     }
 
@@ -185,12 +190,15 @@ contract MarginCalculator {
         view
         returns (FPI.FixedPointInt memory)
     {
+        // FPI.FixedPointInt memory _zero = FPI.fromScaledUint(0, 8); // sload for gas optimization
+        // uint256 _base = BASE; // sload for gas optimization
+
         FPI.FixedPointInt memory shortAmount = _vaultDetails.hasShort
             ? FPI.fromScaledUint(_vault.shortAmounts[0], BASE)
-            : ZERO;
+            : FPI.fromScaledUint(0, 8);
         FPI.FixedPointInt memory longAmount = _vaultDetails.hasLong
             ? FPI.fromScaledUint(_vault.longAmounts[0], BASE)
-            : ZERO;
+            : FPI.fromScaledUint(0, 8);
 
         address otokenUnderlyingAsset = _vaultDetails.hasShort
             ? _vaultDetails.shortUnderlyingAsset
@@ -210,10 +218,10 @@ contract MarginCalculator {
         if (!expired) {
             FPI.FixedPointInt memory shortStrike = _vaultDetails.hasShort
                 ? FPI.fromScaledUint(_vaultDetails.shortStrikePrice, BASE)
-                : ZERO;
+                : FPI.fromScaledUint(0, 8);
             FPI.FixedPointInt memory longStrike = _vaultDetails.hasLong
                 ? FPI.fromScaledUint(_vaultDetails.longStrikePrice, BASE)
-                : ZERO;
+                : FPI.fromScaledUint(0, 8);
 
             if (isPut) {
                 FPI.FixedPointInt memory strikeNeeded = _getPutSpreadMarginRequired(
@@ -243,7 +251,7 @@ contract MarginCalculator {
                     _vaultDetails.shortStrikePrice,
                     isPut
                 )
-                : ZERO;
+                : FPI.fromScaledUint(0, 8);
             FPI.FixedPointInt memory longCashValue = _vaultDetails.hasLong
                 ? _getExpiredCashValue(
                     _vaultDetails.longUnderlyingAsset,
@@ -252,7 +260,7 @@ contract MarginCalculator {
                     _vaultDetails.longStrikePrice,
                     isPut
                 )
-                : ZERO;
+                : FPI.fromScaledUint(0, 8);
 
             FPI.FixedPointInt memory valueInStrike = _getExpiredSpreadCashValue(
                 shortAmount,
@@ -279,7 +287,11 @@ contract MarginCalculator {
         FPI.FixedPointInt memory _shortStrike,
         FPI.FixedPointInt memory _longStrike
     ) internal view returns (FPI.FixedPointInt memory) {
-        return FPI.max(_shortAmount.mul(_shortStrike).sub(_longStrike.mul(FPI.min(_shortAmount, _longAmount))), ZERO);
+        return
+            FPI.max(
+                _shortAmount.mul(_shortStrike).sub(_longStrike.mul(FPI.min(_shortAmount, _longAmount))),
+                FPI.fromScaledUint(0, 8)
+            );
     }
 
     /**
@@ -298,9 +310,10 @@ contract MarginCalculator {
         FPI.FixedPointInt memory _shortStrike,
         FPI.FixedPointInt memory _longStrike
     ) internal view returns (FPI.FixedPointInt memory) {
+        FPI.FixedPointInt memory _zero = FPI.fromScaledUint(0, 8); // sload for gas optimization
         // max (short amount - long amount , 0)
-        if (_longStrike.isEqual(ZERO)) {
-            return FPI.max(_shortAmount.sub(_longAmount), ZERO);
+        if (_longStrike.isEqual(_zero)) {
+            return FPI.max(_shortAmount.sub(_longAmount), _zero);
         }
 
         /**
@@ -313,7 +326,7 @@ contract MarginCalculator {
         /**
          * calculate max ( short amount - long amount , 0)
          */
-        FPI.FixedPointInt memory secondPart = FPI.max(_shortAmount.sub(_longAmount), ZERO);
+        FPI.FixedPointInt memory secondPart = FPI.max(_shortAmount.sub(_longAmount), _zero);
 
         return FPI.max(firstPart, secondPart);
     }
@@ -434,11 +447,12 @@ contract MarginCalculator {
         if (_assetA == _assetB) {
             return _amount;
         }
+        uint256 _base = BASE; // sload for gas optimization
         uint256 priceA = oracle.getPrice(_assetA);
         uint256 priceB = oracle.getPrice(_assetB);
         // amount A * price A in USD = amount B * price B in USD
         // amount B = amount A * price A / price B
-        return _amount.mul(FPI.fromScaledUint(priceA, BASE)).div(FPI.fromScaledUint(priceB, BASE));
+        return _amount.mul(FPI.fromScaledUint(priceA, _base)).div(FPI.fromScaledUint(priceB, _base));
     }
 
     /**
@@ -461,9 +475,10 @@ contract MarginCalculator {
         (uint256 priceA, bool priceAFinalized) = oracle.getExpiryPrice(_assetA, _expiry);
         (uint256 priceB, bool priceBFinalized) = oracle.getExpiryPrice(_assetB, _expiry);
         require(priceAFinalized && priceBFinalized, "MarginCalculator: price at expiry not finalized yet.");
+        uint256 _base = BASE; // sload for gas optimization
         // amount A * price A in USD = amount B * price B in USD
         // amount B = amount A * price A / price B
-        return _amount.mul(FPI.fromScaledUint(priceA, BASE)).div(FPI.fromScaledUint(priceB, BASE));
+        return _amount.mul(FPI.fromScaledUint(priceA, _base)).div(FPI.fromScaledUint(priceB, _base));
     }
 
     /**
