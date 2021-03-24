@@ -296,9 +296,10 @@ library Actions {
     }
 
     function _parseLiquidateArgs(ActionArgs memory _args) internal pure returns (LiquidateArgs memory) {
-        require(_args.actionType == ActionType.Liquidate, "Actions: can only parse arguments for liquidate actions");
+        require(_args.actionType == ActionType.Liquidate, "Actions: can only parse arguments for liquidate action");
         require(_args.owner != address(0), "Actions: cannot liquidate vault for an invalid account owner");
         require(_args.secondAddress != address(0), "Actions: cannot send collateral to an invalid account");
+        require(_args.data.length == 32, "Actions: cannot parse liquidate action with no round id");
 
         // decode chainlink round id from _args.data
         uint256 roundId = abi.decode(_args.data, (uint256));
