@@ -865,7 +865,30 @@ contract MarginCalculator is Ownable {
     }
 
     /**
-     * @notice return debt price, how much collateral asset per 1 otoken repaid
+     * @notice return debt price, how much collateral asset per 1 otoken repaid in collateral decimal
+     * ending price = vault collateral / vault debt
+     * if auction ended, return ending price
+     * else calculate starting price, for put option:
+     * starting price = max(cash value - underlying price * oracle deviation, 0)
+     * for call option:
+     *                      max(cash value - underlying price * oracle deviation, 0)
+     * starting price =  ---------------------------------------------------------------
+     *                                          underlying price
+     *
+     *
+     *                  starting price + (ending price - starting price) * auction elapsed time
+     * then price = --------------------------------------------------------------------------
+     *                                      auction time
+     *
+     *
+     * @param _vaultCollateral vault collateral amount
+     * @param _vaultDebt vault short amount
+     * @param _cv option cash value
+     * @param _spotPrice option underlying asset price (in USDC)
+     * @param _auctionStartingTime auction starting timestamp (_spotPrice timestamp from chainlink)
+     * @param _collateralDecimals collateral asset decimals
+     * @param _isPut otoken type, true for put, false for call option
+     * @return price of 1 debt otoken in collateral asset scaled by collateral decimals
      */
     function _price(
         FPI.FixedPointInt memory _vaultCollateral,
@@ -883,6 +906,7 @@ contract MarginCalculator is Ownable {
 
         uint256 auctionElapsedTime = now.sub(_auctionStartingTime);
 
+        // if auction ended, return ending price
         if (auctionElapsedTime >= AUCTION_TIME) {
             price = endingPrice.toScaledUint(_collateralDecimals, true);
         } else {
