@@ -21,6 +21,15 @@ contract MarginCalculator is Ownable {
     using SafeMath for uint256;
     using FPI for FPI.FixedPointInt;
 
+    /// @dev decimals used dust, option upper bound value, spot shock and oracle deviation
+    uint256 internal constant SCALING_FACTOR = 27;
+
+    /// @dev decimals used by strike price and oracle price
+    uint256 internal constant BASE = 8;
+
+    /// @notice auction length scaled by 1e27
+    uint256 public constant AUCTION_TIME = 3.6e30; // 3600e27
+
     /// @dev struct to store all needed vault details
     struct VaultDetails {
         address shortUnderlyingAsset;
@@ -44,15 +53,6 @@ contract MarginCalculator is Ownable {
         bool hasCollateral;
     }
 
-    /// @dev oracle module
-    OracleInterface public oracle;
-
-    /// @dev decimals used dust, option upper bound value, spot shock and oracle deviation
-    uint256 internal constant SCALING_FACTOR = 27;
-
-    /// @dev decimals used by strike price and oracle price
-    uint256 internal constant BASE = 8;
-
     /// @dev oracle deviation value (1e27)
     uint256 internal oracleDeviation;
 
@@ -70,6 +70,9 @@ contract MarginCalculator is Ownable {
 
     /// @dev mapping to store shock value for spot price per product (1e27)
     mapping(bytes32 => uint256) internal spotShock;
+
+    /// @dev oracle module
+    OracleInterface public oracle;
 
     /// @notice emits an event when collateral dust is updated
     event CollateralDustUpdated(address indexed collateral, uint256 dust);
@@ -343,6 +346,111 @@ contract MarginCalculator is Ownable {
         // we want to return: how much USDC units can be taken out by 1 (1e8 units) oToken
         uint256 collateralDecimals = uint256(ERC20Interface(collateral).decimals());
         return cashValueInCollateral.toScaledUint(collateralDecimals, true);
+    }
+
+    // structs to avoid stack too deep error
+    // struct to store shortAmount, shortStrike and shortUnderlyingPrice scaled to 1e27
+    struct ShortScaledDetails {
+        FPI.FixedPointInt shortAmount;
+        FPI.FixedPointInt shortStrike;
+        FPI.FixedPointInt shortUnderlyingPrice;
+    }
+    // struct to store isLiquidatable and the price for 1 otoken repaid scaled to the collateral decimals
+    struct LiquidationStatus {
+        bool isLiquidatable;
+        uint256 debtPrice;
+    }
+
+    function isLiquidatable(
+        MarginVault.Vault memory _vault,
+        uint256 _vaultType,
+        uint256 _vaultLatestUpdate,
+        uint256 _roundId
+    )
+        external
+        view
+        returns (
+            bool,
+            uint256,
+            uint256
+        )
+    {
+        LiquidationStatus memory liquidationStatus = LiquidationStatus(false, 0);
+
+        // liquidation is only supported for naked margin vault
+        require(_vaultType == 1, "MarginCalculator: invalid vault type to liquidate");
+
+        VaultDetails memory vaultDetails = getVaultDetails(_vault, _vaultType);
+
+        // can not liquidate vault that have no short position
+        if (!vaultDetails.hasShort) return (false, 0, 0);
+
+        // do not allow liquidating expired position
+        require(
+            now < vaultDetails.shortExpiryTimestamp,
+            "MarginCalculator: can not liquidate vault with expired short otoken"
+        );
+
+        // get otoken underlying asset price and timestamp from chainlink feed
+        (uint256 price, uint256 timestamp) = oracle.getChainlinkRoundData(
+            vaultDetails.shortUnderlyingAsset,
+            uint80(_roundId)
+        );
+
+        require(timestamp >= _vaultLatestUpdate, "MarginCalculator: invalid chainlink price timestamp");
+
+        bytes32 productHash = _getProductHash(
+            vaultDetails.shortUnderlyingAsset,
+            vaultDetails.shortStrikeAsset,
+            vaultDetails.shortCollateralAsset,
+            vaultDetails.isShortPut
+        );
+
+        ShortScaledDetails memory shortDetails = ShortScaledDetails({
+            shortAmount: FPI.fromScaledUint(_vault.shortAmounts[0], BASE),
+            shortStrike: FPI.fromScaledUint(vaultDetails.shortStrikePrice, BASE),
+            shortUnderlyingPrice: FPI.fromScaledUint(price, BASE)
+        });
+
+        // get required collateral
+        FPI.FixedPointInt memory collateralRequired = _getNakedMarginRequired(
+            productHash,
+            shortDetails.shortAmount,
+            shortDetails.shortStrike,
+            shortDetails.shortUnderlyingPrice,
+            vaultDetails.shortExpiryTimestamp,
+            vaultDetails.isShortPut
+        );
+
+        FPI.FixedPointInt memory collateralAmount = FPI.fromScaledUint(
+            _vault.collateralAmounts[0],
+            vaultDetails.collateralDecimals
+        );
+
+        liquidationStatus.isLiquidatable = collateralRequired.isGreaterThan(collateralAmount);
+
+        // if vault no liquidatable, exit
+        if (!liquidationStatus.isLiquidatable) return (liquidationStatus.isLiquidatable, 0, 0);
+
+        // get otoken cash value
+        FPI.FixedPointInt memory cashValue = _getCashValue(
+            shortDetails.shortStrike,
+            shortDetails.shortUnderlyingPrice,
+            vaultDetails.isShortPut
+        );
+
+        // get the amount of collateral per 1 repaid otoken
+        liquidationStatus.debtPrice = _price(
+            cashValue,
+            shortDetails.shortUnderlyingPrice,
+            collateralAmount,
+            shortDetails.shortAmount,
+            timestamp,
+            vaultDetails.collateralDecimals,
+            vaultDetails.isShortPut
+        );
+
+        return (liquidationStatus.isLiquidatable, liquidationStatus.debtPrice, dust[vaultDetails.shortCollateralAsset]);
     }
 
     /**
@@ -756,6 +864,54 @@ contract MarginCalculator is Ownable {
         return _amount.mul(FPI.fromScaledUint(priceA, BASE)).div(FPI.fromScaledUint(priceB, BASE));
     }
 
+    /**
+     * @notice return debt price, how much collateral asset per 1 otoken repaid
+     */
+    function _price(
+        FPI.FixedPointInt memory _vaultCollateral,
+        FPI.FixedPointInt memory _vaultDebt,
+        FPI.FixedPointInt memory _cv,
+        FPI.FixedPointInt memory _spotPrice,
+        uint256 _auctionStartingTime,
+        uint256 _collateralDecimals,
+        bool _isPut
+    ) internal view returns (uint256) {
+        // price of 1 repaid otoken in collateral asset, scaled to collateral decimals and explicitly rounded down
+        uint256 price;
+        // ending price
+        FPI.FixedPointInt memory endingPrice = _vaultCollateral.div(_vaultDebt);
+
+        uint256 auctionElapsedTime = now.sub(_auctionStartingTime);
+
+        if (auctionElapsedTime >= AUCTION_TIME) {
+            price = endingPrice.toScaledUint(_collateralDecimals, true);
+        } else {
+            // starting price
+            FPI.FixedPointInt memory startingPrice;
+
+            {
+                // store oracle deviation in a FixedPointInt (already scaled by 1e27)
+                FPI.FixedPointInt memory fixedOracleDeviation = FPI.fromScaledUint(oracleDeviation, SCALING_FACTOR);
+
+                if (_isPut) {
+                    startingPrice = FPI.max(_cv.sub(fixedOracleDeviation.mul(_spotPrice)), ZERO);
+                } else {
+                    startingPrice = FPI.max(_cv.sub(fixedOracleDeviation.mul(_spotPrice)), ZERO).div(_spotPrice);
+                }
+            }
+
+            // store auctionElapsedTime in a FixedPointInt scaled by 1e27
+            FPI.FixedPointInt memory auctionElapsedTime = FPI.fromScaledUint(auctionElapsedTime, 18);
+            // store AUCTION_TIME in a FixedPointInt (already scaled by 1e27)
+            FPI.FixedPointInt memory auctionTime = FPI.fromScaledUint(AUCTION_TIME, SCALING_FACTOR);
+
+            price = (startingPrice.add(endingPrice.sub(startingPrice).mul(auctionElapsedTime).div(auctionTime)))
+                .toScaledUint(_collateralDecimals, true);
+        }
+
+        return price;
+    }
+
     function getVaultDetails(MarginVault.Vault memory _vault, uint256 _vaultType)
         internal
         view
@@ -950,5 +1106,19 @@ contract MarginCalculator is Ownable {
         bool _isPut
     ) internal pure returns (bytes32) {
         return keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
+    }
+
+    /**
+     * @notice get option cash value
+     * @dev this assume that the underlying price is dominated in strike asset
+     */
+    function _getCashValue(
+        FPI.FixedPointInt memory _strikePrice,
+        FPI.FixedPointInt memory _underlyingPrice,
+        bool isPut
+    ) internal view returns (FPI.FixedPointInt memory) {
+        if (isPut) return _strikePrice.isGreaterThan(_underlyingPrice) ? _strikePrice.sub(_underlyingPrice) : ZERO;
+
+        return _underlyingPrice.isGreaterThan(_strikePrice) ? _underlyingPrice.sub(_strikePrice) : ZERO;
     }
 }
