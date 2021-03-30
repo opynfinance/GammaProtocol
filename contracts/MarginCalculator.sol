@@ -397,7 +397,10 @@ contract MarginCalculator is Ownable {
             uint80(_roundId)
         );
 
-        require(timestamp >= _vaultLatestUpdate, "MarginCalculator: invalid chainlink price timestamp");
+        require(
+            timestamp >= _vaultLatestUpdate,
+            "MarginCalculator: auction timestamp should be post vault latest update"
+        );
 
         bytes32 productHash = _getProductHash(
             vaultDetails.shortUnderlyingAsset,
@@ -441,10 +444,10 @@ contract MarginCalculator is Ownable {
 
         // get the amount of collateral per 1 repaid otoken
         liquidationStatus.debtPrice = _price(
-            cashValue,
-            shortDetails.shortUnderlyingPrice,
             collateralAmount,
             shortDetails.shortAmount,
+            cashValue,
+            shortDetails.shortUnderlyingPrice,
             timestamp,
             vaultDetails.collateralDecimals,
             vaultDetails.isShortPut

@@ -32,16 +32,6 @@ const expectedRequiredMargin = (
   spotShockValue: number,
 ) => {
   let a, b, marginRequired
-  // if (isPut) {
-  //   a = BigNumber.minimum(strikePrice, spotShockValue.times(underlyingPrice).dividedBy(1e27))
-  //   b = BigNumber.maximum(strikePrice.minus(spotShockValue.times(underlyingPrice).dividedBy(1e27)), new BigNumber(0))
-  //   marginRequired = upperBoundValue.times(a).plus(b).times(shortAmount).dividedBy(1e27)
-  // } else {
-  //   const one = scaleBigNum(1, 27)
-  //   a = BigNumber.minimum(one, strikePrice.dividedBy(underlyingPrice.dividedBy(spotShockValue)))
-  //   b = BigNumber.maximum(one.minus(strikePrice.dividedBy(underlyingPrice.dividedBy(spotShockValue))), new BigNumber(0))
-  //   marginRequired = upperBoundValue.times(a).plus(b).times(shortAmount);
-  // }
 
   if (isPut) {
     a = Math.min(strikePrice, spotShockValue * underlyingPrice)

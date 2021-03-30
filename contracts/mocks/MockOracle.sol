@@ -28,8 +28,20 @@ contract MockOracle {
     mapping(address => mapping(uint256 => bool)) private _isDisputePeriodOver;
     mapping(address => mapping(uint256 => bool)) private _isLockingPeriodOver;
 
+    // chainlink historic round data, asset => round => price/timestamp
+    mapping(address => mapping(uint80 => uint256)) private _roundPrice;
+    mapping(address => mapping(uint80 => uint256)) private _roundTimestamp;
+
     function setRealTimePrice(address _asset, uint256 _price) external {
         realTimePrice[_asset] = _price;
+    }
+
+    // get chainlink historic round data
+    function getChainlinkRoundData(address _asset, uint80 _roundId) external view returns (uint256, uint256) {
+        uint256 price = _roundPrice[_asset][_roundId];
+        uint256 timestamp = _roundTimestamp[_asset][_roundId];
+
+        return (price, timestamp);
     }
 
     function getPrice(address _asset) external view returns (uint256) {
@@ -40,6 +52,17 @@ contract MockOracle {
         }
 
         return price;
+    }
+
+    // set chainlink historic data for specific round id
+    function setChainlinkRoundData(
+        address _asset,
+        uint80 _roundId,
+        uint256 _price,
+        uint256 _timestamp
+    ) external returns (uint256, uint256) {
+        _roundPrice[_asset][_roundId] = _price;
+        _roundTimestamp[_asset][_roundId] = _timestamp;
     }
 
     // set bunch of things at expiry in 1 function
