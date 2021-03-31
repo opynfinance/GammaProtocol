@@ -57,7 +57,7 @@ const calcRelativeDiff = (expected: BigNumber, actual: BigNumber): BigNumber => 
   return diff
 }
 
-contract('MarginCalculator', ([owner, random]) => {
+contract('MarginCalculator: partial collateralization', ([owner, random]) => {
   let expiry: number
 
   let calculator: CalculatorTesterInstance
@@ -95,7 +95,7 @@ contract('MarginCalculator', ([owner, random]) => {
 
   describe('Collateral dust', async () => {
     it('only owner should be able to set collateral dust amunt', async () => {
-      const wethDust = scaleNum(1, 27)
+      const wethDust = scaleNum(1, wethDecimals)
       await calculator.setCollateralDust(weth.address, wethDust, {from: owner})
 
       const dustAmount = new BigNumber(await calculator.getCollateralDust(weth.address))
@@ -104,7 +104,7 @@ contract('MarginCalculator', ([owner, random]) => {
     })
 
     it('should revert setting collateral dust from address other than owner', async () => {
-      const wethDust = scaleNum(0, 27)
+      const wethDust = scaleNum(0, wethDecimals)
 
       await expectRevert(
         calculator.setCollateralDust(weth.address, wethDust, {from: random}),
@@ -633,7 +633,7 @@ contract('MarginCalculator', ([owner, random]) => {
 
     it('should revert if naked margin vault have collateral amount less than dust amount', async () => {
       // set dust amount for USDC
-      const usdcDustAmount = createScaledBigNumber(30, 27)
+      const usdcDustAmount = createScaledBigNumber(30, usdcDecimals)
       await calculator.setCollateralDust(usdc.address, usdcDustAmount, {from: owner})
 
       const optionExpiry = new BigNumber(await time.latest()).plus(timeToExpiry[1])
@@ -701,7 +701,7 @@ contract('MarginCalculator', ([owner, random]) => {
       )
 
       // update dust amount for this test case to work
-      const usdcDust = scaleNum(expectedRequiredNakedMargin - 0.5, 27)
+      const usdcDust = scaleNum(expectedRequiredNakedMargin - 0.5, usdcDecimals)
       await calculator.setCollateralDust(usdc.address, usdcDust, {from: owner})
 
       // set underlying price in oracle
