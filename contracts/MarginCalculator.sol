@@ -59,7 +59,7 @@ contract MarginCalculator is Ownable {
     /// @dev FixedPoint 0
     FPI.FixedPointInt internal ZERO = FPI.fromScaledUint(0, BASE);
 
-    /// @dev mapping to store dust amount per option collateral asset (1e27)
+    /// @dev mapping to store dust amount per option collateral asset (scaled by collateral decimals)
     mapping(address => uint256) internal dust;
 
     /// @dev mapping to store array of time to expiry per product
@@ -361,6 +361,9 @@ contract MarginCalculator is Ownable {
         uint256 debtPrice;
     }
 
+    /**
+     * @notice check if a specific vault is undercollateralized at a specific chainlink round
+     */
     function isLiquidatable(
         MarginVault.Vault memory _vault,
         uint256 _vaultType,
@@ -375,6 +378,8 @@ contract MarginCalculator is Ownable {
             uint256
         )
     {
+        // make LiquidationStatus struct to avoid stack too deep error
+        // will have isLiquidatabel and the price
         LiquidationStatus memory liquidationStatus = LiquidationStatus(false, 0);
 
         // liquidation is only supported for naked margin vault
@@ -397,11 +402,20 @@ contract MarginCalculator is Ownable {
             uint80(_roundId)
         );
 
+        // check that price timestamp is after latest timestamp the vault was updated at
         require(
             timestamp >= _vaultLatestUpdate,
             "MarginCalculator: auction timestamp should be post vault latest update"
         );
 
+        // another struct to store some useful short otoken details, to avoid stack to deep error
+        ShortScaledDetails memory shortDetails = ShortScaledDetails({
+            shortAmount: FPI.fromScaledUint(_vault.shortAmounts[0], BASE),
+            shortStrike: FPI.fromScaledUint(vaultDetails.shortStrikePrice, BASE),
+            shortUnderlyingPrice: FPI.fromScaledUint(price, BASE)
+        });
+
+        // get product hash
         bytes32 productHash = _getProductHash(
             vaultDetails.shortUnderlyingAsset,
             vaultDetails.shortStrikeAsset,
@@ -409,28 +423,27 @@ contract MarginCalculator is Ownable {
             vaultDetails.isShortPut
         );
 
-        ShortScaledDetails memory shortDetails = ShortScaledDetails({
-            shortAmount: FPI.fromScaledUint(_vault.shortAmounts[0], BASE),
-            shortStrike: FPI.fromScaledUint(vaultDetails.shortStrikePrice, BASE),
-            shortUnderlyingPrice: FPI.fromScaledUint(price, BASE)
-        });
-
-        // get required collateral
-        FPI.FixedPointInt memory collateralRequired = _getNakedMarginRequired(
-            productHash,
-            shortDetails.shortAmount,
-            shortDetails.shortStrike,
-            shortDetails.shortUnderlyingPrice,
-            vaultDetails.shortExpiryTimestamp,
-            vaultDetails.isShortPut
-        );
-
+        // convert vault collateral to a fixed point (1e27) from collateral decimals
         FPI.FixedPointInt memory collateralAmount = FPI.fromScaledUint(
             _vault.collateralAmounts[0],
             vaultDetails.collateralDecimals
         );
 
-        liquidationStatus.isLiquidatable = collateralRequired.isGreaterThan(collateralAmount);
+        // another scope to avoid stack too deep!
+        {
+            // get required collateral
+            FPI.FixedPointInt memory collateralRequired = _getNakedMarginRequired(
+                productHash,
+                shortDetails.shortAmount,
+                shortDetails.shortStrike,
+                shortDetails.shortUnderlyingPrice,
+                vaultDetails.shortExpiryTimestamp,
+                vaultDetails.isShortPut
+            );
+
+            // check if deposited collateral is greater or equal than needed collateral
+            liquidationStatus.isLiquidatable = collateralRequired.isGreaterThan(collateralAmount);
+        }
 
         // if vault no liquidatable, exit
         if (!liquidationStatus.isLiquidatable) return (liquidationStatus.isLiquidatable, 0, 0);
@@ -582,7 +595,7 @@ contract MarginCalculator is Ownable {
                 // fetch dust amount for otoken collateral asset as FixedPointInt, assuming dust is already scaled to 1e27
                 FPI.FixedPointInt memory dustAmount = FPI.fromScaledUint(
                     dust[_vaultDetails.shortCollateralAsset],
-                    SCALING_FACTOR
+                    _vaultDetails.collateralDecimals
                 );
 
                 // check that collateral deposited in naked margin vault is greater than dust amount for that particular collateral asset
