@@ -382,7 +382,6 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
         .dividedBy(1e27)
         .toNumber()
 
-      // console.log('Upper boudn value found: ', upperBoundValue.toString())
       // expected required margin
       const expectedRequiredNakedMargin = expectedRequiredMargin(
         shortAmount,
@@ -407,8 +406,6 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
         ),
       )
 
-      // console.log('Expected margin: ', expectedRequiredNakedMargin.toString())
-      // console.log('Contract margin: ', requiredMargin.toString())
       assert.equal(
         requiredMargin.dividedBy(10 ** usdcDecimals).toNumber(),
         expectedRequiredNakedMargin,
@@ -442,7 +439,6 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
         .dividedBy(1e27)
         .toNumber()
 
-      // console.log('Upper boudn value found: ', upperBoundValue.toString())
       // expected required margin
       const expectedRequiredNakedMargin = expectedRequiredMargin(
         shortAmount,
@@ -467,8 +463,6 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
         ),
       )
 
-      // console.log('Expected margin: ', expectedRequiredNakedMargin.toString())
-      // console.log('Contract margin: ', requiredMargin.toString())
       assert.equal(
         requiredMargin.dividedBy(10 ** wethDecimals).toNumber(),
         expectedRequiredNakedMargin,
@@ -502,7 +496,6 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
         .dividedBy(1e27)
         .toNumber()
 
-      // console.log('Upper boudn value found: ', upperBoundValue.toString())
       // expected required margin
       const expectedRequiredNakedMargin = expectedRequiredMargin(
         shortAmount,
@@ -527,8 +520,6 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
         ),
       )
 
-      // console.log('Expected margin: ', expectedRequiredNakedMargin.toString())
-      // console.log('Contract margin: ', requiredMargin.toString())
       assert.equal(
         requiredMargin.dividedBy(10 ** wethDecimals).toNumber(),
         expectedRequiredNakedMargin,
@@ -558,8 +549,6 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
         .dividedBy(1e27)
         .toNumber()
 
-      // console.log('Upper boudn value found: ', upperBoundValue.toString())
-
       // expected required margin
       const expectedRequiredNakedMargin = expectedRequiredMargin(
         shortAmount,
@@ -584,8 +573,6 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
         ),
       )
 
-      // console.log('Expected margin: ', expectedRequiredNakedMargin.toString())
-      // console.log('Contract margin: ', requiredMargin.toString())
       assert.equal(
         requiredMargin.dividedBy(10 ** usdcDecimals).toNumber(),
         expectedRequiredNakedMargin,
@@ -670,7 +657,6 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
         .dividedBy(1e27)
         .toNumber()
 
-      // console.log('Upper boudn value found: ', upperBoundValue.toString())
       // expected required margin
       const expectedRequiredNakedMargin = expectedRequiredMargin(
         shortAmount,
@@ -680,8 +666,6 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
         upperBoundValue,
         productSpotShockValue.dividedBy(1e27).toNumber(),
       )
-
-      // console.log('expectedRequiredNakedMargin: ', expectedRequiredNakedMargin)
 
       assert.isAtMost(
         calcRelativeDiff(new BigNumber('16.77778677'), new BigNumber(expectedRequiredNakedMargin)).toNumber(),
@@ -730,7 +714,6 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
         .dividedBy(1e27)
         .toNumber()
 
-      // console.log('Upper boudn value found: ', upperBoundValue.toString())
       // expected required margin
       const expectedRequiredNakedMargin = expectedRequiredMargin(
         shortAmount,
@@ -740,8 +723,6 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
         upperBoundValue,
         productSpotShockValue.dividedBy(1e27).toNumber(),
       )
-
-      // console.log('expectedRequiredNakedMargin: ', expectedRequiredNakedMargin)
 
       assert.isAtMost(
         calcRelativeDiff(new BigNumber('16.77778677'), new BigNumber(expectedRequiredNakedMargin)).toNumber(),
@@ -767,8 +748,6 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
       const vault = createVault(shortOtoken.address, undefined, usdc.address, scaleNum(1), undefined, collateralAmount)
 
       const getExcessCollateralResult = await calculator.getExcessCollateral(vault, vaultType)
-
-      // console.log('excess: ', getExcessCollateralResult[0].toString())
 
       assert.equal(
         getExcessCollateralResult[0].toString(),

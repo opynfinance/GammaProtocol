@@ -81,7 +81,8 @@ contract ControllerHarness is Controller {
     (, bool isValidVault) = calculator.getExcessCollateral(
       _vault.shortAmounts[0],
       _vault.longAmounts[0],
-      _vault.collateralAmounts[0]
+      _vault.collateralAmounts[0],
+      vaultType[owner][vaultId]
     );
     return isValidVault;
   }

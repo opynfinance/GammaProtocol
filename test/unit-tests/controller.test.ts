@@ -2698,31 +2698,6 @@ contract(
               'Controller: can not mint expired otoken',
             )
           })
-
-          // TODO: remove or change this
-          // it('should revert withdraw collateral from a vault with an expired short otoken', async () => {
-          //   const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          //   assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
-
-          //   const collateralToWithdraw = createTokenAmount(10, usdcDecimals)
-          //   const actionArgs = [
-          //     {
-          //       actionType: ActionType.WithdrawCollateral,
-          //       owner: accountOwner1,
-          //       secondAddress: accountOwner1,
-          //       asset: usdc.address,
-          //       vaultId: vaultCounter.toNumber(),
-          //       amount: collateralToWithdraw,
-          //       index: '0',
-          //       data: ZERO_ADDR,
-          //     },
-          //   ]
-
-          //   await expectRevert(
-          //     controllerProxy.operate(actionArgs, {from: accountOwner1}),
-          //     'Controller: can not withdraw collateral from a vault with an expired short otoken',
-          //   )
-          // })
         })
       })
     })
@@ -3660,6 +3635,173 @@ contract(
           poolOtokenBefore.minus(new BigNumber(longAmount)).toString(),
           'settle long vault otoken mismatch',
         )
+      })
+
+      describe('Withdraw collateral from expired position', () => {
+        let shortOtoken2: MockOtokenInstance
+        const wethPriceAtExpiry = createTokenAmount(150)
+
+        before(async () => {
+          const expiryTime = new BigNumber(60 * 60 * 24) // after 1 day
+
+          shortOtoken2 = await MockOtoken.new()
+          // init otoken
+          await shortOtoken2.init(
+            addressBook.address,
+            weth.address,
+            usdc.address,
+            usdc.address,
+            createTokenAmount(200),
+            new BigNumber(await time.latest()).plus(expiryTime),
+            true,
+          )
+          // whitelist otoken to be used in the protocol
+          await whitelist.whitelistOtoken(shortOtoken2.address, {from: owner})
+          // open new vault, mint naked short, sell it to holder 1
+          const collateralToDespoit = new BigNumber(await shortOtoken2.strikePrice()).dividedBy(100)
+          const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
+          const actionArgs = [
+            {
+              actionType: ActionType.OpenVault,
+              owner: accountOwner1,
+              secondAddress: accountOwner1,
+              asset: ZERO_ADDR,
+              vaultId: vaultCounter.toNumber(),
+              amount: '0',
+              index: '0',
+              data: ZERO_ADDR,
+            },
+            {
+              actionType: ActionType.MintShortOption,
+              owner: accountOwner1,
+              secondAddress: accountOwner1,
+              asset: shortOtoken2.address,
+              vaultId: vaultCounter.toNumber(),
+              amount: createTokenAmount(1),
+              index: '0',
+              data: ZERO_ADDR,
+            },
+            {
+              actionType: ActionType.DepositCollateral,
+              owner: accountOwner1,
+              secondAddress: accountOwner1,
+              asset: usdc.address,
+              vaultId: vaultCounter.toNumber(),
+              amount: collateralToDespoit.toNumber(),
+              index: '0',
+              data: ZERO_ADDR,
+            },
+          ]
+          await usdc.approve(marginPool.address, collateralToDespoit, {from: accountOwner1})
+          await controllerProxy.operate(actionArgs, {from: accountOwner1})
+
+          // past time after expiry
+          await time.increase(60 * 61 * 30) // increase time with one hour in seconds
+
+          const expiry = new BigNumber(await shortOtoken2.expiryTimestamp())
+          await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, wethPriceAtExpiry, true)
+          await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1), true)
+        })
+
+        it('it should revert withdrawing amount of collateral from vault after expiry more than the proceed amount', async () => {
+          const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
+          const proceed = new BigNumber(await controllerProxy.getProceed(accountOwner1, vaultCounter))
+          const amountToWithdraw = proceed.plus(100)
+
+          const actionArgs = [
+            {
+              actionType: ActionType.WithdrawCollateral,
+              owner: accountOwner1,
+              secondAddress: accountOwner1,
+              asset: usdc.address,
+              vaultId: vaultCounter.toNumber(),
+              amount: amountToWithdraw.toString(),
+              index: '0',
+              data: ZERO_ADDR,
+            },
+          ]
+
+          await expectRevert(
+            controllerProxy.operate(actionArgs, {from: accountOwner1}),
+            'Controller: invalid final vault state.',
+          )
+        })
+
+        it('withdraw collateral from expired position', async () => {
+          const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
+          const actionArgs = [
+            {
+              actionType: ActionType.WithdrawCollateral,
+              owner: accountOwner1,
+              secondAddress: accountOwner1,
+              asset: usdc.address,
+              vaultId: vaultCounter.toNumber(),
+              amount: createTokenAmount(50, usdcDecimals),
+              index: '0',
+              data: ZERO_ADDR,
+            },
+          ]
+
+          const payout = createTokenAmount(50, usdcDecimals)
+          const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+          const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
+
+          await controllerProxy.operate(actionArgs, {from: accountOwner1})
+
+          const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+          const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
+
+          assert.equal(
+            marginPoolBalanceBefore.minus(marginPoolBalanceAfter).toString(),
+            payout.toString(),
+            'Margin pool collateral asset balance mismatch',
+          )
+          assert.equal(
+            senderBalanceAfter.minus(senderBalanceBefore).toString(),
+            payout.toString(),
+            'Sender collateral asset balance mismatch',
+          )
+        })
+
+        it('should get correct payout amount when settling after already withdrawing from expired position', async () => {
+          const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
+          const actionArgs = [
+            {
+              actionType: ActionType.SettleVault,
+              owner: accountOwner1,
+              secondAddress: accountOwner1,
+              asset: usdc.address,
+              vaultId: vaultCounter.toNumber(),
+              amount: '0',
+              index: '0',
+              data: ZERO_ADDR,
+            },
+          ]
+
+          const payout = createTokenAmount(100, usdcDecimals)
+          const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+          const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
+
+          const proceed = await controllerProxy.getProceed(accountOwner1, vaultCounter, {from: accountOwner1})
+
+          assert.equal(proceed.toString(), payout)
+
+          await controllerProxy.operate(actionArgs, {from: accountOwner1})
+
+          const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+          const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
+
+          assert.equal(
+            marginPoolBalanceBefore.minus(marginPoolBalanceAfter).toString(),
+            payout.toString(),
+            'Margin pool collateral asset balance mismatch',
+          )
+          assert.equal(
+            senderBalanceAfter.minus(senderBalanceBefore).toString(),
+            payout.toString(),
+            'Sender collateral asset balance mismatch',
+          )
+        })
       })
 
       describe('Settle multiple vaults ATM and OTM', () => {
