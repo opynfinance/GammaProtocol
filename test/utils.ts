@@ -61,8 +61,16 @@ export const createTokenAmount = (num: number | BigNumber, decimals = 8) => {
  * Create a number string that scales numbers to 1e18
  * @param num
  */
-export const createScaledNumber = (num: number): string => {
-  return new BigNumber(num).times(1e8).toString()
+export const createScaledNumber = (num: number, decimals = 8): string => {
+  return new BigNumber(num).times(new BigNumber(10).pow(decimals)).toString()
+}
+
+/**
+ * Create a number string that scales numbers to 1e18
+ * @param num
+ */
+export const createScaledBigNumber = (num: number, decimals = 8): BigNumber => {
+  return new BigNumber(num).times(new BigNumber(10).pow(decimals))
 }
 
 export const underlyingPriceToCtokenPrice = async (

@@ -24,4 +24,16 @@ contract CalculatorTester is MarginCalculator {
                 true
             );
     }
+
+    function findUpperBoundValue(
+        address _underlying,
+        address _strike,
+        address _collateral,
+        bool _isPut,
+        uint256 _expiryTimestamp
+    ) external view returns (uint256) {
+        bytes32 productHash = keccak256(abi.encode(_underlying, _strike, _collateral, _isPut));
+
+        return FixedPointInt256.toScaledUint(_findUpperBoundValue(productHash, _expiryTimestamp), 27, false);
+    }
 }
