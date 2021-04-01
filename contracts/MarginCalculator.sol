@@ -21,7 +21,7 @@ contract MarginCalculator is Ownable {
     using SafeMath for uint256;
     using FPI for FPI.FixedPointInt;
 
-    /// @dev decimals used dust, option upper bound value, spot shock and oracle deviation
+    /// @dev decimals option upper bound value, spot shock and oracle deviation
     uint256 internal constant SCALING_FACTOR = 27;
 
     /// @dev decimals used by strike price and oracle price
@@ -83,6 +83,10 @@ contract MarginCalculator is Ownable {
     /// @notice emits an event when spot shock value is updated for a specific product
     event SpotShockUpdated(bytes32 indexed product, uint256 spotShock);
 
+    /**
+     * @notice constructor
+     * @param _oracle oracle module address
+     */
     constructor(address _oracle) public {
         require(_oracle != address(0), "MarginCalculator: invalid oracle address");
 
@@ -115,18 +119,24 @@ contract MarginCalculator is Ownable {
         bool _isPut,
         uint256 _timeToExpiry
     ) external onlyOwner {
+        // get product hash
         bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
+        // get array of expiries
         uint256[] storage expiryArray = productTimeToExpiry[productHash];
 
+        // check that this is the first expiry to set, if not the last expiry should be less than the new one to insert (to make sure the array stay in order)
         require(
             (expiryArray.length == 0) || (_timeToExpiry > expiryArray[expiryArray.length.sub(1)]),
             "MarginCalculator: expiry array is not in order"
         );
+
+        // check that this time to expiry have an upper bound value (setTimeToExpiryValue() should be called before this)
         require(
             timeToExpiryValue[productHash][_timeToExpiry] != 0,
             "MarginCalculator: no expiry upper bound value found"
         );
 
+        // add new time to expiry to array
         expiryArray.push(_timeToExpiry);
     }
 
@@ -148,10 +158,13 @@ contract MarginCalculator is Ownable {
         uint256 _timeToExpiry,
         uint256 _value
     ) external onlyOwner {
+        // check that upper bound value is not zero
         require(_value > 0, "MarginCalculator: invalid option upper bound value");
 
+        // get product hash
         bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
 
+        // add new upper bound value for this product at specific time to expiry
         timeToExpiryValue[productHash][_timeToExpiry] = _value;
     }
 
@@ -171,8 +184,10 @@ contract MarginCalculator is Ownable {
         bool _isPut,
         uint256 _shockValue
     ) external onlyOwner {
+        // get product hash
         bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
 
+        // set spot shock value
         spotShock[productHash] = _shockValue;
     }
 
@@ -284,12 +299,17 @@ contract MarginCalculator is Ownable {
         uint256 _collateralDecimals,
         bool _isPut
     ) external view returns (uint256) {
+        // get product hash
         bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
 
+        // scale short amount from 1e8 to 1e27
         FPI.FixedPointInt memory shortAmount = FPI.fromScaledUint(_shortAmount, BASE);
+        // scale short strike from 1e8 to 1e27
         FPI.FixedPointInt memory shortStrike = FPI.fromScaledUint(_strikePrice, BASE);
+        // scale short underlying price from 1e8 to 1e27
         FPI.FixedPointInt memory shortUnderlyingPrice = FPI.fromScaledUint(_underlyingPrice, BASE);
 
+        // return required margin, scaled by option collateral asset decimals, explicitly rounded up
         return
             FPI.toScaledUint(
                 _getNakedMarginRequired(
@@ -385,6 +405,7 @@ contract MarginCalculator is Ownable {
         // liquidation is only supported for naked margin vault
         require(_vaultType == 1, "MarginCalculator: invalid vault type to liquidate");
 
+        // get vault details
         VaultDetails memory vaultDetails = getVaultDetails(_vault, _vaultType);
 
         // can not liquidate vault that have no short position
@@ -580,6 +601,7 @@ contract MarginCalculator is Ownable {
             ? FPI.fromScaledUint(_vaultDetails.shortStrikePrice, BASE)
             : ZERO;
 
+        // struct to avoid stack too deep error
         OtokenDetails memory otokenDetails = OtokenDetails(
             _vaultDetails.hasShort ? _vaultDetails.shortUnderlyingAsset : _vaultDetails.longUnderlyingAsset,
             _vaultDetails.hasShort ? _vaultDetails.shortCollateralAsset : _vaultDetails.longCollateralAsset,
@@ -588,7 +610,7 @@ contract MarginCalculator is Ownable {
             _vaultDetails.hasShort ? _vaultDetails.isShortPut : _vaultDetails.isLongPut
         );
 
-        // check if expired
+        // check if not expired
         if (!(now >= otokenDetails.otokenExpiry)) {
             // check if vault is naked margin vault
             if (_vaultDetails.vaultType == 1) {
@@ -721,6 +743,13 @@ contract MarginCalculator is Ownable {
      * a = min(1, strike price / (underlying price / spot shock value))
      * b = max(1- (strike price / (underlying price / spot shock value)), 0)
      * marginRequired = (option upper bound value * a + b) * short amount
+     * @param _productHash product hash
+     * @param _shortAmount short amount in vault, in FixedPointInt type
+     * @param _strikePrice strike price of short otoken, in FixedPointInt type
+     * @param _underlyingPrice underlying price of short otoken underlying asset, in FixedPointInt type
+     * @param _shortExpiryTimestamp short otoken expiry timestamp
+     * @param _isPut otoken type, true if put option, false for call option
+     * @return required margin for this naked vault, in FixedPointInt type (scaled by 1e27)
      */
     function _getNakedMarginRequired(
         bytes32 _productHash,
@@ -730,7 +759,9 @@ contract MarginCalculator is Ownable {
         uint256 _shortExpiryTimestamp,
         bool _isPut
     ) internal view returns (FPI.FixedPointInt memory) {
+        // find option upper bound value
         FPI.FixedPointInt memory optionUpperBoundValue = _findUpperBoundValue(_productHash, _shortExpiryTimestamp);
+        // convert spot shock value of this product to FixedPointInt (already scaled by 1e27)
         FPI.FixedPointInt memory spotShockValue = FPI.fromScaledUint(spotShock[_productHash], SCALING_FACTOR);
 
         FPI.FixedPointInt memory a;
@@ -763,17 +794,22 @@ contract MarginCalculator is Ownable {
         view
         returns (FPI.FixedPointInt memory)
     {
+        // get time to expiry array of this product hash
         uint256[] memory timesToExpiry = productTimeToExpiry[_productHash];
 
+        // check that this product have upper bound values stored
         require(timesToExpiry.length != 0, "MarginCalculator: product have no expiry values");
 
+        // get option time to expiry
         uint256 optionTimeToExpiry = _expiryTimestamp.sub(now);
 
+        // check that the option time to expiry is in the expiry array
         require(
             timesToExpiry[timesToExpiry.length.sub(1)] >= optionTimeToExpiry,
             "MarginCalculator: product have no upper bound value"
         );
 
+        // loop through the array and return the upper bound value in FixedPointInt type (already scaled by 1e27)
         for (uint8 i = 0; i < timesToExpiry.length; i++) {
             if (timesToExpiry[i] >= optionTimeToExpiry)
                 return FPI.fromScaledUint(timeToExpiryValue[_productHash][timesToExpiry[i]], SCALING_FACTOR);
@@ -917,9 +953,10 @@ contract MarginCalculator is Ownable {
     ) internal view returns (uint256) {
         // price of 1 repaid otoken in collateral asset, scaled to collateral decimals and explicitly rounded down
         uint256 price;
-        // ending price
+        // auction ending price
         FPI.FixedPointInt memory endingPrice = _vaultCollateral.div(_vaultDebt);
 
+        // auction elapsed time
         uint256 auctionElapsedTime = now.sub(_auctionStartingTime);
 
         // if auction ended, return ending price
@@ -945,6 +982,7 @@ contract MarginCalculator is Ownable {
             // store AUCTION_TIME in a FixedPointInt (already scaled by 1e27)
             FPI.FixedPointInt memory auctionTime = FPI.fromScaledUint(AUCTION_TIME, SCALING_FACTOR);
 
+            // calculate price of 1 repaid otoken, scaled by the collateral decimals, expilictly rounded down
             price = (startingPrice.add(endingPrice.sub(startingPrice).mul(auctionElapsedTime).div(auctionTime)))
                 .toScaledUint(_collateralDecimals, true);
         }
@@ -952,6 +990,12 @@ contract MarginCalculator is Ownable {
         return price;
     }
 
+    /**
+     * @notice get vault details
+     * @param _vault vault struct
+     * @param _vaultType vault type, 0 for max loss/spreads and 1 for naked margin vault
+     * @return vault details in VaultDetails struct
+     */
     function getVaultDetails(MarginVault.Vault memory _vault, uint256 _vaultType)
         internal
         view
@@ -979,12 +1023,14 @@ contract MarginCalculator is Ownable {
             false
         );
 
+        // check if vault has long, short otoken and collateral asset
         vaultDetails.hasLong = _isNotEmpty(_vault.longOtokens);
         vaultDetails.hasShort = _isNotEmpty(_vault.shortOtokens);
         vaultDetails.hasCollateral = _isNotEmpty(_vault.collateralAssets);
 
         vaultDetails.vaultType = _vaultType;
 
+        // get vault long otoken if available
         if (vaultDetails.hasLong) {
             OtokenInterface long = OtokenInterface(_vault.longOtokens[0]);
             (
@@ -998,6 +1044,7 @@ contract MarginCalculator is Ownable {
             vaultDetails.longCollateralDecimals = uint256(ERC20Interface(vaultDetails.longCollateralAsset).decimals());
         }
 
+        // get vault short otoken if available
         if (vaultDetails.hasShort) {
             OtokenInterface short = OtokenInterface(_vault.shortOtokens[0]);
             (
@@ -1013,6 +1060,7 @@ contract MarginCalculator is Ownable {
             );
         }
 
+        // get vault collateral asset decimals if available
         if (vaultDetails.hasCollateral) {
             vaultDetails.collateralDecimals = uint256(ERC20Interface(_vault.collateralAssets[0]).decimals());
         }
@@ -1150,14 +1198,19 @@ contract MarginCalculator is Ownable {
 
     /**
      * @notice get option cash value
-     * @dev this assume that the underlying price is dominated in strike asset
+     * @dev this assume that the underlying price is denominated in strike asset
+     * for put, cv = strike price - underlying price
+     * for call, cv = underlting price - strike price
+     * @param _strikePrice option srike price
+     * @param _underlyingPrice option underlying price
+     * @param _isPut option type, true for put and false for call option
      */
     function _getCashValue(
         FPI.FixedPointInt memory _strikePrice,
         FPI.FixedPointInt memory _underlyingPrice,
-        bool isPut
+        bool _isPut
     ) internal view returns (FPI.FixedPointInt memory) {
-        if (isPut) return _strikePrice.isGreaterThan(_underlyingPrice) ? _strikePrice.sub(_underlyingPrice) : ZERO;
+        if (_isPut) return _strikePrice.isGreaterThan(_underlyingPrice) ? _strikePrice.sub(_underlyingPrice) : ZERO;
 
         return _underlyingPrice.isGreaterThan(_strikePrice) ? _underlyingPrice.sub(_strikePrice) : ZERO;
     }
