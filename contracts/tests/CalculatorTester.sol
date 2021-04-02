@@ -46,7 +46,10 @@ contract CalculatorTester is MarginCalculator {
         uint256 _collateralDecimals,
         bool _isPut
     ) external view returns (uint256) {
-        FixedPointInt256.FixedPointInt memory vaultCollateral = FixedPointInt256.fromScaledUint(_vaultCollateral, BASE);
+        FixedPointInt256.FixedPointInt memory vaultCollateral = FixedPointInt256.fromScaledUint(
+            _vaultCollateral,
+            _collateralDecimals
+        );
         FixedPointInt256.FixedPointInt memory vaultDebt = FixedPointInt256.fromScaledUint(_vaultDebt, BASE);
         FixedPointInt256.FixedPointInt memory cv = FixedPointInt256.fromScaledUint(_cv, BASE);
         FixedPointInt256.FixedPointInt memory spotPrice = FixedPointInt256.fromScaledUint(_spotPrice, BASE);
