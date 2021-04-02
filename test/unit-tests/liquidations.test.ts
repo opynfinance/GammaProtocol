@@ -148,6 +148,8 @@ contract('MarginCalculator', ([owner, random]) => {
   })
 
   describe('check if vault is liquidatable', async () => {
+    const oracleDeviation = 0.05
+
     const strikePrice = createTokenAmount(200)
     const isPut = true
 
@@ -155,6 +157,9 @@ contract('MarginCalculator', ([owner, random]) => {
     let optionExpiry: BigNumber
 
     beforeEach(async () => {
+      const oracleDeviationValue = scaleNum(oracleDeviation, 27)
+      await calculator.setOracleDeviation(oracleDeviationValue, {from: owner})
+
       optionExpiry = new BigNumber(await time.latest()).plus(timeToExpiry[1])
 
       shortOtoken = await MockOtoken.new()
@@ -223,7 +228,6 @@ contract('MarginCalculator', ([owner, random]) => {
       const roundId = '11198' // random round id
       const underlyingPrice = 300
       const scaledUnderlyingPrice = scaleBigNum(underlyingPrice, 8)
-      await oracle.setRealTimePrice(weth.address, scaledUnderlyingPrice)
       await oracle.setChainlinkRoundData(weth.address, roundId, scaledUnderlyingPrice, '0')
 
       const shortAmount = createTokenAmount(1)
@@ -254,6 +258,41 @@ contract('MarginCalculator', ([owner, random]) => {
       assert.equal(isLiquidatable[0], false, 'isLiquidatable boolean value mismatch')
       assert.equal(isLiquidatable[1].toString(), '0', 'debt price value mismatch')
       assert.equal(isLiquidatable[2].toString(), '0', 'collateral dust value mismatch')
+    })
+
+    it('should return liquidatable, the liquidation price and the dust amount for the collateral asset', async () => {
+      const roundId = '11198' // random round id
+      const roundTimestamp = (await time.latest()).toNumber()
+      const underlyingPrice = 100
+      const scaledUnderlyingPrice = scaleBigNum(underlyingPrice, 8)
+      await oracle.setChainlinkRoundData(weth.address, roundId, scaledUnderlyingPrice, roundTimestamp)
+
+      const shortAmount = createTokenAmount(1)
+      const requiredMargin = new BigNumber(
+        await calculator.getNakedMarginRequired(
+          weth.address,
+          usdc.address,
+          usdc.address,
+          shortAmount,
+          strikePrice,
+          scaledUnderlyingPrice,
+          optionExpiry,
+          usdcDecimals,
+          isPut,
+        ),
+      )
+      const vault = createVault(
+        shortOtoken.address,
+        undefined,
+        usdc.address,
+        scaleNum(1),
+        undefined,
+        requiredMargin.minus(5).toString(),
+      )
+      const randomVaultLatestUpdate = '0'
+      const isLiquidatable = await calculator.isLiquidatable(vault, vaultType, randomVaultLatestUpdate, roundId)
+
+      assert.equal(isLiquidatable[0], true, 'isLiquidatable boolean value mismatch')
     })
   })
 
