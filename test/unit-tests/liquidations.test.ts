@@ -33,21 +33,42 @@ const expectedLiqudidationPrice = (
   auctionStartingTime: number,
   currentBlockTime: number,
   isPut: boolean,
+  collateralDecimals: number,
 ) => {
-  const endingPrice = collateral / debt
+  const endingPrice = new BigNumber(collateral).dividedBy(debt)
   const auctionElapsedTime = currentBlockTime - auctionStartingTime
 
-  if (auctionElapsedTime > 3600) return endingPrice
+  if (auctionElapsedTime > 3600) {
+    // return Math.floor(endingPrice)
+    return endingPrice.toNumber()
+  }
 
   let startingPrice
 
   if (isPut) {
-    startingPrice = Math.max(cashValue - oracleDeviation * spotPrice, 0)
+    // startingPrice = Math.max(cashValue - oracleDeviation * spotPrice, 0)
+    startingPrice = BigNumber.max(
+      new BigNumber(cashValue).minus(new BigNumber(spotPrice).multipliedBy(oracleDeviation)),
+      0,
+    )
   } else {
-    startingPrice = Math.max(cashValue - oracleDeviation * spotPrice, 0) / spotPrice
+    // startingPrice = Math.max(cashValue - oracleDeviation * spotPrice, 0) / spotPrice
+    startingPrice = BigNumber.max(
+      new BigNumber(cashValue).minus(new BigNumber(spotPrice).multipliedBy(oracleDeviation)),
+      0,
+    ).dividedBy(spotPrice)
   }
 
-  return Math.floor(startingPrice + ((endingPrice - startingPrice) * auctionElapsedTime) / 3600)
+  // return Math.floor(startingPrice + ((endingPrice - startingPrice) * auctionElapsedTime) / 3600) * (10 ** collateralDecimals)
+  return startingPrice
+    .plus(
+      endingPrice
+        .minus(startingPrice)
+        .multipliedBy(auctionElapsedTime)
+        .dividedBy(3600),
+    )
+    .multipliedBy(10 ** collateralDecimals)
+    .toNumber()
 }
 
 const calcRelativeDiff = (expected: BigNumber, actual: BigNumber): BigNumber => {
@@ -77,6 +98,7 @@ contract('MarginCalculator', ([owner, random]) => {
   const wethDecimals = 18
 
   const wethDust = scaleNum(1, 27)
+  const usdcDust = scaleNum(1, 27)
 
   const vaultType = 1
 
@@ -112,6 +134,7 @@ contract('MarginCalculator', ([owner, random]) => {
     calculator = await MarginCalculator.new(oracle.address, {from: owner})
     // set collateral dust
     await calculator.setCollateralDust(weth.address, wethDust, {from: owner})
+    await calculator.setCollateralDust(usdc.address, usdcDust, {from: owner})
     // set product spot shock value
     await calculator.setSpotShock(weth.address, usdc.address, usdc.address, true, productSpotShockValue)
     await calculator.setSpotShock(weth.address, usdc.address, weth.address, false, productSpotShockValue)
@@ -147,10 +170,11 @@ contract('MarginCalculator', ([owner, random]) => {
     }
   })
 
-  describe('check if vault is liquidatable', async () => {
+  describe('check if vault is liquidatable', () => {
     const oracleDeviation = 0.05
 
-    const strikePrice = createTokenAmount(200)
+    const strikePrice = 200
+    const scaledStrikePrice = createTokenAmount(strikePrice)
     const isPut = true
 
     let shortOtoken: MockOtokenInstance
@@ -168,7 +192,7 @@ contract('MarginCalculator', ([owner, random]) => {
         weth.address,
         usdc.address,
         usdc.address,
-        strikePrice,
+        scaledStrikePrice,
         optionExpiry,
         isPut,
       )
@@ -237,7 +261,7 @@ contract('MarginCalculator', ([owner, random]) => {
           usdc.address,
           usdc.address,
           shortAmount,
-          strikePrice,
+          scaledStrikePrice,
           scaledUnderlyingPrice,
           optionExpiry,
           usdcDecimals,
@@ -274,13 +298,14 @@ contract('MarginCalculator', ([owner, random]) => {
           usdc.address,
           usdc.address,
           shortAmount,
-          strikePrice,
+          scaledStrikePrice,
           scaledUnderlyingPrice,
           optionExpiry,
           usdcDecimals,
           isPut,
         ),
       )
+
       const vault = createVault(
         shortOtoken.address,
         undefined,
@@ -292,7 +317,88 @@ contract('MarginCalculator', ([owner, random]) => {
       const randomVaultLatestUpdate = '0'
       const isLiquidatable = await calculator.isLiquidatable(vault, vaultType, randomVaultLatestUpdate, roundId)
 
+      const currentBlockTime = (await time.latest()).toNumber()
+      const vaultCollateral = requiredMargin
+        .minus(5)
+        .dividedBy(10 ** usdcDecimals)
+        .toNumber()
+      const vaultDebt = 1
+      const cv = strikePrice - underlyingPrice
+      const expectedLiquidationPrice = expectedLiqudidationPrice(
+        vaultCollateral,
+        vaultDebt,
+        cv,
+        underlyingPrice,
+        oracleDeviation,
+        roundTimestamp,
+        currentBlockTime,
+        isPut,
+        usdcDecimals,
+      )
+
       assert.equal(isLiquidatable[0], true, 'isLiquidatable boolean value mismatch')
+      assert.equal(isLiquidatable[1].toNumber(), expectedLiquidationPrice, 'debt price value mismatch')
+      assert.equal(isLiquidatable[2].toString(), usdcDust, 'collateral dust value mismatch')
+    })
+
+    it('should return ending price when auction elapsed time is greater than auction time', async () => {
+      const roundId = '11198' // random round id
+      const roundTimestamp = (await time.latest()).toNumber()
+      const underlyingPrice = 100
+      const scaledUnderlyingPrice = scaleBigNum(underlyingPrice, 8)
+      await oracle.setChainlinkRoundData(weth.address, roundId, scaledUnderlyingPrice, roundTimestamp)
+
+      const shortAmount = createTokenAmount(1)
+      const requiredMargin = new BigNumber(
+        await calculator.getNakedMarginRequired(
+          weth.address,
+          usdc.address,
+          usdc.address,
+          shortAmount,
+          scaledStrikePrice,
+          scaledUnderlyingPrice,
+          optionExpiry,
+          usdcDecimals,
+          isPut,
+        ),
+      )
+
+      // advance time so that now-auction timestamp < auction length
+      await time.increase(3600)
+
+      const vault = createVault(
+        shortOtoken.address,
+        undefined,
+        usdc.address,
+        scaleNum(1),
+        undefined,
+        requiredMargin.minus(5).toString(),
+      )
+      const randomVaultLatestUpdate = '0'
+      const isLiquidatable = await calculator.isLiquidatable(vault, vaultType, randomVaultLatestUpdate, roundId)
+
+      const currentBlockTime = (await time.latest()).toNumber()
+      const vaultCollateral = requiredMargin
+        .minus(5)
+        .dividedBy(10 ** usdcDecimals)
+        .toNumber()
+      const vaultDebt = 1
+      const cv = strikePrice - underlyingPrice
+      const expectedLiquidationPrice = expectedLiqudidationPrice(
+        vaultCollateral,
+        vaultDebt,
+        cv,
+        underlyingPrice,
+        oracleDeviation,
+        roundTimestamp,
+        currentBlockTime,
+        isPut,
+        usdcDecimals,
+      )
+
+      assert.equal(isLiquidatable[0], true, 'isLiquidatable boolean value mismatch')
+      assert.equal(isLiquidatable[1].toNumber(), expectedLiquidationPrice, 'debt price value mismatch')
+      assert.equal(isLiquidatable[2].toString(), usdcDust, 'collateral dust value mismatch')
     })
   })
 
@@ -329,7 +435,7 @@ contract('MarginCalculator', ([owner, random]) => {
           usdcDecimals,
           isPut,
         ),
-      ).dividedBy(10 ** usdcDecimals)
+      )
 
       const currentBlockTime = (await time.latest()).toNumber()
 
@@ -342,6 +448,7 @@ contract('MarginCalculator', ([owner, random]) => {
         auctionStartingTime,
         currentBlockTime,
         isPut,
+        usdcDecimals,
       )
 
       assert.equal(liquidationprice.toNumber(), expectedLiquidationPrice, 'liquidation price mismatch')
