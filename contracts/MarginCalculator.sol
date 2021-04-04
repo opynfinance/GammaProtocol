@@ -27,8 +27,8 @@ contract MarginCalculator is Ownable {
     /// @dev decimals used by strike price and oracle price
     uint256 internal constant BASE = 8;
 
-    /// @notice auction length scaled by 1e27
-    uint256 public constant AUCTION_TIME = 3.6e30; // 3600e27
+    /// @notice auction length
+    uint256 public constant AUCTION_TIME = 3600;
 
     /// @dev struct to store all needed vault details
     struct VaultDetails {
@@ -980,7 +980,7 @@ contract MarginCalculator is Ownable {
             // store auctionElapsedTime in a FixedPointInt scaled by 1e27
             FPI.FixedPointInt memory auctionElapsedTime = FPI.fromScaledUint(auctionElapsedTime, 18);
             // store AUCTION_TIME in a FixedPointInt (already scaled by 1e27)
-            FPI.FixedPointInt memory auctionTime = FPI.fromScaledUint(AUCTION_TIME, SCALING_FACTOR);
+            FPI.FixedPointInt memory auctionTime = FPI.fromScaledUint(AUCTION_TIME, 18);
 
             // calculate price of 1 repaid otoken, scaled by the collateral decimals, expilictly rounded down
             price = (startingPrice.add(endingPrice.sub(startingPrice).mul(auctionElapsedTime).div(auctionTime)))
