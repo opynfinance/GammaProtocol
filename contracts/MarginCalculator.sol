@@ -952,7 +952,7 @@ contract MarginCalculator is Ownable {
         bool _isPut
     ) internal view returns (uint256) {
         // price of 1 repaid otoken in collateral asset, scaled to collateral decimals and explicitly rounded down
-        uint256 price;
+        FPI.FixedPointInt memory price;
         // auction ending price
         FPI.FixedPointInt memory endingPrice = _vaultCollateral.div(_vaultDebt);
 
@@ -961,7 +961,7 @@ contract MarginCalculator is Ownable {
 
         // if auction ended, return ending price
         if (auctionElapsedTime >= AUCTION_TIME) {
-            price = endingPrice.toScaledUint(_collateralDecimals, true);
+            price = endingPrice;
         } else {
             // starting price
             FPI.FixedPointInt memory startingPrice;
@@ -983,11 +983,10 @@ contract MarginCalculator is Ownable {
             FPI.FixedPointInt memory auctionTime = FPI.fromScaledUint(AUCTION_TIME, 18);
 
             // calculate price of 1 repaid otoken, scaled by the collateral decimals, expilictly rounded down
-            price = (startingPrice.add(endingPrice.sub(startingPrice).mul(auctionElapsedTime).div(auctionTime)))
-                .toScaledUint(_collateralDecimals, true);
+            price = startingPrice.add(auctionElapsedTime.mul(endingPrice.sub(startingPrice)).div(auctionTime));
         }
 
-        return price;
+        return price.toScaledUint(_collateralDecimals, true);
     }
 
     /**

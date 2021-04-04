@@ -24,6 +24,8 @@ const MockERC20 = artifacts.require('MockERC20.sol')
 const MarginCalculator = artifacts.require('CalculatorTester.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
+BigNumber.config({ROUNDING_MODE: BigNumber.ROUND_DOWN})
+
 const expectedLiqudidationPrice = (
   collateral: number,
   debt: number,
@@ -40,7 +42,7 @@ const expectedLiqudidationPrice = (
 
   if (auctionElapsedTime > 3600) {
     // return Math.floor(endingPrice)
-    return endingPrice.toNumber()
+    return endingPrice.multipliedBy(10 ** collateralDecimals).toNumber()
   }
 
   let startingPrice
@@ -446,6 +448,49 @@ contract('MarginCalculator', ([owner, random]) => {
         currentBlockTime,
         isPut,
         usdcDecimals,
+      )
+
+      assert.equal(liquidationprice.toNumber(), expectedLiquidationPrice, 'liquidation price mismatch')
+    })
+
+    it('should return correct liquidation price for undercollateralized call option: ', async () => {
+      const strikePrice = 1500
+      const spotPrice = 5000
+      const cv = spotPrice - strikePrice
+      const vaultCollateral = 0.5
+      const vaultDebt = 1
+      const auctionStartingTime = (await time.latest()).toNumber() - 120
+
+      const scaledSpotPrice = createTokenAmount(spotPrice)
+      const scaledCashValue = createTokenAmount(cv)
+      const scaledVaultCollateral = createTokenAmount(vaultCollateral, wethDecimals)
+      const scaledVaultDebt = createTokenAmount(vaultDebt)
+      const isPut = false
+
+      const liquidationprice = new BigNumber(
+        await calculator.price(
+          scaledVaultCollateral,
+          scaledVaultDebt,
+          scaledCashValue,
+          scaledSpotPrice,
+          auctionStartingTime,
+          wethDecimals,
+          isPut,
+        ),
+      )
+
+      const currentBlockTime = (await time.latest()).toNumber()
+
+      const expectedLiquidationPrice = expectedLiqudidationPrice(
+        vaultCollateral,
+        vaultDebt,
+        cv,
+        spotPrice,
+        oracleDeviation,
+        auctionStartingTime,
+        currentBlockTime,
+        isPut,
+        wethDecimals,
       )
 
       assert.equal(liquidationprice.toNumber(), expectedLiquidationPrice, 'liquidation price mismatch')
