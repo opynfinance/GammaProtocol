@@ -46,20 +46,17 @@ const expectedLiqudidationPrice = (
   let startingPrice
 
   if (isPut) {
-    // startingPrice = Math.max(cashValue - oracleDeviation * spotPrice, 0)
     startingPrice = BigNumber.max(
       new BigNumber(cashValue).minus(new BigNumber(spotPrice).multipliedBy(oracleDeviation)),
       0,
     )
   } else {
-    // startingPrice = Math.max(cashValue - oracleDeviation * spotPrice, 0) / spotPrice
     startingPrice = BigNumber.max(
       new BigNumber(cashValue).minus(new BigNumber(spotPrice).multipliedBy(oracleDeviation)),
       0,
     ).dividedBy(spotPrice)
   }
 
-  // return Math.floor(startingPrice + ((endingPrice - startingPrice) * auctionElapsedTime) / 3600) * (10 ** collateralDecimals)
   return startingPrice
     .plus(
       endingPrice
