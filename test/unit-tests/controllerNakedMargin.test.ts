@@ -7,6 +7,7 @@ import {
   ControllerInstance,
   AddressBookInstance,
   OwnedUpgradeabilityProxyInstance,
+  MockOtokenInstance,
 } from '../../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 import {
@@ -14,6 +15,7 @@ import {
   createScaledBigNumber as scaleBigNum,
   createScaledNumber,
   createTokenAmount,
+  expectedLiqudidationPrice,
 } from '../utils'
 
 const {expectRevert, time} = require('@openzeppelin/test-helpers')
@@ -30,6 +32,8 @@ const MarginPool = artifacts.require('MarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
 const MarginVault = artifacts.require('MarginVault.sol')
 
+BigNumber.config({ROUNDING_MODE: BigNumber.ROUND_DOWN})
+
 // address(0)
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
@@ -44,10 +48,11 @@ enum ActionType {
   SettleVault,
   Redeem,
   Call,
+  Liquidate,
   InvalidAction,
 }
 
-contract('Controller', ([owner, accountOwner1]) => {
+contract('Controller', ([owner, accountOwner1, liquidator]) => {
   // ERC20 mock
   let usdc: MockERC20Instance
   let weth: MockERC20Instance
@@ -68,6 +73,22 @@ contract('Controller', ([owner, accountOwner1]) => {
 
   const usdcDecimals = 6
   const wethDecimals = 18
+  const oracleDeviation = 0.05
+  const oracleDeviationValue = scaleNum(oracleDeviation, 27)
+  const productSpotShockValue = scaleBigNum(0.75, 27)
+  // array of time to expiry
+  const day = 60 * 24
+  const timeToExpiry = [day * 7, day * 14, day * 28, day * 42, day * 56]
+  // array of upper bound value correspond to time to expiry
+  const expiryToValue = [
+    scaleNum(0.1678, 27),
+    scaleNum(0.237, 27),
+    scaleNum(0.3326, 27),
+    scaleNum(0.4032, 27),
+    scaleNum(0.4603, 27),
+  ]
+  const wethDust = scaleNum(1, wethDecimals)
+  const usdcDust = scaleNum(1, usdcDecimals)
 
   before('Deployment', async () => {
     // addressbook deployment
@@ -111,43 +132,38 @@ contract('Controller', ([owner, accountOwner1]) => {
 
     // make everyone rich
     await usdc.mint(accountOwner1, createTokenAmount(10000, usdcDecimals))
+
+    // set calculator configs
+    // whitelist collateral
+    await whitelist.whitelistCollateral(usdc.address)
+    // set product spot shock value
+    await calculator.setSpotShock(weth.address, usdc.address, usdc.address, true, productSpotShockValue)
+    // set oracle deviation
+    await calculator.setOracleDeviation(oracleDeviationValue, {from: owner})
+    // set WETH dust amount
+    await calculator.setCollateralDust(weth.address, wethDust, {from: owner})
+    // set USDC dust amount
+    await calculator.setCollateralDust(usdc.address, usdcDust, {from: owner})
+    // set time to expiry and each upper bound value
+    for (let i = 0; i < expiryToValue.length; i++) {
+      // set for put product
+      await calculator.setTimeToExpiryValue(
+        weth.address,
+        usdc.address,
+        usdc.address,
+        true,
+        timeToExpiry[i],
+        expiryToValue[i],
+        {from: owner},
+      )
+      await calculator.setProductTimeToExpiry(weth.address, usdc.address, usdc.address, true, timeToExpiry[i], {
+        from: owner,
+      })
+    }
   })
 
   describe('settle naked margin vault', async () => {
-    const productSpotShockValue = scaleBigNum(0.75, 27)
-    // array of time to expiry
-    const day = 60 * 24
-    const timeToExpiry = [day * 7, day * 14, day * 28, day * 42, day * 56]
-    // array of upper bound value correspond to time to expiry
-    const expiryToValue = [
-      scaleNum(0.1678, 27),
-      scaleNum(0.237, 27),
-      scaleNum(0.3326, 27),
-      scaleNum(0.4032, 27),
-      scaleNum(0.4603, 27),
-    ]
-
-    before('Set calculator configs, open position, and set time past expiry', async () => {
-      // set product spot shock value
-      await calculator.setSpotShock(weth.address, usdc.address, usdc.address, true, productSpotShockValue)
-
-      // set time to expiry and each upper bound value
-      for (let i = 0; i < expiryToValue.length; i++) {
-        // set for put product
-        await calculator.setTimeToExpiryValue(
-          weth.address,
-          usdc.address,
-          usdc.address,
-          true,
-          timeToExpiry[i],
-          expiryToValue[i],
-          {from: owner},
-        )
-        await calculator.setProductTimeToExpiry(weth.address, usdc.address, usdc.address, true, timeToExpiry[i], {
-          from: owner,
-        })
-      }
-
+    before('open position, and set time past expiry', async () => {
       const shortAmount = 1
       const shortStrike = 100
       const underlyingPrice = 150
@@ -167,8 +183,6 @@ contract('Controller', ([owner, accountOwner1]) => {
       )
       // whitelist otoken
       await whitelist.whitelistOtoken(shortOtoken.address)
-      // whitelist collateral
-      await whitelist.whitelistCollateral(usdc.address)
       // set underlying price in oracle
       await oracle.setRealTimePrice(weth.address, scaledUnderlyingPrice)
 
@@ -194,7 +208,7 @@ contract('Controller', ([owner, accountOwner1]) => {
           owner: accountOwner1,
           secondAddress: accountOwner1,
           asset: ZERO_ADDR,
-          vaultId: vaultCounter.toNumber(),
+          vaultId: vaultCounter.toString(),
           amount: '0',
           index: '0',
           data: vaultType,
@@ -204,7 +218,7 @@ contract('Controller', ([owner, accountOwner1]) => {
           owner: accountOwner1,
           secondAddress: accountOwner1,
           asset: shortOtoken.address,
-          vaultId: vaultCounter.toNumber(),
+          vaultId: vaultCounter.toString(),
           amount: createTokenAmount(shortAmount),
           index: '0',
           data: ZERO_ADDR,
@@ -214,7 +228,7 @@ contract('Controller', ([owner, accountOwner1]) => {
           owner: accountOwner1,
           secondAddress: accountOwner1,
           asset: usdc.address,
-          vaultId: vaultCounter.toNumber(),
+          vaultId: vaultCounter.toString(),
           amount: collateralAmount.toString(),
           index: '0',
           data: ZERO_ADDR,
@@ -224,7 +238,7 @@ contract('Controller', ([owner, accountOwner1]) => {
       await controllerProxy.operate(mintArgs, {from: accountOwner1})
 
       // go to expiry
-      await time.increaseTo(optionExpiry.toNumber() + 10)
+      await time.increase(optionExpiry.plus(10).toString())
       const ethPriceAtExpiry = 70
       await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, optionExpiry, createScaledNumber(1), true)
       await oracle.setExpiryPriceFinalizedAllPeiodOver(
@@ -245,7 +259,7 @@ contract('Controller', ([owner, accountOwner1]) => {
           owner: accountOwner1,
           secondAddress: accountOwner1,
           asset: ZERO_ADDR,
-          vaultId: vaultCounter.toNumber(),
+          vaultId: vaultCounter.toString(),
           amount: '0',
           index: '0',
           data: ZERO_ADDR,
@@ -255,6 +269,181 @@ contract('Controller', ([owner, accountOwner1]) => {
       await expectRevert(
         controllerProxy.operate(settleArgs, {from: accountOwner1}),
         'Controller: can not settle undercollateralized vault',
+      )
+    })
+  })
+
+  describe('Naked margin position: full liquidation', () => {
+    const shortAmount = 1
+    const shortStrike = 100
+    const isPut = true
+
+    let shortOtoken: MockOtokenInstance
+    let requiredMargin: BigNumber
+    let vaultCounter: BigNumber
+
+    before('Deploy new short otoken, and open naked position', async () => {
+      const underlyingPrice = 150
+      const scaledUnderlyingPrice = scaleBigNum(underlyingPrice, 8)
+      const optionExpiry = new BigNumber(await time.latest()).plus(timeToExpiry[0])
+
+      shortOtoken = await MockOtoken.new()
+      await shortOtoken.init(
+        addressBook.address,
+        weth.address,
+        usdc.address,
+        usdc.address,
+        scaleNum(shortStrike),
+        optionExpiry,
+        isPut,
+      )
+      // whitelist otoken
+      await whitelist.whitelistOtoken(shortOtoken.address)
+      // set underlying price in oracle
+      await oracle.setRealTimePrice(weth.address, scaledUnderlyingPrice)
+
+      // open position
+      vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
+      const vaultType = web3.eth.abi.encodeParameter('uint256', 1)
+      requiredMargin = new BigNumber(
+        await calculator.getNakedMarginRequired(
+          weth.address,
+          usdc.address,
+          usdc.address,
+          createTokenAmount(shortAmount),
+          createTokenAmount(shortStrike),
+          scaledUnderlyingPrice,
+          optionExpiry,
+          usdcDecimals,
+          isPut,
+        ),
+      )
+
+      const mintArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: accountOwner1,
+          secondAddress: accountOwner1,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounter.toString(),
+          amount: '0',
+          index: '0',
+          data: vaultType,
+        },
+        {
+          actionType: ActionType.MintShortOption,
+          owner: accountOwner1,
+          secondAddress: accountOwner1,
+          asset: shortOtoken.address,
+          vaultId: vaultCounter.toString(),
+          amount: createTokenAmount(shortAmount),
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.DepositCollateral,
+          owner: accountOwner1,
+          secondAddress: accountOwner1,
+          asset: usdc.address,
+          vaultId: vaultCounter.toString(),
+          amount: requiredMargin.toString(),
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+      await usdc.approve(marginPool.address, requiredMargin.toString(), {from: accountOwner1})
+      await controllerProxy.operate(mintArgs, {from: accountOwner1})
+
+      const latestVaultUpdateTimestamp = new BigNumber(
+        (await controllerProxy.getVault(accountOwner1, vaultCounter.toString()))[2],
+      )
+
+      assert.equal(
+        latestVaultUpdateTimestamp.toString(),
+        (await time.latest()).toString(),
+        'Vault latest update timestamp mismatch',
+      )
+
+      // mint short otoken
+      await shortOtoken.mintOtoken(liquidator, createTokenAmount(shortAmount))
+    })
+
+    it('should fully liquidate undercollateralized vault', async () => {
+      // set round id and price
+      const roundId = new BigNumber(1)
+      const roundPrice = 130
+      const scaledRoundPrice = createTokenAmount(roundPrice)
+      const auctionStartingTime = (await time.latest()).toString()
+      await oracle.setChainlinkRoundData(weth.address, roundId, scaledRoundPrice, auctionStartingTime)
+
+      // advance time
+      await time.increase(600)
+
+      const isLiquidatable = await controllerProxy.isLiquidatable(accountOwner1, vaultCounter.toString(), roundId)
+
+      assert.equal(isLiquidatable[0], true, 'Vault liquidation state mismatch')
+
+      const vaultCollateral = requiredMargin.dividedBy(10 ** usdcDecimals).toString()
+
+      const liquidateArgs = [
+        {
+          actionType: ActionType.Liquidate,
+          owner: accountOwner1,
+          secondAddress: liquidator,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounter.toString(),
+          amount: createTokenAmount(shortAmount),
+          index: '0',
+          data: web3.eth.abi.encodeParameter('uint256', roundId.toString()),
+        },
+      ]
+
+      const liquidatorCollateralBalanceBefore = new BigNumber(await usdc.balanceOf(liquidator))
+
+      await controllerProxy.operate(liquidateArgs, {from: liquidator})
+
+      const liquidatorCollateralBalanceAfter = new BigNumber(await usdc.balanceOf(liquidator))
+      const vaultAfterLiquidation = (await controllerProxy.getVault(accountOwner1, vaultCounter.toString()))[0]
+
+      assert.equal(vaultAfterLiquidation.shortAmounts[0].toString(), '0', 'Vault was not fully liquidated')
+      assert.equal(
+        vaultAfterLiquidation.collateralAmounts[0],
+        new BigNumber(vaultCollateral).multipliedBy(10 ** usdcDecimals).minus(isLiquidatable[1].toString()),
+        'Vault collateral mismatch after liquidation',
+      )
+      assert.equal(
+        liquidatorCollateralBalanceAfter.toString(),
+        liquidatorCollateralBalanceBefore.plus(isLiquidatable[1].toString()).toString(),
+        'Liquidator collateral balance mismatch after liquidation',
+      )
+    })
+
+    it('should be able to withdraw remaining collateral', async () => {
+      const vaultAfterLiquidation = (await controllerProxy.getVault(accountOwner1, vaultCounter))[0]
+
+      const withdrawArgs = [
+        {
+          actionType: ActionType.WithdrawCollateral,
+          owner: accountOwner1,
+          secondAddress: accountOwner1,
+          asset: usdc.address,
+          vaultId: vaultCounter.toString(),
+          amount: vaultAfterLiquidation.collateralAmounts[0],
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+
+      const userCollateralBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
+
+      await controllerProxy.operate(withdrawArgs, {from: accountOwner1})
+
+      const userCollateralAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
+
+      assert.equal(
+        userCollateralAfter.toString(),
+        userCollateralBefore.plus(vaultAfterLiquidation.collateralAmounts[0]).toString(),
+        'User collateral after withdraw remaining collateral mismatch',
       )
     })
   })

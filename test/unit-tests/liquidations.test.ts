@@ -9,9 +9,8 @@ import {
   createScaledNumber as scaleNum,
   createScaledBigNumber as scaleBigNum,
   createVault,
-  createScaledBigNumber,
-  createScaledNumber,
   createTokenAmount,
+  expectedLiqudidationPrice,
 } from '../utils'
 import {assert} from 'chai'
 import BigNumber from 'bignumber.js'
@@ -22,64 +21,8 @@ const MockOracle = artifacts.require('MockOracle.sol')
 const MockOtoken = artifacts.require('MockOtoken.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
 const MarginCalculator = artifacts.require('CalculatorTester.sol')
-const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
 BigNumber.config({ROUNDING_MODE: BigNumber.ROUND_DOWN})
-
-const expectedLiqudidationPrice = (
-  collateral: number,
-  debt: number,
-  cashValue: number,
-  spotPrice: number,
-  oracleDeviation: number,
-  auctionStartingTime: number,
-  currentBlockTime: number,
-  isPut: boolean,
-  collateralDecimals: number,
-) => {
-  const endingPrice = new BigNumber(collateral).dividedBy(debt)
-  const auctionElapsedTime = currentBlockTime - auctionStartingTime
-
-  if (auctionElapsedTime > 3600) {
-    // return Math.floor(endingPrice)
-    return endingPrice.multipliedBy(10 ** collateralDecimals).toNumber()
-  }
-
-  let startingPrice
-
-  if (isPut) {
-    startingPrice = BigNumber.max(
-      new BigNumber(cashValue).minus(new BigNumber(spotPrice).multipliedBy(oracleDeviation)),
-      0,
-    )
-  } else {
-    startingPrice = BigNumber.max(
-      new BigNumber(cashValue).minus(new BigNumber(spotPrice).multipliedBy(oracleDeviation)),
-      0,
-    ).dividedBy(spotPrice)
-  }
-
-  return startingPrice
-    .plus(
-      endingPrice
-        .minus(startingPrice)
-        .multipliedBy(auctionElapsedTime)
-        .dividedBy(3600),
-    )
-    .multipliedBy(10 ** collateralDecimals)
-    .toNumber()
-}
-
-const calcRelativeDiff = (expected: BigNumber, actual: BigNumber): BigNumber => {
-  let diff: BigNumber
-
-  if (actual.isGreaterThan(expected)) {
-    diff = actual.minus(expected)
-  } else {
-    diff = expected.minus(actual)
-  }
-  return diff
-}
 
 contract('MarginCalculator', ([owner, random]) => {
   let expiry: number

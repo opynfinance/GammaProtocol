@@ -406,7 +406,7 @@ contract MarginCalculator is Ownable {
         require(_vaultType == 1, "MarginCalculator: invalid vault type to liquidate");
 
         // get vault details
-        VaultDetails memory vaultDetails = getVaultDetails(_vault, _vaultType);
+        VaultDetails memory vaultDetails = _getVaultDetails(_vault, _vaultType);
 
         // can not liquidate vault that have no short position
         if (!vaultDetails.hasShort) return (false, 0, 0);
@@ -505,7 +505,7 @@ contract MarginCalculator is Ownable {
         returns (uint256, bool)
     {
         // get vault details
-        VaultDetails memory vaultDetails = getVaultDetails(_vault, _vaultType);
+        VaultDetails memory vaultDetails = _getVaultDetails(_vault, _vaultType);
         // include all the checks for to ensure the vault is valid
         _checkIsValidVault(_vault, vaultDetails);
 
@@ -920,7 +920,8 @@ contract MarginCalculator is Ownable {
      * @notice return debt price, how much collateral asset per 1 otoken repaid in collateral decimal
      * ending price = vault collateral / vault debt
      * if auction ended, return ending price
-     * else calculate starting price, for put option:
+     * else calculate starting price
+     * for put option:
      * starting price = max(cash value - underlying price * oracle deviation, 0)
      * for call option:
      *                      max(cash value - underlying price * oracle deviation, 0)
@@ -983,7 +984,7 @@ contract MarginCalculator is Ownable {
             FPI.FixedPointInt memory auctionTime = FPI.fromScaledUint(AUCTION_TIME, 18);
 
             // calculate price of 1 repaid otoken, scaled by the collateral decimals, expilictly rounded down
-            price = startingPrice.add(auctionElapsedTime.mul(endingPrice.sub(startingPrice)).div(auctionTime));
+            price = startingPrice.add((endingPrice.sub(startingPrice)).mul(auctionElapsedTime).div(auctionTime));
         }
 
         return price.toScaledUint(_collateralDecimals, true);
@@ -995,7 +996,7 @@ contract MarginCalculator is Ownable {
      * @param _vaultType vault type, 0 for max loss/spreads and 1 for naked margin vault
      * @return vault details in VaultDetails struct
      */
-    function getVaultDetails(MarginVault.Vault memory _vault, uint256 _vaultType)
+    function _getVaultDetails(MarginVault.Vault memory _vault, uint256 _vaultType)
         internal
         view
         returns (VaultDetails memory)
@@ -1099,6 +1100,7 @@ contract MarginCalculator is Ownable {
      * d) asset array lengths match for long, short and collateral
      * e) long option and collateral asset is acceptable for margin with short asset
      * @param _vault the vault to check
+     * @param _vaultDetails vault details struct
      */
     function _checkIsValidVault(MarginVault.Vault memory _vault, VaultDetails memory _vaultDetails) internal pure {
         // ensure all the arrays in the vault are valid
@@ -1134,7 +1136,9 @@ contract MarginCalculator is Ownable {
 
     /**
      * @dev if there is a short option and a long option in the vault, ensure that the long option is able to be used as collateral for the short option
-     * @param _vault the vault to check.
+     * @param _vault the vault to check
+     * @param _vaultDetails vault details struct
+     * @return true if long is marginable or false if not
      */
     function _isMarginableLong(MarginVault.Vault memory _vault, VaultDetails memory _vaultDetails)
         internal
@@ -1158,7 +1162,9 @@ contract MarginCalculator is Ownable {
 
     /**
      * @dev if there is short option and collateral asset in the vault, ensure that the collateral asset is valid for the short option
-     * @param _vault the vault to check.
+     * @param _vault the vault to check
+     * @param _vaultDetails vault details struct
+     * @return true if marginable or false
      */
     function _isMarginableCollateral(MarginVault.Vault memory _vault, VaultDetails memory _vaultDetails)
         internal
