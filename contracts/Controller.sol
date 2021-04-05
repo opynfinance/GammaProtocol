@@ -898,7 +898,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         require(isLiquidatable, "MarginCalculator: can not liquidate vault");
 
         // amount of collateral to offer to liquidator
-        uint256 collateralToSell = _args.amount.mul(price);
+        uint256 collateralToSell = _args.amount.mul(price).div(1e8);
 
         // burn short otoken from liquidator address, index of short otoken hardcoded at 0
         // should always work, if vault have no short otoken, it will not reach this step
