@@ -882,6 +882,11 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         emit VaultSettled(_args.owner, _args.to, address(otoken), _args.vaultId, payout);
     }
 
+    /**
+     * @notice liquidate naked margin vault
+     * @dev can liquidate different vaults id in the same operate() call
+     * @param _args liquidation action arguments struct
+     */
     function _liquidate(Actions.LiquidateArgs memory _args) internal notPartiallyPaused {
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
 
@@ -895,7 +900,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         );
 
         // do not allow liquidating un-liquidatable vault
-        require(isLiquidatable, "MarginCalculator: can not liquidate vault");
+        require(isLiquidatable, "Controller: can not liquidate vault");
 
         // amount of collateral to offer to liquidator
         uint256 collateralToSell = _args.amount.mul(price).div(1e8);

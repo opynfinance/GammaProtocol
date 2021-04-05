@@ -398,8 +398,8 @@ contract MarginCalculator is Ownable {
             uint256
         )
     {
-        // make LiquidationStatus struct to avoid stack too deep error
-        // will have isLiquidatabel and the price
+        // create LiquidationStatus struct to avoid stack too deep error
+        // will store isLiquidatable and the liquidation price
         LiquidationStatus memory liquidationStatus = LiquidationStatus(false, 0);
 
         // liquidation is only supported for naked margin vault
