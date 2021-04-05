@@ -89,12 +89,8 @@ library MarginVault {
 
         uint256 newShortAmount = _vault.shortAmounts[_index].sub(_amount);
 
-        if (newShortAmount == 0) {
-            delete _vault.shortOtokens[_index];
-            delete _vault.shortAmounts[_index];
-        } else {
-            _vault.shortAmounts[_index] = newShortAmount;
-        }
+        if (newShortAmount == 0) delete _vault.shortOtokens[_index];
+        _vault.shortAmounts[_index] = newShortAmount;
     }
 
     /**
@@ -152,12 +148,8 @@ library MarginVault {
 
         uint256 newLongAmount = _vault.longAmounts[_index].sub(_amount);
 
-        if (newLongAmount == 0) {
-            delete _vault.longOtokens[_index];
-            delete _vault.longAmounts[_index];
-        } else {
-            _vault.longAmounts[_index] = newLongAmount;
-        }
+        if (newLongAmount == 0) delete _vault.longOtokens[_index];
+        _vault.longAmounts[_index] = newLongAmount;
     }
 
     /**
@@ -215,11 +207,7 @@ library MarginVault {
 
         uint256 newCollateralAmount = _vault.collateralAmounts[_index].sub(_amount);
 
-        if (newCollateralAmount == 0) {
-            delete _vault.collateralAssets[_index];
-            delete _vault.collateralAmounts[_index];
-        } else {
-            _vault.collateralAmounts[_index] = newCollateralAmount;
-        }
+        if (newCollateralAmount == 0) delete _vault.collateralAssets[_index];
+        _vault.collateralAmounts[_index] = newCollateralAmount;
     }
 }
