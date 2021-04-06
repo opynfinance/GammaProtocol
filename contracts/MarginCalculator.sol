@@ -161,7 +161,6 @@ contract MarginCalculator is Ownable {
         // check that upper bound value is not zero
         require(_value > 0, "MarginCalculator: invalid option upper bound value");
 
-        // get product hash
         bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
 
         // add new upper bound value for this product at specific time to expiry
@@ -184,7 +183,6 @@ contract MarginCalculator is Ownable {
         bool _isPut,
         uint256 _shockValue
     ) external onlyOwner {
-        // get product hash
         bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
 
         // set spot shock value in 27 decimals
@@ -404,13 +402,11 @@ contract MarginCalculator is Ownable {
         )
     {
         // create LiquidationStatus struct to avoid stack too deep error
-        // will store isLiquidatable and the liquidation price
         LiquidationStatus memory liquidationStatus = LiquidationStatus(false, 0);
 
         // liquidation is only supported for naked margin vault
         require(_vaultType == 1, "MarginCalculator: invalid vault type to liquidate");
 
-        // get vault details
         VaultDetails memory vaultDetails = _getVaultDetails(_vault, _vaultType);
 
         // can not liquidate vault that have no short position
@@ -441,7 +437,6 @@ contract MarginCalculator is Ownable {
             shortUnderlyingPrice: FPI.fromScaledUint(price, BASE)
         });
 
-        // get product hash
         bytes32 productHash = _getProductHash(
             vaultDetails.shortUnderlyingAsset,
             vaultDetails.shortStrikeAsset,
@@ -457,7 +452,6 @@ contract MarginCalculator is Ownable {
 
         // another scope to avoid stack too deep!
         {
-            // get required collateral
             FPI.FixedPointInt memory collateralRequired = _getNakedMarginRequired(
                 productHash,
                 shortDetails.shortAmount,
