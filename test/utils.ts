@@ -4,8 +4,6 @@ import BigNumber from 'bignumber.js'
 const util = require('@0x/order-utils')
 const ethSigUtil = require('eth-sig-util')
 
-BigNumber.config({ROUNDING_MODE: BigNumber.ROUND_DOWN})
-
 export type vault = {
   shortAmounts: (BigNumber | string | number)[]
   longAmounts: (BigNumber | string | number)[]
@@ -156,6 +154,8 @@ export const signOrder = async (signer: any, order: any) => {
   order.signature = `0x${v}${rs}02`
   return order
 }
+
+BigNumber.config({ROUNDING_MODE: BigNumber.ROUND_DOWN})
 
 export const expectedLiqudidationPrice = (
   collateral: number | string,

@@ -24,7 +24,7 @@ const MarginCalculator = artifacts.require('CalculatorTester.sol')
 
 BigNumber.config({ROUNDING_MODE: BigNumber.ROUND_DOWN})
 
-contract('MarginCalculator', ([owner, random]) => {
+contract('MarginCalculator: liquidation', ([owner, random]) => {
   let expiry: number
 
   let calculator: CalculatorTesterInstance
