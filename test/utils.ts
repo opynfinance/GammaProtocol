@@ -202,12 +202,5 @@ export const expectedLiqudidationPrice = (
 }
 
 export const calcRelativeDiff = (expected: BigNumber, actual: BigNumber): BigNumber => {
-  let diff: BigNumber
-
-  if (actual.isGreaterThan(expected)) {
-    diff = actual.minus(expected)
-  } else {
-    diff = expected.minus(actual)
-  }
-  return diff
+  return actual.minus(expected).abs()
 }

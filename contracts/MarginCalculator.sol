@@ -169,7 +169,7 @@ contract MarginCalculator is Ownable {
     }
 
     /**
-     * @notice set spot shock value (1e27)
+     * @notice set spot shock value scaled to 1e27
      * @dev can only be called by owner
      * @param _underlying otoken underlying asset
      * @param _strike otoken strike asset
@@ -187,7 +187,7 @@ contract MarginCalculator is Ownable {
         // get product hash
         bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
 
-        // set spot shock value
+        // set spot shock value in 27 decimals
         spotShock[productHash] = _shockValue;
     }
 
@@ -940,7 +940,7 @@ contract MarginCalculator is Ownable {
      *
      * @param _vaultCollateral vault collateral amount
      * @param _vaultDebt vault short amount
-     * @param _cv option cash value
+     * @param _cashValue option cash value
      * @param _spotPrice option underlying asset price (in USDC)
      * @param _auctionStartingTime auction starting timestamp (_spotPrice timestamp from chainlink)
      * @param _collateralDecimals collateral asset decimals
@@ -950,7 +950,7 @@ contract MarginCalculator is Ownable {
     function _price(
         FPI.FixedPointInt memory _vaultCollateral,
         FPI.FixedPointInt memory _vaultDebt,
-        FPI.FixedPointInt memory _cv,
+        FPI.FixedPointInt memory _cashValue,
         FPI.FixedPointInt memory _spotPrice,
         uint256 _auctionStartingTime,
         uint256 _collateralDecimals,
@@ -976,9 +976,9 @@ contract MarginCalculator is Ownable {
                 FPI.FixedPointInt memory fixedOracleDeviation = FPI.fromScaledUint(oracleDeviation, SCALING_FACTOR);
 
                 if (_isPut) {
-                    startingPrice = FPI.max(_cv.sub(fixedOracleDeviation.mul(_spotPrice)), ZERO);
+                    startingPrice = FPI.max(_cashValue.sub(fixedOracleDeviation.mul(_spotPrice)), ZERO);
                 } else {
-                    startingPrice = FPI.max(_cv.sub(fixedOracleDeviation.mul(_spotPrice)), ZERO).div(_spotPrice);
+                    startingPrice = FPI.max(_cashValue.sub(fixedOracleDeviation.mul(_spotPrice)), ZERO).div(_spotPrice);
                 }
             }
 
