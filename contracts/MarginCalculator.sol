@@ -383,6 +383,10 @@ contract MarginCalculator is Ownable {
 
     /**
      * @notice check if a specific vault is undercollateralized at a specific chainlink round
+     * @param _vault vault struct
+     * @param _vaultType vault type (0 for max loss/spread and 1 for naked margin vault)
+     * @param _vaultLatestUpdate vault latest update (timestamp when latest vault state change happened)
+     * @param _roundId chainlink round id
      */
     function isLiquidatable(
         MarginVault.Vault memory _vault,
