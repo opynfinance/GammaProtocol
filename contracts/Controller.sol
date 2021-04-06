@@ -904,7 +904,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         uint256 collateralToSell = _args.amount.mul(price).div(1e8);
 
         // burn short otoken from liquidator address, index of short otoken hardcoded at 0
-        // should always work, if vault have no short otoken, it will not reach this step
+        // if a vault have no short otoken, it will not reach this step
         OtokenInterface(vault.shortOtokens[0]).burnOtoken(msg.sender, _args.amount);
 
         // decrease amount of collateral in liquidated vault, index of collateral to decrease is hardcoded at 0
