@@ -387,6 +387,7 @@ contract MarginCalculator is Ownable {
      * @param _vaultType vault type (0 for max loss/spread and 1 for naked margin vault)
      * @param _vaultLatestUpdate vault latest update (timestamp when latest vault state change happened)
      * @param _roundId chainlink round id
+     * @return isLiquidatable, true if vault is undercollateralized, liquidation price and collateral dust amount
      */
     function isLiquidatable(
         MarginVault.Vault memory _vault,
