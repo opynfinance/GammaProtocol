@@ -100,6 +100,8 @@ contract MarginCalculator is Ownable {
      * @param _dust dust amount
      */
     function setCollateralDust(address _collateral, uint256 _dust) external onlyOwner {
+        require(_dust > 0, "MarginCalculator: dust amount should be greater than zero");
+
         dust[_collateral] = _dust;
     }
 
