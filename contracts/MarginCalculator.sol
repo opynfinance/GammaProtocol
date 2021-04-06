@@ -183,7 +183,6 @@ contract MarginCalculator is Ownable {
         bool _isPut,
         uint256 _shockValue
     ) external onlyOwner {
-        // get product hash
         bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
 
         // set spot shock value
