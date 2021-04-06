@@ -432,7 +432,6 @@ contract MarginCalculator is Ownable {
             shortUnderlyingPrice: FPI.fromScaledUint(price, BASE)
         });
 
-        // get product hash
         bytes32 productHash = _getProductHash(
             vaultDetails.shortUnderlyingAsset,
             vaultDetails.shortStrikeAsset,
