@@ -897,8 +897,16 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             _args.roundId
         );
 
-        // do not allow liquidating un-liquidatable vault
         require(isLiquidatable, "Controller: can not liquidate vault");
+
+        // if vault is partially liquidated, amount of short otoken still greater than zero
+        // make sure remaining collateral amount is greater than dust amount
+        if (vault.shortAmounts[0].sub(_args.amount) > 0) {
+            require(
+                vault.collateralAmounts[0].sub(collateralToSell) >= collateralDust,
+                "Controller: can not leave less than collateral dust"
+            );
+        }
 
         // amount of collateral to offer to liquidator
         uint256 collateralToSell = _args.amount.mul(price).div(1e8);
@@ -915,15 +923,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         // transfer collateral to receiver address
         pool.transferToUser(vault.collateralAssets[0], _args.receiver, collateralToSell);
-
-        // if vault is partially liquidated, amount of short otoken still greater than zero
-        // make sure remaining collateral amount is greater than dust amount
-        if (vault.shortAmounts[0].sub(_args.amount) > 0) {
-            require(
-                vault.collateralAmounts[0].sub(collateralToSell) >= collateralDust,
-                "Controller: can not leave less than collateral dust"
-            );
-        }
 
         emit VaultLiquidated(
             msg.sender,

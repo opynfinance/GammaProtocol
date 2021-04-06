@@ -447,7 +447,7 @@ contract MarginCalculator is Ownable {
         );
 
         // convert vault collateral to a fixed point (1e27) from collateral decimals
-        FPI.FixedPointInt memory collateralAmount = FPI.fromScaledUint(
+        FPI.FixedPointInt memory depositedCollateral = FPI.fromScaledUint(
             _vault.collateralAmounts[0],
             vaultDetails.collateralDecimals
         );
@@ -464,7 +464,7 @@ contract MarginCalculator is Ownable {
             );
 
             // check if deposited collateral is greater or equal than needed collateral
-            liquidationStatus.isLiquidatable = collateralRequired.isGreaterThan(collateralAmount);
+            liquidationStatus.isLiquidatable = collateralRequired.isGreaterThan(depositedCollateral);
         }
 
         // if vault no liquidatable, exit
@@ -479,7 +479,7 @@ contract MarginCalculator is Ownable {
 
         // get the amount of collateral per 1 repaid otoken
         liquidationStatus.debtPrice = _price(
-            collateralAmount,
+            depositedCollateral,
             shortDetails.shortAmount,
             cashValue,
             shortDetails.shortUnderlyingPrice,
