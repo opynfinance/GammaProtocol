@@ -402,7 +402,6 @@ contract MarginCalculator is Ownable {
         // liquidation is only supported for naked margin vault
         require(_vaultType == 1, "MarginCalculator: invalid vault type to liquidate");
 
-        // get vault details
         VaultDetails memory vaultDetails = _getVaultDetails(_vault, _vaultType);
 
         // can not liquidate vault that have no short position
