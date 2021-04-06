@@ -161,7 +161,6 @@ contract MarginCalculator is Ownable {
         // check that upper bound value is not zero
         require(_value > 0, "MarginCalculator: invalid option upper bound value");
 
-        // get product hash
         bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
 
         // add new upper bound value for this product at specific time to expiry
