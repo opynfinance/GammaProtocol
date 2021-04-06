@@ -452,7 +452,6 @@ contract MarginCalculator is Ownable {
 
         // another scope to avoid stack too deep!
         {
-            // get required collateral
             FPI.FixedPointInt memory collateralRequired = _getNakedMarginRequired(
                 productHash,
                 shortDetails.shortAmount,
