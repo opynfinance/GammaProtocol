@@ -185,6 +185,8 @@ contract MarginCalculator is Ownable {
         bool _isPut,
         uint256 _shockValue
     ) external onlyOwner {
+        require(_shockValue > 0, "MarginCalculator: invalid spot shock value");
+
         bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
 
         // set spot shock value in 27 decimals
