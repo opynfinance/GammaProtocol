@@ -560,7 +560,7 @@ contract('Controller', ([owner, accountOwner1, liquidator]) => {
 
       assert.equal(isLiquidatable[0], true, 'Vault liquidation state mismatch')
 
-      const vaultCollateral = requiredMargin.dividedBy(10 ** usdcDecimals).toString()
+      const vaultBeforeLiquidation = (await controllerProxy.getVault(accountOwner1, vaultCounter.toString()))[0]
 
       const liquidateArgs = [
         {
@@ -589,10 +589,7 @@ contract('Controller', ([owner, accountOwner1, liquidator]) => {
       )
       assert.equal(
         vaultAfterLiquidation.collateralAmounts[0].toString(),
-        new BigNumber(vaultCollateral)
-          .multipliedBy(10 ** usdcDecimals)
-          .minus(isLiquidatable[1])
-          .toString(),
+        new BigNumber(vaultBeforeLiquidation.collateralAmounts[0]).minus(isLiquidatable[1].toString()).toString(),
         'Vault collateral mismatch after liquidation',
       )
       assert.equal(
