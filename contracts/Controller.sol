@@ -899,6 +899,9 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         require(isLiquidatable, "Controller: can not liquidate vault");
 
+        // amount of collateral to offer to liquidator
+        uint256 collateralToSell = _args.amount.mul(price).div(1e8);
+
         // if vault is partially liquidated, amount of short otoken still greater than zero
         // make sure remaining collateral amount is greater than dust amount
         if (vault.shortAmounts[0].sub(_args.amount) > 0) {
@@ -908,11 +911,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             );
         }
 
-        // amount of collateral to offer to liquidator
-        uint256 collateralToSell = _args.amount.mul(price).div(1e8);
-
         // burn short otoken from liquidator address, index of short otoken hardcoded at 0
-        // if a vault have no short otoken, it will not reach this step
+        // should always work, if vault have no short otoken, it will not reach this step
         OtokenInterface(vault.shortOtokens[0]).burnOtoken(msg.sender, _args.amount);
 
         // decrease amount of collateral in liquidated vault, index of collateral to decrease is hardcoded at 0
