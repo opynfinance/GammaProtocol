@@ -801,7 +801,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         // check that otoken to redeem is whitelisted
         require(whitelist.isWhitelistedOtoken(_args.otoken), "Controller: otoken is not whitelisted to be redeemed");
 
-        // get otoken details
         (address collateral, address underlying, address strike, , uint256 expiry, ) = otoken.getOtokenDetails();
 
         // only allow redeeming expired otoken
@@ -857,7 +856,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             }
         }
 
-        // get otoken details
         (address collateral, address underlying, address strike, , uint256 expiry, ) = otoken.getOtokenDetails();
 
         // do not allow settling vault with un-expired otoken
