@@ -15,7 +15,7 @@ import {
   createScaledBigNumber as scaleBigNum,
   createScaledNumber,
   createTokenAmount,
-  expectedLiqudidationPrice,
+  calcRelativeDiff,
 } from '../utils'
 
 const {expectRevert, time} = require('@openzeppelin/test-helpers')
@@ -52,7 +52,7 @@ enum ActionType {
   InvalidAction,
 }
 
-contract('Controller', ([owner, accountOwner1, liquidator]) => {
+contract('Controller: naked margin', ([owner, accountOwner1, liquidator]) => {
   // ERC20 mock
   let usdc: MockERC20Instance
   let weth: MockERC20Instance
@@ -89,6 +89,8 @@ contract('Controller', ([owner, accountOwner1, liquidator]) => {
   ]
   const wethDust = scaleNum(1, wethDecimals)
   const usdcDust = scaleNum(1, usdcDecimals)
+
+  const errorDelta = 0.1
 
   before('Deployment', async () => {
     // addressbook deployment
@@ -406,9 +408,12 @@ contract('Controller', ([owner, accountOwner1, liquidator]) => {
       const vaultAfterLiquidation = (await controllerProxy.getVault(accountOwner1, vaultCounter.toString()))[0]
 
       assert.equal(vaultAfterLiquidation.shortAmounts[0].toString(), '0', 'Vault was not fully liquidated')
-      assert.equal(
-        vaultAfterLiquidation.collateralAmounts[0].toString(),
-        new BigNumber(vaultBeforeLiquidation.collateralAmounts[0]).minus(isLiquidatable[1].toString()).toString(),
+      assert.isAtMost(
+        calcRelativeDiff(
+          vaultAfterLiquidation.collateralAmounts[0],
+          new BigNumber(vaultBeforeLiquidation.collateralAmounts[0]).minus(isLiquidatable[1]),
+        ).toNumber(),
+        errorDelta,
         'Vault collateral mismatch after liquidation',
       )
       assert.equal(
@@ -587,14 +592,17 @@ contract('Controller', ([owner, accountOwner1, liquidator]) => {
         createTokenAmount(shortToLiquidate),
         'Vault was not partially liquidated',
       )
-      assert.equal(
-        vaultAfterLiquidation.collateralAmounts[0].toString(),
-        new BigNumber(vaultBeforeLiquidation.collateralAmounts[0]).minus(isLiquidatable[1].toString()).toString(),
+      assert.isAtMost(
+        calcRelativeDiff(
+          vaultAfterLiquidation.collateralAmounts[0],
+          new BigNumber(vaultBeforeLiquidation.collateralAmounts[0]).minus(isLiquidatable[1]),
+        ).toNumber(),
+        errorDelta,
         'Vault collateral mismatch after liquidation',
       )
       assert.equal(
         liquidatorCollateralBalanceAfter.toString(),
-        liquidatorCollateralBalanceBefore.plus(isLiquidatable[1].toString()).toString(),
+        liquidatorCollateralBalanceBefore.plus(isLiquidatable[1]).toString(),
         'Liquidator collateral balance mismatch after liquidation',
       )
     })
