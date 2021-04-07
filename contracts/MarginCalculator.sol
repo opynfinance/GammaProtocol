@@ -988,6 +988,9 @@ contract MarginCalculator is Ownable {
 
             // calculate price of 1 repaid otoken, scaled by the collateral decimals, expilictly rounded down
             price = startingPrice.add((endingPrice.sub(startingPrice)).mul(auctionElapsedTime).div(auctionTime));
+
+            // cap liquidation price to ending price
+            if (price.isGreaterThan(_vaultCollateral)) price = endingPrice;
         }
 
         return price.toScaledUint(_collateralDecimals, true);
