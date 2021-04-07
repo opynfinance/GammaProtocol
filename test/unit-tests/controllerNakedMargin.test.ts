@@ -424,13 +424,6 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator]) => {
       const liquidatorCollateralBalanceAfter = new BigNumber(await usdc.balanceOf(liquidator))
       const vaultAfterLiquidation = (await controllerProxy.getVault(accountOwner1, vaultCounter.toString()))[0]
 
-      console.log(
-        'vault collateral before liq: ',
-        new BigNumber(vaultBeforeLiquidation.collateralAmounts[0]).toString(),
-      )
-      console.log('vault collateral after liq: ', vaultAfterLiquidation.collateralAmounts[0].toString())
-      console.log('liquidation price: ', isLiquidatable[1].toString())
-
       assert.equal(vaultAfterLiquidation.shortAmounts[0].toString(), '0', 'Vault was not fully liquidated')
       assert.isAtMost(
         calcRelativeDiff(
