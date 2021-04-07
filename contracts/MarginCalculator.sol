@@ -990,7 +990,7 @@ contract MarginCalculator is Ownable {
             price = startingPrice.add((endingPrice.sub(startingPrice)).mul(auctionElapsedTime).div(auctionTime));
 
             // cap liquidation price to ending price
-            if (price.isGreaterThan(_vaultCollateral)) price = endingPrice;
+            if (price.isGreaterThan(endingPrice)) price = endingPrice;
         }
 
         return price.toScaledUint(_collateralDecimals, true);
