@@ -353,7 +353,7 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
       await calculator.setOracleDeviation(oracleDeviationValue, {from: owner})
     })
 
-    it('should return correct liquidation price for undercollateralized put option: ', async () => {
+    it('should return correct liquidation price for undercollateralized put option', async () => {
       const strikePrice = 100
       const spotPrice = 80
       const cv = strikePrice - spotPrice
@@ -396,7 +396,7 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
       assert.equal(liquidationprice.toNumber(), expectedLiquidationPrice, 'liquidation price mismatch')
     })
 
-    it('should return correct liquidation price for undercollateralized call option: ', async () => {
+    it('should return correct liquidation price for undercollateralized call option', async () => {
       const strikePrice = 1500
       const spotPrice = 5000
       const cv = spotPrice - strikePrice
@@ -437,6 +437,53 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
       )
 
       assert.equal(liquidationprice.toNumber(), expectedLiquidationPrice, 'liquidation price mismatch')
+    })
+
+    it('should cap liquidation price to ending price when it is greater than vault collateral', async () => {
+      const strikePrice = 150
+      const spotPrice = 60
+      const cv = strikePrice - spotPrice
+      const vaultCollateral = 26
+      const vaultDebt = 1
+      const auctionStartingTime = (await time.latest()).toNumber() - 120
+
+      const scaledSpotPrice = createTokenAmount(spotPrice)
+      const scaledCashValue = createTokenAmount(cv)
+      const scaledVaultCollateral = createTokenAmount(vaultCollateral, usdcDecimals)
+      const scaledVaultDebt = createTokenAmount(vaultDebt)
+      const isPut = true
+
+      const liquidationprice = new BigNumber(
+        await calculator.price(
+          scaledVaultCollateral,
+          scaledVaultDebt,
+          scaledCashValue,
+          scaledSpotPrice,
+          auctionStartingTime,
+          usdcDecimals,
+          isPut,
+        ),
+      )
+
+      const currentBlockTime = (await time.latest()).toNumber()
+
+      const expectedLiquidationPrice = expectedLiqudidationPrice(
+        vaultCollateral,
+        vaultDebt,
+        cv,
+        spotPrice,
+        oracleDeviation,
+        auctionStartingTime,
+        currentBlockTime,
+        isPut,
+        usdcDecimals,
+      )
+
+      assert.equal(
+        liquidationprice.toNumber(),
+        (vaultCollateral / vaultDebt) * 10 ** usdcDecimals,
+        'liquidation price mismatch',
+      )
     })
   })
 })

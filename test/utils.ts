@@ -4,6 +4,8 @@ import BigNumber from 'bignumber.js'
 const util = require('@0x/order-utils')
 const ethSigUtil = require('eth-sig-util')
 
+BigNumber.config({EXPONENTIAL_AT: 60, ROUNDING_MODE: BigNumber.ROUND_DOWN})
+
 export type vault = {
   shortAmounts: (BigNumber | string | number)[]
   longAmounts: (BigNumber | string | number)[]
@@ -49,8 +51,6 @@ export const createVault = (
     collateralAmounts: collateralAmount !== undefined ? [collateralAmount] : [],
   }
 }
-
-BigNumber.config({EXPONENTIAL_AT: 60})
 
 export const createTokenAmount = (num: number | BigNumber, decimals = 8) => {
   const amount = new BigNumber(num).times(new BigNumber(10).pow(decimals))
@@ -155,8 +155,6 @@ export const signOrder = async (signer: any, order: any) => {
   return order
 }
 
-BigNumber.config({ROUNDING_MODE: BigNumber.ROUND_DOWN})
-
 export const expectedLiqudidationPrice = (
   collateral: number | string,
   debt: number,
@@ -190,7 +188,7 @@ export const expectedLiqudidationPrice = (
     ).dividedBy(spotPrice)
   }
 
-  return startingPrice
+  const price = startingPrice
     .plus(
       endingPrice
         .minus(startingPrice)
@@ -198,7 +196,11 @@ export const expectedLiqudidationPrice = (
         .dividedBy(3600),
     )
     .multipliedBy(10 ** collateralDecimals)
-    .toNumber()
+
+  if (price.isGreaterThan(endingPrice.multipliedBy(10 ** collateralDecimals)))
+    return endingPrice.multipliedBy(10 ** collateralDecimals).toNumber()
+
+  return price.toNumber()
 }
 
 export const calcRelativeDiff = (expected: BigNumber, actual: BigNumber): BigNumber => {
