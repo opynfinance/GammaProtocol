@@ -140,7 +140,7 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
       )
     })
 
-    it('should not be able to liquidate vault with type equal to 1', async () => {
+    it('should not be able to liquidate vault with type equal to 0', async () => {
       const vault = createVault(shortOtoken.address, undefined, undefined, scaleNum(1), undefined, undefined)
       const randomVaultLatestUpdate = '11111111'
       const randomRoundId = '1'
