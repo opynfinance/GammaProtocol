@@ -383,20 +383,24 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator]) => {
         'Vault latest update timestamp mismatch',
       )
 
+      console.log('vault latest update timestamp: ', latestVaultUpdateTimestamp.toString())
+
       // mint short otoken
       await shortOtoken.mintOtoken(liquidator, createTokenAmount(shortAmount))
     })
 
     it('should fully liquidate undercollateralized vault', async () => {
+      // advance time
+      await time.increase(1500)
+
+      console.log('now: ', (await time.latest()).toString())
+
       // set round id and price
       const roundId = new BigNumber(1)
       const roundPrice = 130
       const scaledRoundPrice = createTokenAmount(roundPrice)
       const auctionStartingTime = (await time.latest()).toString()
       await oracle.setChainlinkRoundData(weth.address, roundId, scaledRoundPrice, auctionStartingTime)
-
-      // advance time
-      await time.increase(600)
 
       const isLiquidatable = await controllerProxy.isLiquidatable(accountOwner1, vaultCounter.toString(), roundId)
 
@@ -566,15 +570,15 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator]) => {
     })
 
     it('should fully liquidate undercollateralized vault', async () => {
+      // advance time
+      await time.increase(600)
+
       // set round id and price
       const roundId = new BigNumber(1)
       const roundPrice = 1150
       const scaledRoundPrice = createTokenAmount(roundPrice)
       const auctionStartingTime = (await time.latest()).toString()
       await oracle.setChainlinkRoundData(weth.address, roundId, scaledRoundPrice, auctionStartingTime)
-
-      // advance time
-      await time.increase(600)
 
       const isLiquidatable = await controllerProxy.isLiquidatable(accountOwner1, vaultCounter.toString(), roundId)
 
@@ -745,6 +749,9 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator]) => {
     })
 
     it('should partially liquidate undercollateralized vault', async () => {
+      // advance time
+      await time.increase(600)
+
       const shortToLiquidate = 1
       // set round id and price
       const roundId = new BigNumber(1)
@@ -752,9 +759,6 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator]) => {
       const scaledRoundPrice = createTokenAmount(roundPrice)
       const auctionStartingTime = (await time.latest()).toString()
       await oracle.setChainlinkRoundData(weth.address, roundId, scaledRoundPrice, auctionStartingTime)
-
-      // advance time
-      await time.increase(600)
 
       const isLiquidatable = await controllerProxy.isLiquidatable(accountOwner1, vaultCounter.toString(), roundId)
 

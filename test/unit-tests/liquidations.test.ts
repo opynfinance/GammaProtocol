@@ -190,11 +190,13 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
     })
 
     it('should return not liquidatable with 0 value for price and dust amount when vault is not undercollateralized', async () => {
+      await time.increase(100)
+
       // set current underlying price and round price
       const roundId = '11198' // random round id
       const underlyingPrice = 300
       const scaledUnderlyingPrice = scaleBigNum(underlyingPrice, 8)
-      await oracle.setChainlinkRoundData(weth.address, roundId, scaledUnderlyingPrice, '0')
+      await oracle.setChainlinkRoundData(weth.address, roundId, scaledUnderlyingPrice, (await time.latest()).toNumber())
 
       const shortAmount = createTokenAmount(1)
       const requiredMargin = new BigNumber(
