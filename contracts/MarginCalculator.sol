@@ -431,7 +431,7 @@ contract MarginCalculator is Ownable {
 
         // check that price timestamp is after latest timestamp the vault was updated at
         require(
-            timestamp >= _vaultLatestUpdate,
+            timestamp > _vaultLatestUpdate,
             "MarginCalculator: auction timestamp should be post vault latest update"
         );
 
