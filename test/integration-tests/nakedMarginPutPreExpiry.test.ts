@@ -17,7 +17,7 @@ import {
 } from '../utils'
 import BigNumber from 'bignumber.js'
 
-const {time} = require('@openzeppelin/test-helpers')
+const {expectRevert, time} = require('@openzeppelin/test-helpers')
 
 const AddressBook = artifacts.require('AddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
@@ -148,8 +148,6 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, liquid
     const now = (await time.latest()).toNumber()
     optionExpiry = new BigNumber(createValidExpiry(now, 14))
 
-    console.log(optionExpiry)
-
     await otokenFactory.createOtoken(
       weth.address,
       usdc.address,
@@ -178,6 +176,7 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, liquid
   describe('open position - update price far OTM - update price to go underwater - update price to go overcollateral - update price to go underwater & liquidate', () => {
     let vaultCounter: BigNumber
     let scaledUnderlyingPrice: BigNumber
+    let roundId: BigNumber
 
     it('should open position', async () => {
       // set underlying price in oracle
@@ -317,6 +316,58 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, liquid
         new BigNumber(userVaultAfter[0].collateralAmounts[0]).plus(amountToWithdraw).toString(),
         'Vault collateral after withdraw excess mismatch',
       )
+    })
+
+    it('update price, ATM position is underwater, should revert when user call sync()', async () => {
+      const underlyingPrice = 2000
+      scaledUnderlyingPrice = scaleBigNum(underlyingPrice, 8)
+      await oracle.setRealTimePrice(weth.address, scaledUnderlyingPrice)
+
+      await expectRevert(
+        controllerProxy.sync(accountOwner1, vaultCounter, {from: accountOwner1}),
+        'Controller: invalid final vault state',
+      )
+
+      roundId = new BigNumber(10)
+      await oracle.setChainlinkRoundData(weth.address, roundId, scaledUnderlyingPrice, (await time.latest()).toString())
+    })
+
+    it('update price, OTM position is overcollateralized again, user call sync, liquidation should revert with price timestamp T at underwater', async () => {
+      await shortOtoken.transfer(liquidator, createTokenAmount(shortAmount), {from: accountOwner1})
+
+      const underlyingPrice = 3000
+      scaledUnderlyingPrice = scaleBigNum(underlyingPrice, 8)
+      await oracle.setRealTimePrice(weth.address, scaledUnderlyingPrice)
+
+      await controllerProxy.sync(accountOwner1, vaultCounter, {from: accountOwner1})
+
+      const userVault = await controllerProxy.getVault(accountOwner1, vaultCounter)
+
+      assert.equal(
+        userVault[2].toString(),
+        (await time.latest()).toString(),
+        'User vault latest update timestamp mismatch',
+      )
+
+      const liquidateArgs = [
+        {
+          actionType: ActionType.Liquidate,
+          owner: accountOwner1,
+          secondAddress: liquidator,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounter.toString(),
+          amount: createTokenAmount(shortAmount),
+          index: '0',
+          data: web3.eth.abi.encodeParameter('uint256', roundId.toString()),
+        },
+      ]
+
+      await expectRevert(
+        controllerProxy.operate(liquidateArgs, {from: liquidator}),
+        'MarginCalculator: auction timestamp should be post vault latest update',
+      )
+
+      await shortOtoken.transfer(accountOwner1, createTokenAmount(shortAmount), {from: liquidator})
     })
   })
 })

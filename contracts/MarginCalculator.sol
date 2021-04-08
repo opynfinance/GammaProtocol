@@ -431,7 +431,7 @@ contract MarginCalculator is Ownable {
 
         // check that price timestamp is after latest timestamp the vault was updated at
         require(
-            timestamp >= _vaultLatestUpdate,
+            timestamp > _vaultLatestUpdate,
             "MarginCalculator: auction timestamp should be post vault latest update"
         );
 
@@ -914,7 +914,7 @@ contract MarginCalculator is Ownable {
         }
         (uint256 priceA, bool priceAFinalized) = oracle.getExpiryPrice(_assetA, _expiry);
         (uint256 priceB, bool priceBFinalized) = oracle.getExpiryPrice(_assetB, _expiry);
-        require(priceAFinalized && priceBFinalized, "MarginCalculator: price at expiry not finalized yet.");
+        require(priceAFinalized && priceBFinalized, "MarginCalculator: price at expiry not finalized yet");
         // amount A * price A in USD = amount B * price B in USD
         // amount B = amount A * price A / price B
         return _amount.mul(FPI.fromScaledUint(priceA, BASE)).div(FPI.fromScaledUint(priceB, BASE));
