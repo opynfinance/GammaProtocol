@@ -369,5 +369,33 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, liquid
 
       await shortOtoken.transfer(accountOwner1, createTokenAmount(shortAmount), {from: liquidator})
     })
+
+    it('update price, position near ATM, undercollateralized, liquidator should be able to liquidate', async () => {
+      await shortOtoken.transfer(liquidator, createTokenAmount(shortAmount), {from: accountOwner1})
+
+      const underlyingPrice = 2500
+      roundId = new BigNumber(15)
+      scaledUnderlyingPrice = scaleBigNum(underlyingPrice, 8)
+      await oracle.setRealTimePrice(weth.address, scaledUnderlyingPrice)
+      await oracle.setChainlinkRoundData(weth.address, roundId, scaledUnderlyingPrice, (await time.latest()).toString())
+
+      // advance time
+      await time.increase(600)
+
+      const liquidateArgs = [
+        {
+          actionType: ActionType.Liquidate,
+          owner: accountOwner1,
+          secondAddress: liquidator,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounter.toString(),
+          amount: createTokenAmount(shortAmount),
+          index: '0',
+          data: web3.eth.abi.encodeParameter('uint256', roundId.toString()),
+        },
+      ]
+
+      await controllerProxy.operate(liquidateArgs, {from: liquidator})
+    })
   })
 })
