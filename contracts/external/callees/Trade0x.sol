@@ -29,30 +29,27 @@ contract Trade0x is CalleeInterface {
     WETH9Interface public weth;
 
     address public controller;
-    address public assetProxy;
-    address public staking;
+    address public exchangeAddress;
 
     constructor(
         address _exchange,
-        address _assetProxy,
         address _weth,
-        address _staking,
         address _controller
     ) public {
         exchange = ZeroXExchangeInterface(_exchange);
-        assetProxy = _assetProxy;
+        exchangeAddress = _exchange;
         weth = WETH9Interface(_weth);
         controller = _controller;
     }
 
-    event Trade(
-        address indexed taker,
-        address indexed maker,
-        address takerAsset,
-        address makerAsset,
-        uint256 takerAmount,
-        uint256 makerAmount
-    );
+    // event Trade(
+    //     address indexed taker,
+    //     address indexed maker,
+    //     address takerAsset,
+    //     address makerAsset,
+    //     uint256 takerAmount,
+    //     uint256 makerAmount
+    // );
 
     /**
      * @notice fill 0x order
@@ -69,69 +66,51 @@ contract Trade0x is CalleeInterface {
     function _directlyTrade(address payable _sender, bytes memory _data) internal {
         (
             address trader,
-            ZeroXExchangeInterface.Order[] memory order,
-            uint256[] memory takerAssetFillAmount,
-            bytes[] memory signature
-        ) = abi.decode(_data, (address, ZeroXExchangeInterface.Order[], uint256[], bytes[]));
+            ZeroXExchangeInterface.LimitOrder[] memory orders,
+            ZeroXExchangeInterface.Signature[] memory signatures,
+            uint128[] memory takerTokenFillAmounts,
+            bool revertIfIncomplete
+        ) = abi.decode(
+            _data,
+            (address, ZeroXExchangeInterface.LimitOrder[], ZeroXExchangeInterface.Signature[], uint128[], bool)
+        );
 
         require(
             tx.origin == trader,
             "Trade0x: funds can only be transferred in from the person sending the transaction"
         );
 
-        for (uint256 i = 0; i < order.length; i++) {
-            address takerAsset = decodeERC20Asset(order[i].takerAssetData);
+        for (uint256 i = 0; i < orders.length; i++) {
+            address takerAsset = orders[i].takerToken;
             // transfer takerAsset from trader to this contract
-            ERC20Interface(takerAsset).safeTransferFrom(trader, address(this), takerAssetFillAmount[i]);
-            // approe the 0x ERC20 Proxy to transfer takerAsset from this contract
-            ERC20Interface(takerAsset).safeIncreaseAllowance(assetProxy, takerAssetFillAmount[i]);
+            ERC20Interface(takerAsset).safeTransferFrom(trader, address(this), takerTokenFillAmounts[i]);
+            // approve the 0x ERC20 Proxy to transfer takerAsset from this contract
+            ERC20Interface(takerAsset).safeIncreaseAllowance(exchangeAddress, takerTokenFillAmounts[i]);
         }
 
         // pull weth (to pay 0x) from _sender address
-        uint256 protocolFee = tx.gasprice * PROTOCOL_FEE_BASE * order.length;
+        uint256 protocolFee = tx.gasprice * PROTOCOL_FEE_BASE * orders.length;
         weth.withdraw(protocolFee); //withdraw ETH from WETH to pay protocol fee
 
         // send txn paying protocol fee in ETH
-        exchange.batchFillOrders{value: protocolFee}(order, takerAssetFillAmount, signature);
+        exchange.batchFillLimitOrders{value: protocolFee}(orders, signatures, takerTokenFillAmounts, false);
 
-        for (uint256 i = 0; i < order.length; i++) {
-            address asset = decodeERC20Asset(order[i].makerAssetData);
+        for (uint256 i = 0; i < orders.length; i++) {
+            // address asset = decodeERC20Asset(order[i].makerAssetData);
+            address asset = orders[i].makerToken;
             // transfer swapped token to sender
             uint256 balance = ERC20Interface(asset).balanceOf(address(this));
             if (balance > 0) {
                 ERC20Interface(asset).safeTransfer(trader, balance);
             }
 
-            asset = decodeERC20Asset(order[i].takerAssetData);
+            // asset = decodeERC20Asset(order[i].takerAssetData);
+            asset = orders[i].takerToken;
             // transfer the taker asset back to the user if the order wasn't fully filled
             balance = ERC20Interface(asset).balanceOf(address(this));
             if (balance > 0) {
                 ERC20Interface(asset).safeTransfer(trader, balance);
             }
         }
-    }
-
-    /**
-     * @dev decode 0x AssetData into contract address
-     * This is the merge of the following 2 function from 0x
-     * https://github.com/0xProject/0x-monorepo/blob/0571244e9e84b9ad778bccb99b837dd6f9baaf6e/contracts/dev-utils/contracts/src/LibAssetData.sol#L69
-     * https://github.com/0xProject/0x-monorepo/blob/0571244e9e84b9ad778bccb99b837dd6f9baaf6e/contracts/utils/contracts/src/LibBytes.sol#L296
-     */
-    function decodeERC20Asset(bytes memory b) internal pure returns (address result) {
-        require(b.length == 36, "LENGTH_65_REQUIRED");
-
-        // Add offset to index:
-        // 1. Arrays are prefixed by 32-byte length parameter (add 32 to index)
-        // 2. Account for size difference between address length and 32-byte storage word (subtract 12 from index)
-        uint256 index = 36;
-
-        // Read address from array memory
-        assembly {
-            // 1. Add index to address of bytes array
-            // 2. Load 32-byte word from memory
-            // 3. Apply 20-byte mask to obtain address
-            result := and(mload(add(b, index)), 0xffffffffffffffffffffffffffffffffffffffff)
-        }
-        return result;
     }
 }
