@@ -21,8 +21,8 @@ import {ERC20PermitUpgradeable} from "../../packages/oz/upgradeability/erc20-per
 contract Trade0x is CalleeInterface {
     using SafeERC20 for ERC20Interface;
 
-    ///@dev 0x portocal fee to fill 1 order
-    uint256 private PORTOCAL_FEE_BASE = 70000;
+    ///@dev 0x protocol fee to fill 1 order
+    uint256 private PROTOCOL_FEE_BASE = 70000;
 
     ZeroXExchangeInterface public exchange;
     ERC20Interface public weth;
@@ -89,7 +89,7 @@ contract Trade0x is CalleeInterface {
         }
 
         // pull weth (to pay 0x) from _sender address
-        uint256 protocolFee = tx.gasprice * PORTOCAL_FEE_BASE * order.length;
+        uint256 protocolFee = tx.gasprice * PROTOCOL_FEE_BASE * order.length;
         weth.safeTransferFrom(_sender, address(this), protocolFee);
 
         exchange.batchFillOrders(order, takerAssetFillAmount, signature);
