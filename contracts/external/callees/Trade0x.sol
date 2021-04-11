@@ -10,6 +10,7 @@ import {CalleeInterface} from "../../interfaces/CalleeInterface.sol";
 import {ZeroXExchangeInterface} from "../../interfaces/ZeroXExchangeInterface.sol";
 import {SafeERC20} from "../../packages/oz/SafeERC20.sol";
 import {ERC20Interface} from "../../interfaces/ERC20Interface.sol";
+import {WETH9Interface} from "../../interfaces/WETH9Interface.sol";
 import {WETH9} from "../canonical-weth/WETH9.sol";
 import {ERC20PermitUpgradeable} from "../../packages/oz/upgradeability/erc20-permit/ERC20PermitUpgradeable.sol";
 
@@ -25,7 +26,7 @@ contract Trade0x is CalleeInterface {
     uint256 private PROTOCOL_FEE_BASE = 70000;
 
     ZeroXExchangeInterface public exchange;
-    ERC20Interface public weth;
+    WETH9Interface public weth;
 
     address public controller;
     address public assetProxy;
@@ -40,9 +41,7 @@ contract Trade0x is CalleeInterface {
     ) public {
         exchange = ZeroXExchangeInterface(_exchange);
         assetProxy = _assetProxy;
-        weth = ERC20Interface(_weth);
-        weth.safeApprove(_assetProxy, uint256(-1));
-        weth.safeApprove(_staking, uint256(-1));
+        weth = WETH9Interface(_weth);
         controller = _controller;
     }
 
@@ -90,9 +89,10 @@ contract Trade0x is CalleeInterface {
 
         // pull weth (to pay 0x) from _sender address
         uint256 protocolFee = tx.gasprice * PROTOCOL_FEE_BASE * order.length;
-        weth.safeTransferFrom(_sender, address(this), protocolFee);
+        weth.withdraw(protocolFee); //withdraw ETH from WETH to pay protocol fee
 
-        exchange.batchFillOrders(order, takerAssetFillAmount, signature);
+        // send txn paying protocol fee in ETH
+        exchange.batchFillOrders{value: protocolFee}(order, takerAssetFillAmount, signature);
 
         for (uint256 i = 0; i < order.length; i++) {
             address asset = decodeERC20Asset(order[i].makerAssetData);
@@ -109,37 +109,6 @@ contract Trade0x is CalleeInterface {
                 ERC20Interface(asset).safeTransfer(trader, balance);
             }
         }
-    }
-
-    function getTxHash(ZeroXExchangeInterface.Transaction memory transaction) external pure returns (bytes32 result) {
-
-            bytes32 _EIP712_ZEROEX_TRANSACTION_SCHEMA_HASH
-         = 0xec69816980a3a3ca4554410e60253953e9ff375ba4536a98adfa15cc71541508;
-        bytes32 schemaHash = _EIP712_ZEROEX_TRANSACTION_SCHEMA_HASH;
-        bytes memory data = transaction.data;
-        uint256 salt = transaction.salt;
-        uint256 expirationTimeSeconds = transaction.expirationTimeSeconds;
-        uint256 gasPrice = transaction.gasPrice;
-        address signerAddress = transaction.signerAddress;
-
-        assembly {
-            // Compute hash of data
-            let dataHash := keccak256(add(data, 32), mload(data))
-
-            // Load free memory pointer
-            let memPtr := mload(64)
-
-            mstore(memPtr, schemaHash) // hash of schema
-            mstore(add(memPtr, 32), salt) // salt
-            mstore(add(memPtr, 64), expirationTimeSeconds) // expirationTimeSeconds
-            mstore(add(memPtr, 96), gasPrice) // gasPrice
-            mstore(add(memPtr, 128), and(signerAddress, 0xffffffffffffffffffffffffffffffffffffffff)) // signerAddress
-            mstore(add(memPtr, 160), dataHash) // hash of data
-
-            // Compute hash
-            result := keccak256(memPtr, 192)
-        }
-        return result;
     }
 
     /**
