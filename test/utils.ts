@@ -4,6 +4,8 @@ import BigNumber from 'bignumber.js'
 const util = require('@0x/order-utils')
 const ethSigUtil = require('eth-sig-util')
 
+BigNumber.config({EXPONENTIAL_AT: 60, ROUNDING_MODE: BigNumber.ROUND_DOWN})
+
 export type vault = {
   shortAmounts: (BigNumber | string | number)[]
   longAmounts: (BigNumber | string | number)[]
@@ -49,8 +51,6 @@ export const createVault = (
     collateralAmounts: collateralAmount !== undefined ? [collateralAmount] : [],
   }
 }
-
-BigNumber.config({EXPONENTIAL_AT: 60})
 
 export const createTokenAmount = (num: number | BigNumber, decimals = 8) => {
   const amount = new BigNumber(num).times(new BigNumber(10).pow(decimals))
@@ -153,4 +153,56 @@ export const signOrder = async (signer: any, order: any) => {
   // eslint-disable-next-line no-param-reassign
   order.signature = `0x${v}${rs}02`
   return order
+}
+
+export const expectedLiqudidationPrice = (
+  collateral: number | string,
+  debt: number,
+  cashValue: number,
+  spotPrice: number,
+  oracleDeviation: number,
+  auctionStartingTime: number,
+  currentBlockTime: number,
+  isPut: boolean,
+  collateralDecimals: number,
+) => {
+  const endingPrice = new BigNumber(collateral).dividedBy(debt)
+  const auctionElapsedTime = currentBlockTime - auctionStartingTime
+
+  if (auctionElapsedTime > 3600) {
+    // return Math.floor(endingPrice)
+    return endingPrice.multipliedBy(10 ** collateralDecimals).toNumber()
+  }
+
+  let startingPrice
+
+  if (isPut) {
+    startingPrice = BigNumber.max(
+      new BigNumber(cashValue).minus(new BigNumber(spotPrice).multipliedBy(oracleDeviation)),
+      0,
+    )
+  } else {
+    startingPrice = BigNumber.max(
+      new BigNumber(cashValue).minus(new BigNumber(spotPrice).multipliedBy(oracleDeviation)),
+      0,
+    ).dividedBy(spotPrice)
+  }
+
+  const price = startingPrice
+    .plus(
+      endingPrice
+        .minus(startingPrice)
+        .multipliedBy(auctionElapsedTime)
+        .dividedBy(3600),
+    )
+    .multipliedBy(10 ** collateralDecimals)
+
+  if (price.isGreaterThan(endingPrice.multipliedBy(10 ** collateralDecimals)))
+    return endingPrice.multipliedBy(10 ** collateralDecimals).toNumber()
+
+  return price.toNumber()
+}
+
+export const calcRelativeDiff = (expected: BigNumber, actual: BigNumber): BigNumber => {
+  return actual.minus(expected).abs()
 }
