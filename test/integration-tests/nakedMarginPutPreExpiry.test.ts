@@ -14,6 +14,7 @@ import {
   createValidExpiry,
   createScaledNumber as scaleNum,
   createScaledBigNumber as scaleBigNum,
+  calcRelativeDiff,
 } from '../utils'
 import BigNumber from 'bignumber.js'
 
@@ -82,6 +83,8 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, liquid
   let shortOtoken: OtokenInstance
 
   let optionExpiry: BigNumber
+
+  const errorDelta = 0.1
 
   before('set up contracts', async () => {
     // setup usdc and weth
@@ -173,7 +176,7 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, liquid
     await usdc.mint(liquidator, createTokenAmount(10000, usdcDecimals))
   })
 
-  describe('open position - update price far OTM - update price to go underwater - update price to go overcollateral - update price to go underwater & liquidate', () => {
+  describe('open position - update price far OTM - update price to go underwater - update price to go overcollateral - update price to go underwater & fully liquidate', () => {
     let vaultCounter: BigNumber
     let scaledUnderlyingPrice: BigNumber
     let roundId: BigNumber
@@ -382,6 +385,10 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, liquid
       // advance time
       await time.increase(600)
 
+      const isLiquidatable = await controllerProxy.isLiquidatable(accountOwner1, vaultCounter.toString(), roundId)
+
+      assert.equal(isLiquidatable[0], true, 'Vault liquidation state mismatch')
+
       const liquidateArgs = [
         {
           actionType: ActionType.Liquidate,
@@ -395,7 +402,28 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, liquid
         },
       ]
 
+      const liquidatorCollateralBalanceBefore = new BigNumber(await usdc.balanceOf(liquidator))
+      const vaultBeforeLiquidation = (await controllerProxy.getVault(accountOwner1, vaultCounter.toString()))[0]
+
       await controllerProxy.operate(liquidateArgs, {from: liquidator})
+
+      const liquidatorCollateralBalanceAfter = new BigNumber(await usdc.balanceOf(liquidator))
+      const vaultAfterLiquidation = (await controllerProxy.getVault(accountOwner1, vaultCounter.toString()))[0]
+
+      assert.equal(vaultAfterLiquidation.shortAmounts[0].toString(), '0', 'Vault was not fully liquidated')
+      assert.isAtMost(
+        calcRelativeDiff(
+          vaultAfterLiquidation.collateralAmounts[0],
+          new BigNumber(vaultBeforeLiquidation.collateralAmounts[0]).minus(isLiquidatable[1]),
+        ).toNumber(),
+        errorDelta,
+        'Vault collateral mismatch after liquidation',
+      )
+      assert.equal(
+        liquidatorCollateralBalanceAfter.toString(),
+        liquidatorCollateralBalanceBefore.plus(isLiquidatable[1].toString()).toString(),
+        'Liquidator collateral balance mismatch after liquidation',
+      )
     })
   })
 })
