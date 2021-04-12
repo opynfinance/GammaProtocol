@@ -7,7 +7,7 @@ perl -0777 -i -pe 's/getExcessCollateral\(vault/getExcessCollateral\(vault.short
 # Settle vault - memory to storage
 perl -0777 -i -pe 's/MarginVault.Vault memory vault = getVault\(_args.owner, _args.vaultId\);\n\s*bool hasShort/MarginVault.Vault storage vault = cheapGetVault\(_args.owner, _args.vaultId\); bool hasShort/igs' contracts/Controller.sol
 # Settle vault - control long burning
-perl -0777 -i -pe 's/if \(hasLong\) {([\s\w=\[\]\(\).;,]*)}/if \(hasLong\) { if \(vault.longOtokens[0] == anOtokenB\) { OtokenInterface longOtoken = OtokenInterface\(anOtokenB\);   longOtoken.burnOtoken\(address\(pool\), vault.longAmounts[0]\); } if \(vault.longOtokens[0] == anOtokenA\) { OtokenInterface longOtoken = OtokenInterface\(anOtokenA\); longOtoken.burnOtoken\(address\(pool\), vault.longAmounts[0]\); } else \{ \1 } }/igs' contracts/Controller.sol
+perl -0777 -i -pe 's/if \(hasLong\) \{([\s\w=\[\]\(\).;,]*)\}/if \(hasLong\) \{ if \(vault.longOtokens[0] == anOtokenB\) \{ OtokenInterface longOtoken = OtokenInterface\(anOtokenB\);   longOtoken.burnOtoken\(address\(pool\), vault.longAmounts[0]\); \} if \(vault.longOtokens[0] == anOtokenA\) \{ OtokenInterface longOtoken = OtokenInterface\(anOtokenA\); longOtoken.burnOtoken\(address\(pool\), vault.longAmounts[0]\); \} else \{ \1 \} \}/igs' contracts/Controller.sol
 # Add cheapGetVault and fields for otokens and collateral
 perl -0777 -i -pe 's/for uint256;/for uint256; function cheapGetVault(address owner, uint256 vaultId) internal view returns (MarginVault.Vault storage) { return vaults[owner][vaultId]; } address public anOtokenA;  address public anOtokenB;  address public dummyERC20C;/g' contracts/Controller.sol
 # Virtualize runActions
