@@ -22,7 +22,7 @@ contract Mock0xExchange {
     Mock0xERC20Proxy public proxy;
 
     constructor() public {
-        proxy = new Mock0xERC20Proxy();
+        proxy = new Mock0xERC20Proxy(); //TODO: what is this? do we need it?
     }
 
     function fillOrder(

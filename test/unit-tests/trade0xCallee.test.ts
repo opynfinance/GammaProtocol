@@ -17,19 +17,19 @@ const MockController = artifacts.require('MockController.sol')
 const ethers = require('ethers')
 
 contract('Trade0xCallee', ([payableProxy, taker, staking, random]) => {
+  //todo: what is in the brackets
   // ERC20 mocks
-  let weth: WETH9Instance
+  let weth: WETH9Instance //todo: is this just defining types?
   // addressbook instance
   let callee: Trade0xInstance
   let mockExchange: Mock0xExchangeInstance
-  let proxyAddr: string
   let data: string
   let token1: MockERC20Instance
   let token2: MockERC20Instance
   let order: any
   let controller: MockControllerInstance
-  const fillAmount = new BigNumber('1000000')
   let token1Amount: string
+  const fillAmount = new BigNumber('1000000')
   const makerPrivateKey = '0xb0057716d5917badaf911b193b12b910811c1497b5bada8d7711f758981c3773'
   const maker = new ethers.Wallet(makerPrivateKey)
 
@@ -51,9 +51,8 @@ contract('Trade0xCallee', ([payableProxy, taker, staking, random]) => {
     weth = await WETH9.new()
 
     mockExchange = await Mock0xExchange.new()
-    proxyAddr = await mockExchange.proxy()
     // deploy AddressBook token
-    callee = await Trade0x.new(mockExchange.address, proxyAddr, weth.address, staking, controller.address)
+    callee = await Trade0x.new(mockExchange.address, weth.address, controller.address)
     const chainId = 1
 
     // create an order
@@ -66,35 +65,39 @@ contract('Trade0xCallee', ([payableProxy, taker, staking, random]) => {
       new BigNumber(createTokenAmount(100, 8)),
       chainId,
     )
-    const signedOrder = await signOrder(maker, order)
+    const signedOrder = await signOrder(maker, order, makerPrivateKey)
 
     data = web3.eth.abi.encodeParameters(
       [
         'address',
         {
-          'Order[]': {
-            makerAddress: 'address',
-            takerAddress: 'address',
-            feeRecipientAddress: 'address',
-            senderAddress: 'address',
-
-            makerAssetAmount: 'uint256',
-            takerAssetAmount: 'uint256',
-            makerFee: 'uint256',
-            takerFee: 'uint256',
-            expirationTimeSeconds: 'uint256',
+          'LimitOrder[]': {
+            makerToken: 'address',
+            takerToken: 'address',
+            makerAmount: 'uint128',
+            takerAmount: 'uint128',
+            takerTokenFeeAmount: 'uint128',
+            maker: 'address',
+            taker: 'address',
+            sender: 'address',
+            feeRecipient: 'address',
+            pool: 'bytes32',
+            expiry: 'uint64',
             salt: 'uint256',
-
-            makerAssetData: 'bytes',
-            takerAssetData: 'bytes',
-            makerFeeAssetData: 'bytes',
-            takerFeeAssetData: 'bytes',
           },
         },
-        'uint256[]',
-        'bytes[]',
+        {
+          'Signature[]': {
+            signatureType: 'uint8',
+            v: 'uint8',
+            r: 'bytes32',
+            s: 'bytes32',
+          },
+        },
+        'uint128[]',
+        'bool',
       ],
-      [taker, [signedOrder], [fillAmount.toString()], [signedOrder.signature]], // pay weth from payable proxy
+      [taker, [signedOrder], [signedOrder.signature], [fillAmount.toString()], false], // pay weth from payable proxy
     )
   })
 

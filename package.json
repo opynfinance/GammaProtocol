@@ -126,6 +126,7 @@
   },
   "homepage": "https://github.com/opynfinance/GammaProtocol#readme",
   "dependencies": {
+    "@0x/protocol-utils": "^1.4.0",
     "@truffle/hdwallet-provider": "^1.0.44",
     "solc-0.6.10": "npm:solc@^0.6.10",
     "solidity-docgen": "^0.5.6",
