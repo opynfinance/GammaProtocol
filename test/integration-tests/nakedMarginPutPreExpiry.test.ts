@@ -376,14 +376,14 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, liquid
     it('update price, position near ATM, undercollateralized, liquidator should be able to liquidate', async () => {
       await shortOtoken.transfer(liquidator, createTokenAmount(shortAmount), {from: accountOwner1})
 
+      // advance time
+      await time.increase(600)
+
       const underlyingPrice = 2500
       roundId = new BigNumber(15)
       scaledUnderlyingPrice = scaleBigNum(underlyingPrice, 8)
       await oracle.setRealTimePrice(weth.address, scaledUnderlyingPrice)
       await oracle.setChainlinkRoundData(weth.address, roundId, scaledUnderlyingPrice, (await time.latest()).toString())
-
-      // advance time
-      await time.increase(600)
 
       const isLiquidatable = await controllerProxy.isLiquidatable(accountOwner1, vaultCounter.toString(), roundId)
 
@@ -423,6 +423,241 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, liquid
         liquidatorCollateralBalanceAfter.toString(),
         liquidatorCollateralBalanceBefore.plus(isLiquidatable[1].toString()).toString(),
         'Liquidator collateral balance mismatch after liquidation',
+      )
+    })
+  })
+
+  describe('open position - update price for near ATM - liquidator mint and liquidate - expire position - seller withdraw remaining collateral - buyer redeem - liquidator settle', () => {
+    let vaultCounter: BigNumber
+    let liquidatorVaultCounter: BigNumber
+    let scaledUnderlyingPrice: BigNumber
+    let roundId: BigNumber
+
+    it('should open position', async () => {
+      // set underlying price in oracle
+      const underlyingPrice = 2300
+      scaledUnderlyingPrice = scaleBigNum(underlyingPrice, 8)
+      await oracle.setRealTimePrice(weth.address, scaledUnderlyingPrice)
+
+      vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
+      liquidatorVaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(liquidator)).plus(1)
+
+      const collateralToDeposit = await calculator.getNakedMarginRequired(
+        weth.address,
+        usdc.address,
+        usdc.address,
+        createTokenAmount(shortAmount),
+        createTokenAmount(shortStrike),
+        scaledUnderlyingPrice,
+        optionExpiry,
+        usdcDecimals,
+        isPut,
+      )
+
+      const mintArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: accountOwner1,
+          secondAddress: accountOwner1,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounter.toString(),
+          amount: '0',
+          index: '0',
+          data: vaultType,
+        },
+        {
+          actionType: ActionType.MintShortOption,
+          owner: accountOwner1,
+          secondAddress: accountOwner1,
+          asset: shortOtoken.address,
+          vaultId: vaultCounter.toString(),
+          amount: createTokenAmount(shortAmount),
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.DepositCollateral,
+          owner: accountOwner1,
+          secondAddress: accountOwner1,
+          asset: usdc.address,
+          vaultId: vaultCounter.toString(),
+          amount: collateralToDeposit.toString(),
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+
+      const userUsdcBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
+      const poolUsdcBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+
+      await usdc.approve(marginPool.address, collateralToDeposit.toString(), {from: accountOwner1})
+      await controllerProxy.operate(mintArgs, {from: accountOwner1})
+
+      const userUsdcAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
+      const poolUsdcAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+      const userVaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
+
+      assert.equal(
+        userUsdcBefore.minus(userUsdcAfter).toString(),
+        collateralToDeposit.toString(),
+        'User balance after openining position mismatch',
+      )
+      assert.equal(
+        poolUsdcAfter.minus(collateralToDeposit).toString(),
+        poolUsdcBefore.toString(),
+        'Pool balance after openining position mismatch',
+      )
+      assert.equal(
+        userVaultAfter[0].collateralAmounts[0].toString(),
+        collateralToDeposit.toString(),
+        'User vault collateral amount mismatch',
+      )
+      assert.equal(
+        userVaultAfter[0].shortAmounts[0].toString(),
+        createTokenAmount(shortAmount),
+        'User vault short amount mismatch',
+      )
+      assert.equal(userVaultAfter[1].toString(), '1', 'User vault type mismatch')
+      assert.equal(
+        userVaultAfter[2].toString(),
+        new BigNumber(await time.latest()).toString(),
+        'User vault latest update timestamp mismatch',
+      )
+    })
+
+    it('update price, option go near ATM, liquidator mint and liquidate', async () => {
+      // advance time
+      await time.increase(600)
+
+      const underlyingPrice = 2200
+      scaledUnderlyingPrice = scaleBigNum(underlyingPrice, 8)
+      roundId = new BigNumber(15)
+      await oracle.setRealTimePrice(weth.address, scaledUnderlyingPrice)
+      await oracle.setChainlinkRoundData(weth.address, roundId, scaledUnderlyingPrice, (await time.latest()).toString())
+
+      const collateralToDeposit = await calculator.getNakedMarginRequired(
+        weth.address,
+        usdc.address,
+        usdc.address,
+        createTokenAmount(shortAmount),
+        createTokenAmount(shortStrike),
+        scaledUnderlyingPrice,
+        optionExpiry,
+        usdcDecimals,
+        isPut,
+      )
+
+      const isLiquidatable = await controllerProxy.isLiquidatable(accountOwner1, vaultCounter.toString(), roundId)
+
+      assert.equal(isLiquidatable[0], true, 'Vault liquidation state mismatch')
+
+      const mintLiquidateArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: liquidator,
+          secondAddress: liquidator,
+          asset: ZERO_ADDR,
+          vaultId: liquidatorVaultCounter.toString(),
+          amount: '0',
+          index: '0',
+          data: vaultType,
+        },
+        {
+          actionType: ActionType.MintShortOption,
+          owner: liquidator,
+          secondAddress: liquidator,
+          asset: shortOtoken.address,
+          vaultId: liquidatorVaultCounter.toString(),
+          amount: createTokenAmount(shortAmount),
+          index: '0',
+          data: ZERO_ADDR,
+        },
+        {
+          actionType: ActionType.Liquidate,
+          owner: accountOwner1,
+          secondAddress: liquidator,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounter.toString(),
+          amount: createTokenAmount(shortAmount),
+          index: '0',
+          data: web3.eth.abi.encodeParameter('uint256', roundId.toString()),
+        },
+        {
+          actionType: ActionType.DepositCollateral,
+          owner: liquidator,
+          secondAddress: liquidator,
+          asset: usdc.address,
+          vaultId: liquidatorVaultCounter.toString(),
+          amount: collateralToDeposit.toString(),
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+
+      const vaultBeforeLiquidation = (await controllerProxy.getVault(accountOwner1, vaultCounter.toString()))[0]
+      const liquidatorUsdcBefore = new BigNumber(await usdc.balanceOf(liquidator))
+      const poolUsdcBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+      const userVaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
+
+      await usdc.approve(marginPool.address, collateralToDeposit.toString(), {from: liquidator})
+      await controllerProxy.operate(mintLiquidateArgs, {from: liquidator})
+
+      const liquidatorUsdcAfter = new BigNumber(await usdc.balanceOf(liquidator))
+      const poolUsdcAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+      const userVaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const liquidatorVaultAfter = await controllerProxy.getVault(liquidator, liquidatorVaultCounter)
+      const vaultAfterLiquidation = (await controllerProxy.getVault(accountOwner1, vaultCounter.toString()))[0]
+
+      assert.equal(vaultAfterLiquidation.shortAmounts[0].toString(), '0', 'Vault was not fully liquidated')
+      assert.isAtMost(
+        calcRelativeDiff(
+          vaultAfterLiquidation.collateralAmounts[0],
+          new BigNumber(vaultBeforeLiquidation.collateralAmounts[0]).minus(isLiquidatable[1]),
+        ).toNumber(),
+        errorDelta,
+        'Vault collateral mismatch after liquidation',
+      )
+      assert.equal(
+        liquidatorUsdcAfter.toString(),
+        liquidatorUsdcBefore
+          .minus(collateralToDeposit.toString())
+          .minus(isLiquidatable[1].toString())
+          .toString(),
+        'Liquidator collateral balance mismatch after liquidation',
+      )
+      assert.equal(
+        poolUsdcAfter
+          .plus(isLiquidatable[1].toString())
+          .minus(collateralToDeposit.toString())
+          .toString(),
+        poolUsdcBefore.toString(),
+        'Pool balance after openining position mismatch',
+      )
+      assert.equal(
+        liquidatorVaultAfter[0].collateralAmounts[0].toString(),
+        collateralToDeposit.toString(),
+        'Liquidator vault collateral amount mismatch',
+      )
+      assert.equal(
+        liquidatorVaultAfter[0].shortAmounts[0].toString(),
+        createTokenAmount(shortAmount),
+        'Liquidator vault short amount mismatch',
+      )
+      assert.equal(liquidatorVaultAfter[1].toString(), '1', 'Liquidator vault type mismatch')
+      assert.equal(
+        liquidatorVaultAfter[2].toString(),
+        new BigNumber(await time.latest()).toString(),
+        'Liquidator vault latest update timestamp mismatch',
+      )
+      assert.equal(
+        userVaultAfter[0].shortAmounts[0].toString(),
+        createTokenAmount(0),
+        'Liquidator vault short amount mismatch',
+      )
+      assert.equal(
+        userVaultAfter[0].collateralAmounts[0].toString(),
+        new BigNumber(userVaultBefore[0].collateralAmounts[0]).plus(isLiquidatable[1].toString()).toString(),
+        'User vault short amount mismatch after liquidation',
       )
     })
   })
