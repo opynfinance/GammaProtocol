@@ -547,6 +547,8 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, liquid
         isPut,
       )
 
+      await usdc.approve(marginPool.address, collateralToDeposit.toString(), {from: liquidator})
+
       const isLiquidatable = await controllerProxy.isLiquidatable(accountOwner1, vaultCounter.toString(), roundId)
 
       assert.equal(isLiquidatable[0], true, 'Vault liquidation state mismatch')
@@ -599,7 +601,6 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, liquid
       const poolUsdcBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
       const userVaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
 
-      await usdc.approve(marginPool.address, collateralToDeposit.toString(), {from: liquidator})
       await controllerProxy.operate(mintLiquidateArgs, {from: liquidator})
 
       const liquidatorUsdcAfter = new BigNumber(await usdc.balanceOf(liquidator))
