@@ -1,0 +1,1 @@
+certoraRun contracts/MarginCalculator.sol:MarginCalculator --solc solc --verify MarginCalculator:specs/calculator.spec  --settings  -assumeUnwindCond,-optimisticReturnsize=true,-ciMode=true,-t=300,-rule=$1 --cache OpynController
