@@ -701,17 +701,6 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
 
       await time.increaseTo(optionExpiry.toNumber() + 10)
 
-      // const collateralNeeded = await calculator.getNakedMarginRequired(
-      //   weth.address,
-      //   usdc.address,
-      //   usdc.address,
-      //   createTokenAmount(shortAmount),
-      //   createTokenAmount(shortStrike),
-      //   scaledUnderlyingPrice,
-      //   optionExpiry,
-      //   usdcDecimals,
-      //   isPut,
-      // )
       const userVaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
       const amountToWithdraw = new BigNumber(await controllerProxy.getProceed(accountOwner1, vaultCounter))
 
