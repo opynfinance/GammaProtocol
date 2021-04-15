@@ -25,7 +25,7 @@ const TradeCallee = artifacts.require('Trade0x')
  */
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 const EXCHANGE_ADDR = '0xdef1c0ded9bec7f1a1670819833240f027b25eff'
-const trade0xAddress = '0x6e1d4B973A059eB2D961a4fd112c47704dA5d18B'
+const trade0xAddress = '0x8aE963177f37EdfA4E1c62d3c120C1d10879e0e0'
 const otokenFactoryAddress = '0x8d6994b701f480c27757c5fe2bd93d5352160081'
 const payableProxyAddress = '0x0da6280d0837292b7a1f27fc602c7e0bd3ce0b66'
 const controllerProxyAddress = '0x7e9beaccdccee88558aaa2dc121e52ec6226864e'
@@ -250,7 +250,7 @@ async function runExport() {
   const user1Call1BalanceAfter = new BigNumber(await callOption1.balanceOf(taker))
   const oTokenSupplyAfter = new BigNumber(await callOption1.totalSupply())
   const makerUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(maker))
-  const makerCall1BalanceAfter = new BigNumber(await callOption1.balanceOf(taker))
+  const makerCall1BalanceAfter = new BigNumber(await callOption1.balanceOf(maker))
 
   console.log('MarginPool WETH balance after: 📈', marginPoolWethBalanceAfter.toString())
   console.log('Maker USDC balance after: 📉', makerUsdcBalanceAfter.toString())

@@ -107,9 +107,7 @@ contract TradeCallee is CalleeInterface {
     }
 
     /**
-     * @notice fallback function which disallows ETH to be sent to this contract without data except when unwrapping WETH
+     * @notice fallback function which allow ETH to be sent to this contract
      */
-    fallback() external payable {
-        require(msg.sender == address(weth), "TradeCallee: Cannot receive ETH");
-    }
+    fallback() external payable {}
 }
