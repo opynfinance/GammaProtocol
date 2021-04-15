@@ -1,6 +1,6 @@
 import {
   MockERC20Instance,
-  Trade0xInstance,
+  TradeCalleeInstance,
   Mock0xExchangeInstance,
   WETH9Instance,
   MockControllerInstance,
@@ -20,7 +20,7 @@ contract('Trade0xCallee', ([payableProxy, taker, staking, random]) => {
   // ERC20 mocks
   let weth: WETH9Instance //todo: is this just defining types?
   // addressbook instance
-  let callee: Trade0xInstance
+  let callee: TradeCalleeInstance
   let mockExchange: Mock0xExchangeInstance
   let data: string
   let token1: MockERC20Instance
@@ -101,13 +101,13 @@ contract('Trade0xCallee', ([payableProxy, taker, staking, random]) => {
 
   describe('Run Trade0xCallee directly', () => {
     it('should fail if the msg.sender is not the controller', async () => {
-      await expectRevert(callee.callFunction(taker, data, {from: taker}), 'Trade0x: sender not controller')
+      await expectRevert(callee.callFunction(taker, data, {from: taker}), 'TradeCallee: sender is not controller.')
     })
 
     it('should fail if the tx.origin is not the trader', async () => {
       await expectRevert(
         controller.test0xCallee(callee.address, data, {from: random}),
-        'Trade0x: funds can only be transferred in from the person sending the transaction',
+        'TradeCallee: funds can only be transferred in from the person sending the transaction.',
       )
     })
   })
