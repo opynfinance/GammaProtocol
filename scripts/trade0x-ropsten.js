@@ -123,7 +123,7 @@ async function runExport() {
   const vaultCounter = new BigNumber((await controllerProxy.getAccountVaultCounter(taker))).plus(1)
   const optionsToMint = createTokenAmount(1, 8)
   const collateralToDeposit = createTokenAmount(1, wethDecimals)
-  const chainId = 42
+  const chainId = 3
 
   // create 0x order
   const order = createOrder(
