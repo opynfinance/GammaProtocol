@@ -3,4 +3,4 @@ certoraRun specs/harness/ControllerHarness.sol contracts/MarginPool.sol contract
     --solc solc \
     --verify ControllerHarness:specs/controller.spec  \
     --settings  -assumeUnwindCond,-optimisticReturnsize=true,-ciMode=false,-t=300,-rule=$1 \
-    --cache OpynController
+    --cache OpynController --staging
