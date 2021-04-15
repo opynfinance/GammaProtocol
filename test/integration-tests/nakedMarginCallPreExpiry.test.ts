@@ -68,7 +68,7 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
   const shortStrike = 2000
   const isPut = false
   const shortAmount = 1
-  const errorDelta = 0.2
+  const errorDelta = 0.1
 
   let addressBook: AddressBookInstance
   let calculator: MarginCalculatorInstance
