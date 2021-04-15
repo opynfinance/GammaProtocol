@@ -1,6 +1,6 @@
 /**
- * Kovan tests for Trade0x.sol
- * To run: truffle exec scripts/trade0x-kovan.js --network kovan --makerPrivateKey 0xaa...
+ * Ropsten tests for Trade0x.sol
+ * To run: truffle exec scripts/trade0x-ropsten.js --network ropsten --makerPrivateKey 0xaa...
  * Need to have ETH in Taker account to mint Call option and pay for transaction and 0x fees
  * Need to have USDC in Maker account to make 0x order and see USDC for Otoken (1USDC for 1 Call)
  */
@@ -28,18 +28,17 @@ const Trade0x = artifacts.require('Trade0x')
 const PermitCallee = artifacts.require('PermitCallee')
 
 /**
- * Kovan addresses
+ * Ropsten addresses
  */
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
-const EXCHANGE_ADDR = '0xf1ec7d0ba42f15fb5c9e3adbe86431973e44764c'
-const ERC20PROXY_ADDR = '0xaa460127562482faa5df42f2c39a025cd4a1cc0a'
-const trade0xAddress = '0xF36e7676FaAaa07Ab92C6E4B6007cB65838F18d6'
-const otokenFactoryAddress = '0xb9D17Ab06e27f63d0FD75099d5874a194eE623e2'
-const payableProxyAddress = '0x5957A413f5Ac4Bcf2ba7c5c461a944b548ADB1A5'
-const controllerProxyAddress = '0xdEE7D0f8CcC0f7AC7e45Af454e5e7ec1552E8e4e'
-const marginPoolAddress = '0x8c7C60d766951c5C570bBb7065C993070061b795'
-const usdcAddress = '0xb7a4F3E9097C08dA09517b5aB877F7a917224ede'
-const wethAddress = '0xd0A1E359811322d97991E03f863a0C30C2cF029C'
+const EXCHANGE_ADDR = '0xdef1c0ded9bec7f1a1670819833240f027b25eff'
+const trade0xAddress = '0xb0CCc712A18e30dD8D4B31967f9e6ba9C9528003' 
+const otokenFactoryAddress = '0x8d6994b701f480c27757c5fe2bd93d5352160081'
+const payableProxyAddress = '0x0da6280d0837292b7a1f27fc602c7e0bd3ce0b66'
+const controllerProxyAddress = '0x7e9beaccdccee88558aaa2dc121e52ec6226864e'
+const marginPoolAddress = '0x3C325EeBB64495665F5376930d30151C1075bFD8'
+const usdcAddress = '0x8be3a2a5c37b16c6eaa2be6a3fa1cf1e465f8691'
+const wethAddress = '0xc778417e063141139fce010982780140aa0cd5ab'
 
 const ActionType = Object.freeze({
   OpenVault: 0,
@@ -136,8 +135,8 @@ async function runExport() {
     new BigNumber(optionsToMint),
     chainId
   )
-  const signedOrder = await signOrder(makerEtherJS, order)
-  await usdc.approve(ERC20PROXY_ADDR, createTokenAmount(1, 6), {from: makerEtherJS.address})
+  const signedOrder = await signOrder(makerEtherJS, order, cmd.makerPrivateKey)
+  await usdc.approve(EXCHANGE_ADDR, createTokenAmount(1, 6), {from: makerEtherJS.address})
 
   console.log("Signed 0x order with signature: 🖋️ ", signedOrder.signature)
 
@@ -146,32 +145,38 @@ async function runExport() {
   }
 
   const tradeCallData = web3.eth.abi.encodeParameters(
-    [
-      'address',
-      {
-        'Order[]': {
-          makerAddress: 'address',
-          takerAddress: 'address',
-          feeRecipientAddress: 'address',
-          senderAddress: 'address',
-          makerAssetAmount: 'uint256',
-          takerAssetAmount: 'uint256',
-          makerFee: 'uint256',
-          takerFee: 'uint256',
-          expirationTimeSeconds: 'uint256',
-          salt: 'uint256',
-          makerAssetData: 'bytes',
-          takerAssetData: 'bytes',
-          makerFeeAssetData: 'bytes',
-          takerFeeAssetData: 'bytes',
+      [
+        'address',
+        {
+          'LimitOrder[]': {
+            makerToken: 'address',
+            takerToken: 'address',
+            makerAmount: 'uint128',
+            takerAmount: 'uint128',
+            takerTokenFeeAmount: 'uint128',
+            maker: 'address',
+            taker: 'address',
+            sender: 'address',
+            feeRecipient: 'address',
+            pool: 'bytes32',
+            expiry: 'uint64',
+            salt: 'uint256',
+          },
         },
-      },
-      'uint256[]',
-      'bytes[]',
-    ],
-    [taker, [signedOrder], [optionsToMint], [signedOrder.signature]],
-  )
-
+        {
+          'Signature[]': {
+            signatureType: 'uint8',
+            v: 'uint8',
+            r: 'bytes32',
+            s: 'bytes32',
+          },
+        },
+        'uint128[]',
+        'bool',
+      ],
+      [taker, [signedOrder], [signedOrder.signature], [optionsToMint], false], 
+    )
+  
   const actionArgs = [
     {
       actionType: ActionType.OpenVault,
