@@ -11,7 +11,7 @@ import {
 
 import {createTokenAmount} from '../utils'
 
-const TradeCallee = artifacts.require('Trade0x')
+const TradeCallee = artifacts.require('TradeCallee')
 const ERC20 = artifacts.require('MockERC20')
 const WETH9 = artifacts.require('WETH9')
 const Controller = artifacts.require('Controller.sol')

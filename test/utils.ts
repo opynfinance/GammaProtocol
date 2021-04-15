@@ -96,15 +96,7 @@ export const changeAmountScaled = (num: number | string, fromDecimal: number, to
   }
 }
 
-/**
- *
- * @param {string} makerAsset
- * @param {string} takerAsset
- * @param {BigNumber} makerAssetAmount
- * @param {BigNumber} takerAssetAmount
- */
 export const createOrder = (
-  exchangeAddress: string,
   maker: string,
   makerToken: string,
   takerToken: string,
@@ -133,16 +125,16 @@ export const createOrder = (
 }
 
 export const signOrder = async (signer: any, order: any, key: any) => {
-  console.log('signer', JSON.stringify(signer))
-  console.log('order', JSON.stringify(order))
-  console.log('key', key)
+  // console.log('signer', JSON.stringify(signer))
+  // console.log('order', JSON.stringify(order))
+  // console.log('key', key)
   const signature = await order.getSignatureWithKey(key, util.SignatureType.EIP712)
-  console.log('signature', JSON.stringify(signature))
+  // console.log('signature', JSON.stringify(signature))
 
   // reverse signature from rsv to vrs, add 02 Enum (Signature.EIP712Signature)
   // eslint-disable-next-line no-param-reassign
   order.signature = signature
-  console.log('order.signature', JSON.stringify(order.signature))
+  // console.log('order.signature', JSON.stringify(order.signature))
   console.log('order with sig', JSON.stringify(order))
   return order
 }

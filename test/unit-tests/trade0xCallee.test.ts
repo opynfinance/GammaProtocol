@@ -10,9 +10,8 @@ import BigNumber from 'bignumber.js'
 const {expectRevert} = require('@openzeppelin/test-helpers')
 const WETH9 = artifacts.require('WETH9.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
-const MockOtoken = artifacts.require('Otoken.sol')
 const Mock0xExchange = artifacts.require('Mock0xExchange')
-const Trade0x = artifacts.require('Trade0x.sol')
+const Trade0x = artifacts.require('TradeCallee.sol')
 const MockController = artifacts.require('MockController.sol')
 const ethers = require('ethers')
 
@@ -57,7 +56,6 @@ contract('Trade0xCallee', ([payableProxy, taker, staking, random]) => {
 
     // create an order
     order = createOrder(
-      mockExchange.address,
       maker.address,
       token1.address,
       token2.address,

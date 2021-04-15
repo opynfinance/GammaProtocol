@@ -1,18 +1,18 @@
-const yargs = require('yargs')
+/* eslint-disable */
+const yargs = require("yargs");
 
-const Trade0x = artifacts.require('Trade0x.sol')
+const Trade0x = artifacts.require("TradeCallee.sol");
 
 module.exports = async function(callback) {
-  try {
-    const options = yargs
-      .usage(
-        'Usage: --network <network> --exchange <exchange> --assetproxy <assetproxy> --staking <staking> --weth <weth> --controller <controller> --gas <gasPrice>',
-      )
-      .option('network', {describe: '0x exchange address', type: 'string', demandOption: true})
-      .option('exchange', {describe: '0x exchange address', type: 'string', demandOption: true})
-      .option('weth', {describe: 'WETH address', type: 'string', demandOption: true})
-      .option('controller', {describe: 'Gamma controller address', type: 'string', demandOption: true})
-      .option('gas', {describe: 'Gas price in WEI', type: 'string', demandOption: true}).argv
+    try {
+        const options = yargs
+            .usage("Usage: --network <network> --exchange <exchange>  --weth <weth> --controller <controller> --gas <gasPrice>")
+            .option("network", { describe: "network name", type: "string", demandOption: true })
+            .option("exchange", { describe: "0x exchange address", type: "string", demandOption: true })
+            .option("weth", { describe: "WETH address", type: "string", demandOption: true })
+            .option("controller", { describe: "controller address", type: "string", demandOption: true })
+            .option("gas", { describe: "Gas price in WEI", type: "string", demandOption: true })
+            .argv;
 
     console.log(`Deploying Trade0x callee contract on ${options.network} 🍕`)
 

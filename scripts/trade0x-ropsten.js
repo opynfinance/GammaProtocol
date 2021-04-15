@@ -1,5 +1,5 @@
 /**
- * Ropsten tests for Trade0x.sol
+ * Ropsten tests for TradeCallee.sol
  * To run: truffle exec scripts/trade0x-ropsten.js --network ropsten --makerPrivateKey 0xaa...
  * Need to have ETH in Taker account to mint Call option and pay for transaction and 0x fees
  * Need to have USDC in Maker account to make 0x order and see USDC for Otoken (1USDC for 1 Call)
@@ -18,14 +18,14 @@ const OtokenFactory = artifacts.require('OtokenFactory.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
 const PayableProxyController = artifacts.require('PayableProxyController.sol')
-const Trade0x = artifacts.require('Trade0x')
+const TradeCallee = artifacts.require('Trade0x')
 
 /**
  * Ropsten addresses
  */
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 const EXCHANGE_ADDR = '0xdef1c0ded9bec7f1a1670819833240f027b25eff'
-const trade0xAddress = '0xb0CCc712A18e30dD8D4B31967f9e6ba9C9528003'
+const trade0xAddress = '0x6e1d4B973A059eB2D961a4fd112c47704dA5d18B'
 const otokenFactoryAddress = '0x8d6994b701f480c27757c5fe2bd93d5352160081'
 const payableProxyAddress = '0x0da6280d0837292b7a1f27fc602c7e0bd3ce0b66'
 const controllerProxyAddress = '0x7e9beaccdccee88558aaa2dc121e52ec6226864e'
@@ -46,16 +46,7 @@ const ActionType = Object.freeze({
   Call: 9,
 })
 
-const Permit = [
-  {name: 'owner', type: 'address'},
-  {name: 'spender', type: 'address'},
-  {name: 'value', type: 'uint256'},
-  {name: 'nonce', type: 'uint256'},
-  {name: 'deadline', type: 'uint256'},
-]
-
 const expiryTime = new BigNumber(60 * 60 * 24) // 1 day
-const usdcDecimals = 6
 const wethDecimals = 18
 
 const cmd = yargs.option('makerPrivateKey', {
@@ -71,7 +62,7 @@ async function runExport() {
   console.log('🔥🔥🔥 STARTING 0x TRADING SCRIPT 🔥🔥🔥')
   console.log('0x order signer address: 🖋️ ', makerEtherJS.address)
 
-  const trade0xCallee = await Trade0x.at(trade0xAddress)
+  const tradeCallee = await TradeCallee.at(trade0xAddress)
   const otokenFactory = await OtokenFactory.at(otokenFactoryAddress)
   const payableProxyController = await PayableProxyController.at(payableProxyAddress)
   const controllerProxy = await Controller.at(controllerProxyAddress)
@@ -119,7 +110,7 @@ async function runExport() {
     callOption1 = await Otoken.at(otokenAddress)
   }
 
-  console.log((await callOption1.name()) + ' ' + callOption1.address)
+  console.log(`Trading ${(await callOption1.name()) + ' ' + callOption1.address} with USDC`)
 
   const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(taker)).plus(1)
   const optionsToMint = createTokenAmount(1, 8)
@@ -127,8 +118,8 @@ async function runExport() {
   const chainId = 3
 
   // create 0x order
+  // buy 1
   const order = createOrder(
-    EXCHANGE_ADDR,
     makerEtherJS.address,
     usdc.address,
     callOption1.address,
@@ -142,6 +133,7 @@ async function runExport() {
   console.log('Signed 0x order with signature: 🖋️ ', signedOrder.signature)
 
   if (!(await controllerProxy.isOperator(taker, payableProxyController.address))) {
+    console.log('Setting Operator...')
     await controllerProxy.setOperator(payableProxyController.address, true, {from: taker})
   }
 
@@ -202,7 +194,7 @@ async function runExport() {
     {
       actionType: ActionType.Call,
       owner: taker,
-      secondAddress: trade0xCallee.address,
+      secondAddress: tradeCallee.address,
       asset: ZERO_ADDR,
       vaultId: vaultCounter.toString(),
       amount: '0',
@@ -246,7 +238,7 @@ async function runExport() {
 
   console.log('Approving 0x Callee and calling Operate 🚀')
 
-  await callOption1.approve(trade0xCallee.address, optionsToMint, {from: taker})
+  await callOption1.approve(tradeCallee.address, optionsToMint, {from: taker})
   await payableProxyController.operate(actionArgs, taker, {
     from: taker,
     gasPrice: gasPriceWei,
