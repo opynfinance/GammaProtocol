@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Advanced Margin Opyn",
   "devDependencies": {
-    "@0x/order-utils": "^10.4.14",
+    "@0x/protocol-utils": "^1.4.0",
     "@codechecks/client": "^0.1.10",
     "@openzeppelin/cli": "^2.8.2",
     "@openzeppelin/test-helpers": "^0.5.4",
@@ -126,7 +126,6 @@
   },
   "homepage": "https://github.com/opynfinance/GammaProtocol#readme",
   "dependencies": {
-    "@0x/protocol-utils": "^1.4.0",
     "@truffle/hdwallet-provider": "^1.0.44",
     "solc-0.6.10": "npm:solc@^0.6.10",
     "solidity-docgen": "^0.5.6",
