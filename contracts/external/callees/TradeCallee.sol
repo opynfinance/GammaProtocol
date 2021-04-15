@@ -8,18 +8,17 @@ pragma experimental ABIEncoderV2;
 
 import {CalleeInterface} from "../../interfaces/CalleeInterface.sol";
 import {ZeroXExchangeInterface} from "../../interfaces/ZeroXExchangeInterface.sol";
-import {SafeERC20} from "../../packages/oz/SafeERC20.sol";
 import {ERC20Interface} from "../../interfaces/ERC20Interface.sol";
 import {WETH9Interface} from "../../interfaces/WETH9Interface.sol";
-import {WETH9} from "../canonical-weth/WETH9.sol";
-import {ERC20PermitUpgradeable} from "../../packages/oz/upgradeability/erc20-permit/ERC20PermitUpgradeable.sol";
+
+import {SafeERC20} from "../../packages/oz/SafeERC20.sol";
 
 /**
  * @author Opyn Team
- * @title Trade0x
+ * @title TradeCallee
  * @notice callee contract to trade on 0x.
  */
-contract Trade0x is CalleeInterface {
+contract TradeCallee is CalleeInterface {
     using SafeERC20 for ERC20Interface;
 
     ///@dev 0x protocol fee to fill 1 order
@@ -29,7 +28,6 @@ contract Trade0x is CalleeInterface {
     WETH9Interface public weth;
 
     address public controller;
-    address public exchangeAddress;
 
     constructor(
         address _exchange,
@@ -37,7 +35,6 @@ contract Trade0x is CalleeInterface {
         address _controller
     ) public {
         exchange = ZeroXExchangeInterface(_exchange);
-        exchangeAddress = _exchange;
         weth = WETH9Interface(_weth);
         controller = _controller;
     }
@@ -49,7 +46,7 @@ contract Trade0x is CalleeInterface {
      * @param _data abi-encoded order, fillamount, signature and _sender. fee payer is the address we pull weth from.
      */
     function callFunction(address payable _sender, bytes memory _data) external override {
-        require(msg.sender == controller, "Trade0x: sender not controller");
+        require(msg.sender == controller, "TradeCallee: sender is not controller");
 
         (
             address trader,
@@ -66,7 +63,7 @@ contract Trade0x is CalleeInterface {
         // won't work with Argent (Wallet Connect).
         require(
             tx.origin == trader,
-            "Trade0x: funds can only be transferred in from the person sending the transaction"
+            "TradeCallee: funds can only be transferred in from the person sending the transaction"
         );
 
         for (uint256 i = 0; i < orders.length; i++) {
@@ -74,15 +71,21 @@ contract Trade0x is CalleeInterface {
             // transfer takerAsset from trader to this contract
             ERC20Interface(takerAsset).safeTransferFrom(trader, address(this), takerTokenFillAmounts[i]);
             // approve the 0x ERC20 Proxy to transfer takerAsset from this contract
-            ERC20Interface(takerAsset).safeIncreaseAllowance(exchangeAddress, takerTokenFillAmounts[i]);
+            ERC20Interface(takerAsset).safeIncreaseAllowance(address(exchange), takerTokenFillAmounts[i]);
         }
 
         // pull weth (to pay 0x) from _sender address
         uint256 protocolFee = tx.gasprice * PROTOCOL_FEE_BASE * orders.length;
+        weth.transferFrom(_sender, address(this), protocolFee);
         weth.withdraw(protocolFee); //withdraw ETH from WETH to pay protocol fee
 
         // send txn paying protocol fee in ETH
-        exchange.batchFillLimitOrders{value: protocolFee}(orders, signatures, takerTokenFillAmounts, false);
+        exchange.batchFillLimitOrders{value: protocolFee}(
+            orders,
+            signatures,
+            takerTokenFillAmounts,
+            revertIfIncomplete
+        );
 
         for (uint256 i = 0; i < orders.length; i++) {
             // address asset = decodeERC20Asset(order[i].makerAssetData);
@@ -101,5 +104,12 @@ contract Trade0x is CalleeInterface {
                 ERC20Interface(asset).safeTransfer(trader, balance);
             }
         }
+    }
+
+    /**
+     * @notice fallback function which disallows ETH to be sent to this contract without data except when unwrapping WETH
+     */
+    fallback() external payable {
+        require(msg.sender == address(weth), "TradeCallee: Cannot receive ETH");
     }
 }
