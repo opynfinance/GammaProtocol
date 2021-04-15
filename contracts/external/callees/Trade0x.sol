@@ -42,15 +42,6 @@ contract Trade0x is CalleeInterface {
         controller = _controller;
     }
 
-    // event Trade(
-    //     address indexed taker,
-    //     address indexed maker,
-    //     address takerAsset,
-    //     address makerAsset,
-    //     uint256 takerAmount,
-    //     uint256 makerAmount
-    // );
-
     /**
      * @notice fill 0x order
      * @dev it is dangerous to do an unlimited approval to this contract
@@ -60,10 +51,6 @@ contract Trade0x is CalleeInterface {
     function callFunction(address payable _sender, bytes memory _data) external override {
         require(msg.sender == controller, "Trade0x: sender not controller");
 
-        _directlyTrade(_sender, _data);
-    }
-
-    function _directlyTrade(address payable _sender, bytes memory _data) internal {
         (
             address trader,
             ZeroXExchangeInterface.LimitOrder[] memory orders,
@@ -75,6 +62,8 @@ contract Trade0x is CalleeInterface {
             (address, ZeroXExchangeInterface.LimitOrder[], ZeroXExchangeInterface.Signature[], uint128[], bool)
         );
 
+        // _sender is not always the user, could be the payable proxy, so we use tx.origin.
+        // won't work with Argent (Wallet Connect).
         require(
             tx.origin == trader,
             "Trade0x: funds can only be transferred in from the person sending the transaction"
