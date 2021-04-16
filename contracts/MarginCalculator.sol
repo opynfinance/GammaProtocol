@@ -153,42 +153,42 @@ contract MarginCalculator is Ownable {
         }
     }
 
-    /**
-     * @notice set new time to expiry for specific product
-     * @dev can only be called by owner
-     * @param _underlying otoken underlying asset
-     * @param _strike otoken strike asset
-     * @param _collateral otoken collateral asset
-     * @param _isPut otoken type
-     * @param _timeToExpiry option time to expiry timestamp
-     */
-    function setProductTimeToExpiry(
-        address _underlying,
-        address _strike,
-        address _collateral,
-        bool _isPut,
-        uint256 _timeToExpiry
-    ) external onlyOwner {
-        // get product hash
-        bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
-        // get array of expiries
-        uint256[] storage expiryArray = productTimeToExpiry[productHash];
+    // /**
+    //  * @notice set new time to expiry for specific product
+    //  * @dev can only be called by owner
+    //  * @param _underlying otoken underlying asset
+    //  * @param _strike otoken strike asset
+    //  * @param _collateral otoken collateral asset
+    //  * @param _isPut otoken type
+    //  * @param _timeToExpiry option time to expiry timestamp
+    //  */
+    // function setProductTimeToExpiry(
+    //     address _underlying,
+    //     address _strike,
+    //     address _collateral,
+    //     bool _isPut,
+    //     uint256 _timeToExpiry
+    // ) external onlyOwner {
+    //     // get product hash
+    //     bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
+    //     // get array of expiries
+    //     uint256[] storage expiryArray = productTimeToExpiry[productHash];
 
-        // check that this is the first expiry to set, if not the last expiry should be less than the new one to insert (to make sure the array stay in order)
-        require(
-            (expiryArray.length == 0) || (_timeToExpiry > expiryArray[expiryArray.length.sub(1)]),
-            "MarginCalculator: expiry array is not in order"
-        );
+    //     // check that this is the first expiry to set, if not the last expiry should be less than the new one to insert (to make sure the array stay in order)
+    //     require(
+    //         (expiryArray.length == 0) || (_timeToExpiry > expiryArray[expiryArray.length.sub(1)]),
+    //         "MarginCalculator: expiry array is not in order"
+    //     );
 
-        // check that this time to expiry have an upper bound value (setTimeToExpiryValue() should be called before this)
-        require(
-            timeToExpiryValue[productHash][_timeToExpiry] != 0,
-            "MarginCalculator: no expiry upper bound value found"
-        );
+    //     // check that this time to expiry have an upper bound value (setTimeToExpiryValue() should be called before this)
+    //     require(
+    //         timeToExpiryValue[productHash][_timeToExpiry] != 0,
+    //         "MarginCalculator: no expiry upper bound value found"
+    //     );
 
-        // add new time to expiry to array
-        expiryArray.push(_timeToExpiry);
-    }
+    //     // add new time to expiry to array
+    //     expiryArray.push(_timeToExpiry);
+    // }
 
     /**
      * @notice set option upper bound value for specific time to expiry (1e27)
@@ -200,7 +200,7 @@ contract MarginCalculator is Ownable {
      * @param _timeToExpiry option time to expiry timestamp
      * @param _value upper bound value
      */
-    function setTimeToExpiryValue(
+    function updateUpperBoundValue(
         address _underlying,
         address _strike,
         address _collateral,

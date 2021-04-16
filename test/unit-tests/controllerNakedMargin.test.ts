@@ -149,36 +149,13 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator]) => {
     await calculator.setCollateralDust(weth.address, wethDust, {from: owner})
     // set USDC dust amount
     await calculator.setCollateralDust(usdc.address, usdcDust, {from: owner})
-    // set time to expiry and each upper bound value
-    for (let i = 0; i < expiryToValue.length; i++) {
-      // set for put product
-      await calculator.setTimeToExpiryValue(
-        weth.address,
-        usdc.address,
-        usdc.address,
-        true,
-        timeToExpiry[i],
-        expiryToValue[i],
-        {from: owner},
-      )
-      await calculator.setProductTimeToExpiry(weth.address, usdc.address, usdc.address, true, timeToExpiry[i], {
-        from: owner,
-      })
-
-      // set for call product
-      await calculator.setTimeToExpiryValue(
-        weth.address,
-        usdc.address,
-        weth.address,
-        false,
-        timeToExpiry[i],
-        expiryToValue[i],
-        {from: owner},
-      )
-      await calculator.setProductTimeToExpiry(weth.address, usdc.address, weth.address, false, timeToExpiry[i], {
-        from: owner,
-      })
-    }
+    // set product upper bound values
+    await calculator.setUpperBoundValues(weth.address, usdc.address, usdc.address, true, timeToExpiry, expiryToValue, {
+      from: owner,
+    })
+    await calculator.setUpperBoundValues(weth.address, usdc.address, weth.address, false, timeToExpiry, expiryToValue, {
+      from: owner,
+    })
   })
 
   describe('settle naked margin vault', async () => {
