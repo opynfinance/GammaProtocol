@@ -170,6 +170,8 @@ async function runExport() {
     [taker, [signedOrder], [signedOrder.signature], [optionsToMint], false],
   )
 
+  console.log(`encoded data`, tradeCallData)
+
   const actionArgs = [
     {
       actionType: ActionType.OpenVault,
@@ -213,6 +215,8 @@ async function runExport() {
     },
   ]
 
+  console.log(`args`, JSON.stringify(actionArgs))
+
   // pay protocol fee in ETH.
   const gasPriceGWei = '50'
   const gasPriceWei = web3.utils.toWei(gasPriceGWei, 'gwei')
@@ -221,6 +225,8 @@ async function runExport() {
   const operateValue = feeAmount.plus(new BigNumber(collateralToDeposit))
 
   console.log('ETH needed: 💰 ', operateValue.toString())
+  console.log(`feeAmount`, feeAmount)
+  console.log(`operate value`, operateValue)
 
   const user1UsdcBalanceBefore = new BigNumber(await usdc.balanceOf(taker))
   const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))

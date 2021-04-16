@@ -125,13 +125,7 @@ export const createOrder = (
 }
 
 export const signOrder = async (signer: any, order: any, key: any) => {
-  // console.log('signer', JSON.stringify(signer))
-  // console.log('order', JSON.stringify(order))
-  // console.log('key', key)
   const signature = await order.getSignatureWithKey(key, util.SignatureType.EIP712)
-  // console.log('signature', JSON.stringify(signature))
-
-  // reverse signature from rsv to vrs, add 02 Enum (Signature.EIP712Signature)
   // eslint-disable-next-line no-param-reassign
   order.signature = signature
   // console.log('order.signature', JSON.stringify(order.signature))

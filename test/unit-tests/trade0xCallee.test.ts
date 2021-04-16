@@ -16,9 +16,8 @@ const MockController = artifacts.require('MockController.sol')
 const ethers = require('ethers')
 
 contract('Trade0xCallee', ([payableProxy, taker, staking, random]) => {
-  //todo: what is in the brackets
   // ERC20 mocks
-  let weth: WETH9Instance //todo: is this just defining types?
+  let weth: WETH9Instance
   // addressbook instance
   let callee: TradeCalleeInstance
   let mockExchange: Mock0xExchangeInstance

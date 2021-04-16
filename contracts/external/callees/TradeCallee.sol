@@ -41,7 +41,6 @@ contract TradeCallee is CalleeInterface {
 
     /**
      * @notice fill 0x order
-     * @dev it is dangerous to do an unlimited approval to this contract
      * @param _sender the original sender who wants to trade on 0x
      * @param _data abi-encoded order, fillamount, signature and _sender. fee payer is the address we pull weth from.
      */
