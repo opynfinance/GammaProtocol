@@ -106,6 +106,54 @@ contract MarginCalculator is Ownable {
     }
 
     /**
+     * @notice set product upper bound values
+     * @dev can only be called by owner
+     * @param _underlying otoken underlying asset
+     * @param _strike otoken strike asset
+     * @param _collateral otoken collateral asset
+     * @param _isPut otoken type
+     * @param _timesToExpiry array of times to expiry timestamp
+     * @param _values upper bound values array
+     */
+    function setUpperBoundValues(
+        address _underlying,
+        address _strike,
+        address _collateral,
+        bool _isPut,
+        uint256[] calldata _timesToExpiry,
+        uint256[] calldata _values
+    ) external onlyOwner {
+        require(_timesToExpiry.length > 0, "MarginCalculator: invalid times to expiry array");
+        require(_timesToExpiry.length == _values.length, "MarginCalculator: invalid values array");
+
+        // get product hash
+        bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
+        // get array of expiries
+        uint256[] storage expiryArray = productTimeToExpiry[productHash];
+
+        // check that this is the first expiry to set, if not the last expiry should be less than the new one to insert (to make sure the array stay in order)
+        require(
+            (expiryArray.length == 0) || (_timesToExpiry[0] > expiryArray[expiryArray.length.sub(1)]),
+            "MarginCalculator: expiry array is not in order"
+        );
+
+        for (uint256 i = 0; i < _timesToExpiry.length; i++) {
+            // check that new times array is in order
+            if (i.add(1) < _timesToExpiry.length) {
+                require(_timesToExpiry[i] < _timesToExpiry[i.add(1)], "MarginCalculator: time should be in order");
+            }
+
+            require(_values[i] > 0, "MarginCalculator: no expiry upper bound value found");
+
+            // add new upper bound value for this product at specific time to expiry
+            timeToExpiryValue[productHash][_timesToExpiry[i]] = _values[i];
+
+            // add new time to expiry to array
+            expiryArray.push(_timesToExpiry[i]);
+        }
+    }
+
+    /**
      * @notice set new time to expiry for specific product
      * @dev can only be called by owner
      * @param _underlying otoken underlying asset
