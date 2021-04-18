@@ -3,6 +3,7 @@ methods {
     getProductTimeToExpiry(address, address, address, bool, uint256) returns uint256 envfree
     getProductTimeToExpirySize(address, address, address, bool) returns uint256 envfree
     getTimeToExpiryValue(address, address, address, bool, uint256) returns uint256 envfree
+    getExcessCollateral(address, address, address, uint256, uint256, uint256, uint256) returns bool envfree
 }
 
 /***
@@ -46,4 +47,9 @@ rule productTimeToExpiryHasValue (address underlying, address strike, address co
 
     uint256 timeToExpiryValue = getTimeToExpiryValue(underlying, strike, collateral, isPut, timeToExpiry);
     assert timeToExpiryValue != 0;
+}
+
+rule nakedMarginVaultIsValid (address short, address long, address collateral, uint256 shortAmount, uint256 longAmount, uint256 collateralAmount, uint256 vaultType) {
+    bool b = getExcessCollateral(short, long, collateral, shortAmount, longAmount, collateralAmount, vaultType);
+    assert (b == true && vaultType == 1) => (longAmount == 0 && long == 0);
 }
