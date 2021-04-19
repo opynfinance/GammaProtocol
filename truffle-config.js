@@ -45,6 +45,14 @@ module.exports = {
       network_id: 42,
       gas: 6700000,
     },
+    ropsten: {
+      provider: () => {
+        return new HDWalletProvider(mnemonic, `https://ropsten.infura.io/v3/${key}`)
+      },
+      network_id: 3,
+      gasPrice: 50000000000,
+      gas: 4000000,
+    },
     mainnet: {
       provider: () => new HDWalletProvider(mnemonic, `https://mainnet.infura.io/v3/${key}`),
       network_id: 1,

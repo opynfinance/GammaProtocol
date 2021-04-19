@@ -1,7 +1,7 @@
 import {MockERC20Instance} from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
-const util = require('@0x/order-utils')
+const util = require('@0x/protocol-utils')
 const ethSigUtil = require('eth-sig-util')
 
 export type vault = {
@@ -96,53 +96,39 @@ export const changeAmountScaled = (num: number | string, fromDecimal: number, to
   }
 }
 
-/**
- *
- * @param {string} makerAsset
- * @param {string} takerAsset
- * @param {BigNumber} makerAssetAmount
- * @param {BigNumber} takerAssetAmount
- */
 export const createOrder = (
-  exchangeAddress: string,
-  makerAddress: string,
-  makerAsset: string,
-  takerAsset: string,
-  makerAssetAmount: BigNumber,
-  takerAssetAmount: BigNumber,
+  maker: string,
+  makerToken: string,
+  takerToken: string,
+  makerAmount: BigNumber,
+  takerAmount: BigNumber,
   chainId: number,
 ) => {
   const expiry = (Date.now() / 1000 + 240).toFixed(0)
   const salt = (Math.random() * 1000000000000000000).toFixed(0)
-  const order = {
-    senderAddress: '0x0000000000000000000000000000000000000000',
-    makerAddress: makerAddress,
-    takerAddress: '0x0000000000000000000000000000000000000000',
-    makerFee: '0',
-    takerFee: '0',
-    makerAssetAmount: makerAssetAmount.toString(),
-    takerAssetAmount: takerAssetAmount.toString(),
-    makerAssetData: util.assetDataUtils.encodeERC20AssetData(makerAsset),
-    takerAssetData: util.assetDataUtils.encodeERC20AssetData(takerAsset),
-    salt,
-    exchangeAddress: exchangeAddress,
-    feeRecipientAddress: '0x1000000000000000000000000000000000000011',
-    expirationTimeSeconds: expiry.toString(),
-    makerFeeAssetData: '0x0000000000000000000000000000000000000000',
+  const order = new util.LimitOrder({
+    makerToken: makerToken,
+    takerToken: takerToken,
+    makerAmount: makerAmount.toString(),
+    takerAmount: takerAmount.toString(),
+    takerTokenFeeAmount: '0',
+    maker: maker,
+    taker: '0x0000000000000000000000000000000000000000',
+    sender: '0x0000000000000000000000000000000000000000',
+    feeRecipient: '0x1000000000000000000000000000000000000011',
+    pool: '0x0000000000000000000000000000000000000000000000000000000000000000',
+    expiry: expiry.toString(),
+    salt: salt,
     chainId: chainId,
-    takerFeeAssetData: '0x0000000000000000000000000000000000000000',
-  }
+  })
   return order
 }
 
-export const signOrder = async (signer: any, order: any) => {
-  const typedData = util.eip712Utils.createOrderTypedData(order)
-  const signature = await signer._signTypedData(typedData.domain, {Order: typedData.types.Order}, typedData.message)
-
-  const v = signature.slice(-2)
-  const rs = signature.slice(2, -2)
-  // reverse signature from rsv to vrs, add 02 Enum (Signature.EIP712Signature)
+export const signOrder = async (signer: any, order: any, key: any) => {
+  const signature = await order.getSignatureWithKey(key, util.SignatureType.EIP712)
   // eslint-disable-next-line no-param-reassign
-  order.signature = `0x${v}${rs}02`
+  order.signature = signature
+  // console.log('order.signature', JSON.stringify(order.signature))
+  console.log('order with sig', JSON.stringify(order))
   return order
 }
