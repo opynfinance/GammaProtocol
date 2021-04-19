@@ -9,7 +9,7 @@ module.exports = async function(callback) {
       .option('network', {describe: 'Network name', type: 'string', demandOption: true})
       .option('gas', {describe: 'Gas price in WEI', type: 'string', demandOption: false}).argv
 
-    console.log(`Deploying chainlink pricer contract on ${options.network} 🍕`)
+    console.log(`Deploying Otoken contract on ${options.network} 🍕`)
 
     const tx = await Otoken.new({gasPrice: options.gas})
 
