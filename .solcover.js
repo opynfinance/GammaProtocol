@@ -9,6 +9,6 @@ module.exports = {
     'mocks/',
     'packages/',
     'external/canonical-weth',
-    'external/callees/Trade0x.sol'
+    'external/callees/TradeCallee.sol'
   ]
 }

@@ -22,29 +22,30 @@ contract Mock0xExchange {
     Mock0xERC20Proxy public proxy;
 
     constructor() public {
-        proxy = new Mock0xERC20Proxy();
+        proxy = new Mock0xERC20Proxy(); //TODO: what is this? do we need it?
     }
 
-    function fillOrder(
-        ZeroXExchangeInterface.Order memory _order,
-        uint256 _takerAssetFillAmount,
-        bytes memory _signature
-    ) public payable returns (ZeroXExchangeInterface.FillResults memory fillResults) {
-        takerAmount = _order.takerAssetAmount;
-        makerAmount = _order.makerAssetAmount;
-        signature = _signature;
-        fillAmount = _takerAssetFillAmount;
-        return ZeroXExchangeInterface.FillResults(0, 0, 0, 0, 0);
+    function fillLimitOrder(
+        ZeroXExchangeInterface.LimitOrder memory _order,
+        ZeroXExchangeInterface.Signature memory _signature,
+        uint128 _takerTokenFillAmount
+    ) public payable returns (uint128 takerTokenFilledAmount, uint128 makerTokenFilledAmount) {
+        return (0, 0);
     }
 
-    function batchFillOrders(
-        ZeroXExchangeInterface.Order[] memory _orders,
-        uint256[] memory _takerAssetFillAmounts,
-        bytes[] memory _signatures
-    ) external payable returns (ZeroXExchangeInterface.FillResults[] memory fillResults) {
+    function batchFillLimitOrders(
+        ZeroXExchangeInterface.LimitOrder[] memory _orders,
+        ZeroXExchangeInterface.Signature[] memory _signatures,
+        uint128[] memory _takerTokenFillAmounts,
+        bool _revertIfIncomplete
+    ) external payable returns (uint128[] memory takerTokenFilledAmounts, uint128[] memory makerTokenFilledAmounts) {
         for (uint256 i = 0; i < _orders.length; i++) {
-            fillResults[i] = fillOrder(_orders[i], _takerAssetFillAmounts[i], _signatures[i]);
+            (takerTokenFilledAmounts[i], makerTokenFilledAmounts[i]) = fillLimitOrder(
+                _orders[i],
+                _signatures[i],
+                _takerTokenFillAmounts[i]
+            );
         }
-        return fillResults;
+        return (takerTokenFilledAmounts, makerTokenFilledAmounts);
     }
 }
