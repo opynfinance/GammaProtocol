@@ -1,6 +1,6 @@
 {
   "name": "gamma-protocol",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Advanced Margin Opyn",
   "devDependencies": {
     "@0x/order-utils": "^10.4.14",
