@@ -6,18 +6,17 @@ const Controller = artifacts.require('Controller.sol')
 module.exports = async function(callback) {
   try {
     const options = yargs
-      .usage('Usage: --network <network> --gasPrice <gasPrice> --gas <gasLimit>')
+      .usage('Usage: --network <network> --gasPrice <gasPrice> --gas <gasLimit> --marginVault')
       .option('network', {describe: 'Network name', type: 'string', demandOption: true})
+      .option('marginVault', {description: 'Lib MarginVault address', type: 'string', demandOption: true})
       .option('gasPrice', {describe: 'Gas price in WEI', type: 'string', demandOption: false})
       .option('gas', {describe: 'Gas Limit in WEI', type: 'string', demandOption: false}).argv
 
     console.log(`Deploying Controller contract on ${options.network} 🍕`)
 
-    const tx1 = await MarginVault.new({gasPrice: options.gasPrice, gas: options.gas})
-    const marginVault = await MarginVault.at(tx1.address)
-    console.log(`Linking: ${tx1.address}`)
+    const marginVault = await MarginVault.at(options.marginVault)
     await Controller.link(marginVault)
-    console.log(`linking done`)
+    console.log(`Linking MarginVault done`)
 
     // deploy controller
 
