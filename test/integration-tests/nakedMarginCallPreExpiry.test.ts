@@ -131,22 +131,10 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
     await calculator.setSpotShock(weth.address, usdc.address, weth.address, isPut, productSpotShockValue)
     await calculator.setOracleDeviation(oracleDeviationValue, {from: owner})
     await calculator.setCollateralDust(weth.address, wethDust, {from: owner})
-    for (let i = 0; i < expiryToValue.length; i++) {
-      // set for put product
-      await calculator.setTimeToExpiryValue(
-        weth.address,
-        usdc.address,
-        weth.address,
-        isPut,
-        timeToExpiry[i],
-        expiryToValue[i],
-        {from: owner},
-      )
-      await calculator.setProductTimeToExpiry(weth.address, usdc.address, weth.address, isPut, timeToExpiry[i], {
-        from: owner,
-      })
-    }
-
+    // set product upper bound values
+    await calculator.setUpperBoundValues(weth.address, usdc.address, weth.address, isPut, timeToExpiry, expiryToValue, {
+      from: owner,
+    })
     // mint usdc to user
     await weth.mint(accountOwner1, createTokenAmount(10000, wethDecimals))
     await weth.mint(liquidator, createTokenAmount(10000, wethDecimals))
