@@ -375,6 +375,7 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
       const isLiquidatable = await controllerProxy.isLiquidatable(accountOwner1, vaultCounter.toString(), roundId)
 
       assert.equal(isLiquidatable[0], true, 'Vault liquidation state mismatch')
+      assert.isTrue(new BigNumber(isLiquidatable[1]).isGreaterThan(0), 'Liquidation price is equal to zero')
 
       const liquidateArgs = [
         {
@@ -565,6 +566,7 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
       const isLiquidatable = await controllerProxy.isLiquidatable(accountOwner1, vaultCounter.toString(), roundId)
 
       assert.equal(isLiquidatable[0], true, 'Vault liquidation state mismatch')
+      assert.isTrue(new BigNumber(isLiquidatable[1]).isGreaterThan(0), 'Liquidation price is equal to zero')
 
       const mintLiquidateArgs = [
         {
