@@ -333,6 +333,7 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
 
       // set product spot shock value
       await calculator.setSpotShock(weth.address, usdc.address, usdc.address, true, productSpotShockValue)
+      await calculator.setSpotShock(weth.address, usdc.address, weth.address, false, productSpotShockValue)
 
       // set product upper bound values
       await calculator.setUpperBoundValues(
@@ -340,6 +341,17 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
         usdc.address,
         weth.address,
         false,
+        timeToExpiry,
+        expiryToValue,
+        {
+          from: owner,
+        },
+      )
+      await calculator.setUpperBoundValues(
+        weth.address,
+        usdc.address,
+        usdc.address,
+        true,
         timeToExpiry,
         expiryToValue,
         {
