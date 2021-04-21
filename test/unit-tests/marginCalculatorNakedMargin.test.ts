@@ -132,17 +132,28 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
       )
     })
 
-    // it('should revert setting time to expiry value when value is equal to zero', async () => {
-    //   const upperBoundValue = scaleNum(0, 27)
-    //   const timeToExpiry = 60 * 24 * 7
+    it('should revert setting upper bound values when time to expiry array length is equal to zero', async () => {
+      const upperBoundValue = scaleNum(0.03, 27)
 
-    //   await expectRevert(
-    //     calculator.setUpperBoundValues(weth.address, usdc.address, usdc.address, true, [timeToExpiry], [upperBoundValue], {
-    //       from: owner,
-    //     }),
-    //     'MarginCalculator: invalid option upper bound value',
-    //   )
-    // })
+      await expectRevert(
+        calculator.setUpperBoundValues(weth.address, usdc.address, usdc.address, true, [], [upperBoundValue], {
+          from: owner,
+        }),
+        'MarginCalculator: invalid times to expiry array',
+      )
+    })
+
+    it('should revert setting upper bound values when time to expiry and value arrays length are not equal', async () => {
+      const upperBoundValue = [scaleNum(0.03, 27), scaleNum(0.05, 27)]
+      const timeToExpiry = [60 * 24 * 7]
+
+      await expectRevert(
+        calculator.setUpperBoundValues(weth.address, usdc.address, usdc.address, true, timeToExpiry, upperBoundValue, {
+          from: owner,
+        }),
+        'MarginCalculator: invalid values array',
+      )
+    })
 
     it('should revert setting product upper bound value when value is equal to zero', async () => {
       const timeToExpiry = 60 * 24 * 7
