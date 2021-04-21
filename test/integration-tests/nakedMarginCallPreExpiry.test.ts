@@ -370,7 +370,7 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
       await oracle.setChainlinkRoundData(weth.address, roundId, scaledUnderlyingPrice, (await time.latest()).toString())
 
       // advance time
-      await time.increase(600)
+      await time.increase(1500)
 
       const isLiquidatable = await controllerProxy.isLiquidatable(accountOwner1, vaultCounter.toString(), roundId)
 
@@ -409,9 +409,11 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
         errorDelta,
         'Vault collateral mismatch after liquidation',
       )
-      assert.equal(
-        liquidatorCollateralBalanceAfter.toString(),
-        liquidatorCollateralBalanceBefore.plus(isLiquidatable[1].toString()).toString(),
+      assert.isAtMost(
+        calcRelativeDiff(liquidatorCollateralBalanceBefore.plus(isLiquidatable[1]), liquidatorCollateralBalanceAfter)
+          .dividedBy(10 ** wethDecimals)
+          .toNumber(),
+        errorDelta,
         'Liquidator collateral balance mismatch after liquidation',
       )
     })
@@ -635,20 +637,18 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
         errorDelta,
         'Vault collateral mismatch after liquidation',
       )
-      assert.equal(
-        liquidatorWethAfter.toString(),
-        liquidatorWethBefore
-          .minus(collateralToDeposit)
-          .plus(isLiquidatable[1])
-          .toString(),
+      assert.isAtMost(
+        calcRelativeDiff(liquidatorWethBefore.minus(collateralToDeposit).plus(isLiquidatable[1]), liquidatorWethAfter)
+          .dividedBy(10 ** wethDecimals)
+          .toNumber(),
+        errorDelta,
         'Liquidator collateral balance mismatch after liquidation',
       )
-      assert.equal(
-        poolWethAfter
-          .plus(isLiquidatable[1].toString())
-          .minus(collateralToDeposit.toString())
-          .toString(),
-        poolWethBefore.toString(),
+      assert.isAtMost(
+        calcRelativeDiff(poolWethAfter.minus(collateralToDeposit).plus(isLiquidatable[1]), poolWethBefore)
+          .dividedBy(10 ** wethDecimals)
+          .toNumber(),
+        errorDelta,
         'Pool balance after openining position mismatch',
       )
       assert.equal(

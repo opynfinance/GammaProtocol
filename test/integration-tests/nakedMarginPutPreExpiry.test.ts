@@ -410,9 +410,11 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
         errorDelta,
         'Vault collateral mismatch after liquidation',
       )
-      assert.equal(
-        liquidatorCollateralBalanceAfter.toString(),
-        liquidatorCollateralBalanceBefore.plus(isLiquidatable[1].toString()).toString(),
+      assert.isAtMost(
+        calcRelativeDiff(liquidatorCollateralBalanceBefore.plus(isLiquidatable[1]), liquidatorCollateralBalanceAfter)
+          .dividedBy(10 ** wethDecimals)
+          .toNumber(),
+        errorDelta,
         'Liquidator collateral balance mismatch after liquidation',
       )
     })
