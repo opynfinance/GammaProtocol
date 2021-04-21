@@ -104,11 +104,20 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
     })
 
     it('should revert setting collateral dust from address other than owner', async () => {
-      const wethDust = scaleNum(0, wethDecimals)
+      const wethDust = scaleNum(1, wethDecimals)
 
       await expectRevert(
         calculator.setCollateralDust(weth.address, wethDust, {from: random}),
         'Ownable: caller is not the owner',
+      )
+    })
+
+    it('should revert setting collateral dust amount equal to zero', async () => {
+      const wethDust = scaleNum(0, wethDecimals)
+
+      await expectRevert(
+        calculator.setCollateralDust(weth.address, wethDust, {from: owner}),
+        'MarginCalculator: dust amount should be greater than zero',
       )
     })
   })
@@ -223,6 +232,18 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
         'MarginCalculator: expiry array is not in order',
       )
     })
+
+    it('should revert setting product time to expiry when new expiry array is not oredered', async () => {
+      const timeToExpiry = [60 * 24 * 21, 60 * 24 * 14]
+      const upperBoundValue = [scaleNum(0.2, 27), scaleNum(0.2, 27)]
+
+      await expectRevert(
+        calculator.setUpperBoundValues(weth.address, usdc.address, usdc.address, true, timeToExpiry, upperBoundValue, {
+          from: owner,
+        }),
+        'MarginCalculator: time should be in order',
+      )
+    })
   })
 
   describe('Spot shock value', async () => {
@@ -232,6 +253,15 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
       await expectRevert(
         calculator.setSpotShock(weth.address, usdc.address, usdc.address, true, spotShockValue, {from: random}),
         'Ownable: caller is not the owner',
+      )
+    })
+
+    it('should revert setting spot shock value when value is equal to zero', async () => {
+      const spotShockValue = scaleNum(0, 27)
+
+      await expectRevert(
+        calculator.setSpotShock(weth.address, usdc.address, usdc.address, true, spotShockValue, {from: owner}),
+        'MarginCalculator: invalid spot shock value',
       )
     })
 
