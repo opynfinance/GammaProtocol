@@ -176,7 +176,9 @@ contract MarginCalculator is Ownable {
 
         bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
 
-        // add new upper bound value for this product at specific time to expiry
+        require(timeToExpiryValue[productHash][_timeToExpiry] != 0, "MarginCalculator: upper bound value not found");
+
+        // update upper bound value for the time to expiry
         timeToExpiryValue[productHash][_timeToExpiry] = _value;
     }
 
