@@ -15,3 +15,4 @@ specs/.certora_verify
 .certora_config/
 .certora_build.json
 .coverage_contracts/
+.coverage_artifacts/

@@ -1,9 +1,9 @@
 {
   "name": "gamma-protocol",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Advanced Margin Opyn",
   "devDependencies": {
-    "@0x/order-utils": "^10.4.14",
+    "@0x/protocol-utils": "^1.4.0",
     "@codechecks/client": "^0.1.10",
     "@openzeppelin/cli": "^2.8.2",
     "@openzeppelin/test-helpers": "^0.5.4",
@@ -54,7 +54,8 @@
     "compile:types": "typechain --target=truffle --outDir build/types/truffle-types \"build/contracts/*.json\"",
     "deploy:development": "npm run build && npm run migrate -- --network development",
     "deploy:mainnet": "npm run build && npm run migrate -- --network mainnet",
-    "deploy:rinkeby": "npm run build && npm run migrate -- --network rinkeby",
+    "deploy:ropsten": "npm run build && npm run migrate -- --network ropsten",
+    "deploy:kovan": "npm run build && npm run migrate -- --network kovan",
     "lint:tests": "eslint 'test/**/*.ts'",
     "lint:tests:fix": "npm run lint:tests -- --fix",
     "lint:sol": "solhint -f table contracts/**/*.sol",
