@@ -560,12 +560,6 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
         expectedRequiredNakedMargin,
         'Required naked margin for put mismatch',
       )
-
-      // assert.isAtMost(
-      //   calcRelativeDiff(new BigNumber('16777.78677'), requiredMargin.dividedBy(10 ** wethDecimals)).toNumber(),
-      //   errorDelta,
-      //   'big error delta',
-      // )
     })
 
     it('should return required margin for naked margin vault: 100$ WETH put option with 150 spot price and 2 weeks to expiry', async () => {
@@ -847,6 +841,77 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
         'Needed collateral value mismatch',
       )
       assert.equal(getExcessCollateralResult[1], false, 'isValid vault result mismatch')
+    })
+  })
+
+  describe('Update upper bound value', async () => {
+    it('should revert updating time to expiry upper bound to a value equal to zero', async () => {
+      const timeToExpiry = 60 * 24 * 7
+      const upperBoundValue = scaleNum(0, 27)
+
+      await expectRevert(
+        calculator.updateUpperBoundValue(
+          weth.address,
+          usdc.address,
+          usdc.address,
+          true,
+          timeToExpiry,
+          upperBoundValue,
+          {from: owner},
+        ),
+        'MarginCalculator: invalid option upper bound value',
+      )
+    })
+
+    it('should revert updating non existant upper bound value', async () => {
+      const timeToExpiry = 60 * 24 * 336
+      const upperBoundValue = scaleNum(0.05, 27)
+
+      await expectRevert(
+        calculator.updateUpperBoundValue(
+          weth.address,
+          usdc.address,
+          usdc.address,
+          true,
+          timeToExpiry,
+          upperBoundValue,
+          {from: owner},
+        ),
+        'MarginCalculator: upper bound value not found',
+      )
+    })
+
+    it('should update upper bound value', async () => {
+      const timeToExpiry = 60 * 24 * 7
+      const upperBoundValue = scaleNum(0.1, 27)
+
+      const oldUpperBoundValue = await calculator.getTimeToExpiryValue(
+        weth.address,
+        usdc.address,
+        usdc.address,
+        true,
+        timeToExpiry,
+      )
+
+      await calculator.updateUpperBoundValue(
+        weth.address,
+        usdc.address,
+        usdc.address,
+        true,
+        timeToExpiry,
+        upperBoundValue,
+        {from: owner},
+      )
+
+      const updatedUpperBoundValue = await calculator.getTimeToExpiryValue(
+        weth.address,
+        usdc.address,
+        usdc.address,
+        true,
+        timeToExpiry,
+      )
+
+      assert.notEqual(oldUpperBoundValue, updatedUpperBoundValue, 'updated upper bound value mismatch')
     })
   })
 })
