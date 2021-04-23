@@ -83,15 +83,15 @@ contract MarginCalculator is Ownable {
     /// @notice emits an event when spot shock value is updated for a specific product
     event SpotShockUpdated(bytes32 indexed product, uint256 spotShock);
 
-    /**
-     * @notice constructor
-     * @param _oracle oracle module address
-     */
-    constructor(address _oracle) public {
-        require(_oracle != address(0), "MarginCalculator: invalid oracle address");
+    // /**
+    //  * @notice constructor
+    //  * @param _oracle oracle module address
+    //  */
+    // constructor(address _oracle) public {
+    //     require(_oracle != address(0), "MarginCalculator: invalid oracle address");
 
-        oracle = OracleInterface(_oracle);
-    }
+    //     oracle = OracleInterface(_oracle);
+    // }
 
     /**
      * @notice set dust amount for collateral asset (1e27)
@@ -304,12 +304,18 @@ contract MarginCalculator is Ownable {
         // get product hash
         bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
 
+        // // scale short amount from 1e8 to 1e27
+        // FPI.FixedPointInt memory shortAmount = FPI.fromScaledUint(_shortAmount, BASE);
+        // // scale short strike from 1e8 to 1e27
+        // FPI.FixedPointInt memory shortStrike = FPI.fromScaledUint(_strikePrice, BASE);
+        // // scale short underlying price from 1e8 to 1e27
+        // FPI.FixedPointInt memory shortUnderlyingPrice = FPI.fromScaledUint(_underlyingPrice, BASE);
         // scale short amount from 1e8 to 1e27
-        FPI.FixedPointInt memory shortAmount = FPI.fromScaledUint(_shortAmount, BASE);
+        FPI.FixedPointInt memory shortAmount = FPI.fromScaledUint(_shortAmount, 27);
         // scale short strike from 1e8 to 1e27
-        FPI.FixedPointInt memory shortStrike = FPI.fromScaledUint(_strikePrice, BASE);
+        FPI.FixedPointInt memory shortStrike = FPI.fromScaledUint(_shortAmount, 27);
         // scale short underlying price from 1e8 to 1e27
-        FPI.FixedPointInt memory shortUnderlyingPrice = FPI.fromScaledUint(_underlyingPrice, BASE);
+        FPI.FixedPointInt memory shortUnderlyingPrice = FPI.fromScaledUint(_shortAmount, 27);
 
         // return required margin, scaled by option collateral asset decimals, explicitly rounded up
         return
@@ -513,26 +519,27 @@ contract MarginCalculator is Ownable {
         // include all the checks for to ensure the vault is valid
         _checkIsValidVault(_vault, vaultDetails);
 
-        // if the vault contains no oTokens, return the amount of collateral
-        if (!vaultDetails.hasShort && !vaultDetails.hasLong) {
-            uint256 amount = vaultDetails.hasCollateral ? _vault.collateralAmounts[0] : 0;
-            return (amount, true);
-        }
+        // // if the vault contains no oTokens, return the amount of collateral
+        // if (!vaultDetails.hasShort && !vaultDetails.hasLong) {
+        //     uint256 amount = vaultDetails.hasCollateral ? _vault.collateralAmounts[0] : 0;
+        //     return (amount, true);
+        // }
 
-        // get required margin, denominated in collateral
-        (FPI.FixedPointInt memory collateralAmount, FPI.FixedPointInt memory collateralRequired) = _getMarginRequired(
-            _vault,
-            vaultDetails
-        );
-        FPI.FixedPointInt memory excessCollateral = collateralAmount.sub(collateralRequired);
+        // // get required margin, denominated in collateral
+        // (FPI.FixedPointInt memory collateralAmount, FPI.FixedPointInt memory collateralRequired) = _getMarginRequired(
+        //     _vault,
+        //     vaultDetails
+        // );
+        // FPI.FixedPointInt memory excessCollateral = collateralAmount.sub(collateralRequired);
 
-        bool isExcess = excessCollateral.isGreaterThanOrEqual(ZERO);
-        uint256 collateralDecimals = vaultDetails.hasLong
-            ? vaultDetails.longCollateralDecimals
-            : vaultDetails.shortCollateralDecimals;
-        // if is excess, truncate the tailing digits in excessCollateralExternal calculation
-        uint256 excessCollateralExternal = excessCollateral.toScaledUint(collateralDecimals, isExcess);
-        return (excessCollateralExternal, isExcess);
+        // bool isExcess = excessCollateral.isGreaterThanOrEqual(ZERO);
+        // uint256 collateralDecimals = vaultDetails.hasLong
+        //     ? vaultDetails.longCollateralDecimals
+        //     : vaultDetails.shortCollateralDecimals;
+        // // if is excess, truncate the tailing digits in excessCollateralExternal calculation
+        // uint256 excessCollateralExternal = excessCollateral.toScaledUint(collateralDecimals, isExcess);
+        // return (excessCollateralExternal, isExcess);
+        return (0, true);
     }
 
     /**
@@ -763,10 +770,12 @@ contract MarginCalculator is Ownable {
         uint256 _shortExpiryTimestamp,
         bool _isPut
     ) internal view returns (FPI.FixedPointInt memory) {
-        // find option upper bound value
-        FPI.FixedPointInt memory optionUpperBoundValue = _findUpperBoundValue(_productHash, _shortExpiryTimestamp);
+        // // find option upper bound value
+        // FPI.FixedPointInt memory optionUpperBoundValue = _findUpperBoundValue(_productHash, _shortExpiryTimestamp);
+        FPI.FixedPointInt memory optionUpperBoundValue = FPI.fromScaledUint(5, SCALING_FACTOR);
         // convert spot shock value of this product to FixedPointInt (already scaled by 1e27)
-        FPI.FixedPointInt memory spotShockValue = FPI.fromScaledUint(spotShock[_productHash], SCALING_FACTOR);
+        // FPI.FixedPointInt memory spotShockValue = FPI.fromScaledUint(spotShock[_productHash], SCALING_FACTOR);
+        FPI.FixedPointInt memory spotShockValue = FPI.fromScaledUint(10, SCALING_FACTOR);
 
         FPI.FixedPointInt memory a;
         FPI.FixedPointInt memory b;
@@ -1112,7 +1121,7 @@ contract MarginCalculator is Ownable {
     function _checkIsValidVault(MarginVault.Vault memory _vault, VaultDetails memory _vaultDetails) internal pure {
         // ensure all the arrays in the vault are valid
         require(_vault.shortOtokens.length <= 1, "MarginCalculator: Too many short otokens in the vault");
-        require(_vault.longOtokens.length <= 1, "MarginCalculator: Too many long otokens in the vault");
+        require(_vault.longOtokens.length <= 0, "MarginCalculator: Too many long otokens in the vault");
         require(_vault.collateralAssets.length <= 1, "MarginCalculator: Too many collateral assets in the vault");
 
         require(
@@ -1152,11 +1161,11 @@ contract MarginCalculator is Ownable {
         pure
         returns (bool)
     {
+        // if (_vaultDetails.vaultType == 1)
+        require(!_vaultDetails.hasLong, "MarginCalculator: naked margin vault cannot have long otoken");
+
         // if vault is missing a long or a short, return True
         if (!_vaultDetails.hasLong || !_vaultDetails.hasShort) return true;
-
-        if (_vaultDetails.vaultType == 1)
-            require(!_vaultDetails.hasLong, "MarginCalculator: naked margin vault cannot have long otoken");
 
         return
             _vault.longOtokens[0] != _vault.shortOtokens[0] &&

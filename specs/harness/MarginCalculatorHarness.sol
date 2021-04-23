@@ -1,7 +1,8 @@
+pragma solidity =0.6.10;
+pragma experimental ABIEncoderV2;
+
 import '../../contracts/MarginCalculator.sol';
 import {MarginVault} from '../../contracts/libs/MarginVault.sol';
-
-pragma solidity =0.6.10;
 
 contract MarginCalculatorHarness is MarginCalculator {
   function getProductTimeToExpiry(
@@ -25,39 +26,39 @@ contract MarginCalculatorHarness is MarginCalculator {
     return productTimeToExpiry[productHash].length;
   }
 
-  function getExcessCollateral(
-    address short,
-    address long,
-    address collateral,
-    uint256 shortAmount,
-    uint256 longAmount,
-    uint256 collateralAmount,
-    uint256 _vaultType
-  ) public view returns (bool) {
-    address[] memory shorts;
-    shorts[0] = short;
-    address[] memory longs;
-    longs[0] = long;
-    address[] memory collaterals;
-    collaterals[0] = collateral;
-    uint256[] memory longAmounts;
-    longAmounts[0] = longAmount;
-    uint256[] memory collateralAmounts;
-    collateralAmounts[0] = collateralAmount;
-    uint256[] memory shortAmounts;
-    shortAmounts[0] = shortAmount;
+  // function getExcessCollateral(
+  //   address short,
+  //   address long,
+  //   address collateral,
+  //   uint256 shortAmount,
+  //   uint256 longAmount,
+  //   uint256 collateralAmount,
+  //   uint256 _vaultType
+  // ) public view returns (bool) {
+  //   address[] memory shorts;
+  //   shorts[0] = short;
+  //   address[] memory longs;
+  //   longs[0] = long;
+  //   address[] memory collaterals;
+  //   collaterals[0] = collateral;
+  //   uint256[] memory longAmounts;
+  //   longAmounts[0] = longAmount;
+  //   uint256[] memory collateralAmounts;
+  //   collateralAmounts[0] = collateralAmount;
+  //   uint256[] memory shortAmounts;
+  //   shortAmounts[0] = shortAmount;
 
-    MarginVault.Vault memory v = MarginVault.Vault(
-      shorts,
-      longs,
-      collaterals,
-      shortAmounts,
-      longAmounts,
-      collateralAmounts
-    );
-    (uint256 collateral, ) = getExcessCollateral(v, _vaultType);
-    return collateral;
-  }
+  //   MarginVault.Vault memory v = MarginVault.Vault(
+  //     shorts,
+  //     longs,
+  //     collaterals,
+  //     shortAmounts,
+  //     longAmounts,
+  //     collateralAmounts
+  //   );
+  //   (uint256 collateral, ) = getExcessCollateral(v, _vaultType);
+  //   return collateral;
+  // }
 
   function isValidVault(
     address short,
