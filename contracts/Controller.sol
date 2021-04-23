@@ -453,7 +453,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
-     * @dev return if an expired oToken contract’s settlement price has been finalized
+     * @dev return if an expired oToken is ready to be settled, only true when price for underlying,
+     * strike and collateral assets at this specific expiry is available in our Oracle module
      * @param _underlying oToken underlying asset
      * @param _strike oToken strike asset
      * @param _collateral oToken collateral asset
@@ -536,6 +537,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             Actions.ActionArgs memory action = _actions[i];
             Actions.ActionType actionType = action.actionType;
 
+            // actions except Settle, Redeem, Liquidate and Call are "Vault-updating actinos"
+            // only allow update 1 vault in each operate call
             if (
                 (actionType != Actions.ActionType.SettleVault) &&
                 (actionType != Actions.ActionType.Redeem) &&
@@ -602,7 +605,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         notPartiallyPaused
         onlyAuthorized(msg.sender, _args.owner)
     {
-        // increment vault id
         uint256 vaultId = accountVaultCounter[_args.owner].add(1);
 
         require(_args.vaultId == vaultId, "Controller: can not run actions on inexistent vault");
@@ -624,14 +626,13 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         notPartiallyPaused
         onlyAuthorized(msg.sender, _args.owner)
     {
-        // check that vault id is valid for this vault owner
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         // only allow vault owner or vault operator to deposit long otoken
         require(
             (_args.from == msg.sender) || (_args.from == _args.owner),
             "Controller: cannot deposit long otoken from this address"
         );
-        // check that otoken is whitelisted to be used as long otoken
+
         require(
             whitelist.isWhitelistedOtoken(_args.asset),
             "Controller: otoken is not whitelisted to be used as collateral"
@@ -639,13 +640,10 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         OtokenInterface otoken = OtokenInterface(_args.asset);
 
-        // do not allow expired otoken to be deposited into vault
         require(now < otoken.expiryTimestamp(), "Controller: otoken used as collateral is already expired");
 
-        // add long otoken
         vaults[_args.owner][_args.vaultId].addLong(_args.asset, _args.amount, _args.index);
 
-        // get long otoken from user to pool
         pool.transferToPool(_args.asset, _args.from, _args.amount);
 
         emit LongOtokenDeposited(_args.asset, _args.owner, _args.from, _args.vaultId, _args.amount);
@@ -661,18 +659,14 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         notPartiallyPaused
         onlyAuthorized(msg.sender, _args.owner)
     {
-        // check that vault id is valid for this vault owner
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
 
         OtokenInterface otoken = OtokenInterface(_args.asset);
 
-        // do not allow to withdraw expired long otoken from vault
         require(now < otoken.expiryTimestamp(), "Controller: can not withdraw an expired otoken");
 
-        // remove long otoken from vault
         vaults[_args.owner][_args.vaultId].removeLong(_args.asset, _args.amount, _args.index);
 
-        // transfer long otoken from pool to user
         pool.transferToUser(_args.asset, _args.to, _args.amount);
 
         emit LongOtokenWithdrawed(_args.asset, _args.owner, _args.to, _args.vaultId, _args.amount);
@@ -688,23 +682,20 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         notPartiallyPaused
         onlyAuthorized(msg.sender, _args.owner)
     {
-        // check that vault id is valid for this vault owner
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
         // only allow vault owner or vault operator to deposit collateral
         require(
             (_args.from == msg.sender) || (_args.from == _args.owner),
             "Controller: cannot deposit collateral from this address"
         );
-        // check that collateral asset to deposit is whitelisted as collateral
+
         require(
             whitelist.isWhitelistedCollateral(_args.asset),
             "Controller: asset is not whitelisted to be used as collateral"
         );
 
-        // add collateral into vault
         vaults[_args.owner][_args.vaultId].addCollateral(_args.asset, _args.amount, _args.index);
 
-        // transfer collateral asset from user to pool
         pool.transferToPool(_args.asset, _args.from, _args.amount);
 
         emit CollateralAssetDeposited(_args.asset, _args.owner, _args.from, _args.vaultId, _args.amount);
@@ -720,13 +711,10 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         notPartiallyPaused
         onlyAuthorized(msg.sender, _args.owner)
     {
-        // check that vault id is valid for this vault owner
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
 
-        // remove collateral
         vaults[_args.owner][_args.vaultId].removeCollateral(_args.asset, _args.amount, _args.index);
 
-        // transfer collateral asset from pool to user
         pool.transferToUser(_args.asset, _args.to, _args.amount);
 
         emit CollateralAssetWithdrawed(_args.asset, _args.owner, _args.to, _args.vaultId, _args.amount);
@@ -742,20 +730,15 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         notPartiallyPaused
         onlyAuthorized(msg.sender, _args.owner)
     {
-        // check that vault id is valid for this vault owner
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
-        // check that otoken is whitelisted
         require(whitelist.isWhitelistedOtoken(_args.otoken), "Controller: otoken is not whitelisted to be minted");
 
         OtokenInterface otoken = OtokenInterface(_args.otoken);
 
-        // do not allow minting expired otoken
         require(now < otoken.expiryTimestamp(), "Controller: can not mint expired otoken");
 
-        // add otoken as short in vault
         vaults[_args.owner][_args.vaultId].addShort(_args.otoken, _args.amount, _args.index);
 
-        // mint otoken to user
         otoken.mintOtoken(_args.to, _args.amount);
 
         emit ShortOtokenMinted(_args.otoken, _args.owner, _args.to, _args.vaultId, _args.amount);
@@ -805,14 +788,12 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         // only allow redeeming expired otoken
         require(now >= expiry, "Controller: can not redeem un-expired otoken");
-        // check that settlement is allowed for this otoken
-        // can only settle when a price for underlying, strike and collateral assets at this specific expiry is available in our Oracle module
+
         require(
             isSettlementAllowed(underlying, strike, collateral, expiry),
             "Controller: asset prices not finalized yet"
         );
 
-        // get payout, burn otoken to redeem from user and send back payout
         uint256 payout = getPayout(_args.otoken, _args.amount);
 
         otoken.burnOtoken(msg.sender, _args.amount);
@@ -828,10 +809,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _args SettleVaultArgs structure
      */
     function _settleVault(Actions.SettleVaultArgs memory _args) internal onlyAuthorized(msg.sender, _args.owner) {
-        // check that vault id is valid for this vault owner
         require(_checkVaultId(_args.owner, _args.vaultId), "Controller: invalid vault id");
 
-        // get vault struct and vault type
         (MarginVault.Vault memory vault, uint256 typeVault, ) = getVault(_args.owner, _args.vaultId);
 
         OtokenInterface otoken;
@@ -860,17 +839,15 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         // do not allow settling vault with un-expired otoken
         require(now >= expiry, "Controller: can not settle vault with un-expired otoken");
-        // check that settlement is allowed for this otoken
-        // can only settle when a price for underlying, strike and collateral assets at this specific expiry is available in our Oracle module
         require(
             isSettlementAllowed(underlying, strike, collateral, expiry),
             "Controller: asset prices not finalized yet"
         );
 
-        // get excess to payout
         (uint256 payout, bool isValidVault) = calculator.getExcessCollateral(vault, typeVault);
 
-        // require that vault is valid before settling, this to avoid allowing settling undercollateralized naked margin vault
+        // require that vault is valid (has excess collateral) before settling
+        // to avoid allowing settling undercollateralized naked margin vault
         require(isValidVault, "Controller: can not settle undercollateralized vault");
 
         delete vaults[_args.owner][_args.vaultId];
@@ -902,7 +879,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         // amount of collateral to offer to liquidator
         uint256 collateralToSell = _args.amount.mul(price).div(1e8);
 
-        // if vault is partially liquidated, amount of short otoken still greater than zero
+        // if vault is partially liquidated (amount of short otoken is still greater than zero)
         // make sure remaining collateral amount is greater than dust amount
         if (vault.shortAmounts[0].sub(_args.amount) > 0) {
             require(
@@ -912,7 +889,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         }
 
         // burn short otoken from liquidator address, index of short otoken hardcoded at 0
-        // should always work, if vault have no short otoken, it will not reach this step
+        // this should always work, if vault have no short otoken, it will not reach this step
         OtokenInterface(vault.shortOtokens[0]).burnOtoken(msg.sender, _args.amount);
 
         // decrease amount of collateral in liquidated vault, index of collateral to decrease is hardcoded at 0
@@ -921,7 +898,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         // decrease amount of short otoken in liquidated vault, index of short otoken to decrease is hardcoded at 0
         vaults[_args.owner][_args.vaultId].removeShort(vault.shortOtokens[0], _args.amount, 0);
 
-        // transfer collateral to receiver address
         pool.transferToUser(vault.collateralAssets[0], _args.receiver, collateralToSell);
 
         emit VaultLiquidated(
