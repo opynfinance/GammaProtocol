@@ -374,11 +374,6 @@ contract MarginCalculator is Ownable {
         FPI.FixedPointInt shortStrike;
         FPI.FixedPointInt shortUnderlyingPrice;
     }
-    // struct to store isLiquidatable and the price for 1 otoken repaid scaled to the collateral decimals
-    struct LiquidationStatus {
-        bool isLiquidatable;
-        uint256 debtPrice;
-    }
 
     /**
      * @notice check if a specific vault is undercollateralized at a specific chainlink round
@@ -403,9 +398,6 @@ contract MarginCalculator is Ownable {
             uint256
         )
     {
-        // create LiquidationStatus struct to avoid stack too deep error
-        LiquidationStatus memory liquidationStatus = LiquidationStatus(false, 0);
-
         // liquidation is only supported for naked margin vault
         require(_vaultType == 1, "MarginCalculator: invalid vault type to liquidate");
 
@@ -447,23 +439,19 @@ contract MarginCalculator is Ownable {
             vaultDetails.collateralDecimals
         );
 
-        // another scope to avoid stack too deep!
-        {
-            FPI.FixedPointInt memory collateralRequired = _getNakedMarginRequired(
-                productHash,
-                shortDetails.shortAmount,
-                shortDetails.shortStrike,
-                shortDetails.shortUnderlyingPrice,
-                vaultDetails.shortExpiryTimestamp,
-                vaultDetails.isShortPut
-            );
+        FPI.FixedPointInt memory collateralRequired = _getNakedMarginRequired(
+            productHash,
+            shortDetails.shortAmount,
+            shortDetails.shortStrike,
+            shortDetails.shortUnderlyingPrice,
+            vaultDetails.shortExpiryTimestamp,
+            vaultDetails.isShortPut
+        );
 
-            // if collateral required > collateral in the vault, it's liquidatable
-            liquidationStatus.isLiquidatable = collateralRequired.isGreaterThan(depositedCollateral);
+        // if collateral required < collateral in the vault, the vault is not liquidatable
+        if (collateralRequired.isGreaterThan(depositedCollateral)) {
+            return (false, 0, 0);
         }
-
-        // if vault not liquidatable, exit
-        if (!liquidationStatus.isLiquidatable) return (liquidationStatus.isLiquidatable, 0, 0);
 
         FPI.FixedPointInt memory cashValue = _getCashValue(
             shortDetails.shortStrike,
@@ -472,7 +460,7 @@ contract MarginCalculator is Ownable {
         );
 
         // get the amount of collateral per 1 repaid otoken
-        liquidationStatus.debtPrice = _getDebtPrice(
+        uint256 debtPrice = _getDebtPrice(
             depositedCollateral,
             shortDetails.shortAmount,
             cashValue,
@@ -482,7 +470,7 @@ contract MarginCalculator is Ownable {
             vaultDetails.isShortPut
         );
 
-        return (liquidationStatus.isLiquidatable, liquidationStatus.debtPrice, dust[vaultDetails.shortCollateralAsset]);
+        return (true, debtPrice, dust[vaultDetails.shortCollateralAsset]);
     }
 
     /**

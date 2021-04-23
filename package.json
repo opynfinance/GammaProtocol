@@ -3,7 +3,7 @@
   "version": "1.1.0",
   "description": "Advanced Margin Opyn",
   "devDependencies": {
-    "@0x/protocol-utils": "^1.4.0",
+    "@0x/protocol-utils": "^1.4.1",
     "@codechecks/client": "^0.1.10",
     "@openzeppelin/cli": "^2.8.2",
     "@openzeppelin/test-helpers": "^0.5.4",
