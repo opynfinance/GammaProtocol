@@ -448,8 +448,8 @@ contract MarginCalculator is Ownable {
             vaultDetails.isShortPut
         );
 
-        // if collateral required < collateral in the vault, the vault is not liquidatable
-        if (collateralRequired.isGreaterThan(depositedCollateral)) {
+        // if collateral required <= collateral in the vault, the vault is not liquidatable
+        if (collateralRequired.isLessThanOrEqual(depositedCollateral)) {
             return (false, 0, 0);
         }
 
