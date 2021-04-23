@@ -775,7 +775,7 @@ contract MarginCalculator is Ownable {
         // find option upper bound value
         FPI.FixedPointInt memory optionUpperBoundValue = _findUpperBoundValue(_productHash, _shortExpiryTimestamp);
         // convert spot shock value of this product to FixedPointInt (already scaled by 1e27)
-        FPI.FixedPointInt memory spotShockValue = FPI.FixedPointInt(int256(spotShock[_productHash])); // FPI.fromScaledUint(spotShock[_productHash], SCALING_FACTOR);
+        FPI.FixedPointInt memory spotShockValue = FPI.FixedPointInt(int256(spotShock[_productHash]));
 
         FPI.FixedPointInt memory a;
         FPI.FixedPointInt memory b;
