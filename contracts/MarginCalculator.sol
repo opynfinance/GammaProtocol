@@ -71,6 +71,9 @@ contract MarginCalculator is Ownable {
     /// @dev mapping to store shock value for spot price per product (1e27)
     mapping(bytes32 => uint256) internal spotShock;
 
+    /// @dev mapping to store margin fee for each product hash (1e27)
+    mapping(bytes32 => uint256) internal marginFee;
+
     /// @dev oracle module
     OracleInterface public oracle;
 
@@ -519,7 +522,11 @@ contract MarginCalculator is Ownable {
     function getExcessCollateral(MarginVault.Vault memory _vault, uint256 _vaultType)
         public
         view
-        returns (uint256, bool)
+        returns (
+            uint256,
+            bool,
+            uint256
+        )
     {
         // get vault details
         VaultDetails memory vaultDetails = _getVaultDetails(_vault, _vaultType);
@@ -529,14 +536,15 @@ contract MarginCalculator is Ownable {
         // if the vault contains no oTokens, return the amount of collateral
         if (!vaultDetails.hasShort && !vaultDetails.hasLong) {
             uint256 amount = vaultDetails.hasCollateral ? _vault.collateralAmounts[0] : 0;
-            return (amount, true);
+            return (amount, true, 0);
         }
 
         // get required margin, denominated in collateral
-        (FPI.FixedPointInt memory collateralAmount, FPI.FixedPointInt memory collateralRequired) = _getMarginRequired(
-            _vault,
-            vaultDetails
-        );
+        (
+            FPI.FixedPointInt memory collateralAmount,
+            FPI.FixedPointInt memory collateralRequired,
+            FPI.FixedPointInt memory feeRequired
+        ) = _getMarginRequired(_vault, vaultDetails);
         FPI.FixedPointInt memory excessCollateral = collateralAmount.sub(collateralRequired);
 
         bool isExcess = excessCollateral.isGreaterThanOrEqual(ZERO);
@@ -545,7 +553,9 @@ contract MarginCalculator is Ownable {
             : vaultDetails.shortCollateralDecimals;
         // if is excess, truncate the tailing digits in excessCollateralExternal calculation
         uint256 excessCollateralExternal = excessCollateral.toScaledUint(collateralDecimals, isExcess);
-        return (excessCollateralExternal, isExcess);
+        uint256 productMarginFee = feeRequired.toScaledUint(collateralDecimals, isExcess);
+
+        return (excessCollateralExternal, isExcess, productMarginFee);
     }
 
     /**
@@ -603,7 +613,11 @@ contract MarginCalculator is Ownable {
     function _getMarginRequired(MarginVault.Vault memory _vault, VaultDetails memory _vaultDetails)
         internal
         view
-        returns (FPI.FixedPointInt memory, FPI.FixedPointInt memory)
+        returns (
+            FPI.FixedPointInt memory,
+            FPI.FixedPointInt memory,
+            FPI.FixedPointInt memory
+        )
     {
         FPI.FixedPointInt memory shortAmount = _vaultDetails.hasShort
             ? FPI.fromScaledUint(_vault.shortAmounts[0], BASE)
@@ -659,18 +673,18 @@ contract MarginCalculator is Ownable {
                     _vaultDetails.isShortPut
                 );
 
-                // return amount of collateral in vault and needed collateral amount for margin
-                return (
-                    collateralAmount,
-                    _getNakedMarginRequired(
-                        productHash,
-                        shortAmount,
-                        shortStrike,
-                        shortUnderlyingPrice,
-                        otokenDetails.otokenExpiry,
-                        otokenDetails.isPut
-                    )
+                FPI.FixedPointInt memory productMarginFee = FPI.fromScaledUint(marginFee[productHash], SCALING_FACTOR);
+                FPI.FixedPointInt memory requiredMargin = _getNakedMarginRequired(
+                    productHash,
+                    shortAmount,
+                    shortStrike,
+                    shortUnderlyingPrice,
+                    otokenDetails.otokenExpiry,
+                    otokenDetails.isPut
                 );
+
+                // return amount of collateral in vault and needed collateral amount for margin
+                return (collateralAmount, requiredMargin, requiredMargin.mul(productMarginFee));
             } else {
                 FPI.FixedPointInt memory longStrike = _vaultDetails.hasLong
                     ? FPI.fromScaledUint(_vaultDetails.longStrikePrice, BASE)
@@ -690,7 +704,8 @@ contract MarginCalculator is Ownable {
                             strikeNeeded,
                             otokenDetails.otokenStrikeAsset,
                             otokenDetails.otokenCollateralAsset
-                        )
+                        ),
+                        ZERO
                     );
                 } else {
                     FPI.FixedPointInt memory underlyingNeeded = _getCallSpreadMarginRequired(
@@ -706,7 +721,8 @@ contract MarginCalculator is Ownable {
                             underlyingNeeded,
                             otokenDetails.otokenUnderlyingAsset,
                             otokenDetails.otokenCollateralAsset
-                        )
+                        ),
+                        ZERO
                     );
                 }
             }
@@ -745,7 +761,8 @@ contract MarginCalculator is Ownable {
                     otokenDetails.otokenStrikeAsset,
                     otokenDetails.otokenCollateralAsset,
                     otokenDetails.otokenExpiry
-                )
+                ),
+                ZERO
             );
         }
     }

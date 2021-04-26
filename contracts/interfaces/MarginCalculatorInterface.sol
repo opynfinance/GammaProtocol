@@ -13,7 +13,11 @@ interface MarginCalculatorInterface {
     function getExcessCollateral(MarginVault.Vault calldata _vault, uint256 _vaultType)
         external
         view
-        returns (uint256 netValue, bool isExcess);
+        returns (
+            uint256,
+            bool,
+            uint256
+        );
 
     function isLiquidatable(
         MarginVault.Vault memory _vault,

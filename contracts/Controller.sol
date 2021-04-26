@@ -355,9 +355,9 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _actions array of actions arguments
      */
     function operate(Actions.ActionArgs[] memory _actions) external nonReentrant notFullyPaused {
-        (bool vaultUpdated, address vaultOwner, uint256 vaultId) = _runActions(_actions);
+        (bool vaultUpdated, address vaultOwner, uint256 vaultId, bool isFeeApplicable) = _runActions(_actions);
         if (vaultUpdated) {
-            _verifyFinalState(vaultOwner, vaultId);
+            _verifyFinalState(vaultOwner, vaultId, isFeeApplicable);
             vaultLatestUpdate[vaultOwner][vaultId] = now;
         }
     }
@@ -370,7 +370,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _vaultId vault id
      */
     function sync(address _owner, uint256 _vaultId) external nonReentrant notFullyPaused {
-        _verifyFinalState(_owner, _vaultId);
+        _verifyFinalState(_owner, _vaultId, false);
         vaultLatestUpdate[_owner][_vaultId] = now;
     }
 
@@ -413,7 +413,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     function getProceed(address _owner, uint256 _vaultId) external view returns (uint256) {
         (MarginVault.Vault memory vault, uint256 typeVault, ) = getVault(_owner, _vaultId);
 
-        (uint256 netValue, ) = calculator.getExcessCollateral(vault, typeVault);
+        (uint256 netValue, , ) = calculator.getExcessCollateral(vault, typeVault);
         return netValue;
     }
 
@@ -525,12 +525,14 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         returns (
             bool,
             address,
-            uint256
+            uint256,
+            bool
         )
     {
         address vaultOwner;
         uint256 vaultId;
         bool vaultUpdated;
+        bool isFeeApplicable;
 
         for (uint256 i = 0; i < _actions.length; i++) {
             Actions.ActionArgs memory action = _actions[i];
@@ -564,6 +566,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
                 _withdrawCollateral(Actions._parseWithdrawArgs(action));
             } else if (actionType == Actions.ActionType.MintShortOption) {
                 _mintOtoken(Actions._parseMintArgs(action));
+                isFeeApplicable = true;
             } else if (actionType == Actions.ActionType.BurnShortOption) {
                 _burnOtoken(Actions._parseBurnArgs(action));
             } else if (actionType == Actions.ActionType.Redeem) {
@@ -577,7 +580,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             }
         }
 
-        return (vaultUpdated, vaultOwner, vaultId);
+        return (vaultUpdated, vaultOwner, vaultId, isFeeApplicable);
     }
 
     /**
@@ -585,11 +588,17 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _owner account owner address
      * @param _vaultId vault id of the final vault
      */
-    function _verifyFinalState(address _owner, uint256 _vaultId) internal view {
+    function _verifyFinalState(
+        address _owner,
+        uint256 _vaultId,
+        bool _isFeeApplicable
+    ) internal {
         (MarginVault.Vault memory vault, uint256 typeVault, ) = getVault(_owner, _vaultId);
-        (, bool isValidVault) = calculator.getExcessCollateral(vault, typeVault);
+        (, bool isValidVault, uint256 marginFee) = calculator.getExcessCollateral(vault, typeVault);
 
         require(isValidVault, "Controller: invalid final vault state");
+
+        if (_isFeeApplicable) _accrueMarginFee(_owner, vault.collateralAssets[0], marginFee);
     }
 
     /**
@@ -868,7 +877,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         );
 
         // get excess to payout
-        (uint256 payout, bool isValidVault) = calculator.getExcessCollateral(vault, typeVault);
+        (uint256 payout, bool isValidVault, ) = calculator.getExcessCollateral(vault, typeVault);
 
         // require that vault is valid before settling, this to avoid allowing settling undercollateralized naked margin vault
         require(isValidVault, "Controller: can not settle undercollateralized vault");
@@ -949,6 +958,14 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         CalleeInterface(_args.callee).callFunction(msg.sender, _args.data);
 
         emit CallExecuted(msg.sender, _args.callee, _args.data);
+    }
+
+    function _accrueMarginFee(
+        address _asset,
+        address _from,
+        uint256 _marginFee
+    ) internal {
+        pool.transferToPool(_asset, _from, _marginFee);
     }
 
     /**
