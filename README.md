@@ -76,7 +76,7 @@ To deploy a new `PayableProxyController.sol`, it is recommended to use the `depl
 
 **Input**
 ```sh
-truffle exec scripts/deployPayableProxyController.js --network mainnet --controller 0x7d78c401c69c56cb21f4bf80c53afd92be0BBBBB --pool 0xc02aaa39b223fe8d0a0e5c4f27ead9083c7AAaaa --weth 0x5f4eC3Df9cbd43714FE2740f5E3616155cAGAGAG --gas 50000000000
+truffle exec scripts/deployPayableProxyController.js --network mainnet --controller 0x7d78c401c69c56cb21f4bf80c53afd92be0BBBBB --pool 0xc02aaa39b223fe8d0a0e5c4f27ead9083c7AAaaa --weth 0x5f4eC3Df9cbd43714FE2740f5E3616155cAGAGAG --gasPrice 50000000000
 ```
 
 **Output**
@@ -93,7 +93,7 @@ To deploy a new `ChainlinkPricer.sol`, it is recommended to use the `deployChain
 
 **Input**
 ```sh
-truffle exec scripts/deployChainlinkPricer.js --network mainnet --controller 0x7d78c401c69c56cb21f4bf80c53afd92be0BBBBB --pool 0xc02aaa39b223fe8d0a0e5c4f27ead9083c7AAaaa --weth 0x5f4eC3Df9cbd43714FE2740f5E3616155cAGAGAG --oracle 0xef196aA0e3Cb8EA6d5720557C3B611Eff6OOOOOO --gas 50000000000
+truffle exec scripts/deployChainlinkPricer.js --network mainnet --controller 0x7d78c401c69c56cb21f4bf80c53afd92be0BBBBB --pool 0xc02aaa39b223fe8d0a0e5c4f27ead9083c7AAaaa --weth 0x5f4eC3Df9cbd43714FE2740f5E3616155cAGAGAG --oracle 0xef196aA0e3Cb8EA6d5720557C3B611Eff6OOOOOO --gasPrice 50000000000
 ```
 
 **Output**
@@ -111,16 +111,16 @@ To deploy a new `PermitCallee.sol`, it is recommended to use the `deployPermitCa
 
 **Input**
 ```sh
-truffle exec scripts/deployPermitCallee.js --network kovan --gas 50000000000
+truffle exec scripts/deployPermitCallee.js --network kovan --gasPrice 50000000000
 ```
 
-### Trade0x Callee Deployment
-the `Trade0x.sol` contract allow to batch 0x trading transactions with Gamma operate actions through the Call action.
-To deploy a new `Trade0x.sol`, it is recommended to use the `deployTrade0x` truffle script inside the `scripts` folder.
+### TradeCallee Deployment
+the `TradeCallee.sol` contract allow to batch 0x trading transactions with Gamma operate actions through the Call action.
+To deploy a new `TradeCallee.sol`, it is recommended to use the `deployTrade0x` truffle script inside the `scripts` folder.
 
 **Input**
 ```sh
-truffle exec scripts/deployTrade0x.js --network kovan --exchange 0xf1ec7d0ba42f15fb5c9e3adbe86431973e44764c --assetproxy 0xaa460127562482faa5df42f2c39a025cd4a1cc0a --staking 0xe94cb304b3f515be7c95fedcfa249a84995fd748 --weth 0xd0A1E359811322d97991E03f863a0C30C2cF029C --controller 0xdEE7D0f8CcC0f7AC7e45Af454e5e7ec1552E8e4e --gas 50000000000
+truffle exec scripts/deployTrade0x.js --network ropsten --exchange 0xdef1c0ded9bec7f1a1670819833240f027b25eff --weth 0xc778417e063141139fce010982780140aa0cd5ab --controller 0x7e9beaccdccee88558aaa2dc121e52ec6226864e --gas 100000000000
 ```
 
 ## Linting
