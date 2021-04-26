@@ -1,6 +1,6 @@
 import {
   MockERC20Instance,
-  Trade0xInstance,
+  TradeCalleeInstance,
   Mock0xExchangeInstance,
   WETH9Instance,
   MockControllerInstance,
@@ -10,9 +10,8 @@ import BigNumber from 'bignumber.js'
 const {expectRevert} = require('@openzeppelin/test-helpers')
 const WETH9 = artifacts.require('WETH9.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
-const MockOtoken = artifacts.require('Otoken.sol')
 const Mock0xExchange = artifacts.require('Mock0xExchange')
-const Trade0x = artifacts.require('Trade0x.sol')
+const Trade0x = artifacts.require('TradeCallee.sol')
 const MockController = artifacts.require('MockController.sol')
 const ethers = require('ethers')
 
@@ -20,16 +19,15 @@ contract('Trade0xCallee', ([payableProxy, taker, staking, random]) => {
   // ERC20 mocks
   let weth: WETH9Instance
   // addressbook instance
-  let callee: Trade0xInstance
+  let callee: TradeCalleeInstance
   let mockExchange: Mock0xExchangeInstance
-  let proxyAddr: string
   let data: string
   let token1: MockERC20Instance
   let token2: MockERC20Instance
   let order: any
   let controller: MockControllerInstance
-  const fillAmount = new BigNumber('1000000')
   let token1Amount: string
+  const fillAmount = new BigNumber('1000000')
   const makerPrivateKey = '0xb0057716d5917badaf911b193b12b910811c1497b5bada8d7711f758981c3773'
   const maker = new ethers.Wallet(makerPrivateKey)
 
@@ -51,14 +49,12 @@ contract('Trade0xCallee', ([payableProxy, taker, staking, random]) => {
     weth = await WETH9.new()
 
     mockExchange = await Mock0xExchange.new()
-    proxyAddr = await mockExchange.proxy()
     // deploy AddressBook token
-    callee = await Trade0x.new(mockExchange.address, proxyAddr, weth.address, staking, controller.address)
+    callee = await Trade0x.new(mockExchange.address, weth.address, controller.address)
     const chainId = 1
 
     // create an order
     order = createOrder(
-      mockExchange.address,
       maker.address,
       token1.address,
       token2.address,
@@ -66,47 +62,51 @@ contract('Trade0xCallee', ([payableProxy, taker, staking, random]) => {
       new BigNumber(createTokenAmount(100, 8)),
       chainId,
     )
-    const signedOrder = await signOrder(maker, order)
+    const signedOrder = await signOrder(maker, order, makerPrivateKey)
 
     data = web3.eth.abi.encodeParameters(
       [
         'address',
         {
-          'Order[]': {
-            makerAddress: 'address',
-            takerAddress: 'address',
-            feeRecipientAddress: 'address',
-            senderAddress: 'address',
-
-            makerAssetAmount: 'uint256',
-            takerAssetAmount: 'uint256',
-            makerFee: 'uint256',
-            takerFee: 'uint256',
-            expirationTimeSeconds: 'uint256',
+          'LimitOrder[]': {
+            makerToken: 'address',
+            takerToken: 'address',
+            makerAmount: 'uint128',
+            takerAmount: 'uint128',
+            takerTokenFeeAmount: 'uint128',
+            maker: 'address',
+            taker: 'address',
+            sender: 'address',
+            feeRecipient: 'address',
+            pool: 'bytes32',
+            expiry: 'uint64',
             salt: 'uint256',
-
-            makerAssetData: 'bytes',
-            takerAssetData: 'bytes',
-            makerFeeAssetData: 'bytes',
-            takerFeeAssetData: 'bytes',
           },
         },
-        'uint256[]',
-        'bytes[]',
+        {
+          'Signature[]': {
+            signatureType: 'uint8',
+            v: 'uint8',
+            r: 'bytes32',
+            s: 'bytes32',
+          },
+        },
+        'uint128[]',
+        'bool',
       ],
-      [taker, [signedOrder], [fillAmount.toString()], [signedOrder.signature]], // pay weth from payable proxy
+      [taker, [signedOrder], [signedOrder.signature], [fillAmount.toString()], false], // pay weth from payable proxy
     )
   })
 
   describe('Run Trade0xCallee directly', () => {
     it('should fail if the msg.sender is not the controller', async () => {
-      await expectRevert(callee.callFunction(taker, data, {from: taker}), 'Trade0x: sender not controller')
+      await expectRevert(callee.callFunction(taker, data, {from: taker}), 'TradeCallee: sender is not controller.')
     })
 
     it('should fail if the tx.origin is not the trader', async () => {
       await expectRevert(
         controller.test0xCallee(callee.address, data, {from: random}),
-        'Trade0x: funds can only be transferred in from the person sending the transaction',
+        'TradeCallee: funds can only be transferred in from the person sending the transaction.',
       )
     })
   })
