@@ -131,22 +131,10 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
     await calculator.setSpotShock(weth.address, usdc.address, weth.address, isPut, productSpotShockValue)
     await calculator.setOracleDeviation(oracleDeviationValue, {from: owner})
     await calculator.setCollateralDust(weth.address, wethDust, {from: owner})
-    for (let i = 0; i < expiryToValue.length; i++) {
-      // set for put product
-      await calculator.setTimeToExpiryValue(
-        weth.address,
-        usdc.address,
-        weth.address,
-        isPut,
-        timeToExpiry[i],
-        expiryToValue[i],
-        {from: owner},
-      )
-      await calculator.setProductTimeToExpiry(weth.address, usdc.address, weth.address, isPut, timeToExpiry[i], {
-        from: owner,
-      })
-    }
-
+    // set product upper bound values
+    await calculator.setUpperBoundValues(weth.address, usdc.address, weth.address, isPut, timeToExpiry, expiryToValue, {
+      from: owner,
+    })
     // mint usdc to user
     await weth.mint(accountOwner1, createTokenAmount(10000, wethDecimals))
     await weth.mint(liquidator, createTokenAmount(10000, wethDecimals))
@@ -382,11 +370,12 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
       await oracle.setChainlinkRoundData(weth.address, roundId, scaledUnderlyingPrice, (await time.latest()).toString())
 
       // advance time
-      await time.increase(600)
+      await time.increase(1500)
 
       const isLiquidatable = await controllerProxy.isLiquidatable(accountOwner1, vaultCounter.toString(), roundId)
 
       assert.equal(isLiquidatable[0], true, 'Vault liquidation state mismatch')
+      assert.isTrue(new BigNumber(isLiquidatable[1]).isGreaterThan(0), 'Liquidation price is equal to zero')
 
       const liquidateArgs = [
         {
@@ -415,14 +404,16 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
           vaultAfterLiquidation.collateralAmounts[0],
           new BigNumber(vaultBeforeLiquidation.collateralAmounts[0]).minus(isLiquidatable[1]),
         )
-          .dividedBy(wethDecimals)
+          .dividedBy(10 ** wethDecimals)
           .toNumber(),
         errorDelta,
         'Vault collateral mismatch after liquidation',
       )
-      assert.equal(
-        liquidatorCollateralBalanceAfter.toString(),
-        liquidatorCollateralBalanceBefore.plus(isLiquidatable[1].toString()).toString(),
+      assert.isAtMost(
+        calcRelativeDiff(liquidatorCollateralBalanceBefore.plus(isLiquidatable[1]), liquidatorCollateralBalanceAfter)
+          .dividedBy(10 ** wethDecimals)
+          .toNumber(),
+        errorDelta,
         'Liquidator collateral balance mismatch after liquidation',
       )
     })
@@ -577,6 +568,7 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
       const isLiquidatable = await controllerProxy.isLiquidatable(accountOwner1, vaultCounter.toString(), roundId)
 
       assert.equal(isLiquidatable[0], true, 'Vault liquidation state mismatch')
+      assert.isTrue(new BigNumber(isLiquidatable[1]).isGreaterThan(0), 'Liquidation price is equal to zero')
 
       const mintLiquidateArgs = [
         {
@@ -640,25 +632,23 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
           vaultAfterLiquidation.collateralAmounts[0],
           new BigNumber(vaultBeforeLiquidation.collateralAmounts[0]).minus(isLiquidatable[1]),
         )
-          .dividedBy(wethDecimals)
+          .dividedBy(10 ** wethDecimals)
           .toNumber(),
         errorDelta,
         'Vault collateral mismatch after liquidation',
       )
-      assert.equal(
-        liquidatorWethAfter.toString(),
-        liquidatorWethBefore
-          .minus(collateralToDeposit)
-          .plus(isLiquidatable[1])
-          .toString(),
+      assert.isAtMost(
+        calcRelativeDiff(liquidatorWethBefore.minus(collateralToDeposit).plus(isLiquidatable[1]), liquidatorWethAfter)
+          .dividedBy(10 ** wethDecimals)
+          .toNumber(),
+        errorDelta,
         'Liquidator collateral balance mismatch after liquidation',
       )
-      assert.equal(
-        poolWethAfter
-          .plus(isLiquidatable[1].toString())
-          .minus(collateralToDeposit.toString())
-          .toString(),
-        poolWethBefore.toString(),
+      assert.isAtMost(
+        calcRelativeDiff(poolWethAfter.minus(collateralToDeposit).plus(isLiquidatable[1]), poolWethBefore)
+          .dividedBy(10 ** wethDecimals)
+          .toNumber(),
+        errorDelta,
         'Pool balance after openining position mismatch',
       )
       assert.equal(

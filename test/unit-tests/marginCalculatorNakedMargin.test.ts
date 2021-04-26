@@ -104,73 +104,95 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
     })
 
     it('should revert setting collateral dust from address other than owner', async () => {
-      const wethDust = scaleNum(0, wethDecimals)
+      const wethDust = scaleNum(1, wethDecimals)
 
       await expectRevert(
         calculator.setCollateralDust(weth.address, wethDust, {from: random}),
         'Ownable: caller is not the owner',
       )
     })
+
+    it('should revert setting collateral dust amount equal to zero', async () => {
+      const wethDust = scaleNum(0, wethDecimals)
+
+      await expectRevert(
+        calculator.setCollateralDust(weth.address, wethDust, {from: owner}),
+        'MarginCalculator: dust amount should be greater than zero',
+      )
+    })
   })
 
   describe('Upper bound value', async () => {
-    it('should revert setting product time to expiry from non owner', async () => {
+    it('should revert setting product upper bound value from non owner', async () => {
       const timeToExpiry = 60 * 24 * 7
-
-      await expectRevert(
-        calculator.setProductTimeToExpiry(weth.address, usdc.address, usdc.address, true, timeToExpiry, {
-          from: random,
-        }),
-        'Ownable: caller is not the owner',
-      )
-    })
-
-    it('should revert setting time to expiry value when caller is not owner', async () => {
       const upperBoundValue = scaleNum(0.5, 27)
-      const timeToExpiry = 60 * 24 * 7
 
       await expectRevert(
-        calculator.setTimeToExpiryValue(weth.address, usdc.address, usdc.address, true, timeToExpiry, upperBoundValue, {
-          from: random,
-        }),
+        calculator.setUpperBoundValues(
+          weth.address,
+          usdc.address,
+          usdc.address,
+          true,
+          [timeToExpiry],
+          [upperBoundValue],
+          {from: random},
+        ),
         'Ownable: caller is not the owner',
       )
     })
 
-    it('should revert setting time to expiry value when value is equal to zero', async () => {
-      const upperBoundValue = scaleNum(0, 27)
-      const timeToExpiry = 60 * 24 * 7
+    it('should revert setting upper bound values when time to expiry array length is equal to zero', async () => {
+      const upperBoundValue = scaleNum(0.03, 27)
 
       await expectRevert(
-        calculator.setTimeToExpiryValue(weth.address, usdc.address, usdc.address, true, timeToExpiry, upperBoundValue, {
+        calculator.setUpperBoundValues(weth.address, usdc.address, usdc.address, true, [], [upperBoundValue], {
           from: owner,
         }),
-        'MarginCalculator: invalid option upper bound value',
+        'MarginCalculator: invalid times to expiry array',
       )
     })
 
-    it('should revert setting product time to expiry when no expiry value available', async () => {
-      const timeToExpiry = 60 * 24 * 7
+    it('should revert setting upper bound values when time to expiry and value arrays length are not equal', async () => {
+      const upperBoundValue = [scaleNum(0.03, 27), scaleNum(0.05, 27)]
+      const timeToExpiry = [60 * 24 * 7]
 
       await expectRevert(
-        calculator.setProductTimeToExpiry(weth.address, usdc.address, usdc.address, true, timeToExpiry, {
+        calculator.setUpperBoundValues(weth.address, usdc.address, usdc.address, true, timeToExpiry, upperBoundValue, {
           from: owner,
         }),
+        'MarginCalculator: invalid values array',
+      )
+    })
+
+    it('should revert setting product upper bound value when value is equal to zero', async () => {
+      const timeToExpiry = 60 * 24 * 7
+      const upperBoundValue = scaleNum(0, 27)
+
+      await expectRevert(
+        calculator.setUpperBoundValues(
+          weth.address,
+          usdc.address,
+          usdc.address,
+          true,
+          [timeToExpiry],
+          [upperBoundValue],
+          {from: owner},
+        ),
         'MarginCalculator: no expiry upper bound value found',
       )
     })
 
-    it('should set time to expiry value when caller is not owner', async () => {
+    it('should set product upper bound value', async () => {
       const upperBoundValue = scaleNum(0.5, 27)
       const timeToExpiry = 60 * 24 * 7
 
-      await calculator.setTimeToExpiryValue(
+      await calculator.setUpperBoundValues(
         weth.address,
         usdc.address,
         usdc.address,
         true,
-        timeToExpiry,
-        upperBoundValue,
+        [timeToExpiry],
+        [upperBoundValue],
         {from: owner},
       )
 
@@ -181,14 +203,6 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
         upperBoundValue.toString(),
         'Upper bound value for this time to expiry not correct',
       )
-    })
-
-    it('should set product time to expiry ', async () => {
-      const timeToExpiry = 60 * 24 * 7
-
-      await calculator.setProductTimeToExpiry(weth.address, usdc.address, usdc.address, true, timeToExpiry, {
-        from: owner,
-      })
 
       assert.equal(
         new BigNumber(
@@ -199,14 +213,35 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
       )
     })
 
-    it('should revert setting product time to expiry when no new expiry is not in array order', async () => {
+    it('should revert setting product time to expiry when new expiry is not in array order', async () => {
       const timeToExpiry = 60 * 24 * 3
+      const upperBoundValue = scaleNum(0.2, 27)
 
       await expectRevert(
-        calculator.setProductTimeToExpiry(weth.address, usdc.address, usdc.address, true, timeToExpiry, {
+        calculator.setUpperBoundValues(
+          weth.address,
+          usdc.address,
+          usdc.address,
+          true,
+          [timeToExpiry],
+          [upperBoundValue],
+          {
+            from: owner,
+          },
+        ),
+        'MarginCalculator: expiry array is not in order',
+      )
+    })
+
+    it('should revert setting product time to expiry when new expiry array is not oredered', async () => {
+      const timeToExpiry = [60 * 24 * 21, 60 * 24 * 14]
+      const upperBoundValue = [scaleNum(0.2, 27), scaleNum(0.2, 27)]
+
+      await expectRevert(
+        calculator.setUpperBoundValues(weth.address, usdc.address, usdc.address, true, timeToExpiry, upperBoundValue, {
           from: owner,
         }),
-        'MarginCalculator: expiry array is not in order',
+        'MarginCalculator: time should be in order',
       )
     })
   })
@@ -218,6 +253,15 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
       await expectRevert(
         calculator.setSpotShock(weth.address, usdc.address, usdc.address, true, spotShockValue, {from: random}),
         'Ownable: caller is not the owner',
+      )
+    })
+
+    it('should revert setting spot shock value when value is equal to zero', async () => {
+      const spotShockValue = scaleNum(0, 27)
+
+      await expectRevert(
+        calculator.setSpotShock(weth.address, usdc.address, usdc.address, true, spotShockValue, {from: owner}),
+        'MarginCalculator: invalid spot shock value',
       )
     })
 
@@ -285,20 +329,17 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
 
       before(async () => {
         // set time to expiry and each upper bound value
-        for (let i = 0; i < expiryToValue.length; i++) {
-          await calculator.setTimeToExpiryValue(
-            weth.address,
-            usdc.address,
-            weth.address,
-            false,
-            timeToExpiry[i],
-            expiryToValue[i],
-            {from: owner},
-          )
-          await calculator.setProductTimeToExpiry(weth.address, usdc.address, weth.address, false, timeToExpiry[i], {
+        await calculator.setUpperBoundValues(
+          weth.address,
+          usdc.address,
+          weth.address,
+          false,
+          timeToExpiry,
+          expiryToValue,
+          {
             from: owner,
-          })
-        }
+          },
+        )
       })
 
       it('should return the upper bound value for the specific time to expiry', async () => {
@@ -333,37 +374,31 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
 
       // set product spot shock value
       await calculator.setSpotShock(weth.address, usdc.address, usdc.address, true, productSpotShockValue)
+      await calculator.setSpotShock(weth.address, usdc.address, weth.address, false, productSpotShockValue)
 
-      // set time to expiry and each upper bound value
-      for (let i = 0; i < expiryToValue.length; i++) {
-        // set for put product
-        await calculator.setTimeToExpiryValue(
-          weth.address,
-          usdc.address,
-          usdc.address,
-          true,
-          timeToExpiry[i],
-          expiryToValue[i],
-          {from: owner},
-        )
-        await calculator.setProductTimeToExpiry(weth.address, usdc.address, usdc.address, true, timeToExpiry[i], {
+      // set product upper bound values
+      await calculator.setUpperBoundValues(
+        weth.address,
+        usdc.address,
+        weth.address,
+        false,
+        timeToExpiry,
+        expiryToValue,
+        {
           from: owner,
-        })
-
-        // set for call product
-        await calculator.setTimeToExpiryValue(
-          weth.address,
-          usdc.address,
-          weth.address,
-          false,
-          timeToExpiry[i],
-          expiryToValue[i],
-          {from: owner},
-        )
-        await calculator.setProductTimeToExpiry(weth.address, usdc.address, weth.address, false, timeToExpiry[i], {
+        },
+      )
+      await calculator.setUpperBoundValues(
+        weth.address,
+        usdc.address,
+        usdc.address,
+        true,
+        timeToExpiry,
+        expiryToValue,
+        {
           from: owner,
-        })
-      }
+        },
+      )
     })
 
     it('should return required margin for naked margin vault: 100$ WETH put option with 150 spot price and 1 week to expiry', async () => {
@@ -525,12 +560,6 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
         expectedRequiredNakedMargin,
         'Required naked margin for put mismatch',
       )
-
-      // assert.isAtMost(
-      //   calcRelativeDiff(new BigNumber('16777.78677'), requiredMargin.dividedBy(10 ** wethDecimals)).toNumber(),
-      //   errorDelta,
-      //   'big error delta',
-      // )
     })
 
     it('should return required margin for naked margin vault: 100$ WETH put option with 150 spot price and 2 weeks to expiry', async () => {
@@ -812,6 +841,77 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
         'Needed collateral value mismatch',
       )
       assert.equal(getExcessCollateralResult[1], false, 'isValid vault result mismatch')
+    })
+  })
+
+  describe('Update upper bound value', async () => {
+    it('should revert updating time to expiry upper bound to a value equal to zero', async () => {
+      const timeToExpiry = 60 * 24 * 7
+      const upperBoundValue = scaleNum(0, 27)
+
+      await expectRevert(
+        calculator.updateUpperBoundValue(
+          weth.address,
+          usdc.address,
+          usdc.address,
+          true,
+          timeToExpiry,
+          upperBoundValue,
+          {from: owner},
+        ),
+        'MarginCalculator: invalid option upper bound value',
+      )
+    })
+
+    it('should revert updating non existant upper bound value', async () => {
+      const timeToExpiry = 60 * 24 * 336
+      const upperBoundValue = scaleNum(0.05, 27)
+
+      await expectRevert(
+        calculator.updateUpperBoundValue(
+          weth.address,
+          usdc.address,
+          usdc.address,
+          true,
+          timeToExpiry,
+          upperBoundValue,
+          {from: owner},
+        ),
+        'MarginCalculator: upper bound value not found',
+      )
+    })
+
+    it('should update upper bound value', async () => {
+      const timeToExpiry = 60 * 24 * 7
+      const upperBoundValue = scaleNum(0.1, 27)
+
+      const oldUpperBoundValue = await calculator.getTimeToExpiryValue(
+        weth.address,
+        usdc.address,
+        usdc.address,
+        true,
+        timeToExpiry,
+      )
+
+      await calculator.updateUpperBoundValue(
+        weth.address,
+        usdc.address,
+        usdc.address,
+        true,
+        timeToExpiry,
+        upperBoundValue,
+        {from: owner},
+      )
+
+      const updatedUpperBoundValue = await calculator.getTimeToExpiryValue(
+        weth.address,
+        usdc.address,
+        usdc.address,
+        true,
+        timeToExpiry,
+      )
+
+      assert.notEqual(oldUpperBoundValue, updatedUpperBoundValue, 'updated upper bound value mismatch')
     })
   })
 })

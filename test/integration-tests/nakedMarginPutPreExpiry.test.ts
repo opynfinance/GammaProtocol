@@ -131,22 +131,10 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
     await calculator.setSpotShock(weth.address, usdc.address, usdc.address, isPut, productSpotShockValue)
     await calculator.setOracleDeviation(oracleDeviationValue, {from: owner})
     await calculator.setCollateralDust(usdc.address, usdcDust, {from: owner})
-    for (let i = 0; i < expiryToValue.length; i++) {
-      // set for put product
-      await calculator.setTimeToExpiryValue(
-        weth.address,
-        usdc.address,
-        usdc.address,
-        isPut,
-        timeToExpiry[i],
-        expiryToValue[i],
-        {from: owner},
-      )
-      await calculator.setProductTimeToExpiry(weth.address, usdc.address, usdc.address, isPut, timeToExpiry[i], {
-        from: owner,
-      })
-    }
-
+    // set product upper bound values
+    await calculator.setUpperBoundValues(weth.address, usdc.address, usdc.address, isPut, timeToExpiry, expiryToValue, {
+      from: owner,
+    })
     // mint usdc to user
     await usdc.mint(accountOwner1, createTokenAmount(10000, usdcDecimals))
     await usdc.mint(liquidator, createTokenAmount(10000, usdcDecimals))
@@ -388,6 +376,7 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
       const isLiquidatable = await controllerProxy.isLiquidatable(accountOwner1, vaultCounter.toString(), roundId)
 
       assert.equal(isLiquidatable[0], true, 'Vault liquidation state mismatch')
+      assert.isTrue(new BigNumber(isLiquidatable[1]).isGreaterThan(0), 'Liquidation price is equal to zero')
 
       const liquidateArgs = [
         {
@@ -415,13 +404,17 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
         calcRelativeDiff(
           vaultAfterLiquidation.collateralAmounts[0],
           new BigNumber(vaultBeforeLiquidation.collateralAmounts[0]).minus(isLiquidatable[1]),
-        ).toNumber(),
+        )
+          .dividedBy(10 ** usdcDecimals)
+          .toNumber(),
         errorDelta,
         'Vault collateral mismatch after liquidation',
       )
-      assert.equal(
-        liquidatorCollateralBalanceAfter.toString(),
-        liquidatorCollateralBalanceBefore.plus(isLiquidatable[1].toString()).toString(),
+      assert.isAtMost(
+        calcRelativeDiff(liquidatorCollateralBalanceBefore.plus(isLiquidatable[1]), liquidatorCollateralBalanceAfter)
+          .dividedBy(10 ** wethDecimals)
+          .toNumber(),
+        errorDelta,
         'Liquidator collateral balance mismatch after liquidation',
       )
     })
@@ -576,6 +569,7 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
       const isLiquidatable = await controllerProxy.isLiquidatable(accountOwner1, vaultCounter.toString(), roundId)
 
       assert.equal(isLiquidatable[0], true, 'Vault liquidation state mismatch')
+      assert.isTrue(new BigNumber(isLiquidatable[1]).isGreaterThan(0), 'Liquidation price is equal to zero')
 
       const mintLiquidateArgs = [
         {
@@ -638,7 +632,9 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
         calcRelativeDiff(
           vaultAfterLiquidation.collateralAmounts[0],
           new BigNumber(vaultBeforeLiquidation.collateralAmounts[0]).minus(isLiquidatable[1]),
-        ).toNumber(),
+        )
+          .dividedBy(10 ** usdcDecimals)
+          .toNumber(),
         errorDelta,
         'Vault collateral mismatch after liquidation',
       )
