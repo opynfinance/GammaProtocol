@@ -598,7 +598,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         require(isValidVault, "Controller: invalid final vault state");
 
-        if (_isFeeApplicable) _accrueMarginFee(_owner, vault.collateralAssets[0], marginFee);
+        if ((_isFeeApplicable) && (typeVault != 0)) _accrueMarginFee(_owner, vault.collateralAssets[0], marginFee);
     }
 
     /**
