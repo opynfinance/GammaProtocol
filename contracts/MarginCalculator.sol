@@ -578,11 +578,7 @@ contract MarginCalculator is Ownable {
             _expiryTimestamp
         );
 
-        if (_isPut) {
-            return strikePrice.isGreaterThan(underlyingPriceInStrike) ? strikePrice.sub(underlyingPriceInStrike) : ZERO;
-        } else {
-            return underlyingPriceInStrike.isGreaterThan(strikePrice) ? underlyingPriceInStrike.sub(strikePrice) : ZERO;
-        }
+        return _getCashValue(strikePrice, underlyingPriceInStrike, _isPut);
     }
 
     /// @dev added this struct to avoid stack-too-deep error
