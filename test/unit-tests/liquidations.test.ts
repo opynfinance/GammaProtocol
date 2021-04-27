@@ -159,7 +159,7 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
 
       await expectRevert(
         calculator.isLiquidatable(vault, vaultType, randomVaultLatestUpdate, randomRoundId),
-        'MarginCalculator: can not liquidate vault with expired short otoken',
+        'MarginCalculator: can not liquidate expired position',
       )
     })
 
