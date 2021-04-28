@@ -69,17 +69,17 @@ contract MarginCalculatorHarness is MarginCalculator {
     uint256 collateralAmount,
     uint256 _vaultType
   ) public view returns (bool) {
-    address[] memory shorts;
+    address[] memory shorts = new address[](1);
     shorts[0] = short;
-    address[] memory longs;
+    address[] memory longs = new address[](1);
     longs[0] = long;
-    address[] memory collaterals;
+    address[] memory collaterals = new address[](1);
     collaterals[0] = collateral;
-    uint256[] memory longAmounts;
+    uint256[] memory longAmounts = new uint256[](1);
     longAmounts[0] = longAmount;
-    uint256[] memory collateralAmounts;
+    uint256[] memory collateralAmounts = new uint256[](1);
     collateralAmounts[0] = collateralAmount;
-    uint256[] memory shortAmounts;
+    uint256[] memory shortAmounts = new uint256[](1);
     shortAmounts[0] = shortAmount;
 
     MarginVault.Vault memory v = MarginVault.Vault(
