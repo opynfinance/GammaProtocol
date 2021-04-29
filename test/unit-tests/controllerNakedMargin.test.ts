@@ -610,7 +610,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator]) => {
       )
       assert.isAtMost(
         calcRelativeDiff(liquidatorCollateralBalanceAfter, liquidatorCollateralBalanceBefore.plus(isLiquidatable[1]))
-          .dividedBy(10 ** usdcDecimals)
+          .dividedBy(10 ** wethDecimals)
           .toNumber(),
         errorDelta,
         'Liquidator collateral balance mismatch after liquidation',
