@@ -262,10 +262,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator]) => {
         },
       ]
 
-      await expectRevert(
-        controllerProxy.operate(settleArgs, {from: accountOwner1}),
-        'Controller: can not settle undercollateralized vault',
-      )
+      await expectRevert(controllerProxy.operate(settleArgs, {from: accountOwner1}), 'CO/err32')
     })
   })
 
@@ -840,10 +837,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator]) => {
         },
       ]
 
-      await expectRevert(
-        controllerProxy.operate(liquidateArgs, {from: liquidator}),
-        'Controller: can not liquidate vault',
-      )
+      await expectRevert(controllerProxy.operate(liquidateArgs, {from: liquidator}), 'CO/err33')
     })
 
     it('should be able to remove excess collateral after partially liquidating', async () => {
