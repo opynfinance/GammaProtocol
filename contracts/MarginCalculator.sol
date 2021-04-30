@@ -1143,11 +1143,11 @@ contract MarginCalculator is Ownable {
         pure
         returns (bool)
     {
-        // if vault is missing a long or a short, return True
-        if (!_vaultDetails.hasLong || !_vaultDetails.hasShort) return true;
-
         if (_vaultDetails.vaultType == 1)
             require(!_vaultDetails.hasLong, "MarginCalculator: naked margin vault cannot have long otoken");
+
+        // if vault is missing a long or a short, return True
+        if (!_vaultDetails.hasLong || !_vaultDetails.hasShort) return true;
 
         return
             _vault.longOtokens[0] != _vault.shortOtokens[0] &&
