@@ -229,7 +229,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @notice modifier to check if the sender is the partialPauser address
      */
     modifier onlyPartialPauser {
-        require(msg.sender == partialPauser, "C0/err2");
+        require(msg.sender == partialPauser, "CO/err2");
 
         _;
     }
@@ -853,7 +853,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             bool hasShort = _isNotEmpty(vault.shortOtokens);
             bool hasLong = _isNotEmpty(vault.longOtokens);
 
-            require(hasShort || hasLong, "Controller: Can't settle vault with no otoken");
+            require(hasShort || hasLong, "CO/err30");
 
             otoken = hasShort ? OtokenInterface(vault.shortOtokens[0]) : OtokenInterface(vault.longOtokens[0]);
 
@@ -867,7 +867,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         (address collateral, address underlying, address strike, , uint256 expiry, ) = otoken.getOtokenDetails();
 
         // do not allow settling vault with un-expired otoken
-        require(now >= expiry, "Controller: can not settle vault with un-expired otoken");
+        require(now >= expiry, "CO/err31");
         require(isSettlementAllowed(underlying, strike, collateral, expiry), "CO/err29");
 
         (uint256 payout, bool isValidVault) = calculator.getExcessCollateral(vault, typeVault);
