@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.6.10;
 
-interface IVault {
+interface YearnVaultInterface {
     function token() external view returns (address);
 
     function underlying() external view returns (address);

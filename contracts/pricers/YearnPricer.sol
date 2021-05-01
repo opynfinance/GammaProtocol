@@ -1,73 +1,79 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.6.10;
 
-import {ChainLinkPricer} from "./ChainlinkPricer.sol";
-import {IVault} from "../interfaces/YearnVaultInterface.sol";
 import {FixedPointInt256 as FPI} from "../libs/FixedPointInt256.sol";
+import {OracleInterface} from "../interfaces/OracleInterface.sol";
+import {OpynPricerInterface} from "../interfaces/OpynPricerInterface.sol";
+import {YearnVaultInterface} from "../interfaces/YearnVaultInterface.sol";
+import {ERC20Interface} from "../interfaces/ERC20Interface.sol";
+import {SafeMath} from "../packages/oz/SafeMath.sol";
 
 /**
- * @notice A Pricer contract for a vault token as reported by Chainlink and the vault.
+ * @notice A Pricer contract for a Yearn yToken
  */
-contract YearnPricer is ChainLinkPricer {
-    /// @notice the yvault address
-    IVault public yVault;
+contract YearnPricer is OpynPricerInterface {
+    using SafeMath for uint256;
 
+    /// @notice opyn oracle address
+    OracleInterface public oracle;
+
+    /// @notice yToken that this pricer will a get price for
+    YearnVaultInterface public yToken;
+
+    /// @notice underlying asset for this yToken
+    ERC20Interface public underlying;
+
+    /**
+     * @param _yToken yToken asset
+     * @param _underlying underlying asset for this yToken
+     * @param _oracle Opyn Oracle contract address
+     */
     constructor(
-        address _bot,
-        address _asset,
-        address _aggregator,
-        address _oracle,
-        address _yVault
-    ) public ChainLinkPricer(_bot, _asset, _aggregator, _oracle) {
-        yVault = IVault(_yVault);
+        address _yToken,
+        address _underlying,
+        address _oracle
+    ) public {
+        require(_yToken != address(0), "YearnPricer: yToken address can not be 0");
+        require(_underlying != address(0), "YearnPricer: underlying address can not be 0");
+        require(_oracle != address(0), "YearnPricer: oracle address can not be 0");
+
+        yToken = YearnVaultInterface(_yToken);
+        underlying = ERC20Interface(_underlying);
+        oracle = OracleInterface(_oracle);
     }
 
     /**
      * @notice get the live price for the asset
-     * @dev overides the getPrice function in OpynPricerInterface
-     * @return price of the asset in USD, scaled by 1e8
+     * @dev overrides the getPrice function in OpynPricerInterface
+     * @return price of 1e8 yToken in USD, scaled by 1e8
      */
     function getPrice() external override view returns (uint256) {
-        uint256 answer = uint256(aggregator.latestAnswer());
-        require(answer > 0, "ChainLinkPricer: price is lower than 0");
-
-        return getYVaultPrice(uint256(answer));
+        uint256 underlyingPrice = oracle.getPrice(address(underlying));
+        require(underlyingPrice > 0, "CompoundPricer: underlying price is 0");
+        return _underlyingPriceToYtokenPrice(underlyingPrice);
     }
 
     /**
-     * @notice set the expiry price in the oracle, can only be called by Bot address
-     * @dev a roundId must be provided to confirm price validity, which is the first Chainlink price provided after the expiryTimestamp
+     * @notice set the expiry price in the oracle
+     * @dev requires that the underlying price has been set before setting a yToken price
      * @param _expiryTimestamp expiry to set a price for
-     * @param _roundId the first roundId after expiryTimestamp
      */
-    function setExpiryPriceInOracle(
-        uint256 priceInUnderlying,
-        uint256 _expiryTimestamp,
-        uint256 _roundId
-    ) external onlyBot {
-        uint256 roundTimestamp = aggregator.getTimestamp(_roundId);
-
-        require(_expiryTimestamp <= roundTimestamp, "ChainLinkPricer: invalid roundId");
-
-        uint256 assetPrice = uint256(aggregator.getAnswer(_roundId));
-        uint256 yVaultPrice = getYVaultPrice(uint256(assetPrice));
-        oracle.setExpiryPrice(asset, _expiryTimestamp, yVaultPrice);
+    function setExpiryPriceInOracle(uint256 _expiryTimestamp) external {
+        (uint256 underlyingPriceExpiry, ) = oracle.getExpiryPrice(address(underlying), _expiryTimestamp);
+        require(underlyingPriceExpiry > 0, "YearnPricer: underlying price not set yet");
+        uint256 yTokenPrice = _underlyingPriceToYtokenPrice(underlyingPriceExpiry);
+        oracle.setExpiryPrice(address(yToken), _expiryTimestamp, yTokenPrice);
     }
 
     /**
-     * @notice set the expiry price in the oracle, can only be called by Bot address
-     * @dev a roundId must be provided to confirm price validity, which is the first Chainlink price provided after the expiryTimestamp
-     * @param _expiryTimestamp expiry to set a price for
-     * @param _roundId the first roundId after expiryTimestamp
+     * @dev convert underlying price to yToken price with the yToken to underlying exchange rate
+     * @param _underlyingPrice price of 1 underlying token (ie 1e6 USDC, 1e18 WETH) in USD, scaled by 1e8
+     * @return price of 1e8 yToken in USD, scaled by 1e8
      */
-    function setExpiryPriceInOracle(uint256 _expiryTimestamp, uint256 _roundId) external override onlyBot {
-        revert("Deprecated");
-    }
-
-    function getYVaultPrice(uint256 assetPrice) private view returns (uint256) {
-        FPI.FixedPointInt memory answer = FPI.fromScaledUint(assetPrice, 10**8);
-        FPI.FixedPointInt memory pricePerShare = FPI.fromScaledUint(yVault.getPricePerFullShare(), 10**18);
-        uint256 yvPrice = FPI.toScaledUint(FPI.mul(pricePerShare, answer), 8, true);
-        return yvPrice;
+    function _underlyingPriceToYtokenPrice(uint256 _underlyingPrice) private view returns (uint256) {
+        FPI.FixedPointInt memory answer = FPI.fromScaledUint(_underlyingPrice, 10**8);
+        FPI.FixedPointInt memory pricePerShare = FPI.fromScaledUint(yToken.getPricePerFullShare(), 10**18);
+        uint256 yTokenPrice = FPI.toScaledUint(FPI.mul(pricePerShare, answer), 8, true);
+        return yTokenPrice;
     }
 }
