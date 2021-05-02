@@ -58,7 +58,7 @@ contract ChainLinkPricer is OpynPricerInterface {
      * @dev overides the getPrice function in OpynPricerInterface
      * @return price of the asset in USD, scaled by 1e8
      */
-    function getPrice() external virtual override view returns (uint256) {
+    function getPrice() external override view returns (uint256) {
         int256 answer = aggregator.latestAnswer();
         require(answer > 0, "ChainLinkPricer: price is lower than 0");
         // chainlink's answer is already 1e8
@@ -71,7 +71,7 @@ contract ChainLinkPricer is OpynPricerInterface {
      * @param _expiryTimestamp expiry to set a price for
      * @param _roundId the first roundId after expiryTimestamp
      */
-    function setExpiryPriceInOracle(uint256 _expiryTimestamp, uint256 _roundId) external virtual onlyBot {
+    function setExpiryPriceInOracle(uint256 _expiryTimestamp, uint256 _roundId) external onlyBot {
         uint256 roundTimestamp = aggregator.getTimestamp(_roundId);
 
         require(_expiryTimestamp <= roundTimestamp, "ChainLinkPricer: invalid roundId");
