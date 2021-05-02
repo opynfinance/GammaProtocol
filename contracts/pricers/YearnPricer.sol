@@ -73,6 +73,6 @@ contract YearnPricer is OpynPricerInterface {
     function _underlyingPriceToYtokenPrice(uint256 _underlyingPrice) private view returns (uint256) {
         uint256 underlyingDecimals = uint256(underlying.decimals());
         uint256 pricePerShare = yToken.pricePerShare();
-        return pricePerShare.mul(_underlyingPrice).div(10**(underlyingDecimals + 8));
+        return pricePerShare.mul(_underlyingPrice).div(10**underlyingDecimals);
     }
 }
