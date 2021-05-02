@@ -49,7 +49,7 @@ contract YearnPricer is OpynPricerInterface {
      */
     function getPrice() external override view returns (uint256) {
         uint256 underlyingPrice = oracle.getPrice(address(underlying));
-        require(underlyingPrice > 0, "CompoundPricer: underlying price is 0");
+        require(underlyingPrice > 0, "YearnPricer: underlying price is 0");
         return _underlyingPriceToYtokenPrice(underlyingPrice);
     }
 
@@ -71,9 +71,8 @@ contract YearnPricer is OpynPricerInterface {
      * @return price of 1e8 yToken in USD, scaled by 1e8
      */
     function _underlyingPriceToYtokenPrice(uint256 _underlyingPrice) private view returns (uint256) {
-        FPI.FixedPointInt memory answer = FPI.fromScaledUint(_underlyingPrice, 10**8);
-        FPI.FixedPointInt memory pricePerShare = FPI.fromScaledUint(yToken.getPricePerFullShare(), 10**18);
-        uint256 yTokenPrice = FPI.toScaledUint(FPI.mul(pricePerShare, answer), 8, true);
-        return yTokenPrice;
+        uint256 underlyingDecimals = uint256(underlying.decimals());
+        uint256 pricePerShare = yToken.pricePerShare();
+        return pricePerShare.mul(_underlyingPrice).div(10**(underlyingDecimals + 8));
     }
 }
