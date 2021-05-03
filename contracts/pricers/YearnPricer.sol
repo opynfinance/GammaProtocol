@@ -23,6 +23,9 @@ contract YearnPricer is OpynPricerInterface {
     /// @notice underlying asset for this yToken
     ERC20Interface public underlying;
 
+    /// @notice decimals for the underlying asset
+    uint8 public underlyingDecimals;
+
     /**
      * @param _yToken yToken asset
      * @param _underlying underlying asset for this yToken
@@ -37,8 +40,10 @@ contract YearnPricer is OpynPricerInterface {
         require(_underlying != address(0), "YearnPricer: underlying address can not be 0");
         require(_oracle != address(0), "YearnPricer: oracle address can not be 0");
 
+        ERC20Interface underlyingToken = ERC20Interface(_underlying);
+        underlyingDecimals = underlyingToken.decimals();
         yToken = YearnVaultInterface(_yToken);
-        underlying = ERC20Interface(_underlying);
+        underlying = underlyingToken;
         oracle = OracleInterface(_oracle);
     }
 
@@ -71,8 +76,7 @@ contract YearnPricer is OpynPricerInterface {
      * @return price of 1e8 yToken in USD, scaled by 1e8
      */
     function _underlyingPriceToYtokenPrice(uint256 _underlyingPrice) private view returns (uint256) {
-        uint256 underlyingDecimals = uint256(underlying.decimals());
         uint256 pricePerShare = yToken.pricePerShare();
-        return pricePerShare.mul(_underlyingPrice).div(10**underlyingDecimals);
+        return pricePerShare.mul(_underlyingPrice).div(10**uint256(underlyingDecimals));
     }
 }

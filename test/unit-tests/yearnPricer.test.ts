@@ -48,9 +48,19 @@ contract('YearnPricer', ([owner, random]) => {
   })
 
   describe('constructor', () => {
-    it('should deploy the contract successfully', async () => {
+    it('should deploy the contract successfully with correct values', async () => {
       yvWETHPricer = await YearnPricer.new(yWETH.address, weth.address, oracle.address)
       yvUSDCPricer = await YearnPricer.new(yUSDC.address, usdc.address, oracle.address)
+
+      assert.equal(await yvWETHPricer.yToken(), yWETH.address)
+      assert.equal(await yvWETHPricer.underlying(), weth.address)
+      assert.equal((await yvWETHPricer.underlyingDecimals()).toString(), '18')
+      assert.equal(await yvWETHPricer.oracle(), oracle.address)
+
+      assert.equal(await yvUSDCPricer.yToken(), yUSDC.address)
+      assert.equal(await yvUSDCPricer.underlying(), usdc.address)
+      assert.equal((await yvUSDCPricer.underlyingDecimals()).toString(), '6')
+      assert.equal(await yvUSDCPricer.oracle(), oracle.address)
     })
     it('should revert if initializing with yToken = 0', async () => {
       await expectRevert(
