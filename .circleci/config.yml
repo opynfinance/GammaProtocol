@@ -141,16 +141,6 @@ jobs:
             ./specs/scripts/runValidBalances.sh validBalanceTotalCollateral
             ./specs/scripts/runValidBalances.sh validBalanceTotalShort
             ./specs/scripts/runValidBalances.sh validBalanceTotalLong
-            
-      - run: 
-          name: Test Calculator rules
-          command: |
-          ./specs/scripts/runCalculator.sh validDust
-          ./specs/scripts/runCalculator.sh expiryTimesInAscendingOrder 
-          ./specs/scripts/runCalculator.sh productTimeToExpiryHasValue 
-          ./specs/scripts/runCalculator.sh nakedMarginVaultIsValid
-          ./specs/scripts/runCalculator.sh putMarginComparison
-          ./specs/scripts/runCalculator.sh callMarginComparison
 
       - run:
           name: Test general rules
