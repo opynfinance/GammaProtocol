@@ -313,7 +313,7 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
       scaledUnderlyingPrice = scaleBigNum(underlyingPrice, 8)
       await oracle.setRealTimePrice(weth.address, scaledUnderlyingPrice)
 
-      await expectRevert(controllerProxy.sync(accountOwner1, vaultCounter, {from: accountOwner1}), 'CO/err14')
+      await expectRevert(controllerProxy.sync(accountOwner1, vaultCounter, {from: accountOwner1}), 'CO14')
 
       roundId = new BigNumber(10)
       await oracle.setChainlinkRoundData(weth.address, roundId, scaledUnderlyingPrice, (await time.latest()).toString())
