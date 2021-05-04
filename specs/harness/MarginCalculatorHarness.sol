@@ -67,7 +67,7 @@ contract MarginCalculatorHarness is MarginCalculator {
     uint256 shortAmount,
     uint256 longAmount,
     uint256 collateralAmount,
-    uint256 _vaultType
+    uint256 vaultType
   ) public view returns (bool) {
     address[] memory shorts = new address[](1);
     shorts[0] = short;
@@ -82,7 +82,7 @@ contract MarginCalculatorHarness is MarginCalculator {
     uint256[] memory shortAmounts = new uint256[](1);
     shortAmounts[0] = shortAmount;
 
-    MarginVault.Vault memory v = MarginVault.Vault(
+    MarginVault.Vault memory vault = MarginVault.Vault(
       shorts,
       longs,
       collaterals,
@@ -90,15 +90,18 @@ contract MarginCalculatorHarness is MarginCalculator {
       longAmounts,
       collateralAmounts
     );
-    (, bool isValid) = getExcessCollateral(v, _vaultType);
-    return isValid;
+
+    VaultDetails memory vaultDetails = _getVaultDetails(vault, vaultType);
+    // include all the checks for to ensure the vault is valid
+    _checkIsValidVault(vault, vaultDetails);
+    return true;
   }
 }
 // // we are assuming one short otoken, one long otoken and one collateral
 // //	mapping :	collateral amount => short amount => long amount => collateralAsset
 // mapping(uint256 => mapping(uint256 => mapping(uint256 => uint256))) internal excessCollateral;
 
-// function getExcessCollateral(MarginVault.Vault memory _vault) public view returns (uint256, bool) {
+// function getExcessCollateral(MarginVault.Vault memory _vault, uint256 vaultType) public view returns (uint256, bool) {
 //   uint256 excess = excessCollateral[_vault.collateralAmounts[0]][_vault.shortAmounts[0]][_vault.longAmounts[0]];
 //   if (excess >= 0) return (uint256(excess), true);
 //   else return (uint256(-excess), false);
