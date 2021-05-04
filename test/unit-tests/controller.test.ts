@@ -4860,5 +4860,23 @@ contract(
         await expectRevert.unspecified(controllerProxy.operate(actionArgs, {from: accountOwner1}))
       })
     })
+
+    describe('Donate to pool', () => {
+      it('it should donate to margin pool', async () => {
+        const amountToDonate = createTokenAmount(100, usdcDecimals)
+        const storedBalanceBefore = new BigNumber(await marginPool.getStoredBalance(usdc.address))
+
+        await usdc.approve(marginPool.address, amountToDonate, {from: random})
+        await controllerProxy.donate(usdc.address, amountToDonate, {from: random})
+
+        const storedBalanceAfter = new BigNumber(await marginPool.getStoredBalance(usdc.address))
+
+        assert.equal(
+          storedBalanceAfter.minus(storedBalanceBefore).toString(),
+          amountToDonate,
+          'Donated amount mismatch',
+        )
+      })
+    })
   },
 )
