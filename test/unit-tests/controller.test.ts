@@ -46,7 +46,7 @@ enum ActionType {
 
 contract(
   'Controller',
-  ([owner, accountOwner1, accountOwner2, accountOperator1, holder1, fullPauser, partialPauser, random]) => {
+  ([owner, accountOwner1, accountOwner2, accountOperator1, holder1, fullPauser, partialPauser, random, donor]) => {
     // ERC20 mock
     let usdc: MockERC20Instance
     let weth: MockERC20Instance
@@ -112,6 +112,7 @@ contract(
       await usdc.mint(accountOwner1, createTokenAmount(10000, usdcDecimals))
       await usdc.mint(accountOperator1, createTokenAmount(10000, usdcDecimals))
       await usdc.mint(random, createTokenAmount(10000, usdcDecimals))
+      await usdc.mint(donor, createTokenAmount(10000, usdcDecimals))
     })
 
     describe('Controller initialization', () => {
@@ -4806,6 +4807,24 @@ contract(
         await expectRevert(
           controllerProxy.operate(actionArgs, {from: accountOwner1}),
           'Controller: system is fully paused',
+        )
+      })
+    })
+
+    describe('Donate to pool', () => {
+      it('it should donate to margin pool', async () => {
+        const amountToDonate = createTokenAmount(10, usdcDecimals)
+        const storedBalanceBefore = new BigNumber(await marginPool.getStoredBalance(usdc.address))
+
+        await usdc.approve(marginPool.address, amountToDonate, {from: donor})
+        await controllerProxy.donate(usdc.address, amountToDonate, {from: donor})
+
+        const storedBalanceAfter = new BigNumber(await marginPool.getStoredBalance(usdc.address))
+
+        assert.equal(
+          storedBalanceAfter.minus(storedBalanceBefore).toString(),
+          amountToDonate,
+          'Donated amount mismatch',
         )
       })
     })
