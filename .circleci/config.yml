@@ -15,7 +15,7 @@ workflows:
             - build
       - certora:
           requires:
-            - unit-test
+            - build
       - size-check:
           requires:
             - build
