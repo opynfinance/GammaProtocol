@@ -55,6 +55,9 @@ rule productTimeToExpiryHasValue (address underlying, address strike, address co
 */
 rule nakedMarginVaultIsValid (address short, address long, address collateral, uint256 shortAmount, uint256 longAmount, uint256 collateralAmount, uint256 vaultType) {
     require vaultType == 1; 
+    if (long == 0x0000000000000000000000000000000000000000) {
+        require longAmount == 0;
+    }
     bool b = isValidVault@withrevert(short, long, collateral, shortAmount, longAmount, collateralAmount, vaultType);
     assert (!lastReverted && b == true) => (longAmount == 0 && long == 0);
 }
