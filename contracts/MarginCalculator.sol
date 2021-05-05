@@ -763,12 +763,10 @@ contract MarginCalculator is Ownable {
         uint256 _shortExpiryTimestamp,
         bool _isPut
     ) internal view returns (FPI.FixedPointInt memory) {
-        // // find option upper bound value
-        // FPI.FixedPointInt memory optionUpperBoundValue = _findUpperBoundValue(_productHash, _shortExpiryTimestamp);
-        FPI.FixedPointInt memory optionUpperBoundValue = FPI.fromScaledUint(5, SCALING_FACTOR);
+        // find option upper bound value
+        FPI.FixedPointInt memory optionUpperBoundValue = _findUpperBoundValue(_productHash, _shortExpiryTimestamp);
         // convert spot shock value of this product to FixedPointInt (already scaled by 1e27)
-        // FPI.FixedPointInt memory spotShockValue = FPI.fromScaledUint(spotShock[_productHash], SCALING_FACTOR);
-        FPI.FixedPointInt memory spotShockValue = FPI.fromScaledUint(10, SCALING_FACTOR);
+        FPI.FixedPointInt memory spotShockValue = FPI.fromScaledUint(spotShock[_productHash], SCALING_FACTOR);
 
         FPI.FixedPointInt memory a;
         FPI.FixedPointInt memory b;
