@@ -4,8 +4,6 @@ import BigNumber from 'bignumber.js'
 const util = require('@0x/protocol-utils')
 const ethSigUtil = require('eth-sig-util')
 
-BigNumber.config({EXPONENTIAL_AT: 60, ROUNDING_MODE: BigNumber.ROUND_DOWN})
-
 export type vault = {
   shortAmounts: (BigNumber | string | number)[]
   longAmounts: (BigNumber | string | number)[]

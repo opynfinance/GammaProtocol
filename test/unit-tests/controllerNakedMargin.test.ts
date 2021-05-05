@@ -32,8 +32,6 @@ const MarginPool = artifacts.require('MarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
 const MarginVault = artifacts.require('MarginVault.sol')
 
-BigNumber.config({ROUNDING_MODE: BigNumber.ROUND_DOWN})
-
 // address(0)
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
