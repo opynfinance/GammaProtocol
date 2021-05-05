@@ -260,10 +260,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator]) => {
         },
       ]
 
-      await expectRevert(
-        controllerProxy.operate(settleArgs, {from: accountOwner1}),
-        'Controller: can not settle undercollateralized vault',
-      )
+      await expectRevert(controllerProxy.operate(settleArgs, {from: accountOwner1}), 'CO32')
     })
   })
 
@@ -358,8 +355,6 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator]) => {
         'Vault latest update timestamp mismatch',
       )
 
-      console.log('vault latest update timestamp: ', latestVaultUpdateTimestamp.toString())
-
       // mint short otoken
       await shortOtoken.mintOtoken(liquidator, createTokenAmount(shortAmount))
     })
@@ -404,10 +399,6 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator]) => {
 
       const liquidatorCollateralBalanceAfter = new BigNumber(await usdc.balanceOf(liquidator))
       const vaultAfterLiquidation = (await controllerProxy.getVault(accountOwner1, vaultCounter.toString()))[0]
-
-      console.log('vvv aaa lll: ', vaultAfterLiquidation.collateralAmounts[0].toString())
-      console.log('vvv bbb lll: ', new BigNumber(vaultBeforeLiquidation.collateralAmounts[0]).toString())
-      console.log('lll ppp: ', isLiquidatable[1].toString())
 
       assert.equal(vaultAfterLiquidation.shortAmounts[0].toString(), '0', 'Vault was not fully liquidated')
       assert.isAtMost(
@@ -823,7 +814,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator]) => {
 
       assert.equal(isLiquidatable[0], false, 'Vault liquidation state mismatch')
 
-      const vaultCollateral = requiredMargin.dividedBy(10 ** usdcDecimals).toString()
+      // const vaultCollateral = requiredMargin.dividedBy(10 ** usdcDecimals).toString()
 
       const liquidateArgs = [
         {
@@ -838,10 +829,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator]) => {
         },
       ]
 
-      await expectRevert(
-        controllerProxy.operate(liquidateArgs, {from: liquidator}),
-        'Controller: can not liquidate vault',
-      )
+      await expectRevert(controllerProxy.operate(liquidateArgs, {from: liquidator}), 'CO33')
     })
 
     it('should be able to remove excess collateral after partially liquidating', async () => {
