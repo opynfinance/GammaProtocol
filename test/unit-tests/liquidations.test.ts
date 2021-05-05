@@ -22,8 +22,6 @@ const MockOtoken = artifacts.require('MockOtoken.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
 const MarginCalculator = artifacts.require('CalculatorTester.sol')
 
-BigNumber.config({ROUNDING_MODE: BigNumber.ROUND_DOWN})
-
 contract('MarginCalculator: liquidation', ([owner, random]) => {
   let expiry: number
 
