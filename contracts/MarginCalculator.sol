@@ -300,7 +300,7 @@ contract MarginCalculator is Ownable {
         uint256 _shortExpiryTimestamp,
         uint256 _collateralDecimals,
         bool _isPut
-    ) external virtual view returns (uint256) {
+    ) external view returns (uint256) {
         // get product hash
         bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
 
