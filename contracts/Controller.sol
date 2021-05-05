@@ -262,6 +262,12 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         _refreshConfigInternal();
     }
 
+    /**
+     * @notice send asset amount to margin pool
+     * @dev use donate() instead of direct transfer() to store the balance in assetBalance
+     * @param _asset asset address
+     * @param _amount amount to donate to pool
+     */
     function donate(address _asset, uint256 _amount) external {
         pool.transferToPool(_asset, msg.sender, _amount);
 
