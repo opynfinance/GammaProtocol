@@ -14,6 +14,8 @@ function cheapGetVault(address owner, uint256 vaultId) internal view returns (Ma
 /g' contracts/Controller.sol
 # Virtualize runActions
 # perl -0777 -i -pe 's/function _runActions\(Actions.ActionArgs\[\] memory _actions\)\s*internal/function _runActions\(Actions.ActionArgs\[\] memory _actions\) virtual internal/g' contracts/Controller.sol
+# Virtualize getNakedMargin 
+perl -0777 -i -pe 's/function getNakedMarginRequired\(address _underlying, address _strike, address _collateral, uint256 _shortAmount, uint256 _strikePrice, uint256 _underlyingPrice, uint256 _shortExpiryTimestamp, uint256 _collateralDecimals, bool _isPut\)\s*external/function getNakedMarginRequired\(address _underlying, address _strike, address _collateral, uint256 _shortAmount, uint256 _strikePrice, uint256 _underlyingPrice, uint256 _shortExpiryTimestamp, uint256 _collateralDecimals, bool _isPut\) virtual external/g' contracts/MarginCalculator.sol
 # _totalSupply should be internal
 perl -0777 -i -pe 's/uint256 private _totalSupply;/uint256 internal _totalSupply;/g' contracts/packages/oz/upgradeability/ERC20Upgradeable.sol
 # otoken.collateralAsset in settleVault should be dummyERC20C

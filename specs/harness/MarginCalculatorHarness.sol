@@ -4,7 +4,12 @@ pragma experimental ABIEncoderV2;
 import '../../contracts/MarginCalculator.sol';
 import {MarginVault} from '../../contracts/libs/MarginVault.sol';
 
-contract MarginCalculatorHarness is MarginCalculator {
+contract MarginCalculatorHarness is MarginCalculator(address(1)) {
+  constructor(address _oracle) public {
+    require(_oracle != address(0), 'MarginCalculator: invalid oracle address');
+    oracle = OracleInterface(_oracle);
+  }
+
   function getProductTimeToExpiry(
     address _underlying,
     address _strike,
@@ -95,6 +100,56 @@ contract MarginCalculatorHarness is MarginCalculator {
     // include all the checks for to ensure the vault is valid
     _checkIsValidVault(vault, vaultDetails);
     return true;
+  }
+
+  /**
+   * @notice return the collateral required for naked margin vault, in collateral asset decimals
+   * @dev _shortAmount, _strikePrice and _underlyingPrice should be scaled by 1e8
+   * @param _underlying underlying asset address
+   * @param _strike strike asset address
+   * @param _collateral collateral asset address
+   * @param _shortAmount amount of short otoken
+   * @param  _strikePrice otoken strike price
+   * @param _underlyingPrice otoken underlying price
+   * @param _shortExpiryTimestamp otoken expiry timestamp
+   * @param _collateralDecimals otoken collateral asset decimals
+   * @param _isPut otoken type
+   */
+  function getNakedMarginRequired(
+    address _underlying,
+    address _strike,
+    address _collateral,
+    uint256 _shortAmount,
+    uint256 _strikePrice,
+    uint256 _underlyingPrice,
+    uint256 _shortExpiryTimestamp,
+    uint256 _collateralDecimals,
+    bool _isPut
+  ) external override view returns (uint256) {
+    // get product hash
+    bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
+
+    // scale short amount from 1e8 to 1e27
+    FPI.FixedPointInt memory shortAmount = FPI.fromScaledUint(_shortAmount, 27);
+    // scale short strike from 1e8 to 1e27
+    FPI.FixedPointInt memory shortStrike = FPI.fromScaledUint(_shortAmount, 27);
+    // scale short underlying price from 1e8 to 1e27
+    FPI.FixedPointInt memory shortUnderlyingPrice = FPI.fromScaledUint(_shortAmount, 27);
+
+    // return required margin, scaled by option collateral asset decimals, explicitly rounded up
+    return
+      FPI.toScaledUint(
+        _getNakedMarginRequired(
+          productHash,
+          shortAmount,
+          shortStrike,
+          shortUnderlyingPrice,
+          _shortExpiryTimestamp,
+          _isPut
+        ),
+        _collateralDecimals,
+        false
+      );
   }
 }
 // // we are assuming one short otoken, one long otoken and one collateral
