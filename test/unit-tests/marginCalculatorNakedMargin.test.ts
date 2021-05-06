@@ -206,7 +206,7 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
 
       assert.equal(
         new BigNumber(
-          (await calculator.getProductTimeToExpiry(weth.address, usdc.address, usdc.address, true))[0],
+          (await calculator.getTimesToExpiry(weth.address, usdc.address, usdc.address, true))[0],
         ).toNumber(),
         timeToExpiry,
         'Product time to expiry mismatch',

@@ -227,14 +227,14 @@ contract MarginCalculator is Ownable {
     }
 
     /**
-     * @notice get time to expiry for specific product
+     * @notice get times to expiry for a specific product
      * @param _underlying otoken underlying asset
      * @param _strike otoken strike asset
      * @param _collateral otoken collateral asset
      * @param _isPut otoken type
      * @return array of times to expiry
      */
-    function getProductTimeToExpiry(
+    function getTimesToExpiry(
         address _underlying,
         address _strike,
         address _collateral,
