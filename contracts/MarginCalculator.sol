@@ -77,7 +77,7 @@ contract MarginCalculator is Ownable {
     /// @notice emits an event when collateral dust is updated
     event CollateralDustUpdated(address indexed collateral, uint256 dust);
     /// @notice emits an event when new time to expiry is added for a specific product
-    event ProductTimeToExpiryAdded(bytes32 indexed productHash, uint256 timeToExpiry);
+    event TimeToExpiryAdded(bytes32 indexed productHash, uint256 timeToExpiry);
     /// @notice emits an event when new upper bound value is added for a specific time to expiry timestamp
     event TimeToExpiryValueAdded(bytes32 indexed productHash, uint256 timeToExpiry, uint256 value);
     /// @notice emits an event when spot shock value is updated for a specific product
