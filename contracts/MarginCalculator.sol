@@ -68,7 +68,7 @@ contract MarginCalculator is Ownable {
     /// @dev mapping to store option upper bound value at specific time to expiry for a given product (1e27)
     mapping(bytes32 => mapping(uint256 => uint256)) internal maxPriceAtTimeToExpiry;
 
-    /// @dev mapping to store shock value for spot price per product (1e27)
+    /// @dev mapping to store shock value for spot price of a given product (1e27)
     mapping(bytes32 => uint256) internal spotShock;
 
     /// @dev oracle module
