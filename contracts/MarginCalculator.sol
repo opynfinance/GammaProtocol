@@ -489,6 +489,21 @@ contract MarginCalculator is Ownable {
     }
 
     /**
+     * @notice calculate required collateral margin for a vault
+     * @param _vault theoretical vault that needs to be checked
+     * @param _vaultType vault type
+     * @return the vault collateral amount, and marginRequired the minimal amount of collateral needed in a vault, scaled to 1e27
+     */
+    function getMarginRequired(MarginVault.Vault memory _vault, uint256 _vaultType)
+        external
+        view
+        returns (FPI.FixedPointInt memory, FPI.FixedPointInt memory)
+    {
+        VaultDetails memory vaultDetail = _getVaultDetails(_vault, _vaultType);
+        return _getMarginRequired(_vault, vaultDetail);
+    }
+
+    /**
      * @notice returns the amount of collateral that can be removed from an actual or a theoretical vault
      * @dev return amount is denominated in the collateral asset for the oToken in the vault, or the collateral asset in the vault
      * @param _vault theoretical vault that needs to be checked
