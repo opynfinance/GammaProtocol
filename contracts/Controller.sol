@@ -907,7 +907,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         // check if vault is undercollateralized
         // the price is the amount of collateral asset to pay per 1 repaid debt(otoken)
-        // collateralDust is the amount of collateral that should be left in vault if not fully liquidated by liquidator
+        // collateralDust is the minimum amount of collateral that can be left in the vault when a partial liquidation occurs
         (MarginVault.Vault memory vault, bool isLiquidatable, uint256 price, uint256 collateralDust) = _isLiquidatable(
             _args.owner,
             _args.vaultId,
