@@ -63,10 +63,10 @@ contract MarginCalculator is Ownable {
     mapping(address => uint256) internal dust;
 
     /// @dev mapping to store array of time to expiry per product
-    mapping(bytes32 => uint256[]) internal productTimeToExpiry;
+    mapping(bytes32 => uint256[]) internal productToTimeToExpiry;
 
     /// @dev mapping to store option upper bound value at specific time to expiry per product (1e27)
-    mapping(bytes32 => mapping(uint256 => uint256)) internal timeToExpiryValue;
+    mapping(bytes32 => mapping(uint256 => uint256)) internal timeToExpiryToMaxPrice;
 
     /// @dev mapping to store shock value for spot price per product (1e27)
     mapping(bytes32 => uint256) internal spotShock;
@@ -129,7 +129,7 @@ contract MarginCalculator is Ownable {
         // get product hash
         bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
 
-        uint256[] storage expiryArray = productTimeToExpiry[productHash];
+        uint256[] storage expiryArray = productToTimeToExpiry[productHash];
 
         // check that this is the first expiry to set
         // if not, the last expiry should be less than the new one to insert (to make sure the array stay in order)
@@ -147,7 +147,7 @@ contract MarginCalculator is Ownable {
             require(_values[i] > 0, "MarginCalculator: no expiry upper bound value found");
 
             // add new upper bound value for this product at specific time to expiry
-            timeToExpiryValue[productHash][_timesToExpiry[i]] = _values[i];
+            timeToExpiryToMaxPrice[productHash][_timesToExpiry[i]] = _values[i];
 
             // add new time to expiry to array
             expiryArray.push(_timesToExpiry[i]);
@@ -176,10 +176,13 @@ contract MarginCalculator is Ownable {
 
         bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
 
-        require(timeToExpiryValue[productHash][_timeToExpiry] != 0, "MarginCalculator: upper bound value not found");
+        require(
+            timeToExpiryToMaxPrice[productHash][_timeToExpiry] != 0,
+            "MarginCalculator: upper bound value not found"
+        );
 
         // update upper bound value for the time to expiry
-        timeToExpiryValue[productHash][_timeToExpiry] = _value;
+        timeToExpiryToMaxPrice[productHash][_timeToExpiry] = _value;
     }
 
     /**
@@ -238,7 +241,7 @@ contract MarginCalculator is Ownable {
         bool _isPut
     ) external view returns (uint256[] memory) {
         bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
-        return productTimeToExpiry[productHash];
+        return productToTimeToExpiry[productHash];
     }
 
     /**
@@ -259,7 +262,7 @@ contract MarginCalculator is Ownable {
     ) external view returns (uint256) {
         bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
 
-        return timeToExpiryValue[productHash][_timeToExpiry];
+        return timeToExpiryToMaxPrice[productHash][_timeToExpiry];
     }
 
     /**
@@ -807,7 +810,7 @@ contract MarginCalculator is Ownable {
         returns (FPI.FixedPointInt memory)
     {
         // get time to expiry array of this product hash
-        uint256[] memory timesToExpiry = productTimeToExpiry[_productHash];
+        uint256[] memory timesToExpiry = productToTimeToExpiry[_productHash];
 
         // check that this product have upper bound values stored
         require(timesToExpiry.length != 0, "MarginCalculator: product have no expiry values");
@@ -823,7 +826,7 @@ contract MarginCalculator is Ownable {
         // loop through the array and return the upper bound value in FixedPointInt type (already scaled by 1e27)
         for (uint8 i = 0; i < timesToExpiry.length; i++) {
             if (timesToExpiry[i] >= optionTimeToExpiry)
-                return FPI.fromScaledUint(timeToExpiryValue[_productHash][timesToExpiry[i]], SCALING_FACTOR);
+                return FPI.fromScaledUint(timeToExpiryToMaxPrice[_productHash][timesToExpiry[i]], SCALING_FACTOR);
         }
     }
 
