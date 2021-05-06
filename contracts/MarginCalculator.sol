@@ -1220,9 +1220,8 @@ contract MarginCalculator is Ownable {
     /**
      * @notice get option cash value
      * @dev this assume that the underlying price is denominated in strike asset
-     * for put, cv = strike price - underlying price
-     * for call, cv = underlting price - strike price
-     * @param _strikePrice option srike price
+     * cash value = max(underlying price - strike price, 0)
+     * @param _strikePrice option strike price
      * @param _underlyingPrice option underlying price
      * @param _isPut option type, true for put and false for call option
      */

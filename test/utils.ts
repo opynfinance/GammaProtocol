@@ -146,8 +146,6 @@ export const signOrder = async (signer: any, order: any, key: any) => {
   const signature = await order.getSignatureWithKey(key, util.SignatureType.EIP712)
   // eslint-disable-next-line no-param-reassign
   order.signature = signature
-  // console.log('order.signature', JSON.stringify(order.signature))
-  console.log('order with sig', JSON.stringify(order))
   return order
 }
 
