@@ -253,7 +253,7 @@ contract MarginCalculator is Ownable {
      * @param _timeToExpiry option time to expiry timestamp
      * @return option upper bound value (1e27)
      */
-    function getTimeToExpiryValue(
+    function getMaxPrice(
         address _underlying,
         address _strike,
         address _collateral,
