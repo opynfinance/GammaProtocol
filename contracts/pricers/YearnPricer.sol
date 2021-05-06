@@ -79,4 +79,8 @@ contract YearnPricer is OpynPricerInterface {
         uint256 pricePerShare = yToken.pricePerShare();
         return pricePerShare.mul(_underlyingPrice).div(10**uint256(underlyingDecimals));
     }
+
+    function getHistoricalPrice(uint80 _roundId) external override view returns (uint256, uint256) {
+        revert("Deprecated");
+    }
 }
