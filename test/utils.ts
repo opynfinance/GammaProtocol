@@ -85,6 +85,18 @@ export const underlyingPriceToCtokenPrice = async (
     .integerValue(BigNumber.ROUND_DOWN)
 }
 
+export const underlyingPriceToYTokenPrice = async (
+  underlyingPrice: BigNumber,
+  pricePerShare: BigNumber,
+  underlying: MockERC20Instance,
+) => {
+  const underlyingDecimals = new BigNumber(await underlying.decimals())
+  return pricePerShare
+    .times(underlyingPrice)
+    .div(new BigNumber(10).exponentiatedBy(underlyingDecimals))
+    .integerValue(BigNumber.ROUND_DOWN)
+}
+
 /**
  * @param {number} num number to scale
  * @param {number} fromDecimal the decimals the original number has
