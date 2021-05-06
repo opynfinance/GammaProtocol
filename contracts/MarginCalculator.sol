@@ -62,8 +62,8 @@ contract MarginCalculator is Ownable {
     /// @dev mapping to store dust amount per option collateral asset (scaled by collateral decimals)
     mapping(address => uint256) internal dust;
 
-    /// @dev mapping to store array of time to expiry per product
-    mapping(bytes32 => uint256[]) internal productToTimeToExpiry;
+    /// @dev mapping to store array of time to expiry for a given product
+    mapping(bytes32 => uint256[]) internal timesToExpiryForProduct;
 
     /// @dev mapping to store option upper bound value at specific time to expiry per product (1e27)
     mapping(bytes32 => mapping(uint256 => uint256)) internal timeToExpiryToMaxPrice;
@@ -129,7 +129,7 @@ contract MarginCalculator is Ownable {
         // get product hash
         bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
 
-        uint256[] storage expiryArray = productToTimeToExpiry[productHash];
+        uint256[] storage expiryArray = timesToExpiryForProduct[productHash];
 
         // check that this is the first expiry to set
         // if not, the last expiry should be less than the new one to insert (to make sure the array stay in order)
@@ -241,7 +241,7 @@ contract MarginCalculator is Ownable {
         bool _isPut
     ) external view returns (uint256[] memory) {
         bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
-        return productToTimeToExpiry[productHash];
+        return timesToExpiryForProduct[productHash];
     }
 
     /**
@@ -810,7 +810,7 @@ contract MarginCalculator is Ownable {
         returns (FPI.FixedPointInt memory)
     {
         // get time to expiry array of this product hash
-        uint256[] memory timesToExpiry = productToTimeToExpiry[_productHash];
+        uint256[] memory timesToExpiry = timesToExpiryForProduct[_productHash];
 
         // check that this product have upper bound values stored
         require(timesToExpiry.length != 0, "MarginCalculator: product have no expiry values");
