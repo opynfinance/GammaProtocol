@@ -65,8 +65,8 @@ contract MarginCalculator is Ownable {
     /// @dev mapping to store array of time to expiry for a given product
     mapping(bytes32 => uint256[]) internal timesToExpiryForProduct;
 
-    /// @dev mapping to store option upper bound value at specific time to expiry per product (1e27)
-    mapping(bytes32 => mapping(uint256 => uint256)) internal timeToExpiryToMaxPrice;
+    /// @dev mapping to store option upper bound value at specific time to expiry for a given product (1e27)
+    mapping(bytes32 => mapping(uint256 => uint256)) internal maxPriceAtTimeToExpiry;
 
     /// @dev mapping to store shock value for spot price per product (1e27)
     mapping(bytes32 => uint256) internal spotShock;
@@ -147,7 +147,7 @@ contract MarginCalculator is Ownable {
             require(_values[i] > 0, "MarginCalculator: no expiry upper bound value found");
 
             // add new upper bound value for this product at specific time to expiry
-            timeToExpiryToMaxPrice[productHash][_timesToExpiry[i]] = _values[i];
+            maxPriceAtTimeToExpiry[productHash][_timesToExpiry[i]] = _values[i];
 
             // add new time to expiry to array
             expiryArray.push(_timesToExpiry[i]);
@@ -177,12 +177,12 @@ contract MarginCalculator is Ownable {
         bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
 
         require(
-            timeToExpiryToMaxPrice[productHash][_timeToExpiry] != 0,
+            maxPriceAtTimeToExpiry[productHash][_timeToExpiry] != 0,
             "MarginCalculator: upper bound value not found"
         );
 
         // update upper bound value for the time to expiry
-        timeToExpiryToMaxPrice[productHash][_timeToExpiry] = _value;
+        maxPriceAtTimeToExpiry[productHash][_timeToExpiry] = _value;
     }
 
     /**
@@ -262,7 +262,7 @@ contract MarginCalculator is Ownable {
     ) external view returns (uint256) {
         bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
 
-        return timeToExpiryToMaxPrice[productHash][_timeToExpiry];
+        return maxPriceAtTimeToExpiry[productHash][_timeToExpiry];
     }
 
     /**
@@ -826,7 +826,7 @@ contract MarginCalculator is Ownable {
         // loop through the array and return the upper bound value in FixedPointInt type (already scaled by 1e27)
         for (uint8 i = 0; i < timesToExpiry.length; i++) {
             if (timesToExpiry[i] >= optionTimeToExpiry)
-                return FPI.fromScaledUint(timeToExpiryToMaxPrice[_productHash][timesToExpiry[i]], SCALING_FACTOR);
+                return FPI.fromScaledUint(maxPriceAtTimeToExpiry[_productHash][timesToExpiry[i]], SCALING_FACTOR);
         }
     }
 
