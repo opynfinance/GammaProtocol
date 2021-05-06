@@ -81,6 +81,6 @@ contract YearnPricer is OpynPricerInterface {
     }
 
     function getHistoricalPrice(uint80 _roundId) external override view returns (uint256, uint256) {
-        revert("Deprecated");
+        revert("YearnPricer: Deprecated");
     }
 }
