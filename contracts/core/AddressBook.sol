@@ -1,10 +1,10 @@
 /**
  * SPDX-License-Identifier: UNLICENSED
  */
-pragma solidity 0.6.10;
+pragma solidity =0.6.10;
 
-import {Ownable} from "./packages/oz/Ownable.sol";
-import {OwnedUpgradeabilityProxy} from "./packages/oz/upgradeability/OwnedUpgradeabilityProxy.sol";
+import {Ownable} from "../packages/oz/Ownable.sol";
+import {OwnedUpgradeabilityProxy} from "../packages/oz/upgradeability/OwnedUpgradeabilityProxy.sol";
 
 /**
  * @author Opyn Team

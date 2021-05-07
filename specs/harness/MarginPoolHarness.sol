@@ -2,7 +2,7 @@ pragma solidity =0.6.10;
 
 pragma experimental ABIEncoderV2;
 
-import '../../contracts/MarginPool.sol';
+import '../../contracts/core/MarginPool.sol';
 
 contract MarginPoolHarness is MarginPool {
   constructor(address _addressBook) public MarginPool(_addressBook) {}

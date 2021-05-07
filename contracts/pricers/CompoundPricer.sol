@@ -2,7 +2,6 @@
 pragma solidity 0.6.10;
 
 import {OracleInterface} from "../interfaces/OracleInterface.sol";
-import {OpynPricerInterface} from "../interfaces/OpynPricerInterface.sol";
 import {CTokenInterface} from "../interfaces/CTokenInterface.sol";
 import {ERC20Interface} from "../interfaces/ERC20Interface.sol";
 import {SafeMath} from "../packages/oz/SafeMath.sol";
@@ -10,7 +9,7 @@ import {SafeMath} from "../packages/oz/SafeMath.sol";
 /**
  * @notice A Pricer contract for a Compound cToken
  */
-contract CompoundPricer is OpynPricerInterface {
+contract CompoundPricer {
     using SafeMath for uint256;
 
     /// @notice opyn oracle address
@@ -43,10 +42,9 @@ contract CompoundPricer is OpynPricerInterface {
 
     /**
      * @notice get the live price for the asset
-     * @dev overrides the getPrice function in OpynPricerInterface
      * @return price of 1e8 cToken in USD, scaled by 1e8
      */
-    function getPrice() external override view returns (uint256) {
+    function getPrice() external view returns (uint256) {
         uint256 underlyingPrice = oracle.getPrice(address(underlying));
         require(underlyingPrice > 0, "CompoundPricer: underlying price is 0");
         return _underlyingPriceToCtokenPrice(underlyingPrice);

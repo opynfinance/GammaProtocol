@@ -7,6 +7,8 @@ pragma solidity 0.6.10;
  * @notice Chainlink oracle mock
  */
 contract MockChainlinkAggregator {
+    uint256 public decimals = 8;
+
     /// @dev mock for round timestmap
     mapping(uint256 => uint256) internal roundTimestamp;
     /// @dev mock for round price
@@ -14,16 +16,34 @@ contract MockChainlinkAggregator {
 
     int256 internal lastAnswer;
 
-    function getAnswer(uint256 _roundId) external view returns (int256) {
-        return roundAnswer[_roundId];
+    function getRoundData(uint80 _roundId)
+        external
+        view
+        returns (
+            uint80 roundId,
+            int256 answer,
+            uint256 startedAt,
+            uint256 updatedAt,
+            uint80 answeredInRound
+        )
+    {
+        require(roundTimestamp[_roundId] != 0, "No data present");
+
+        return (_roundId, roundAnswer[_roundId], roundTimestamp[_roundId], roundTimestamp[_roundId], _roundId);
     }
 
-    function getTimestamp(uint256 _roundId) external view returns (uint256) {
-        return roundTimestamp[_roundId];
-    }
-
-    function latestAnswer() external view returns (int256) {
-        return lastAnswer;
+    function latestRoundData()
+        external
+        view
+        returns (
+            uint80 roundId,
+            int256 answer,
+            uint256 startedAt,
+            uint256 updatedAt,
+            uint80 answeredInRound
+        )
+    {
+        return (1, lastAnswer, now, now, 1);
     }
 
     /// @dev function to mock setting round timestamp

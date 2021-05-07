@@ -2,7 +2,7 @@ pragma solidity =0.6.10;
 
 pragma experimental ABIEncoderV2;
 
-import '../../contracts/MarginCalculator.sol';
+import '../../contracts/core/MarginCalculator.sol';
 
 //import {MarginVault} from "../../contracts/libs/MarginVault.sol";
 

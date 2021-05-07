@@ -22,7 +22,8 @@ library Actions {
         WithdrawCollateral,
         SettleVault,
         Redeem,
-        Call
+        Call,
+        Liquidate
     }
 
     struct ActionArgs {
@@ -82,6 +83,8 @@ library Actions {
         address owner;
         // vault id to create
         uint256 vaultId;
+        // vault type, 0 for spread/max loss and 1 for naked margin vault
+        uint256 vaultType;
     }
 
     struct DepositArgs {
@@ -134,6 +137,19 @@ library Actions {
         address to;
     }
 
+    struct LiquidateArgs {
+        // address of the vault owner to liquidate
+        address owner;
+        // address of the liquidated collateral receiver
+        address receiver;
+        // vault id to liquidate
+        uint256 vaultId;
+        // amount of debt(otoken) to repay
+        uint256 amount;
+        // chainlink round id
+        uint256 roundId;
+    }
+
     struct CallArgs {
         // address of the callee contract
         address callee;
@@ -150,7 +166,18 @@ library Actions {
         require(_args.actionType == ActionType.OpenVault, "Actions: can only parse arguments for open vault actions");
         require(_args.owner != address(0), "Actions: cannot open vault for an invalid account");
 
-        return OpenVaultArgs({owner: _args.owner, vaultId: _args.vaultId});
+        // if not _args.data included, vault type will be 0 by default
+        uint256 vaultType;
+
+        if (_args.data.length == 32) {
+            // decode vault type from _args.data
+            vaultType = abi.decode(_args.data, (uint256));
+        }
+
+        // for now we only have 2 vault types
+        require(vaultType < 2, "Actions: cannot open vault with an invalid type");
+
+        return OpenVaultArgs({owner: _args.owner, vaultId: _args.vaultId, vaultType: vaultType});
     }
 
     /**
@@ -266,6 +293,25 @@ library Actions {
         require(_args.secondAddress != address(0), "Actions: cannot withdraw payout to an invalid account");
 
         return SettleVaultArgs({owner: _args.owner, vaultId: _args.vaultId, to: _args.secondAddress});
+    }
+
+    function _parseLiquidateArgs(ActionArgs memory _args) internal pure returns (LiquidateArgs memory) {
+        require(_args.actionType == ActionType.Liquidate, "Actions: can only parse arguments for liquidate action");
+        require(_args.owner != address(0), "Actions: cannot liquidate vault for an invalid account owner");
+        require(_args.secondAddress != address(0), "Actions: cannot send collateral to an invalid account");
+        require(_args.data.length == 32, "Actions: cannot parse liquidate action with no round id");
+
+        // decode chainlink round id from _args.data
+        uint256 roundId = abi.decode(_args.data, (uint256));
+
+        return
+            LiquidateArgs({
+                owner: _args.owner,
+                receiver: _args.secondAddress,
+                vaultId: _args.vaultId,
+                amount: _args.amount,
+                roundId: roundId
+            });
     }
 
     /**

@@ -59,8 +59,9 @@ library MarginVault {
                 (_index < _vault.shortOtokens.length) && (_index < _vault.shortAmounts.length),
                 "MarginVault: invalid short otoken index"
             );
+            address existingShort = _vault.shortOtokens[_index];
             require(
-                (_vault.shortOtokens[_index] == _shortOtoken) || (_vault.shortOtokens[_index] == address(0)),
+                (existingShort == _shortOtoken) || (existingShort == address(0)),
                 "MarginVault: short otoken address mismatch"
             );
 
@@ -86,11 +87,12 @@ library MarginVault {
         require(_index < _vault.shortOtokens.length, "MarginVault: invalid short otoken index");
         require(_vault.shortOtokens[_index] == _shortOtoken, "MarginVault: short otoken address mismatch");
 
-        _vault.shortAmounts[_index] = _vault.shortAmounts[_index].sub(_amount);
+        uint256 newShortAmount = _vault.shortAmounts[_index].sub(_amount);
 
-        if (_vault.shortAmounts[_index] == 0) {
+        if (newShortAmount == 0) {
             delete _vault.shortOtokens[_index];
         }
+        _vault.shortAmounts[_index] = newShortAmount;
     }
 
     /**
@@ -118,8 +120,9 @@ library MarginVault {
                 (_index < _vault.longOtokens.length) && (_index < _vault.longAmounts.length),
                 "MarginVault: invalid long otoken index"
             );
+            address existingLong = _vault.longOtokens[_index];
             require(
-                (_vault.longOtokens[_index] == _longOtoken) || (_vault.longOtokens[_index] == address(0)),
+                (existingLong == _longOtoken) || (existingLong == address(0)),
                 "MarginVault: long otoken address mismatch"
             );
 
@@ -145,11 +148,12 @@ library MarginVault {
         require(_index < _vault.longOtokens.length, "MarginVault: invalid long otoken index");
         require(_vault.longOtokens[_index] == _longOtoken, "MarginVault: long otoken address mismatch");
 
-        _vault.longAmounts[_index] = _vault.longAmounts[_index].sub(_amount);
+        uint256 newLongAmount = _vault.longAmounts[_index].sub(_amount);
 
-        if (_vault.longAmounts[_index] == 0) {
+        if (newLongAmount == 0) {
             delete _vault.longOtokens[_index];
         }
+        _vault.longAmounts[_index] = newLongAmount;
     }
 
     /**
@@ -177,9 +181,9 @@ library MarginVault {
                 (_index < _vault.collateralAssets.length) && (_index < _vault.collateralAmounts.length),
                 "MarginVault: invalid collateral token index"
             );
+            address existingCollateral = _vault.collateralAssets[_index];
             require(
-                (_vault.collateralAssets[_index] == _collateralAsset) ||
-                    (_vault.collateralAssets[_index] == address(0)),
+                (existingCollateral == _collateralAsset) || (existingCollateral == address(0)),
                 "MarginVault: collateral token address mismatch"
             );
 
@@ -205,10 +209,11 @@ library MarginVault {
         require(_index < _vault.collateralAssets.length, "MarginVault: invalid collateral asset index");
         require(_vault.collateralAssets[_index] == _collateralAsset, "MarginVault: collateral token address mismatch");
 
-        _vault.collateralAmounts[_index] = _vault.collateralAmounts[_index].sub(_amount);
+        uint256 newCollateralAmount = _vault.collateralAmounts[_index].sub(_amount);
 
-        if (_vault.collateralAmounts[_index] == 0) {
+        if (newCollateralAmount == 0) {
             delete _vault.collateralAssets[_index];
         }
+        _vault.collateralAmounts[_index] = newCollateralAmount;
     }
 }

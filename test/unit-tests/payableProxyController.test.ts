@@ -70,6 +70,8 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
   let payableProxyController: PayableProxyControllerInstance
   let testerCallee: CalleeAllowanceTesterInstance
 
+  const openVaultBytes = web3.eth.abi.encodeParameter('uint256', 0)
+
   before('Deployment', async () => {
     // addressbook deployment
     addressBook = await AddressBook.new()
@@ -136,7 +138,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
           vaultId: vaultCounter.toNumber(),
           amount: '0',
           index: '0',
-          data: ZERO_ADDR,
+          data: openVaultBytes,
         },
         {
           actionType: ActionType.DepositCollateral,
@@ -158,7 +160,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
       })
 
       const marginPoolBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
-      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const vaultAfter = (await controllerProxy.getVault(accountOwner1, vaultCounter))[0]
 
       assert.equal(
         marginPoolBalanceAfter.minus(marginPoolBalanceBefore).toString(),
@@ -192,7 +194,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
           vaultId: vaultCounter.toNumber(),
           amount: '0',
           index: '0',
-          data: ZERO_ADDR,
+          data: openVaultBytes,
         },
         {
           actionType: ActionType.DepositCollateral,
@@ -214,7 +216,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
       })
 
       const marginPoolBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
-      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const vaultAfter = (await controllerProxy.getVault(accountOwner1, vaultCounter))[0]
 
       assert.equal(
         marginPoolBalanceAfter.minus(marginPoolBalanceBefore).toString(),
@@ -248,7 +250,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
           vaultId: vaultCounter.toNumber(),
           amount: '0',
           index: '0',
-          data: ZERO_ADDR,
+          data: openVaultBytes,
         },
         {
           actionType: ActionType.DepositCollateral,
@@ -294,7 +296,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
           vaultId: vaultCounterBefore.plus(1).toNumber(),
           amount: '0',
           index: '0',
-          data: ZERO_ADDR,
+          data: openVaultBytes,
         },
       ]
 
@@ -346,7 +348,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
           vaultId: vaultCounterBefore.plus(1).toNumber(),
           amount: '0',
           index: '0',
-          data: ZERO_ADDR,
+          data: openVaultBytes,
         },
       ]
 
@@ -401,7 +403,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
           vaultId: vaultCounter.toNumber(),
           amount: '0',
           index: '0',
-          data: ZERO_ADDR,
+          data: openVaultBytes,
         },
         {
           actionType: ActionType.MintShortOption,

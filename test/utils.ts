@@ -50,8 +50,6 @@ export const createVault = (
   }
 }
 
-BigNumber.config({EXPONENTIAL_AT: 60})
-
 export const createTokenAmount = (num: number | BigNumber, decimals = 8) => {
   const amount = new BigNumber(num).times(new BigNumber(10).pow(decimals))
   return amount.integerValue().toString()
@@ -61,8 +59,16 @@ export const createTokenAmount = (num: number | BigNumber, decimals = 8) => {
  * Create a number string that scales numbers to 1e18
  * @param num
  */
-export const createScaledNumber = (num: number): string => {
-  return new BigNumber(num).times(1e8).toString()
+export const createScaledNumber = (num: number, decimals = 8): string => {
+  return new BigNumber(num).times(new BigNumber(10).pow(decimals)).toString()
+}
+
+/**
+ * Create a number string that scales numbers to 1e18
+ * @param num
+ */
+export const createScaledBigNumber = (num: number, decimals = 8): BigNumber => {
+  return new BigNumber(num).times(new BigNumber(10).pow(decimals))
 }
 
 export const underlyingPriceToCtokenPrice = async (
@@ -140,7 +146,57 @@ export const signOrder = async (signer: any, order: any, key: any) => {
   const signature = await order.getSignatureWithKey(key, util.SignatureType.EIP712)
   // eslint-disable-next-line no-param-reassign
   order.signature = signature
-  // console.log('order.signature', JSON.stringify(order.signature))
-  console.log('order with sig', JSON.stringify(order))
   return order
+}
+
+export const expectedLiqudidationPrice = (
+  collateral: number | string,
+  debt: number,
+  cashValue: number,
+  spotPrice: number,
+  oracleDeviation: number,
+  auctionStartingTime: number,
+  currentBlockTime: number,
+  isPut: boolean,
+  collateralDecimals: number,
+) => {
+  const endingPrice = new BigNumber(collateral).dividedBy(debt)
+  const auctionElapsedTime = currentBlockTime - auctionStartingTime
+
+  if (auctionElapsedTime > 3600) {
+    // return Math.floor(endingPrice)
+    return endingPrice.multipliedBy(10 ** collateralDecimals).toNumber()
+  }
+
+  let startingPrice
+
+  if (isPut) {
+    startingPrice = BigNumber.max(
+      new BigNumber(cashValue).minus(new BigNumber(spotPrice).multipliedBy(oracleDeviation)),
+      0,
+    )
+  } else {
+    startingPrice = BigNumber.max(
+      new BigNumber(cashValue).minus(new BigNumber(spotPrice).multipliedBy(oracleDeviation)),
+      0,
+    ).dividedBy(spotPrice)
+  }
+
+  const price = startingPrice
+    .plus(
+      endingPrice
+        .minus(startingPrice)
+        .multipliedBy(auctionElapsedTime)
+        .dividedBy(3600),
+    )
+    .multipliedBy(10 ** collateralDecimals)
+
+  if (price.isGreaterThan(endingPrice.multipliedBy(10 ** collateralDecimals)))
+    return endingPrice.multipliedBy(10 ** collateralDecimals).toNumber()
+
+  return price.toNumber()
+}
+
+export const calcRelativeDiff = (expected: BigNumber, actual: BigNumber): BigNumber => {
+  return actual.minus(expected).abs()
 }

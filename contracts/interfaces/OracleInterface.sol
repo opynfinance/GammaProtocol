@@ -18,6 +18,8 @@ interface OracleInterface {
 
     function getPricerDisputePeriod(address _pricer) external view returns (uint256);
 
+    function getChainlinkRoundData(address _asset, uint80 _roundId) external view returns (uint256, uint256);
+
     // Non-view function
 
     function setAssetPricer(address _asset, address _pricer) external;

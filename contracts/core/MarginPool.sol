@@ -1,13 +1,13 @@
 /**
  * SPDX-License-Identifier: UNLICENSED
  */
-pragma solidity 0.6.10;
+pragma solidity =0.6.10;
 
-import {ERC20Interface} from "./interfaces/ERC20Interface.sol";
-import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
-import {SafeMath} from "./packages/oz/SafeMath.sol";
-import {SafeERC20} from "./packages/oz/SafeERC20.sol";
-import {Ownable} from "./packages/oz/Ownable.sol";
+import {ERC20Interface} from "../interfaces/ERC20Interface.sol";
+import {AddressBookInterface} from "../interfaces/AddressBookInterface.sol";
+import {SafeMath} from "../packages/oz/SafeMath.sol";
+import {SafeERC20} from "../packages/oz/SafeERC20.sol";
+import {Ownable} from "../packages/oz/Ownable.sol";
 
 /**
  * @author Opyn Team

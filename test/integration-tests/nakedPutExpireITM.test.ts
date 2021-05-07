@@ -191,7 +191,7 @@ contract('Naked Put Option expires Itm flow', ([accountOwner1, buyer]) => {
 
       // Check that we start at a valid state
       const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
-      const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore)
+      const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore[0], vaultBefore[1])
       assert.equal(vaultStateBefore[0].toString(), '0')
       assert.equal(vaultStateBefore[1], true)
 
@@ -209,7 +209,7 @@ contract('Naked Put Option expires Itm flow', ([accountOwner1, buyer]) => {
       const scaledPayout = createTokenAmount(collateralPayout, usdcDecimals)
 
       // Check that after expiry, the vault excess balance has updated as expected
-      const vaultStateBeforeSettlement = await calculator.getExcessCollateral(vaultBefore)
+      const vaultStateBeforeSettlement = await calculator.getExcessCollateral(vaultBefore[0], vaultBefore[1])
       assert.equal(vaultStateBeforeSettlement[0].toString(), scaledPayout)
       assert.equal(vaultStateBeforeSettlement[1], true)
 
@@ -243,22 +243,22 @@ contract('Naked Put Option expires Itm flow', ([accountOwner1, buyer]) => {
 
       // Check that we end at a valid state
       const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
-      const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
+      const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter[0], vaultAfter[1])
       assert.equal(vaultStateAfter[0].toString(), '0')
       assert.equal(vaultStateAfter[1], true)
 
       // Check the vault balances stored in the contract
-      assert.equal(vaultAfter.shortOtokens.length, 0, 'Length of the short otoken array in the vault is incorrect')
-      assert.equal(vaultAfter.collateralAssets.length, 0, 'Length of the collateral array in the vault is incorrect')
-      assert.equal(vaultAfter.longOtokens.length, 0, 'Length of the long otoken array in the vault is incorrect')
+      assert.equal(vaultAfter[0].shortOtokens.length, 0, 'Length of the short otoken array in the vault is incorrect')
+      assert.equal(vaultAfter[0].collateralAssets.length, 0, 'Length of the collateral array in the vault is incorrect')
+      assert.equal(vaultAfter[0].longOtokens.length, 0, 'Length of the long otoken array in the vault is incorrect')
 
-      assert.equal(vaultAfter.shortAmounts.length, 0, 'Length of the short amounts array in the vault is incorrect')
+      assert.equal(vaultAfter[0].shortAmounts.length, 0, 'Length of the short amounts array in the vault is incorrect')
       assert.equal(
-        vaultAfter.collateralAmounts.length,
+        vaultAfter[0].collateralAmounts.length,
         0,
         'Length of the collateral amounts array in the vault is incorrect',
       )
-      assert.equal(vaultAfter.longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
+      assert.equal(vaultAfter[0].longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
     })
 
     it('Buyer: redeem ITM put option after expiry', async () => {

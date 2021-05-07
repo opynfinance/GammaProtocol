@@ -2,7 +2,7 @@ pragma solidity =0.6.10;
 
 pragma experimental ABIEncoderV2;
 
-import '../../contracts/Controller.sol';
+import '../../contracts/core/Controller.sol';
 import {ERC20Interface} from '../../contracts/interfaces/ERC20Interface.sol';
 import {MarginVault} from '../../contracts/libs/MarginVault.sol';
 import {OtokenInterface} from '../../contracts/interfaces/OtokenInterface.sol';
@@ -81,7 +81,8 @@ contract ControllerHarness is Controller {
     (, bool isValidVault) = calculator.getExcessCollateral(
       _vault.shortAmounts[0],
       _vault.longAmounts[0],
-      _vault.collateralAmounts[0]
+      _vault.collateralAmounts[0],
+      vaultType[owner][vaultId]
     );
     return isValidVault;
   }
@@ -150,7 +151,7 @@ contract ControllerHarness is Controller {
   }
 
   function openVault(address owner, uint256 vaultId) external {
-    Actions.OpenVaultArgs memory args = Actions.OpenVaultArgs({owner: owner, vaultId: vaultId});
+    Actions.OpenVaultArgs memory args = Actions.OpenVaultArgs({owner: owner, vaultId: vaultId, vaultType: 0});
     _openVault(args);
   }
 

@@ -1,10 +1,11 @@
+import BigNumber from 'bignumber.js'
 import {ActionTesterInstance} from '../../build/types/truffle-types'
 
 const {BN, expectRevert} = require('@openzeppelin/test-helpers')
 
 const ActionTester = artifacts.require('ActionTester.sol')
 
-contract('Actions', ([owner, random, random2, random3]) => {
+contract('Actions', ([owner, random, random2, random3, liquidator]) => {
   // actionTester mock instance
   let actionTester: ActionTesterInstance
   enum ActionType {
@@ -18,6 +19,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
     SettleVault,
     Redeem,
     Call,
+    Liquidate,
   }
   const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
@@ -165,7 +167,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
       const vaultId = '1'
       const amount = '10'
       const index = '0'
-      const bytesArgs = ZERO_ADDR
+      const bytesArgs = web3.eth.abi.encodeParameter('uint256', 0)
 
       const data = {
         actionType: actionType,
@@ -182,6 +184,7 @@ contract('Actions', ([owner, random, random2, random3]) => {
 
       const depositArgs = await actionTester.getOpenVaultArgs()
       assert.equal(depositArgs.owner, owner)
+      assert.equal(depositArgs.vaultType, new BigNumber(0))
     })
   })
 
@@ -705,6 +708,103 @@ contract('Actions', ([owner, random, random2, random3]) => {
       const callArgs = await actionTester.getCallArgs()
       assert.equal(callArgs.callee, random2)
       assert.equal(callArgs.data.toLowerCase(), random3.toLowerCase())
+    })
+  })
+
+  describe('Parse Liquidate Arguments', () => {
+    it('should not be able to parse a non Liquidate action', async () => {
+      const data = {
+        actionType: ActionType.OpenVault,
+        owner: owner,
+        secondAddress: liquidator,
+        data: ZERO_ADDR,
+        asset: ZERO_ADDR,
+        vaultId: 0,
+        amount: 0,
+        index: 0,
+      }
+
+      await expectRevert(
+        actionTester.testParseLiquidateActions(data),
+        'Actions: can only parse arguments for liquidate action',
+      )
+    })
+
+    it('should not be able to parse a Liquidate action with invalid vault owner address', async () => {
+      const data = {
+        actionType: ActionType.Liquidate,
+        owner: ZERO_ADDR,
+        secondAddress: liquidator,
+        data: ZERO_ADDR,
+        asset: ZERO_ADDR,
+        vaultId: 0,
+        amount: 0,
+        index: 0,
+      }
+
+      await expectRevert(
+        actionTester.testParseLiquidateActions(data),
+        'Actions: cannot liquidate vault for an invalid account owner',
+      )
+    })
+
+    it('should not be able to parse a Liquidate action with invalid receiver address', async () => {
+      const data = {
+        actionType: ActionType.Liquidate,
+        owner: owner,
+        secondAddress: ZERO_ADDR,
+        data: ZERO_ADDR,
+        asset: ZERO_ADDR,
+        vaultId: 0,
+        amount: 0,
+        index: 0,
+      }
+
+      await expectRevert(
+        actionTester.testParseLiquidateActions(data),
+        'Actions: cannot send collateral to an invalid account',
+      )
+    })
+
+    it('should not be able to parse a Liquidate action with no chainlink round id', async () => {
+      const data = {
+        actionType: ActionType.Liquidate,
+        owner: owner,
+        secondAddress: liquidator,
+        data: ZERO_ADDR,
+        asset: ZERO_ADDR,
+        vaultId: 0,
+        amount: 0,
+        index: 0,
+      }
+
+      await expectRevert(
+        actionTester.testParseLiquidateActions(data),
+        'Actions: cannot parse liquidate action with no round id',
+      )
+    })
+
+    it('should parse a Liquidate action', async () => {
+      const roundId = web3.eth.abi.encodeParameter('uint256', 1600)
+      const data = {
+        actionType: ActionType.Liquidate,
+        owner: owner,
+        secondAddress: liquidator,
+        data: roundId,
+        asset: ZERO_ADDR,
+        vaultId: 0,
+        amount: 0,
+        index: 0,
+      }
+
+      await actionTester.testParseLiquidateActions(data)
+
+      const liquidateArgs = await actionTester.getLiquidateArgs()
+      assert.equal(liquidateArgs.owner, owner)
+      assert.equal(liquidateArgs.receiver, liquidator)
+      assert.equal(liquidateArgs.vaultId, new BN(0))
+      assert.equal(liquidateArgs.amount, new BN(0))
+      assert.equal(liquidateArgs.roundId, new BN(1600))
     })
   })
 })

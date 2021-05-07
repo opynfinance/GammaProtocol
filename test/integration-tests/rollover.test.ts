@@ -180,22 +180,26 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
 
       // Check that we start at a valid state
       const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
-      const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore)
+      const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore[0], vaultBefore[1])
       assert.equal(vaultStateBefore[0].toString(), '0')
       assert.equal(vaultStateBefore[1], true)
 
       // Check the vault balances stored in the contract
-      assert.equal(vaultBefore.shortOtokens.length, 0, 'Length of the short otoken array in the vault is incorrect')
-      assert.equal(vaultBefore.collateralAssets.length, 0, 'Length of the collateral array in the vault is incorrect')
-      assert.equal(vaultBefore.longOtokens.length, 0, 'Length of the long otoken array in the vault is incorrect')
-
-      assert.equal(vaultBefore.shortAmounts.length, 0, 'Length of the short amounts array in the vault is incorrect')
+      assert.equal(vaultBefore[0].shortOtokens.length, 0, 'Length of the short otoken array in the vault is incorrect')
       assert.equal(
-        vaultBefore.collateralAmounts.length,
+        vaultBefore[0].collateralAssets.length,
+        0,
+        'Length of the collateral array in the vault is incorrect',
+      )
+      assert.equal(vaultBefore[0].longOtokens.length, 0, 'Length of the long otoken array in the vault is incorrect')
+
+      assert.equal(vaultBefore[0].shortAmounts.length, 0, 'Length of the short amounts array in the vault is incorrect')
+      assert.equal(
+        vaultBefore[0].collateralAmounts.length,
         0,
         'Length of the collateral amounts array in the vault is incorrect',
       )
-      assert.equal(vaultBefore.longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
+      assert.equal(vaultBefore[0].longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
 
       const actionArgs = [
         {
@@ -253,33 +257,33 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
 
       // Check that we end at a valid state
       const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
-      const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
+      const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter[0], vaultAfter[1])
       assert.equal(vaultStateAfter[0].toString(), '0')
       assert.equal(vaultStateAfter[1], true)
 
       // Check the vault balances stored in the contract
-      assert.equal(vaultAfter.shortOtokens.length, 1, 'Length of the short otoken array in the vault is incorrect')
-      assert.equal(vaultAfter.collateralAssets.length, 1, 'Length of the collateral array in the vault is incorrect')
-      assert.equal(vaultAfter.longOtokens.length, 0, 'Length of the long otoken array in the vault is incorrect')
+      assert.equal(vaultAfter[0].shortOtokens.length, 1, 'Length of the short otoken array in the vault is incorrect')
+      assert.equal(vaultAfter[0].collateralAssets.length, 1, 'Length of the collateral array in the vault is incorrect')
+      assert.equal(vaultAfter[0].longOtokens.length, 0, 'Length of the long otoken array in the vault is incorrect')
 
-      assert.equal(vaultAfter.shortOtokens[0], ethPut1.address, 'Incorrect short otoken in the vault')
-      assert.equal(vaultAfter.collateralAssets[0], usdc.address, 'Incorrect collateral asset in the vault')
+      assert.equal(vaultAfter[0].shortOtokens[0], ethPut1.address, 'Incorrect short otoken in the vault')
+      assert.equal(vaultAfter[0].collateralAssets[0], usdc.address, 'Incorrect collateral asset in the vault')
 
-      assert.equal(vaultAfter.shortAmounts.length, 1, 'Length of the short amounts array in the vault is incorrect')
+      assert.equal(vaultAfter[0].shortAmounts.length, 1, 'Length of the short amounts array in the vault is incorrect')
       assert.equal(
-        vaultAfter.collateralAmounts.length,
+        vaultAfter[0].collateralAmounts.length,
         1,
         'Length of the collateral amounts array in the vault is incorrect',
       )
-      assert.equal(vaultAfter.longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
+      assert.equal(vaultAfter[0].longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
 
       assert.equal(
-        vaultAfter.shortAmounts[0].toString(),
+        vaultAfter[0].shortAmounts[0].toString(),
         scaledOptionsAmount,
         'Incorrect amount of short stored in the vault',
       )
       assert.equal(
-        vaultAfter.collateralAmounts[0].toString(),
+        vaultAfter[0].collateralAmounts[0].toString(),
         scaledCollateralAmount,
         'Incorrect amount of collateral stored in the vault',
       )
@@ -299,7 +303,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
 
       // Check that we start at a valid state
       const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
-      const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore)
+      const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore[0], vaultBefore[1])
       assert.equal(vaultStateBefore[0].toString(), '0')
       assert.equal(vaultStateBefore[1], true)
 
@@ -370,33 +374,33 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
 
       // Check that we end at a valid state
       const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
-      const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
+      const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter[0], vaultAfter[1])
       assert.equal(vaultStateAfter[0].toString(), '0')
       assert.equal(vaultStateAfter[1], true)
 
       // Check the vault balances stored in the contract
-      assert.equal(vaultAfter.shortOtokens.length, 1, 'Length of the short otoken array in the vault is incorrect')
-      assert.equal(vaultAfter.collateralAssets.length, 1, 'Length of the collateral array in the vault is incorrect')
-      assert.equal(vaultAfter.longOtokens.length, 0, 'Length of the long otoken array in the vault is incorrect')
+      assert.equal(vaultAfter[0].shortOtokens.length, 1, 'Length of the short otoken array in the vault is incorrect')
+      assert.equal(vaultAfter[0].collateralAssets.length, 1, 'Length of the collateral array in the vault is incorrect')
+      assert.equal(vaultAfter[0].longOtokens.length, 0, 'Length of the long otoken array in the vault is incorrect')
 
-      assert.equal(vaultAfter.shortOtokens[0], ethPut2.address, 'Incorrect short otoken in the vault')
-      assert.equal(vaultAfter.collateralAssets[0], usdc.address, 'Incorrect collateral asset in the vault')
+      assert.equal(vaultAfter[0].shortOtokens[0], ethPut2.address, 'Incorrect short otoken in the vault')
+      assert.equal(vaultAfter[0].collateralAssets[0], usdc.address, 'Incorrect collateral asset in the vault')
 
-      assert.equal(vaultAfter.shortAmounts.length, 1, 'Length of the short amounts array in the vault is incorrect')
+      assert.equal(vaultAfter[0].shortAmounts.length, 1, 'Length of the short amounts array in the vault is incorrect')
       assert.equal(
-        vaultAfter.collateralAmounts.length,
+        vaultAfter[0].collateralAmounts.length,
         1,
         'Length of the collateral amounts array in the vault is incorrect',
       )
-      assert.equal(vaultAfter.longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
+      assert.equal(vaultAfter[0].longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
 
       assert.equal(
-        vaultAfter.shortAmounts[0].toString(),
+        vaultAfter[0].shortAmounts[0].toString(),
         scaledOptionsAmount,
         'Incorrect amount of short stored in the vault',
       )
       assert.equal(
-        vaultAfter.collateralAmounts[0].toString(),
+        vaultAfter[0].collateralAmounts[0].toString(),
         scaledCollateralAmountInVault,
         'Incorrect amount of collateral stored in the vault',
       )
@@ -458,7 +462,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
 
       // Check that we start at a valid state
       const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
-      const vaultStateBeforeExpiry = await calculator.getExcessCollateral(vaultBefore)
+      const vaultStateBeforeExpiry = await calculator.getExcessCollateral(vaultBefore[0], vaultBefore[1])
       assert.equal(vaultStateBeforeExpiry[0].toString(), '0')
       assert.equal(vaultStateBeforeExpiry[1], true)
 
@@ -479,7 +483,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
       const oToken2SupplyBefore = new BigNumber(await ethPut2.totalSupply())
 
       // check that excess collateral after expiry has changed
-      const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore)
+      const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore[0], vaultBefore[1])
       assert.equal(vaultStateBefore[0].toString(), scaledCollateralAmount1)
       assert.equal(vaultStateBefore[1], true)
 
@@ -548,33 +552,33 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
 
       // Check that we end at a valid state
       const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
-      const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter)
+      const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter[0], vaultAfter[1])
       assert.equal(vaultStateAfter[0].toString(), '0')
       assert.equal(vaultStateAfter[1], true)
 
       // Check the vault balances stored in the contract
-      assert.equal(vaultAfter.shortOtokens.length, 1, 'Length of the short otoken array in the vault is incorrect')
-      assert.equal(vaultAfter.collateralAssets.length, 1, 'Length of the collateral array in the vault is incorrect')
-      assert.equal(vaultAfter.longOtokens.length, 0, 'Length of the long otoken array in the vault is incorrect')
+      assert.equal(vaultAfter[0].shortOtokens.length, 1, 'Length of the short otoken array in the vault is incorrect')
+      assert.equal(vaultAfter[0].collateralAssets.length, 1, 'Length of the collateral array in the vault is incorrect')
+      assert.equal(vaultAfter[0].longOtokens.length, 0, 'Length of the long otoken array in the vault is incorrect')
 
-      assert.equal(vaultAfter.shortOtokens[0], ethPut2.address, 'Incorrect short otoken in the vault')
-      assert.equal(vaultAfter.collateralAssets[0], usdc.address, 'Incorrect collateral asset in the vault')
+      assert.equal(vaultAfter[0].shortOtokens[0], ethPut2.address, 'Incorrect short otoken in the vault')
+      assert.equal(vaultAfter[0].collateralAssets[0], usdc.address, 'Incorrect collateral asset in the vault')
 
-      assert.equal(vaultAfter.shortAmounts.length, 1, 'Length of the short amounts array in the vault is incorrect')
+      assert.equal(vaultAfter[0].shortAmounts.length, 1, 'Length of the short amounts array in the vault is incorrect')
       assert.equal(
-        vaultAfter.collateralAmounts.length,
+        vaultAfter[0].collateralAmounts.length,
         1,
         'Length of the collateral amounts array in the vault is incorrect',
       )
-      assert.equal(vaultAfter.longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
+      assert.equal(vaultAfter[0].longAmounts.length, 0, 'Length of the long amounts array in the vault is incorrect')
 
       assert.equal(
-        vaultAfter.shortAmounts[0].toString(),
+        vaultAfter[0].shortAmounts[0].toString(),
         scaledOptionsAmount,
         'Incorrect amount of short stored in the vault',
       )
       assert.equal(
-        vaultAfter.collateralAmounts[0].toString(),
+        vaultAfter[0].collateralAmounts[0].toString(),
         scaledCollateralAmount2,
         'Incorrect amount of collateral stored in the vault',
       )

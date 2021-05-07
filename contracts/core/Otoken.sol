@@ -1,11 +1,11 @@
 /* SPDX-License-Identifier: UNLICENSED */
 pragma solidity =0.6.10;
 
-import {ERC20Upgradeable} from "./packages/oz/upgradeability/ERC20Upgradeable.sol";
-import {ERC20PermitUpgradeable} from "./packages/oz/upgradeability/erc20-permit/ERC20PermitUpgradeable.sol";
-import {Strings} from "./packages/oz/Strings.sol";
-import {BokkyPooBahsDateTimeLibrary} from "./packages/BokkyPooBahsDateTimeLibrary.sol";
-import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
+import {ERC20Upgradeable} from "../packages/oz/upgradeability/ERC20Upgradeable.sol";
+import {ERC20PermitUpgradeable} from "../packages/oz/upgradeability/erc20-permit/ERC20PermitUpgradeable.sol";
+import {Strings} from "../packages/oz/Strings.sol";
+import {BokkyPooBahsDateTimeLibrary} from "../packages/BokkyPooBahsDateTimeLibrary.sol";
+import {AddressBookInterface} from "../interfaces/AddressBookInterface.sol";
 
 /**
  * @title Otoken
