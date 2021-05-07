@@ -2,8 +2,8 @@
 
 pragma solidity =0.6.10;
 
-import {Spawn} from "./packages/Spawn.sol";
-import {Create2} from "./packages/oz/Create2.sol";
+import {Spawn} from "../packages/Spawn.sol";
+import {Create2} from "../packages/oz/Create2.sol";
 
 /**
  * @title OtokenSpawner

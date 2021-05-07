@@ -4,7 +4,7 @@
 pragma solidity =0.6.10;
 pragma experimental ABIEncoderV2;
 
-import {MarginCalculator} from "../MarginCalculator.sol";
+import {MarginCalculator} from "../core/MarginCalculator.sol";
 import {FixedPointInt256} from "../libs/FixedPointInt256.sol";
 
 contract CalculatorTester is MarginCalculator {

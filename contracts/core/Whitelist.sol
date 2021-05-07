@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.6.10;
+pragma solidity =0.6.10;
 
-import "./interfaces/AddressBookInterface.sol";
-import "./packages/oz/Ownable.sol";
+import "../interfaces/AddressBookInterface.sol";
+import "../packages/oz/Ownable.sol";
 
 /**
  * @author Opyn Team

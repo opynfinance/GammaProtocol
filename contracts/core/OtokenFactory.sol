@@ -1,10 +1,10 @@
 pragma solidity =0.6.10;
 
 import {OtokenSpawner} from "./OtokenSpawner.sol";
-import {SafeMath} from "./packages/oz/SafeMath.sol";
-import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
-import {OtokenInterface} from "./interfaces/OtokenInterface.sol";
-import {WhitelistInterface} from "./interfaces/WhitelistInterface.sol";
+import {SafeMath} from "../packages/oz/SafeMath.sol";
+import {AddressBookInterface} from "../interfaces/AddressBookInterface.sol";
+import {OtokenInterface} from "../interfaces/OtokenInterface.sol";
+import {WhitelistInterface} from "../interfaces/WhitelistInterface.sol";
 
 /**
  * SPDX-License-Identifier: UNLICENSED

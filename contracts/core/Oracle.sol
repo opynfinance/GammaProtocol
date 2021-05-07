@@ -1,11 +1,11 @@
 /**
  * SPDX-License-Identifier: UNLICENSED
  */
-pragma solidity 0.6.10;
+pragma solidity =0.6.10;
 
-import {OpynPricerInterface} from "./interfaces/OpynPricerInterface.sol";
-import {Ownable} from "./packages/oz/Ownable.sol";
-import {SafeMath} from "./packages/oz/SafeMath.sol";
+import {OpynPricerInterface} from "../interfaces/OpynPricerInterface.sol";
+import {Ownable} from "../packages/oz/Ownable.sol";
+import {SafeMath} from "../packages/oz/SafeMath.sol";
 
 /**
  * @author Opyn Team

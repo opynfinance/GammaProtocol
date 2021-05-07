@@ -10,7 +10,7 @@ import {ReentrancyGuard} from "../../packages/oz/ReentrancyGuard.sol";
 import {SafeERC20} from "../../packages/oz/SafeERC20.sol";
 import {ERC20Interface} from "../../interfaces/ERC20Interface.sol";
 import {Actions} from "../../libs/Actions.sol";
-import {Controller} from "../../Controller.sol";
+import {Controller} from "../../core/Controller.sol";
 import {Address} from "../../packages/oz/Address.sol";
 
 /**

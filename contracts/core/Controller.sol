@@ -5,19 +5,19 @@ pragma solidity =0.6.10;
 
 pragma experimental ABIEncoderV2;
 
-import {OwnableUpgradeSafe} from "./packages/oz/upgradeability/OwnableUpgradeSafe.sol";
-import {ReentrancyGuardUpgradeSafe} from "./packages/oz/upgradeability/ReentrancyGuardUpgradeSafe.sol";
-import {Initializable} from "./packages/oz/upgradeability/Initializable.sol";
-import {SafeMath} from "./packages/oz/SafeMath.sol";
-import {MarginVault} from "./libs/MarginVault.sol";
-import {Actions} from "./libs/Actions.sol";
-import {AddressBookInterface} from "./interfaces/AddressBookInterface.sol";
-import {OtokenInterface} from "./interfaces/OtokenInterface.sol";
-import {MarginCalculatorInterface} from "./interfaces/MarginCalculatorInterface.sol";
-import {OracleInterface} from "./interfaces/OracleInterface.sol";
-import {WhitelistInterface} from "./interfaces/WhitelistInterface.sol";
-import {MarginPoolInterface} from "./interfaces/MarginPoolInterface.sol";
-import {CalleeInterface} from "./interfaces/CalleeInterface.sol";
+import {OwnableUpgradeSafe} from "../packages/oz/upgradeability/OwnableUpgradeSafe.sol";
+import {ReentrancyGuardUpgradeSafe} from "../packages/oz/upgradeability/ReentrancyGuardUpgradeSafe.sol";
+import {Initializable} from "../packages/oz/upgradeability/Initializable.sol";
+import {SafeMath} from "../packages/oz/SafeMath.sol";
+import {MarginVault} from "../libs/MarginVault.sol";
+import {Actions} from "../libs/Actions.sol";
+import {AddressBookInterface} from "../interfaces/AddressBookInterface.sol";
+import {OtokenInterface} from "../interfaces/OtokenInterface.sol";
+import {MarginCalculatorInterface} from "../interfaces/MarginCalculatorInterface.sol";
+import {OracleInterface} from "../interfaces/OracleInterface.sol";
+import {WhitelistInterface} from "../interfaces/WhitelistInterface.sol";
+import {MarginPoolInterface} from "../interfaces/MarginPoolInterface.sol";
+import {CalleeInterface} from "../interfaces/CalleeInterface.sol";
 
 /**
  * Controller Error Codes
@@ -908,13 +908,13 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         // check if vault is undercollateralized
         // the price is the amount of collateral asset to pay per 1 repaid debt(otoken)
         // collateralDust is the minimum amount of collateral that can be left in the vault when a partial liquidation occurs
-        (MarginVault.Vault memory vault, bool isLiquidatable, uint256 price, uint256 collateralDust) = _isLiquidatable(
+        (MarginVault.Vault memory vault, bool isUnderCollat, uint256 price, uint256 collateralDust) = _isLiquidatable(
             _args.owner,
             _args.vaultId,
             _args.roundId
         );
 
-        require(isLiquidatable, "CO33");
+        require(isUnderCollat, "CO33");
 
         // amount of collateral to offer to liquidator
         uint256 collateralToSell = _args.amount.mul(price).div(1e8);
@@ -1009,14 +1009,14 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         )
     {
         (MarginVault.Vault memory vault, uint256 typeVault, uint256 latestUpdateTimestamp) = getVault(_owner, _vaultId);
-        (bool isLiquidatable, uint256 price, uint256 collateralDust) = calculator.isLiquidatable(
+        (bool isUnderCollat, uint256 price, uint256 collateralDust) = calculator.isLiquidatable(
             vault,
             typeVault,
             latestUpdateTimestamp,
             _roundId
         );
 
-        return (vault, isLiquidatable, price, collateralDust);
+        return (vault, isUnderCollat, price, collateralDust);
     }
 
     /**

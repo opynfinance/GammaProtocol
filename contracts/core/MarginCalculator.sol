@@ -1,16 +1,16 @@
 /**
  * SPDX-License-Identifier: UNLICENSED
  */
-pragma solidity 0.6.10;
+pragma solidity =0.6.10;
 pragma experimental ABIEncoderV2;
 
-import {SafeMath} from "./packages/oz/SafeMath.sol";
-import {Ownable} from "./packages/oz/Ownable.sol";
-import {OtokenInterface} from "./interfaces/OtokenInterface.sol";
-import {OracleInterface} from "./interfaces/OracleInterface.sol";
-import {ERC20Interface} from "./interfaces/ERC20Interface.sol";
-import {FixedPointInt256 as FPI} from "./libs/FixedPointInt256.sol";
-import {MarginVault} from "./libs/MarginVault.sol";
+import {SafeMath} from "../packages/oz/SafeMath.sol";
+import {Ownable} from "../packages/oz/Ownable.sol";
+import {OtokenInterface} from "../interfaces/OtokenInterface.sol";
+import {OracleInterface} from "../interfaces/OracleInterface.sol";
+import {ERC20Interface} from "../interfaces/ERC20Interface.sol";
+import {FixedPointInt256 as FPI} from "../libs/FixedPointInt256.sol";
+import {MarginVault} from "../libs/MarginVault.sol";
 
 /**
  * @title MarginCalculator
@@ -993,12 +993,14 @@ contract MarginCalculator is Ownable {
             }
 
             // store auctionElapsedTime in a FixedPointInt scaled by 1e27
-            FPI.FixedPointInt memory auctionElapsedTime = FPI.fromScaledUint(auctionElapsedTime, 18);
+            FPI.FixedPointInt memory auctionElapsedTimeFixedPoint = FPI.fromScaledUint(auctionElapsedTime, 18);
             // store AUCTION_TIME in a FixedPointInt (already scaled by 1e27)
             FPI.FixedPointInt memory auctionTime = FPI.fromScaledUint(AUCTION_TIME, 18);
 
             // calculate price of 1 repaid otoken, scaled by the collateral decimals, expilictly rounded down
-            price = startingPrice.add((endingPrice.sub(startingPrice)).mul(auctionElapsedTime).div(auctionTime));
+            price = startingPrice.add(
+                (endingPrice.sub(startingPrice)).mul(auctionElapsedTimeFixedPoint).div(auctionTime)
+            );
 
             // cap liquidation price to ending price
             if (price.isGreaterThan(endingPrice)) price = endingPrice;
