@@ -198,7 +198,7 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
 
       assert.equal(
         new BigNumber(
-          await calculator.getTimeToExpiryValue(weth.address, usdc.address, usdc.address, true, timeToExpiry),
+          await calculator.getMaxPrice(weth.address, usdc.address, usdc.address, true, timeToExpiry),
         ).toString(),
         upperBoundValue.toString(),
         'Upper bound value for this time to expiry not correct',
@@ -206,7 +206,7 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
 
       assert.equal(
         new BigNumber(
-          (await calculator.getProductTimeToExpiry(weth.address, usdc.address, usdc.address, true))[0],
+          (await calculator.getTimesToExpiry(weth.address, usdc.address, usdc.address, true))[0],
         ).toNumber(),
         timeToExpiry,
         'Product time to expiry mismatch',
@@ -885,7 +885,7 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
       const timeToExpiry = 60 * 24 * 7
       const upperBoundValue = scaleNum(0.1, 27)
 
-      const oldUpperBoundValue = await calculator.getTimeToExpiryValue(
+      const oldUpperBoundValue = await calculator.getMaxPrice(
         weth.address,
         usdc.address,
         usdc.address,
@@ -903,7 +903,7 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
         {from: owner},
       )
 
-      const updatedUpperBoundValue = await calculator.getTimeToExpiryValue(
+      const updatedUpperBoundValue = await calculator.getMaxPrice(
         weth.address,
         usdc.address,
         usdc.address,
