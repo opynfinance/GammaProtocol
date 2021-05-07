@@ -2,7 +2,7 @@ pragma solidity =0.6.10;
 
 pragma experimental ABIEncoderV2;
 
-import '../../contracts/Controller.sol';
+import '../../contracts/core/Controller.sol';
 import {ERC20Interface} from '../../contracts/interfaces/ERC20Interface.sol';
 import {MarginVault} from '../../contracts/libs/MarginVault.sol';
 import {OtokenInterface} from '../../contracts/interfaces/OtokenInterface.sol';
