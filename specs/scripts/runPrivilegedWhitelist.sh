@@ -1,1 +1,1 @@
-certoraRun contracts/Whitelist.sol --verify Whitelist:specs/Privileged.spec --solc solc --settings -b=4,-ciMode=true
+certoraRun contracts/core/Whitelist.sol --verify Whitelist:specs/Privileged.spec --solc solc --settings -b=4,-ciMode=true
