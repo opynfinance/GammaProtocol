@@ -18,6 +18,8 @@ A library that provides a ActionArgs struct, sub types of Action structs, and fu
 
 - `_parseSettleVaultArgs(struct Actions.ActionArgs _args) (internal)`
 
+- `_parseLiquidateArgs(struct Actions.ActionArgs _args) (internal)`
+
 - `_parseCallArgs(struct Actions.ActionArgs _args) (internal)`
 
 ### Function `_parseOpenVaultArgs(struct Actions.ActionArgs _args) → struct Actions.OpenVaultArgs internal`
@@ -103,6 +105,8 @@ parses the passed in action arguments to get the arguments for a settle vault ac
 #### Return Values:
 
 - arguments for a settle vault action
+
+### Function `_parseLiquidateArgs(struct Actions.ActionArgs _args) → struct Actions.LiquidateArgs internal`
 
 ### Function `_parseCallArgs(struct Actions.ActionArgs _args) → struct Actions.CallArgs internal`
 

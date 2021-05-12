@@ -4,32 +4,22 @@ Interface of the Chainlink aggregator
 
 ## Functions:
 
-- `latestAnswer() (external)`
+- `decimals() (external)`
 
-- `latestTimestamp() (external)`
+- `description() (external)`
 
-- `latestRound() (external)`
+- `version() (external)`
 
-- `getAnswer(uint256 roundId) (external)`
+- `getRoundData(uint80 _roundId) (external)`
 
-- `getTimestamp(uint256 roundId) (external)`
+- `latestRoundData() (external)`
 
-## Events:
+### Function `decimals() → uint8 external`
 
-- `AnswerUpdated(int256 current, uint256 roundId, uint256 timestamp)`
+### Function `description() → string external`
 
-- `NewRound(uint256 roundId, address startedBy, uint256 startedAt)`
+### Function `version() → uint256 external`
 
-### Function `latestAnswer() → int256 external`
+### Function `getRoundData(uint80 _roundId) → uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound external`
 
-### Function `latestTimestamp() → uint256 external`
-
-### Function `latestRound() → uint256 external`
-
-### Function `getAnswer(uint256 roundId) → int256 external`
-
-### Function `getTimestamp(uint256 roundId) → uint256 external`
-
-### Event `AnswerUpdated(int256 current, uint256 roundId, uint256 timestamp)`
-
-### Event `NewRound(uint256 roundId, address startedBy, uint256 startedAt)`
+### Function `latestRoundData() → uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound external`

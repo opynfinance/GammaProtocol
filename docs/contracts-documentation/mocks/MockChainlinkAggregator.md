@@ -4,11 +4,9 @@ Chainlink oracle mock
 
 ## Functions:
 
-- `getAnswer(uint256 _roundId) (external)`
+- `getRoundData(uint80 _roundId) (external)`
 
-- `getTimestamp(uint256 _roundId) (external)`
-
-- `latestAnswer() (external)`
+- `latestRoundData() (external)`
 
 - `setRoundTimestamp(uint256 _roundId, uint256 _timestamp) (external)`
 
@@ -16,11 +14,9 @@ Chainlink oracle mock
 
 - `setLatestAnswer(int256 _answer) (external)`
 
-### Function `getAnswer(uint256 _roundId) → int256 external`
+### Function `getRoundData(uint80 _roundId) → uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound external`
 
-### Function `getTimestamp(uint256 _roundId) → uint256 external`
-
-### Function `latestAnswer() → int256 external`
+### Function `latestRoundData() → uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound external`
 
 ### Function `setRoundTimestamp(uint256 _roundId, uint256 _timestamp) external`
 

@@ -8,7 +8,11 @@ The MockOracle contract let us easily manipulate the oracle state in testings.
 
 - `setRealTimePrice(address _asset, uint256 _price) (external)`
 
+- `getChainlinkRoundData(address _asset, uint80 _roundId) (external)`
+
 - `getPrice(address _asset) (external)`
+
+- `setChainlinkRoundData(address _asset, uint80 _roundId, uint256 _price, uint256 _timestamp) (external)`
 
 - `setExpiryPriceFinalizedAllPeiodOver(address _asset, uint256 _expiryTimestamp, uint256 _price, bool _isFinalized) (external)`
 
@@ -38,9 +42,15 @@ The MockOracle contract let us easily manipulate the oracle state in testings.
 
 - `setDisputePeriod(address _pricer, uint256 _disputePeriod) (external)`
 
+- `setStablePrice(address _asset, uint256 _price) (external)`
+
 ### Function `setRealTimePrice(address _asset, uint256 _price) external`
 
+### Function `getChainlinkRoundData(address _asset, uint80 _roundId) → uint256, uint256 external`
+
 ### Function `getPrice(address _asset) → uint256 external`
+
+### Function `setChainlinkRoundData(address _asset, uint80 _roundId, uint256 _price, uint256 _timestamp) → uint256, uint256 external`
 
 ### Function `setExpiryPriceFinalizedAllPeiodOver(address _asset, uint256 _expiryTimestamp, uint256 _price, bool _isFinalized) external`
 
@@ -69,3 +79,5 @@ The MockOracle contract let us easily manipulate the oracle state in testings.
 ### Function `setLockingPeriod(address _pricer, uint256 _lockingPeriod) external`
 
 ### Function `setDisputePeriod(address _pricer, uint256 _disputePeriod) external`
+
+### Function `setStablePrice(address _asset, uint256 _price) external`

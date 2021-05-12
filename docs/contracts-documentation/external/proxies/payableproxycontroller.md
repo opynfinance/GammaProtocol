@@ -8,7 +8,7 @@ Contract for wrapping/unwrapping ETH before/after interacting with the Gamma Pro
 
 - `fallback() (external)`
 
-- `operate(struct Actions.ActionArgs[] _actions, address payable sendEthTo) (external)`
+- `operate(struct Actions.ActionArgs[] _actions, address payable _sendEthTo) (external)`
 
 ### Function `constructor(address _controller, address _marginPool, address payable _weth) public`
 
@@ -16,7 +16,7 @@ Contract for wrapping/unwrapping ETH before/after interacting with the Gamma Pro
 
 fallback function which disallows ETH to be sent to this contract without data except when unwrapping WETH
 
-### Function `operate(struct Actions.ActionArgs[] _actions, address payable sendEthTo) external`
+### Function `operate(struct Actions.ActionArgs[] _actions, address payable _sendEthTo) external`
 
 execute a number of actions
 
@@ -25,3 +25,5 @@ a wrapper for the Controller operate function, to wrap WETH and the beginning an
 #### Parameters:
 
 - `_actions`: array of actions arguments
+
+- `_sendEthTo`: address to send the remaining eth to
