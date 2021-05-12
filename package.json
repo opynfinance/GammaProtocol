@@ -117,6 +117,7 @@
     "lint-staged": "^9.5.0",
     "prettier": "^1.19.1",
     "prettier-plugin-solidity": "^1.0.0-alpha.54",
+    "sol2uml": "^1.1.25",
     "solhint": "3.0.0",
     "solhint-plugin-prettier": "0.0.4",
     "solidity-coverage": "0.7.5",
