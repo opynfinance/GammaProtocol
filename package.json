@@ -66,7 +66,7 @@
     "doc:uml:factory": "sol2uml ./contracts/OtokenFactory.sol -f png -o ./docs/uml/GammaFactory.png",
     "doc:uml:whitelist": "sol2uml ./contracts/Whitelist.sol -f png -o ./docs/uml/GammaWhitelist.png",
     "doc:uml:addressbook": "sol2uml ./contracts/AddressBook.sol -f png -o ./docs/uml/GammaAddressbook.png",
-    "docify": "node docify.js",
+    "docify": "node scripts/docs/docify.js",
     "ci:test:unit": "CI=true truffle test ./test/unit-tests/*.ts",
     "ci:test:integration": "CI=true truffle test ./test/integration-tests/*.ts"
   },
