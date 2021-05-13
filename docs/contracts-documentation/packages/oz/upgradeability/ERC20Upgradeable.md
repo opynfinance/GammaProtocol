@@ -1,12 +1,12 @@
 # `ERC20Upgradeable`
 
-this contract was renamed from ERC20UpgradeSafe to ERC20Upgradeable
+Implementation of the {IERC20} interface.
 
 This implementation is agnostic to the way tokens are created. This means
 
 that a supply mechanism has to be added in a derived contract using {_mint}.
 
-For a generic mechanism see {ERC20MinterPauser}.
+For a generic mechanism see {ERC20PresetMinterPauser}.
 
 TIP: For a detailed writeup see our guide
 
@@ -34,13 +34,11 @@ functions have been added to mitigate the well-known issues around setting
 
 allowances. See {IERC20-approve}.
 
-Implementation of the {IERC20} interface.
-
 ## Functions:
 
-- `__ERC20_init(string name, string symbol) (internal)`
+- `__ERC20_init(string name_, string symbol_) (internal)`
 
-- `__ERC20_init_unchained(string name, string symbol) (internal)`
+- `__ERC20_init_unchained(string name_, string symbol_) (internal)`
 
 - `name() (public)`
 
@@ -76,7 +74,7 @@ Implementation of the {IERC20} interface.
 
 - `_beforeTokenTransfer(address from, address to, uint256 amount) (internal)`
 
-### Function `__ERC20_init(string name, string symbol) internal`
+### Function `__ERC20_init(string name_, string symbol_) internal`
 
 Sets the values for {name} and {symbol}, initializes {decimals} with
 
@@ -88,7 +86,7 @@ All three of these values are immutable: they can only be set once during
 
 construction.
 
-### Function `__ERC20_init_unchained(string name, string symbol) internal`
+### Function `__ERC20_init_unchained(string name_, string symbol_) internal`
 
 ### Function `name() → string public`
 
@@ -156,7 +154,7 @@ See {IERC20-transferFrom}.
 
 Emits an {Approval} event indicating the updated allowance. This is not
 
-required by the EIP. See the note at the beginning of {ERC20};
+required by the EIP. See the note at the beginning of {ERC20}.
 
 Requirements:
 
@@ -226,7 +224,7 @@ the total supply.
 
 Emits a {Transfer} event with `from` set to the zero address.
 
-Requirements
+Requirements:
 
 - `to` cannot be the zero address.
 
@@ -238,7 +236,7 @@ total supply.
 
 Emits a {Transfer} event with `to` set to the zero address.
 
-Requirements
+Requirements:
 
 - `account` cannot be the zero address.
 
@@ -246,9 +244,9 @@ Requirements
 
 ### Function `_approve(address owner, address spender, uint256 amount) internal`
 
-Sets `amount` as the allowance of `spender` over the `owner`s tokens.
+Sets `amount` as the allowance of `spender` over the `owner` s tokens.
 
-This is internal function is equivalent to `approve`, and can be used to
+This internal function is equivalent to `approve`, and can be used to
 
 e.g. set automatic allowances for certain subsystems, etc.
 

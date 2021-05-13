@@ -26,6 +26,8 @@ Contract that controls the Gamma Protocol and the interaction of all sub contrac
 
 - `initialize(address _addressBook, address _owner) (external)`
 
+- `donate(address _asset, uint256 _amount) (external)`
+
 - `setSystemPartiallyPaused(bool _partiallyPaused) (external)`
 
 - `setSystemFullyPaused(bool _fullyPaused) (external)`
@@ -42,15 +44,19 @@ Contract that controls the Gamma Protocol and the interaction of all sub contrac
 
 - `operate(struct Actions.ActionArgs[] _actions) (external)`
 
+- `sync(address _owner, uint256 _vaultId) (external)`
+
 - `isOperator(address _owner, address _operator) (external)`
 
 - `getConfiguration() (external)`
 
 - `getProceed(address _owner, uint256 _vaultId) (external)`
 
+- `isLiquidatable(address _owner, uint256 _vaultId, uint256 _roundId) (external)`
+
 - `getPayout(address _otoken, uint256 _amount) (public)`
 
-- `isSettlementAllowed(address _otoken) (public)`
+- `isSettlementAllowed(address _underlying, address _strike, address _collateral, uint256 _expiry) (public)`
 
 - `getAccountVaultCounter(address _accountOwner) (external)`
 
@@ -80,7 +86,9 @@ Contract that controls the Gamma Protocol and the interaction of all sub contrac
 
 - `_settleVault(struct Actions.SettleVaultArgs _args) (internal)`
 
-- `_call(struct Actions.CallArgs _args, uint256 _ethLeft) (internal)`
+- `_liquidate(struct Actions.LiquidateArgs _args) (internal)`
+
+- `_call(struct Actions.CallArgs _args) (internal)`
 
 - `_checkVaultId(address _accountOwner, uint256 _vaultId) (internal)`
 
@@ -88,13 +96,15 @@ Contract that controls the Gamma Protocol and the interaction of all sub contrac
 
 - `_isCalleeWhitelisted(address _callee) (internal)`
 
+- `_isLiquidatable(address _owner, uint256 _vaultId, uint256 _roundId) (internal)`
+
 - `_refreshConfigInternal() (internal)`
 
 ## Events:
 
 - `AccountOperatorUpdated(address accountOwner, address operator, bool isSet)`
 
-- `VaultOpened(address accountOwner, uint256 vaultId)`
+- `VaultOpened(address accountOwner, uint256 vaultId, uint256 vaultType)`
 
 - `LongOtokenDeposited(address otoken, address accountOwner, address from, uint256 vaultId, uint256 amount)`
 
@@ -110,19 +120,23 @@ Contract that controls the Gamma Protocol and the interaction of all sub contrac
 
 - `Redeem(address otoken, address redeemer, address receiver, address collateralAsset, uint256 otokenBurned, uint256 payout)`
 
-- `VaultSettled(address AccountOwner, address to, uint256 vaultId, uint256 payout)`
+- `VaultSettled(address AccountOwner, address to, address otoken, uint256 vaultId, uint256 payout)`
 
-- `CallExecuted(address from, address to, address vaultOwner, uint256 vaultId, bytes data)`
+- `VaultLiquidated(address liquidator, address receiver, address vaultOwner, uint256 debt, uint256 auctionPrice, uint256 collateralPayout, uint256 auctionStartingRound)`
+
+- `CallExecuted(address from, address to, bytes data)`
 
 - `FullPauserUpdated(address oldFullPauser, address newFullPauser)`
 
 - `PartialPauserUpdated(address oldPartialPauser, address newPartialPauser)`
 
-- `SystemPartiallyPaused(bool isActive)`
+- `SystemPartiallyPaused(bool isPaused)`
 
-- `SystemFullyPaused(bool isActive)`
+- `SystemFullyPaused(bool isPaused)`
 
 - `CallRestricted(bool isRestricted)`
+
+- `Donated(address donator, address asset, uint256 amount)`
 
 ### Modifier `notPartiallyPaused()`
 
@@ -185,6 +199,18 @@ initalize the deployed contract
 - `_addressBook`: addressbook module
 
 - `_owner`: account owner address
+
+### Function `donate(address _asset, uint256 _amount) external`
+
+send asset amount to margin pool
+
+use donate() instead of direct transfer() to store the balance in assetBalance
+
+#### Parameters:
+
+- `_asset`: asset address
+
+- `_amount`: amount to donate to pool
 
 ### Function `setSystemPartiallyPaused(bool _partiallyPaused) external`
 
@@ -264,6 +290,20 @@ can only be called when the system is not fully paused
 
 - `_actions`: array of actions arguments
 
+### Function `sync(address _owner, uint256 _vaultId) external`
+
+sync vault latest update timestamp
+
+anyone can update the latest time the vault was touched by calling this function
+
+vaultLatestUpdate will sync if the vault is well collateralized
+
+#### Parameters:
+
+- `_owner`: vault owner address
+
+- `_vaultId`: vault id
+
 ### Function `isOperator(address _owner, address _operator) → bool external`
 
 check if a specific address is an operator for an owner account
@@ -306,6 +346,22 @@ return a vault's proceeds pre or post expiry, the amount of collateral that can 
 
 - amount of collateral that can be taken out
 
+### Function `isLiquidatable(address _owner, uint256 _vaultId, uint256 _roundId) → bool, uint256, uint256 external`
+
+check if a vault is liquidatable in a specific round id
+
+#### Parameters:
+
+- `_owner`: vault owner address
+
+- `_vaultId`: vault id to check
+
+- `_roundId`: chainlink round id to check vault status at
+
+#### Return Values:
+
+- true if vault is undercollateralized, the price of 1 repaid otoken and the otoken collateral dust amount
+
 ### Function `getPayout(address _otoken, uint256 _amount) → uint256 public`
 
 get an oToken's payout/cash value after expiry, in the collateral asset
@@ -320,13 +376,21 @@ get an oToken's payout/cash value after expiry, in the collateral asset
 
 - amount of collateral to pay out
 
-### Function `isSettlementAllowed(address _otoken) → bool public`
+### Function `isSettlementAllowed(address _underlying, address _strike, address _collateral, uint256 _expiry) → bool public`
 
-return if an expired oToken contract’s settlement price has been finalized
+return if an expired oToken is ready to be settled, only true when price for underlying,
+
+strike and collateral assets at this specific expiry is available in our Oracle module
 
 #### Parameters:
 
-- `_otoken`: address of the oToken
+- `_underlying`: oToken underlying asset
+
+- `_strike`: oToken strike asset
+
+- `_collateral`: oToken collateral asset
+
+- `_expiry`: otoken expiry timestamp
 
 #### Return Values:
 
@@ -356,7 +420,7 @@ check if an oToken has expired
 
 - True if the otoken has expired, False if not
 
-### Function `getVault(address _owner, uint256 _vaultId) → struct MarginVault.Vault public`
+### Function `getVault(address _owner, uint256 _vaultId) → struct MarginVault.Vault, uint256, uint256 public`
 
 return a specific vault
 
@@ -368,7 +432,7 @@ return a specific vault
 
 #### Return Values:
 
-- Vault struct that corresponds to the _vaultId of _owner
+- Vault struct that corresponds to the _vaultId of _owner, vault type and the latest timestamp when the vault was updated
 
 ### Function `_runActions(struct Actions.ActionArgs[] _actions) → bool, address, uint256 internal`
 
@@ -490,7 +554,17 @@ deletes a vault of vaultId after net proceeds/collateral is removed, cannot be c
 
 - `_args`: SettleVaultArgs structure
 
-### Function `_call(struct Actions.CallArgs _args, uint256 _ethLeft) → uint256 internal`
+### Function `_liquidate(struct Actions.LiquidateArgs _args) internal`
+
+liquidate naked margin vault
+
+can liquidate different vaults id in the same operate() call
+
+#### Parameters:
+
+- `_args`: liquidation action arguments struct
+
+### Function `_call(struct Actions.CallArgs _args) → uint256 internal`
 
 execute arbitrary calls
 
@@ -499,8 +573,6 @@ cannot be called when system is partiallyPaused or fullyPaused
 #### Parameters:
 
 - `_args`: Call action
-
-- `_ethLeft`: amount of eth left for this call.
 
 ### Function `_checkVaultId(address _accountOwner, uint256 _vaultId) → bool internal`
 
@@ -530,6 +602,22 @@ return if a callee address is whitelisted or not
 
 - True if callee address is whitelisted, False if not
 
+### Function `_isLiquidatable(address _owner, uint256 _vaultId, uint256 _roundId) → struct MarginVault.Vault, bool, uint256, uint256 internal`
+
+check if a vault is liquidatable in a specific round id
+
+#### Parameters:
+
+- `_owner`: vault owner address
+
+- `_vaultId`: vault id to check
+
+- `_roundId`: chainlink round id to check vault status at
+
+#### Return Values:
+
+- vault struct, isLiquidatable, true if vault is undercollateralized, the price of 1 repaid otoken and the otoken collateral dust amount
+
 ### Function `_refreshConfigInternal() internal`
 
 updates the internal configuration of the controller
@@ -538,7 +626,7 @@ updates the internal configuration of the controller
 
 emits an event when an account operator is updated for a specific account owner
 
-### Event `VaultOpened(address accountOwner, uint256 vaultId)`
+### Event `VaultOpened(address accountOwner, uint256 vaultId, uint256 vaultType)`
 
 emits an event when a new vault is opened
 
@@ -570,11 +658,15 @@ emits an event when a short oToken is burned
 
 emits an event when an oToken is redeemed
 
-### Event `VaultSettled(address AccountOwner, address to, uint256 vaultId, uint256 payout)`
+### Event `VaultSettled(address AccountOwner, address to, address otoken, uint256 vaultId, uint256 payout)`
 
 emits an event when a vault is settled
 
-### Event `CallExecuted(address from, address to, address vaultOwner, uint256 vaultId, bytes data)`
+### Event `VaultLiquidated(address liquidator, address receiver, address vaultOwner, uint256 debt, uint256 auctionPrice, uint256 collateralPayout, uint256 auctionStartingRound)`
+
+emits an event when a vault is liquidated
+
+### Event `CallExecuted(address from, address to, bytes data)`
 
 emits an event when a call action is executed
 
@@ -586,14 +678,18 @@ emits an event when the fullPauser address changes
 
 emits an event when the partialPauser address changes
 
-### Event `SystemPartiallyPaused(bool isActive)`
+### Event `SystemPartiallyPaused(bool isPaused)`
 
 emits an event when the system partial paused status changes
 
-### Event `SystemFullyPaused(bool isActive)`
+### Event `SystemFullyPaused(bool isPaused)`
 
 emits an event when the system fully paused status changes
 
 ### Event `CallRestricted(bool isRestricted)`
 
 emits an event when the call action restriction changes
+
+### Event `Donated(address donator, address asset, uint256 amount)`
+
+emits an event when a donation transfer executed

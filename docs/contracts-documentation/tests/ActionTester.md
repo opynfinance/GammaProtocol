@@ -20,6 +20,8 @@
 
 - `testParseSettleVaultAction(struct Actions.ActionArgs _args) (external)`
 
+- `testParseLiquidateActions(struct Actions.ActionArgs _args) (external)`
+
 - `getSettleVaultArgs() (external)`
 
 - `testParseMintAction(struct Actions.ActionArgs _args) (external)`
@@ -33,6 +35,8 @@
 - `testParseCallAction(struct Actions.ActionArgs _args) (external)`
 
 - `getCallArgs() (external)`
+
+- `getLiquidateArgs() (external)`
 
 ### Function `testParseDespositAction(struct Actions.ActionArgs _args) external`
 
@@ -52,6 +56,8 @@
 
 ### Function `testParseSettleVaultAction(struct Actions.ActionArgs _args) external`
 
+### Function `testParseLiquidateActions(struct Actions.ActionArgs _args) external`
+
 ### Function `getSettleVaultArgs() → struct Actions.SettleVaultArgs external`
 
 ### Function `testParseMintAction(struct Actions.ActionArgs _args) external`
@@ -65,3 +71,5 @@
 ### Function `testParseCallAction(struct Actions.ActionArgs _args) external`
 
 ### Function `getCallArgs() → struct Actions.CallArgs external`
+
+### Function `getLiquidateArgs() → struct Actions.LiquidateArgs external`

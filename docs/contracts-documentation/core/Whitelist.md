@@ -160,7 +160,7 @@ can only be called from the owner address
 
 allows the owner to whitelist a collateral address
 
-can only be called from the owner address
+can only be called from the owner address. This function is used to whitelist any asset other than Otoken as collateral. WhitelistOtoken() is used to whitelist Otoken contracts.
 
 #### Parameters:
 

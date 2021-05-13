@@ -28,9 +28,13 @@ Contract that holds all protocol funds
 
 ## Events:
 
+- `TransferToPool(address asset, address user, uint256 amount)`
+
+- `TransferToUser(address asset, address user, uint256 amount)`
+
 - `FarmerUpdated(address oldAddress, address newAddress)`
 
-- `AssetFarmed(address asset, address receiver, uint256 _amount)`
+- `AssetFarmed(address asset, address receiver, uint256 amount)`
 
 ### Modifier `onlyController()`
 
@@ -112,7 +116,7 @@ transfers multiple assets from the pool to users
 
 function to collect the excess balance of a particular asset
 
-can only be called by the farmer address
+can only be called by the farmer address. Do not farm otokens.
 
 #### Parameters:
 
@@ -132,10 +136,18 @@ can only be called by MarginPool owner
 
 - `_farmer`: farmer address
 
+### Event `TransferToPool(address asset, address user, uint256 amount)`
+
+emits an event when marginpool receive funds from controller
+
+### Event `TransferToUser(address asset, address user, uint256 amount)`
+
+emits an event when marginpool transfer funds to controller
+
 ### Event `FarmerUpdated(address oldAddress, address newAddress)`
 
 emit event after updating the farmer address
 
-### Event `AssetFarmed(address asset, address receiver, uint256 _amount)`
+### Event `AssetFarmed(address asset, address receiver, uint256 amount)`
 
 emit event when an asset gets harvested from the pool

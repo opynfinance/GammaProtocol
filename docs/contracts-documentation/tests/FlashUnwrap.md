@@ -1,12 +1,14 @@
-# `FlashWrap`
+# `FlashUnwrap`
 
-contract To wrap ETH
+contract To unwrap WETH. This is just a contract to test the Call action
 
 ## Functions:
 
 - `constructor(address payable weth) (public)`
 
-- `callFunction(address payable _sender, address _vaultOwner, uint256 _vaultId, bytes _data) (external)`
+- `receive() (external)`
+
+- `callFunction(address payable _sender, bytes _data) (external)`
 
 ## Events:
 
@@ -16,7 +18,9 @@ contract To wrap ETH
 
 ### Function `constructor(address payable weth) public`
 
-### Function `callFunction(address payable _sender, address _vaultOwner, uint256 _vaultId, bytes _data) external`
+### Function `receive() external`
+
+### Function `callFunction(address payable _sender, bytes _data) external`
 
 ### Event `WrappedETH(address to, uint256 amount)`
 

@@ -8,6 +8,8 @@ The Otoken inherits ERC20Upgradeable because we need to use the init instead of 
 
 - `init(address _addressBook, address _underlyingAsset, address _strikeAsset, address _collateralAsset, uint256 _strikePrice, uint256 _expiryTimestamp, bool _isPut) (external)`
 
+- `getOtokenDetails() (external)`
+
 - `mintOtoken(address account, uint256 amount) (external)`
 
 - `burnOtoken(address account, uint256 amount) (external)`
@@ -30,6 +32,8 @@ initialize the oToken
 
 #### Parameters:
 
+- `_addressBook`: addressbook module
+
 - `_underlyingAsset`: asset that the option references
 
 - `_strikeAsset`: asset that the strike price is denominated in
@@ -41,6 +45,8 @@ initialize the oToken
 - `_expiryTimestamp`: expiration timestamp of the option, represented as a unix timestamp
 
 - `_isPut`: True if a put option, False if a call option
+
+### Function `getOtokenDetails() → address, address, address, uint256, uint256, bool external`
 
 ### Function `mintOtoken(address account, uint256 amount) external`
 

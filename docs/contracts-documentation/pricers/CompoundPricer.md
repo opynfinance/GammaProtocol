@@ -4,7 +4,7 @@ A Pricer contract for a Compound cToken
 
 ## Functions:
 
-- `constructor(address _cToken, address _underlying, address _underlyingPricer, address _oracle) (public)`
+- `constructor(address _cToken, address _underlying, address _oracle) (public)`
 
 - `getPrice() (external)`
 
@@ -12,7 +12,7 @@ A Pricer contract for a Compound cToken
 
 - `_underlyingPriceToCtokenPrice(uint256 _underlyingPrice) (internal)`
 
-### Function `constructor(address _cToken, address _underlying, address _underlyingPricer, address _oracle) public`
+### Function `constructor(address _cToken, address _underlying, address _oracle) public`
 
 #### Parameters:
 
@@ -20,15 +20,11 @@ A Pricer contract for a Compound cToken
 
 - `_underlying`: underlying asset for this cToken
 
-- `_underlyingPricer`: pricer for cToken's underlying
-
 - `_oracle`: Opyn Oracle contract address
 
 ### Function `getPrice() → uint256 external`
 
 get the live price for the asset
-
-overrides the getPrice function in OpynPricerInterface
 
 #### Return Values:
 

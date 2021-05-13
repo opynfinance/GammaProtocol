@@ -212,7 +212,7 @@ can only be called by the addressbook owner
 
 ### Function `updateImpl(bytes32 _id, address _newAddress) public`
 
-internal function to update the implementation of a specific component of the protocol
+function to update the implementation of a specific component of the protocol
 
 #### Parameters:
 

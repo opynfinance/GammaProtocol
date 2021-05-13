@@ -44,7 +44,7 @@ function fix(pathName) {
     else if (pathName.endsWith(".md")) {
         const lines = fs.readFileSync(pathName, {encoding: "utf8"}).split("\r").join("").split("\n");
         fs.unlinkSync(pathName)
-        fs.writeFileSync(pathName.toLowerCase(), lines.filter(line => line.trim().length > 0).join("\n\n") + "\n");
+        fs.writeFileSync(pathName, lines.filter(line => line.trim().length > 0).join("\n\n") + "\n");
     }
 }
 
