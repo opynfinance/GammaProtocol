@@ -628,7 +628,7 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
       assert.isAtMost(
         calcRelativeDiff(
           vaultAfterLiquidation.collateralAmounts[0],
-          new BigNumber(vaultBeforeLiquidation.collateralAmounts[0]).minus(isLiquidatable[1]),
+          new BigNumber(vaultBeforeLiquidation.collateralAmounts[0]).minus(new BigNumber(isLiquidatable[1])),
         )
           .dividedBy(10 ** usdcDecimals)
           .toNumber(),
