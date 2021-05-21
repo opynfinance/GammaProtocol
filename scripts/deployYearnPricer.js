@@ -15,7 +15,7 @@ module.exports = async function(callback) {
       .option('gasPrice', {describe: 'Gas price in WEI', type: 'string', demandOption: false})
       .option('gasLimit', {describe: 'Gas Limit in WEI', type: 'string', demandOption: false}).argv
 
-    console.log(`Deploying chainlink pricer contract on ${options.network} 🍕`)
+    console.log(`Deploying yearn pricer contract on ${options.network} 🍕`)
 
     const tx = await YearnPricer.new(options.yToken, options.underlying, options.oracle, {
       gasPrice: options.gasPrice,
