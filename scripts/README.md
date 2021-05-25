@@ -44,7 +44,7 @@ To deploy a new `PermitCallee.sol`, it is recommended to use the `deployPermitCa
 truffle exec scripts/deployPermitCallee.js --network kovan --gasPrice 50000000000
 ```
 
-### TradeCallee Deployment
+## TradeCallee Deployment
 the `TradeCallee.sol` contract allow to batch 0x trading transactions with Gamma operate actions through the Call action.
 To deploy a new `TradeCallee.sol`, it is recommended to use the `deployTrade0x` truffle script inside the `scripts` folder.
 
