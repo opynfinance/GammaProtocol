@@ -397,9 +397,10 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
       const vaultAfterLiquidation = (await controllerProxy.getVault(accountOwner1, vaultCounter.toString()))[0]
 
       assert.equal(vaultAfterLiquidation.shortAmounts[0].toString(), '0', 'Vault was not fully liquidated')
+      console.log('after', vaultAfterLiquidation.collateralAmounts)
       assert.isAtMost(
         calcRelativeDiff(
-          vaultAfterLiquidation.collateralAmounts[0],
+          new BigNumber(vaultAfterLiquidation.collateralAmounts[0]),
           new BigNumber(vaultBeforeLiquidation.collateralAmounts[0]).minus(new BigNumber(isLiquidatable[1])),
         )
           .dividedBy(10 ** usdcDecimals)
