@@ -179,12 +179,13 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /// @notice emits an event when a vault is liquidated
     event VaultLiquidated(
         address indexed liquidator,
-        address indexed receiver,
+        address indexed payoutRecipient,
         address indexed vaultOwner,
-        uint256 debt,
         uint256 auctionPrice,
+        uint256 auctionStartingRound,
         uint256 collateralPayout,
-        uint256 auctionStartingRound
+        uint256 debtAmount,
+        uint256 vaultId
     );
     /// @notice emits an event when a call action is executed
     event CallExecuted(address indexed from, address indexed to, bytes data);
@@ -949,10 +950,11 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             msg.sender,
             _args.receiver,
             _args.owner,
-            _args.amount,
             price,
+            _args.roundId,
             collateralToSell,
-            _args.roundId
+            _args.amount,
+            _args.vaultId
         );
     }
 
