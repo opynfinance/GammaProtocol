@@ -122,7 +122,7 @@ Contract that controls the Gamma Protocol and the interaction of all sub contrac
 
 - `VaultSettled(address accountOwner, address oTokenAddress, address payoutRecipient, uint256 payout, uint256 vaultId, uint256 vaultType)`
 
-- `VaultLiquidated(address liquidator, address receiver, address vaultOwner, uint256 debt, uint256 auctionPrice, uint256 collateralPayout, uint256 auctionStartingRound)`
+- `VaultLiquidated(address liquidator, address payoutRecipient, address vaultOwner, uint256 auctionPrice, uint256 auctionStartingRound, uint256 collateralPayout, uint256 debtAmount, uint256 vaultId)`
 
 - `CallExecuted(address from, address to, bytes data)`
 
@@ -662,7 +662,7 @@ emits an event when an oToken is redeemed
 
 emits an event when a vault is settled
 
-### Event `VaultLiquidated(address liquidator, address receiver, address vaultOwner, uint256 debt, uint256 auctionPrice, uint256 collateralPayout, uint256 auctionStartingRound)`
+### Event `VaultLiquidated(address liquidator, address payoutRecipient, address vaultOwner, uint256 auctionPrice, uint256 auctionStartingRound, uint256 collateralPayout, uint256 debtAmount, uint256 vaultId)`
 
 emits an event when a vault is liquidated
 
