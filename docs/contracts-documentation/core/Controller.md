@@ -120,7 +120,7 @@ Contract that controls the Gamma Protocol and the interaction of all sub contrac
 
 - `Redeem(address otoken, address redeemer, address receiver, address collateralAsset, uint256 otokenBurned, uint256 payout)`
 
-- `VaultSettled(address AccountOwner, address to, address otoken, uint256 vaultId, uint256 payout)`
+- `VaultSettled(address accountOwner, address oTokenAddress, address payoutRecipient, uint256 payout, uint256 vaultId, uint256 vaultType)`
 
 - `VaultLiquidated(address liquidator, address receiver, address vaultOwner, uint256 debt, uint256 auctionPrice, uint256 collateralPayout, uint256 auctionStartingRound)`
 
@@ -658,7 +658,7 @@ emits an event when a short oToken is burned
 
 emits an event when an oToken is redeemed
 
-### Event `VaultSettled(address AccountOwner, address to, address otoken, uint256 vaultId, uint256 payout)`
+### Event `VaultSettled(address accountOwner, address oTokenAddress, address payoutRecipient, uint256 payout, uint256 vaultId, uint256 vaultType)`
 
 emits an event when a vault is settled
 
