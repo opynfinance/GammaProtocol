@@ -399,7 +399,6 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
       const vaultAfterLiquidation = (await controllerProxy.getVault(accountOwner1, vaultCounter.toString()))[0]
 
       assert.equal(vaultAfterLiquidation.shortAmounts[0].toString(), '0', 'Vault was not fully liquidated')
-      console.log('after', vaultAfterLiquidation.collateralAmounts)
       assert.isAtMost(
         calcRelativeDiff(
           new BigNumber(vaultAfterLiquidation.collateralAmounts[0]),
@@ -676,8 +675,8 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
         'Liquidator vault short amount mismatch',
       )
       assert.equal(
-        userVaultAfter[0].collateralAmounts[0].toString(),
-        new BigNumber(userVaultBefore[0].collateralAmounts[0]).minus(isLiquidatable[1].toString()).toString(),
+        new BigNumber(userVaultAfter[0].collateralAmounts[0]).toString(),
+        new BigNumber(userVaultBefore[0].collateralAmounts[0]).minus(new BigNumber(isLiquidatable[1])).toString(),
         'User vault short amount mismatch after liquidation',
       )
     })
