@@ -274,7 +274,9 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
         isPut,
       )
       const userVaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
-      const amountToWithdraw = new BigNumber(userVaultBefore[0].collateralAmounts[0]).minus(collateralNeeded)
+      const amountToWithdraw = new BigNumber(userVaultBefore[0].collateralAmounts[0]).minus(
+        new BigNumber(collateralNeeded),
+      )
       const withdrawArgs = [
         {
           actionType: ActionType.WithdrawCollateral,
