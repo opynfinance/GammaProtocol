@@ -674,7 +674,7 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
       )
       assert.equal(
         userVaultAfter[0].collateralAmounts[0].toString(),
-        new BigNumber(userVaultBefore[0].collateralAmounts[0]).minus(isLiquidatable[1].toString()).toString(),
+        new BigNumber(userVaultBefore[0].collateralAmounts[0]).minus(new BigNumber(isLiquidatable[1])).toString(),
         'User vault short amount mismatch after liquidation',
       )
     })
