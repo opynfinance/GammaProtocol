@@ -75,7 +75,7 @@ contract MarginCalculator is Ownable {
     OracleInterface public oracle;
 
     /// @notice emits an event when collateral dust is updated
-    event CollateralDustUpdated(address indexed collateral, uint256 oldDust);
+    event CollateralDustUpdated(address indexed collateral, uint256 dust);
     /// @notice emits an event when new time to expiry is added for a specific product
     event TimeToExpiryAdded(bytes32 indexed productHash, uint256 timeToExpiry);
     /// @notice emits an event when new upper bound value is added for a specific time to expiry timestamp
