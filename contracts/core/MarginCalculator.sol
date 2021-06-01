@@ -75,13 +75,17 @@ contract MarginCalculator is Ownable {
     OracleInterface public oracle;
 
     /// @notice emits an event when collateral dust is updated
-    event CollateralDustUpdated(address indexed collateral, uint256 dust);
+    event CollateralDustUpdated(address indexed collateral, uint256 oldDust);
     /// @notice emits an event when new time to expiry is added for a specific product
     event TimeToExpiryAdded(bytes32 indexed productHash, uint256 timeToExpiry);
     /// @notice emits an event when new upper bound value is added for a specific time to expiry timestamp
     event MaxPriceAdded(bytes32 indexed productHash, uint256 timeToExpiry, uint256 value);
+    /// @notice emits an event when updating upper bound value at specific expiry timestamp
+    event MaxPriceUpdated(bytes32 indexed productHash, uint256 timeToExpiry, uint256 oldValue, uint256 newValue);
     /// @notice emits an event when spot shock value is updated for a specific product
     event SpotShockUpdated(bytes32 indexed product, uint256 spotShock);
+    /// @notice emits an event when oracle deviation value is updated
+    event OracleDeviationUpdated(uint256 oracleDeviation);
 
     /**
      * @notice constructor
@@ -103,6 +107,8 @@ contract MarginCalculator is Ownable {
         require(_dust > 0, "MarginCalculator: dust amount should be greater than zero");
 
         dust[_collateral] = _dust;
+
+        emit CollateralDustUpdated(_collateral, _dust);
     }
 
     /**
@@ -151,6 +157,9 @@ contract MarginCalculator is Ownable {
 
             // add new time to expiry to array
             expiryArray.push(_timesToExpiry[i]);
+
+            emit TimeToExpiryAdded(productHash, _timesToExpiry[i]);
+            emit MaxPriceAdded(productHash, _timesToExpiry[i], _values[i]);
         }
     }
 
@@ -175,14 +184,14 @@ contract MarginCalculator is Ownable {
         require(_value > 0, "MarginCalculator: invalid option upper bound value");
 
         bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
+        uint256 oldMaxPrice = maxPriceAtTimeToExpiry[productHash][_timeToExpiry];
 
-        require(
-            maxPriceAtTimeToExpiry[productHash][_timeToExpiry] != 0,
-            "MarginCalculator: upper bound value not found"
-        );
+        require(oldMaxPrice != 0, "MarginCalculator: upper bound value not found");
 
         // update upper bound value for the time to expiry
         maxPriceAtTimeToExpiry[productHash][_timeToExpiry] = _value;
+
+        emit MaxPriceUpdated(productHash, _timeToExpiry, oldMaxPrice, _value);
     }
 
     /**
@@ -206,6 +215,8 @@ contract MarginCalculator is Ownable {
         bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
 
         spotShock[productHash] = _shockValue;
+
+        emit SpotShockUpdated(productHash, _shockValue);
     }
 
     /**
@@ -215,6 +226,8 @@ contract MarginCalculator is Ownable {
      */
     function setOracleDeviation(uint256 _deviation) external onlyOwner {
         oracleDeviation = _deviation;
+
+        emit OracleDeviationUpdated(_deviation);
     }
 
     /**
