@@ -3851,6 +3851,9 @@ contract(
       })
 
       it('should call any arbitrary destination address when restriction is not activated', async () => {
+        //whitelist callee before call action
+        await whitelist.whitelistCallee(callTester.address, {from: owner})
+
         const actionArgs = [
           {
             actionType: ActionType.Call,
@@ -3875,26 +3878,18 @@ contract(
         await expectRevert(controllerProxy.setCallRestriction(true, {from: random}), 'Ownable: caller is not the owner')
       })
 
-      it('should revert deactivating call action restriction when it is already deactivated', async () => {
-        await expectRevert(controllerProxy.setCallRestriction(false, {from: owner}), 'CO9')
-      })
-
-      it('should activate call action restriction from owner', async () => {
-        await controllerProxy.setCallRestriction(true, {from: owner})
-
-        assert.equal(await controllerProxy.callRestricted(), true, 'Call action restriction activation failed')
-      })
-
       it('should revert activating call action restriction when it is already activated', async () => {
         await expectRevert(controllerProxy.setCallRestriction(true, {from: owner}), 'CO9')
       })
 
       it('should revert calling any arbitrary address when call restriction is activated', async () => {
+        const arbitraryTarget: CallTesterInstance = await CallTester.new()
+
         const actionArgs = [
           {
             actionType: ActionType.Call,
             owner: ZERO_ADDR,
-            secondAddress: callTester.address,
+            secondAddress: arbitraryTarget.address,
             asset: ZERO_ADDR,
             vaultId: '0',
             amount: '0',
@@ -3928,6 +3923,16 @@ contract(
           to: callTester.address,
           data: ZERO_ADDR,
         })
+      })
+
+      it('should deactivate call action restriction from owner', async () => {
+        await controllerProxy.setCallRestriction(false, {from: owner})
+
+        assert.equal(await controllerProxy.callRestricted(), false, 'Call action restriction deactivation failed')
+      })
+
+      it('should revert deactivating call action restriction when it is already deactivated', async () => {
+        await expectRevert(controllerProxy.setCallRestriction(false, {from: owner}), 'CO9')
       })
     })
 
