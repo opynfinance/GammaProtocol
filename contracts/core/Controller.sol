@@ -955,12 +955,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev cannot be called when system is partiallyPaused or fullyPaused
      * @param _args Call action
      */
-    function _call(Actions.CallArgs memory _args)
-        internal
-        notPartiallyPaused
-        onlyWhitelistedCallee(_args.callee)
-        returns (uint256)
-    {
+    function _call(Actions.CallArgs memory _args) internal notPartiallyPaused onlyWhitelistedCallee(_args.callee) {
         CalleeInterface(_args.callee).callFunction(msg.sender, _args.data);
 
         emit CallExecuted(msg.sender, _args.callee, _args.data);
