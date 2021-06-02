@@ -465,7 +465,10 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     function getProceed(address _owner, uint256 _vaultId) external view returns (uint256) {
         (MarginVault.Vault memory vault, uint256 typeVault, ) = getVault(_owner, _vaultId);
 
-        (uint256 netValue, ) = calculator.getExcessCollateral(vault, typeVault);
+        (uint256 netValue, bool isExcess) = calculator.getExcessCollateral(vault, typeVault);
+
+        if (!isExcess) return 0;
+
         return netValue;
     }
 
