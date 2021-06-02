@@ -8,7 +8,6 @@ module.exports = {
     'Migrations.sol',
     'mocks/',
     'packages/',
-    'external/canonical-weth',
-    'external/callees/TradeCallee.sol'
+    'external/canonical-weth'
   ]
 }
