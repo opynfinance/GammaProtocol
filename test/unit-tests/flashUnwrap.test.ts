@@ -38,7 +38,7 @@ enum ActionType {
   Call,
 }
 
-contract('Controller', ([owner, accountOwner1]) => {
+contract('FlashUnwrap', ([owner, accountOwner1]) => {
   // Oracle module
   let oracle: MockOracleInstance
   // calculator module
@@ -104,6 +104,8 @@ contract('Controller', ([owner, accountOwner1]) => {
       weth.deposit({value: web3.utils.toWei('5', 'ether'), from: accountOwner1})
 
       assert.equal(await weth.balanceOf(accountOwner1), web3.utils.toWei('5', 'ether'), 'WETH balance mismatch')
+
+      await whitelist.whitelistCallee(flashUnwrap.address, {from: owner})
     })
 
     it('should swap WETH to receiver address', async () => {

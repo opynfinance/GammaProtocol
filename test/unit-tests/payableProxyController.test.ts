@@ -309,6 +309,8 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
     })
 
     it('should wrap eth and make it accessable to callee contract', async () => {
+      await whitelist.whitelistCallee(testerCallee.address, {from: owner})
+
       const amountEth = createTokenAmount(0.5, 18)
       const wethBalanceBefore = new BigNumber(await weth.balanceOf(testerCallee.address))
       const data = web3.eth.abi.encodeParameters(

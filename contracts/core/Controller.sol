@@ -296,6 +296,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         addressbook = AddressBookInterface(_addressBook);
         _refreshConfigInternal();
+
+        callRestricted = true;
     }
 
     /**
