@@ -9,6 +9,7 @@ pragma solidity =0.6.10;
  * to initialize and deploy eip-1167 minimal proxies for a given logic contract.
  * SPDX-License-Identifier: MIT
  */
+// version: https://github.com/0age/Spawner/blob/1b342afda0c1ec47e6a2d65828a6ca50f0a442fe/contracts/Spawner.sol
 contract Spawn {
     constructor(address logicContract, bytes memory initializationCalldata) public payable {
         // delegatecall into the logic contract to perform initialization.

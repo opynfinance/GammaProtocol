@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.6.10;
 
-import {FixedPointInt256 as FPI} from "../libs/FixedPointInt256.sol";
 import {OracleInterface} from "../interfaces/OracleInterface.sol";
 import {OpynPricerInterface} from "../interfaces/OpynPricerInterface.sol";
 import {YearnVaultInterface} from "../interfaces/YearnVaultInterface.sol";
@@ -23,9 +22,6 @@ contract YearnPricer is OpynPricerInterface {
     /// @notice underlying asset for this yToken
     ERC20Interface public underlying;
 
-    /// @notice decimals for the underlying asset
-    uint8 public underlyingDecimals;
-
     /**
      * @param _yToken yToken asset
      * @param _underlying underlying asset for this yToken
@@ -40,10 +36,8 @@ contract YearnPricer is OpynPricerInterface {
         require(_underlying != address(0), "YearnPricer: underlying address can not be 0");
         require(_oracle != address(0), "YearnPricer: oracle address can not be 0");
 
-        ERC20Interface underlyingToken = ERC20Interface(_underlying);
-        underlyingDecimals = underlyingToken.decimals();
         yToken = YearnVaultInterface(_yToken);
-        underlying = underlyingToken;
+        underlying = ERC20Interface(_underlying);
         oracle = OracleInterface(_oracle);
     }
 
@@ -77,6 +71,8 @@ contract YearnPricer is OpynPricerInterface {
      */
     function _underlyingPriceToYtokenPrice(uint256 _underlyingPrice) private view returns (uint256) {
         uint256 pricePerShare = yToken.pricePerShare();
+        uint8 underlyingDecimals = underlying.decimals();
+
         return pricePerShare.mul(_underlyingPrice).div(10**uint256(underlyingDecimals));
     }
 

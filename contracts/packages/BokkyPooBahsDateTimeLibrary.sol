@@ -27,6 +27,7 @@ pragma solidity ^0.6.0;
 // Enjoy. (c) BokkyPooBah / Bok Consulting Pty Ltd 2018-2019. The MIT Licence.
 // ----------------------------------------------------------------------------
 
+// version v1.01
 library BokkyPooBahsDateTimeLibrary {
     uint256 constant SECONDS_PER_DAY = 24 * 60 * 60;
     int256 constant OFFSET19700101 = 2440588;
