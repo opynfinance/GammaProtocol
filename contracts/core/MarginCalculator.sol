@@ -59,7 +59,7 @@ contract MarginCalculator is Ownable {
     /// @dev FixedPoint 0
     FPI.FixedPointInt internal ZERO = FPI.fromScaledUint(0, BASE);
 
-    /// @dev mapping to store dust amount per option collateral asset (scaled by collateral decimals)
+    /// @dev mapping to store dust amount per option collateral asset (scaled by collateral asset decimals)
     mapping(address => uint256) internal dust;
 
     /// @dev mapping to store array of time to expiry for a given product
@@ -98,10 +98,10 @@ contract MarginCalculator is Ownable {
     }
 
     /**
-     * @notice set dust amount for collateral asset (1e27)
+     * @notice set dust amount for collateral asset
      * @dev can only be called by owner
      * @param _collateral collateral asset address
-     * @param _dust dust amount
+     * @param _dust dust amount, should be scaled by collateral asset decimals
      */
     function setCollateralDust(address _collateral, uint256 _dust) external onlyOwner {
         require(_dust > 0, "MarginCalculator: dust amount should be greater than zero");
