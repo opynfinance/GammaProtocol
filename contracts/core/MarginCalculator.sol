@@ -59,7 +59,7 @@ contract MarginCalculator is Ownable {
     /// @dev FixedPoint 0
     FPI.FixedPointInt internal ZERO = FPI.fromScaledUint(0, BASE);
 
-    /// @dev mapping to store dust amount per option collateral asset (scaled by collateral decimals)
+    /// @dev mapping to store dust amount per option collateral asset (scaled by collateral asset decimals)
     mapping(address => uint256) internal dust;
 
     /// @dev mapping to store array of time to expiry for a given product
@@ -80,8 +80,12 @@ contract MarginCalculator is Ownable {
     event TimeToExpiryAdded(bytes32 indexed productHash, uint256 timeToExpiry);
     /// @notice emits an event when new upper bound value is added for a specific time to expiry timestamp
     event MaxPriceAdded(bytes32 indexed productHash, uint256 timeToExpiry, uint256 value);
+    /// @notice emits an event when updating upper bound value at specific expiry timestamp
+    event MaxPriceUpdated(bytes32 indexed productHash, uint256 timeToExpiry, uint256 oldValue, uint256 newValue);
     /// @notice emits an event when spot shock value is updated for a specific product
     event SpotShockUpdated(bytes32 indexed product, uint256 spotShock);
+    /// @notice emits an event when oracle deviation value is updated
+    event OracleDeviationUpdated(uint256 oracleDeviation);
 
     /**
      * @notice constructor
@@ -94,15 +98,17 @@ contract MarginCalculator is Ownable {
     }
 
     /**
-     * @notice set dust amount for collateral asset (1e27)
+     * @notice set dust amount for collateral asset
      * @dev can only be called by owner
      * @param _collateral collateral asset address
-     * @param _dust dust amount
+     * @param _dust dust amount, should be scaled by collateral asset decimals
      */
     function setCollateralDust(address _collateral, uint256 _dust) external onlyOwner {
         require(_dust > 0, "MarginCalculator: dust amount should be greater than zero");
 
         dust[_collateral] = _dust;
+
+        emit CollateralDustUpdated(_collateral, _dust);
     }
 
     /**
@@ -151,6 +157,9 @@ contract MarginCalculator is Ownable {
 
             // add new time to expiry to array
             expiryArray.push(_timesToExpiry[i]);
+
+            emit TimeToExpiryAdded(productHash, _timesToExpiry[i]);
+            emit MaxPriceAdded(productHash, _timesToExpiry[i], _values[i]);
         }
     }
 
@@ -175,14 +184,14 @@ contract MarginCalculator is Ownable {
         require(_value > 0, "MarginCalculator: invalid option upper bound value");
 
         bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
+        uint256 oldMaxPrice = maxPriceAtTimeToExpiry[productHash][_timeToExpiry];
 
-        require(
-            maxPriceAtTimeToExpiry[productHash][_timeToExpiry] != 0,
-            "MarginCalculator: upper bound value not found"
-        );
+        require(oldMaxPrice != 0, "MarginCalculator: upper bound value not found");
 
         // update upper bound value for the time to expiry
         maxPriceAtTimeToExpiry[productHash][_timeToExpiry] = _value;
+
+        emit MaxPriceUpdated(productHash, _timeToExpiry, oldMaxPrice, _value);
     }
 
     /**
@@ -206,6 +215,8 @@ contract MarginCalculator is Ownable {
         bytes32 productHash = _getProductHash(_underlying, _strike, _collateral, _isPut);
 
         spotShock[productHash] = _shockValue;
+
+        emit SpotShockUpdated(productHash, _shockValue);
     }
 
     /**
@@ -215,6 +226,8 @@ contract MarginCalculator is Ownable {
      */
     function setOracleDeviation(uint256 _deviation) external onlyOwner {
         oracleDeviation = _deviation;
+
+        emit OracleDeviationUpdated(_deviation);
     }
 
     /**
@@ -332,8 +345,8 @@ contract MarginCalculator is Ownable {
                 _getNakedMarginRequired(
                     productHash,
                     shortAmount,
-                    shortStrike,
                     shortUnderlyingPrice,
+                    shortStrike,
                     _shortExpiryTimestamp,
                     _isPut
                 ),
@@ -460,8 +473,8 @@ contract MarginCalculator is Ownable {
         FPI.FixedPointInt memory collateralRequired = _getNakedMarginRequired(
             productHash,
             shortDetails.shortAmount,
-            shortDetails.shortStrike,
             shortDetails.shortUnderlyingPrice,
+            shortDetails.shortStrike,
             vaultDetails.shortExpiryTimestamp,
             vaultDetails.isShortPut
         );
@@ -661,8 +674,8 @@ contract MarginCalculator is Ownable {
                     _getNakedMarginRequired(
                         productHash,
                         shortAmount,
-                        shortStrike,
                         shortUnderlyingPrice,
+                        shortStrike,
                         otokenDetails.otokenExpiry,
                         otokenDetails.isPut
                     )
@@ -769,8 +782,8 @@ contract MarginCalculator is Ownable {
     function _getNakedMarginRequired(
         bytes32 _productHash,
         FPI.FixedPointInt memory _shortAmount,
-        FPI.FixedPointInt memory _strikePrice,
         FPI.FixedPointInt memory _underlyingPrice,
+        FPI.FixedPointInt memory _strikePrice,
         uint256 _shortExpiryTimestamp,
         bool _isPut
     ) internal view returns (FPI.FixedPointInt memory) {
@@ -789,8 +802,8 @@ contract MarginCalculator is Ownable {
             marginRequired = optionUpperBoundValue.mul(a).add(b).mul(_shortAmount);
         } else {
             FPI.FixedPointInt memory one = FPI.fromScaledUint(1e27, SCALING_FACTOR);
-            a = FPI.min(one, _strikePrice.div(_underlyingPrice.div(spotShockValue)));
-            b = FPI.max(one.sub(_strikePrice.div(_underlyingPrice.div(spotShockValue))), ZERO);
+            a = FPI.min(one, _strikePrice.mul(spotShockValue).div(_underlyingPrice));
+            b = FPI.max(one.sub(_strikePrice.mul(spotShockValue).div(_underlyingPrice)), ZERO);
             marginRequired = optionUpperBoundValue.mul(a).add(b).mul(_shortAmount);
         }
 

@@ -274,7 +274,9 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
         isPut,
       )
       const userVaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
-      const amountToWithdraw = new BigNumber(userVaultBefore[0].collateralAmounts[0]).minus(collateralNeeded)
+      const amountToWithdraw = new BigNumber(userVaultBefore[0].collateralAmounts[0]).minus(
+        new BigNumber(collateralNeeded),
+      )
       const withdrawArgs = [
         {
           actionType: ActionType.WithdrawCollateral,
@@ -399,10 +401,10 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
       assert.equal(vaultAfterLiquidation.shortAmounts[0].toString(), '0', 'Vault was not fully liquidated')
       assert.isAtMost(
         calcRelativeDiff(
-          vaultAfterLiquidation.collateralAmounts[0],
+          new BigNumber(vaultAfterLiquidation.collateralAmounts[0]),
           new BigNumber(vaultBeforeLiquidation.collateralAmounts[0]).minus(new BigNumber(isLiquidatable[1])),
         )
-          .dividedBy(10 ** usdcDecimals)
+          .dividedBy(new BigNumber(10 ** usdcDecimals))
           .toNumber(),
         errorDelta,
         'Vault collateral mismatch after liquidation',
@@ -673,8 +675,8 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
         'Liquidator vault short amount mismatch',
       )
       assert.equal(
-        userVaultAfter[0].collateralAmounts[0].toString(),
-        new BigNumber(userVaultBefore[0].collateralAmounts[0]).minus(isLiquidatable[1].toString()).toString(),
+        new BigNumber(userVaultAfter[0].collateralAmounts[0]).toString(),
+        new BigNumber(userVaultBefore[0].collateralAmounts[0]).minus(new BigNumber(isLiquidatable[1])).toString(),
         'User vault short amount mismatch after liquidation',
       )
     })
