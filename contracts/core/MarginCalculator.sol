@@ -345,8 +345,8 @@ contract MarginCalculator is Ownable {
                 _getNakedMarginRequired(
                     productHash,
                     shortAmount,
-                    shortStrike,
                     shortUnderlyingPrice,
+                    shortStrike,
                     _shortExpiryTimestamp,
                     _isPut
                 ),
@@ -473,8 +473,8 @@ contract MarginCalculator is Ownable {
         FPI.FixedPointInt memory collateralRequired = _getNakedMarginRequired(
             productHash,
             shortDetails.shortAmount,
-            shortDetails.shortStrike,
             shortDetails.shortUnderlyingPrice,
+            shortDetails.shortStrike,
             vaultDetails.shortExpiryTimestamp,
             vaultDetails.isShortPut
         );
@@ -674,8 +674,8 @@ contract MarginCalculator is Ownable {
                     _getNakedMarginRequired(
                         productHash,
                         shortAmount,
-                        shortStrike,
                         shortUnderlyingPrice,
+                        shortStrike,
                         otokenDetails.otokenExpiry,
                         otokenDetails.isPut
                     )
@@ -782,8 +782,8 @@ contract MarginCalculator is Ownable {
     function _getNakedMarginRequired(
         bytes32 _productHash,
         FPI.FixedPointInt memory _shortAmount,
-        FPI.FixedPointInt memory _strikePrice,
         FPI.FixedPointInt memory _underlyingPrice,
+        FPI.FixedPointInt memory _strikePrice,
         uint256 _shortExpiryTimestamp,
         bool _isPut
     ) internal view returns (FPI.FixedPointInt memory) {
@@ -802,8 +802,8 @@ contract MarginCalculator is Ownable {
             marginRequired = optionUpperBoundValue.mul(a).add(b).mul(_shortAmount);
         } else {
             FPI.FixedPointInt memory one = FPI.fromScaledUint(1e27, SCALING_FACTOR);
-            a = FPI.min(one, _strikePrice.div(_underlyingPrice.div(spotShockValue)));
-            b = FPI.max(one.sub(_strikePrice.div(_underlyingPrice.div(spotShockValue))), ZERO);
+            a = FPI.min(one, _strikePrice.mul(spotShockValue).div(_underlyingPrice));
+            b = FPI.max(one.sub(_strikePrice.mul(spotShockValue).div(_underlyingPrice)), ZERO);
             marginRequired = optionUpperBoundValue.mul(a).add(b).mul(_shortAmount);
         }
 
