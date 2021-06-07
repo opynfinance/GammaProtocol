@@ -65,6 +65,7 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
     scaleNum(0.4603, 27),
   ]
   const wethDust = scaleNum(0.1, wethDecimals)
+  const wethCap = scaleNum(50000, wethDecimals)
   const shortStrike = 2000
   const isPut = false
   const shortAmount = 1
@@ -131,6 +132,7 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
     await calculator.setSpotShock(weth.address, usdc.address, weth.address, isPut, productSpotShockValue)
     await calculator.setOracleDeviation(oracleDeviationValue, {from: owner})
     await calculator.setCollateralDust(weth.address, wethDust, {from: owner})
+    await calculator.setCollateralCap(weth.address, wethCap, {from: owner})
     // set product upper bound values
     await calculator.setUpperBoundValues(weth.address, usdc.address, weth.address, isPut, timeToExpiry, expiryToValue, {
       from: owner,

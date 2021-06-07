@@ -39,6 +39,8 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
 
   const wethDust = scaleNum(1, 27)
   const usdcDust = scaleNum(1, 27)
+  const wethCap = scaleNum(50000, wethDecimals)
+  const usdcCap = scaleNum(1000000, wethDecimals)
 
   const vaultType = 1
 
@@ -75,6 +77,8 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
     // set collateral dust
     await calculator.setCollateralDust(weth.address, wethDust, {from: owner})
     await calculator.setCollateralDust(usdc.address, usdcDust, {from: owner})
+    await calculator.setCollateralCap(usdc.address, usdcCap, {from: owner})
+    await calculator.setCollateralCap(weth.address, wethCap, {from: owner})
     // set product spot shock value
     await calculator.setSpotShock(weth.address, usdc.address, usdc.address, true, productSpotShockValue)
     await calculator.setSpotShock(weth.address, usdc.address, weth.address, false, productSpotShockValue)

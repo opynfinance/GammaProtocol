@@ -94,7 +94,7 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
   })
 
   describe('Collateral dust', async () => {
-    it('only owner should be able to set collateral dust amunt', async () => {
+    it('only owner should be able to set collateral dust amount', async () => {
       const wethDust = scaleNum(1, wethDecimals)
       await calculator.setCollateralDust(weth.address, wethDust, {from: owner})
 
@@ -118,6 +118,35 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
       await expectRevert(
         calculator.setCollateralDust(weth.address, wethDust, {from: owner}),
         'MarginCalculator: dust amount should be greater than zero',
+      )
+    })
+  })
+
+  describe('Collateral cap', async () => {
+    it('only owner should be able to set collateral cap amount', async () => {
+      const wethCap = scaleNum(50000, wethDecimals)
+      await calculator.setCollateralCap(weth.address, wethCap, {from: owner})
+
+      const capAmount = new BigNumber(await calculator.getCollateralCap(weth.address))
+
+      assert.equal(capAmount.toString(), wethCap.toString(), 'Weth dust amount mismatch')
+    })
+
+    it('should revert setting collateral cap from address other than owner', async () => {
+      const wethCap = scaleNum(50000, wethDecimals)
+
+      await expectRevert(
+        calculator.setCollateralCap(weth.address, wethCap, {from: random}),
+        'Ownable: caller is not the owner',
+      )
+    })
+
+    it('should revert setting collateral cap amount equal to zero', async () => {
+      const wethCap = scaleNum(0, wethDecimals)
+
+      await expectRevert(
+        calculator.setCollateralCap(weth.address, wethCap, {from: owner}),
+        'MarginCalculator: cap amount should be greater than zero',
       )
     })
   })
