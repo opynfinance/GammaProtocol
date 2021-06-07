@@ -62,6 +62,9 @@ contract MarginCalculator is Ownable {
     /// @dev mapping to store dust amount per option collateral asset (scaled by collateral asset decimals)
     mapping(address => uint256) internal dust;
 
+    /// @dev mapping to store cap amount per options collateral asset (scaled by collateral asset decimals)
+    mapping(address => uint256) internal cap;
+
     /// @dev mapping to store array of time to expiry for a given product
     mapping(bytes32 => uint256[]) internal timesToExpiryForProduct;
 
@@ -76,6 +79,8 @@ contract MarginCalculator is Ownable {
 
     /// @notice emits an event when collateral dust is updated
     event CollateralDustUpdated(address indexed collateral, uint256 dust);
+    /// @notice emits an event when collateral cap is updated
+    event CollateralCapUpdated(address indexed collateral, uint256 cap);
     /// @notice emits an event when new time to expiry is added for a specific product
     event TimeToExpiryAdded(bytes32 indexed productHash, uint256 timeToExpiry);
     /// @notice emits an event when new upper bound value is added for a specific time to expiry timestamp
@@ -109,6 +114,20 @@ contract MarginCalculator is Ownable {
         dust[_collateral] = _dust;
 
         emit CollateralDustUpdated(_collateral, _dust);
+    }
+
+    /**
+     * @notice set cap amount for collateral asset used in naked margin
+     * @dev can only be called by owner
+     * @param _collateral collateral asset address
+     * @param _cap cap amount, should be scaled by collateral asset decimals
+     */
+    function setCollateralCap(address _collateral, uint256 _cap) external onlyOwner {
+        require(_cap > 0, "MarginCalculator: cap amount should be greater than zero");
+
+        cap[_collateral] = _cap;
+
+        emit CollateralCapUpdated(_collateral, _cap);
     }
 
     /**
@@ -233,10 +252,19 @@ contract MarginCalculator is Ownable {
     /**
      * @notice get dust amount for collateral asset
      * @param _collateral collateral asset address
-     * @return dust amount (1e27)
+     * @return dust amount
      */
     function getCollateralDust(address _collateral) external view returns (uint256) {
         return dust[_collateral];
+    }
+
+    /**
+     * @notice get cap amount for collateral asset
+     * @param _collateral collateral asset address
+     * @return cap amount
+     */
+    function getCollateralCap(address _collateral) external view returns (uint256) {
+        return cap[_collateral];
     }
 
     /**
@@ -640,9 +668,15 @@ contract MarginCalculator is Ownable {
             // it's not expired, return amount of margin required based on vault type
             if (_vaultDetails.vaultType == 1) {
                 // this is a naked margin vault
-                // fetch dust amount for otoken collateral asset as FixedPointInt, assuming dust is already scaled to 1e27
+                // fetch dust amount for otoken collateral asset as FixedPointInt, assuming dust is already scaled by collateral decimals
                 FPI.FixedPointInt memory dustAmount = FPI.fromScaledUint(
                     dust[_vaultDetails.shortCollateralAsset],
+                    _vaultDetails.collateralDecimals
+                );
+
+                // fetch collateral cap amount for otoken collateral asset as FixedPointInt, assuming cap is already scaled by collateral decimals
+                FPI.FixedPointInt memory capAmount = FPI.fromScaledUint(
+                    cap[_vaultDetails.shortCollateralAsset],
                     _vaultDetails.collateralDecimals
                 );
 
@@ -651,6 +685,11 @@ contract MarginCalculator is Ownable {
                     require(
                         collateralAmount.isGreaterThan(dustAmount),
                         "MarginCalculator: naked margin vault should have collateral amount greater than dust amount"
+                    );
+
+                    require(
+                        collateralAmount.isLessThanOrEqual(capAmount),
+                        "MarginCalculator: naked margin vault should have collateral amount less than cap amount"
                     );
                 }
 

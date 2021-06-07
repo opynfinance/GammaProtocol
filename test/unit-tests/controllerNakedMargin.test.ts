@@ -87,6 +87,8 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator]) => {
   ]
   const wethDust = scaleNum(0.1, wethDecimals)
   const usdcDust = scaleNum(1, usdcDecimals)
+  const wethCap = scaleNum(50000, wethDecimals)
+  const usdcCap = scaleNum(1000000, wethDecimals)
 
   const errorDelta = 0.1
 
@@ -147,6 +149,9 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator]) => {
     await calculator.setCollateralDust(weth.address, wethDust, {from: owner})
     // set USDC dust amount
     await calculator.setCollateralDust(usdc.address, usdcDust, {from: owner})
+    // set max cap
+    await calculator.setCollateralCap(usdc.address, usdcCap, {from: owner})
+    await calculator.setCollateralCap(weth.address, wethCap, {from: owner})
     // set product upper bound values
     await calculator.setUpperBoundValues(weth.address, usdc.address, usdc.address, true, timeToExpiry, expiryToValue, {
       from: owner,

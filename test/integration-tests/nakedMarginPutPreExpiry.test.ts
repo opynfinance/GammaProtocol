@@ -65,6 +65,7 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
     scaleNum(0.4603, 27),
   ]
   const usdcDust = scaleNum(1, usdcDecimals)
+  const usdcCap = scaleNum(1000000, wethDecimals)
   const shortStrike = 2000
   const isPut = true // delta error because liquidation price differ based on block timestamp of isLiquidatable() and the actual liquidation tx
   const shortAmount = 1
@@ -131,6 +132,7 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
     await calculator.setSpotShock(weth.address, usdc.address, usdc.address, isPut, productSpotShockValue)
     await calculator.setOracleDeviation(oracleDeviationValue, {from: owner})
     await calculator.setCollateralDust(usdc.address, usdcDust, {from: owner})
+    await calculator.setCollateralCap(usdc.address, usdcCap, {from: owner})
     // set product upper bound values
     await calculator.setUpperBoundValues(weth.address, usdc.address, usdc.address, isPut, timeToExpiry, expiryToValue, {
       from: owner,
