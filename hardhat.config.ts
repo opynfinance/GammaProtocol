@@ -1,23 +1,19 @@
 import '@nomiclabs/hardhat-waffle'
-import {existsSync, readFileSync} from 'fs'
+import 'dotenv/config'
 import {HardhatUserConfig} from 'hardhat/config'
 import {NetworkUserConfig} from 'hardhat/types'
 
-if (!existsSync('.infuraKey')) {
-  throw new Error("Put infura api key inside a .infuraKey file, don't paste it in the config.") // infura api key
+const infuraApiKey = process.env.INFURA_API_KEY
+
+if (!infuraApiKey) {
+  throw new Error('Please set your INFURA_API_KEY in a .env file.')
 }
 
-if (!existsSync('.secret')) {
-  throw new Error("Put mnmenoic into a .secret file, don't paste it in the config.") // deployer wallet mnemonic
+const mnemonic = process.env.MNEMONIC
+
+if (!mnemonic) {
+  throw new Error('Please set your MNEMONIC in a .env file.')
 }
-
-const infuraApiKey = readFileSync('.infuraKey')
-  .toString()
-  .trim()
-
-const mnemonic = readFileSync('.secret')
-  .toString()
-  .trim()
 
 function createNetworkConfig(network: string): NetworkUserConfig {
   const url: string = 'https://' + network + '.infura.io/v3/' + infuraApiKey
