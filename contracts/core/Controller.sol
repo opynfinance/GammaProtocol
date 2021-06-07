@@ -901,12 +901,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         pool.transferToUser(collateral, _args.to, payout);
 
-        uint256 vaultId;
-        address payoutRecipient;
-        {
-            vaultId = _args.vaultId;
-            payoutRecipient = _args.to;
-        }
+        uint256 vaultId = _args.vaultId;
+        address payoutRecipient = _args.to;
 
         emit VaultSettled(_args.owner, address(otoken), payoutRecipient, payout, vaultId, typeVault);
     }
