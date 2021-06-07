@@ -120,7 +120,7 @@ contract MarginCalculator is Ownable {
      * @notice set cap amount for collateral asset used in naked margin
      * @dev can only be called by owner
      * @param _collateral collateral asset address
-     * @param _cap dust amount, should be scaled by collateral asset decimals
+     * @param _cap cap amount, should be scaled by collateral asset decimals
      */
     function setCollateralCap(address _collateral, uint256 _cap) external onlyOwner {
         require(_cap > 0, "MarginCalculator: cap amount should be greater than zero");
