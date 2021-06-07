@@ -674,7 +674,7 @@ contract MarginCalculator is Ownable {
                     _vaultDetails.collateralDecimals
                 );
 
-                // fetch collateral cap amount for otoken collateral asset as FixedPointInt, assuming dust is already scaled by collateral decimals
+                // fetch collateral cap amount for otoken collateral asset as FixedPointInt, assuming cap is already scaled by collateral decimals
                 FPI.FixedPointInt memory capAmount = FPI.fromScaledUint(
                     cap[_vaultDetails.shortCollateralAsset],
                     _vaultDetails.collateralDecimals
