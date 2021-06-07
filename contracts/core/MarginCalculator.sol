@@ -261,7 +261,7 @@ contract MarginCalculator is Ownable {
     /**
      * @notice get cap amount for collateral asset
      * @param _collateral collateral asset address
-     * @return dust amount
+     * @return cap amount
      */
     function getCollateralCap(address _collateral) external view returns (uint256) {
         return cap[_collateral];
