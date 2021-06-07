@@ -117,6 +117,20 @@ contract MarginCalculator is Ownable {
     }
 
     /**
+     * @notice set cap amount for collateral asset used in naked margin
+     * @dev can only be called by owner
+     * @param _collateral collateral asset address
+     * @param _cap dust amount, should be scaled by collateral asset decimals
+     */
+    function setCollateralCap(address _collateral, uint256 _cap) external onlyOwner {
+        require(_cap > 0, "MarginCalculator: cap amount should be greater than zero");
+
+        cap[_collateral] = _cap;
+
+        emit CollateralCapUpdated(_collateral, _cap);
+    }
+
+    /**
      * @notice set product upper bound values
      * @dev can only be called by owner
      * @param _underlying otoken underlying asset
@@ -238,10 +252,19 @@ contract MarginCalculator is Ownable {
     /**
      * @notice get dust amount for collateral asset
      * @param _collateral collateral asset address
-     * @return dust amount (1e27)
+     * @return dust amount
      */
     function getCollateralDust(address _collateral) external view returns (uint256) {
         return dust[_collateral];
+    }
+
+    /**
+     * @notice get cap amount for collateral asset
+     * @param _collateral collateral asset address
+     * @return dust amount
+     */
+    function getCollateralCap(address _collateral) external view returns (uint256) {
+        return cap[_collateral];
     }
 
     /**
