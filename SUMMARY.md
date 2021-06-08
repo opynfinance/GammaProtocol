@@ -14,7 +14,6 @@
   * external
     * callees
       * [PermitCallee](docs/contracts-documentation/external/callees/PermitCallee.md)
-      * [TradeCallee](docs/contracts-documentation/external/callees/TradeCallee.md)
     * canonical-weth
       * [WETH9](docs/contracts-documentation/external/canonical-weth/WETH9.md)
     * proxies
