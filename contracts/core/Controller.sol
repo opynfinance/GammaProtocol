@@ -171,7 +171,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     event VaultSettled(
         address indexed accountOwner,
         address indexed oTokenAddress,
-        address payoutRecipient,
+        address to,
         uint256 payout,
         uint256 vaultId,
         uint256 indexed vaultType
@@ -179,7 +179,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /// @notice emits an event when a vault is liquidated
     event VaultLiquidated(
         address indexed liquidator,
-        address indexed payoutRecipient,
+        address indexed receiver,
         address indexed vaultOwner,
         uint256 auctionPrice,
         uint256 auctionStartingRound,
