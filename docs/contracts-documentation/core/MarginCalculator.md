@@ -8,6 +8,8 @@ Calculator module that checks if a given vault is valid, calculates margin requi
 
 - `setCollateralDust(address _collateral, uint256 _dust) (external)`
 
+- `setCollateralCap(address _collateral, uint256 _cap) (external)`
+
 - `setUpperBoundValues(address _underlying, address _strike, address _collateral, bool _isPut, uint256[] _timesToExpiry, uint256[] _values) (external)`
 
 - `updateUpperBoundValue(address _underlying, address _strike, address _collateral, bool _isPut, uint256 _timeToExpiry, uint256 _value) (external)`
@@ -17,6 +19,8 @@ Calculator module that checks if a given vault is valid, calculates margin requi
 - `setOracleDeviation(uint256 _deviation) (external)`
 
 - `getCollateralDust(address _collateral) (external)`
+
+- `getCollateralCap(address _collateral) (external)`
 
 - `getTimesToExpiry(address _underlying, address _strike, address _collateral, bool _isPut) (external)`
 
@@ -40,7 +44,7 @@ Calculator module that checks if a given vault is valid, calculates margin requi
 
 - `_getMarginRequired(struct MarginVault.Vault _vault, struct MarginCalculator.VaultDetails _vaultDetails) (internal)`
 
-- `_getNakedMarginRequired(bytes32 _productHash, struct FixedPointInt256.FixedPointInt _shortAmount, struct FixedPointInt256.FixedPointInt _strikePrice, struct FixedPointInt256.FixedPointInt _underlyingPrice, uint256 _shortExpiryTimestamp, bool _isPut) (internal)`
+- `_getNakedMarginRequired(bytes32 _productHash, struct FixedPointInt256.FixedPointInt _shortAmount, struct FixedPointInt256.FixedPointInt _underlyingPrice, struct FixedPointInt256.FixedPointInt _strikePrice, uint256 _shortExpiryTimestamp, bool _isPut) (internal)`
 
 - `_findUpperBoundValue(bytes32 _productHash, uint256 _expiryTimestamp) (internal)`
 
@@ -74,11 +78,17 @@ Calculator module that checks if a given vault is valid, calculates margin requi
 
 - `CollateralDustUpdated(address collateral, uint256 dust)`
 
+- `CollateralCapUpdated(address collateral, uint256 cap)`
+
 - `TimeToExpiryAdded(bytes32 productHash, uint256 timeToExpiry)`
 
 - `MaxPriceAdded(bytes32 productHash, uint256 timeToExpiry, uint256 value)`
 
+- `MaxPriceUpdated(bytes32 productHash, uint256 timeToExpiry, uint256 oldValue, uint256 newValue)`
+
 - `SpotShockUpdated(bytes32 product, uint256 spotShock)`
+
+- `OracleDeviationUpdated(uint256 oracleDeviation)`
 
 ### Function `constructor(address _oracle) public`
 
@@ -90,7 +100,7 @@ constructor
 
 ### Function `setCollateralDust(address _collateral, uint256 _dust) external`
 
-set dust amount for collateral asset (1e27)
+set dust amount for collateral asset
 
 can only be called by owner
 
@@ -98,7 +108,19 @@ can only be called by owner
 
 - `_collateral`: collateral asset address
 
-- `_dust`: dust amount
+- `_dust`: dust amount, should be scaled by collateral asset decimals
+
+### Function `setCollateralCap(address _collateral, uint256 _cap) external`
+
+set cap amount for collateral asset used in naked margin
+
+can only be called by owner
+
+#### Parameters:
+
+- `_collateral`: collateral asset address
+
+- `_cap`: cap amount, should be scaled by collateral asset decimals
 
 ### Function `setUpperBoundValues(address _underlying, address _strike, address _collateral, bool _isPut, uint256[] _timesToExpiry, uint256[] _values) external`
 
@@ -178,7 +200,19 @@ get dust amount for collateral asset
 
 #### Return Values:
 
-- dust amount (1e27)
+- dust amount
+
+### Function `getCollateralCap(address _collateral) → uint256 external`
+
+get cap amount for collateral asset
+
+#### Parameters:
+
+- `_collateral`: collateral asset address
+
+#### Return Values:
+
+- cap amount
 
 ### Function `getTimesToExpiry(address _underlying, address _strike, address _collateral, bool _isPut) → uint256[] external`
 
@@ -382,7 +416,7 @@ vault passed in has already passed the checkIsValidVault function
 
 scaled to 1e27
 
-### Function `_getNakedMarginRequired(bytes32 _productHash, struct FixedPointInt256.FixedPointInt _shortAmount, struct FixedPointInt256.FixedPointInt _strikePrice, struct FixedPointInt256.FixedPointInt _underlyingPrice, uint256 _shortExpiryTimestamp, bool _isPut) → struct FixedPointInt256.FixedPointInt internal`
+### Function `_getNakedMarginRequired(bytes32 _productHash, struct FixedPointInt256.FixedPointInt _shortAmount, struct FixedPointInt256.FixedPointInt _underlyingPrice, struct FixedPointInt256.FixedPointInt _strikePrice, uint256 _shortExpiryTimestamp, bool _isPut) → struct FixedPointInt256.FixedPointInt internal`
 
 get required collateral for naked margin position
 
@@ -664,6 +698,10 @@ cash value = max(underlying price - strike price, 0)
 
 emits an event when collateral dust is updated
 
+### Event `CollateralCapUpdated(address collateral, uint256 cap)`
+
+emits an event when collateral cap is updated
+
 ### Event `TimeToExpiryAdded(bytes32 productHash, uint256 timeToExpiry)`
 
 emits an event when new time to expiry is added for a specific product
@@ -672,6 +710,14 @@ emits an event when new time to expiry is added for a specific product
 
 emits an event when new upper bound value is added for a specific time to expiry timestamp
 
+### Event `MaxPriceUpdated(bytes32 productHash, uint256 timeToExpiry, uint256 oldValue, uint256 newValue)`
+
+emits an event when updating upper bound value at specific expiry timestamp
+
 ### Event `SpotShockUpdated(bytes32 product, uint256 spotShock)`
 
 emits an event when spot shock value is updated for a specific product
+
+### Event `OracleDeviationUpdated(uint256 oracleDeviation)`
+
+emits an event when oracle deviation value is updated

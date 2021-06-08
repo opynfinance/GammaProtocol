@@ -120,9 +120,9 @@ Contract that controls the Gamma Protocol and the interaction of all sub contrac
 
 - `Redeem(address otoken, address redeemer, address receiver, address collateralAsset, uint256 otokenBurned, uint256 payout)`
 
-- `VaultSettled(address accountOwner, address oTokenAddress, address payoutRecipient, uint256 payout, uint256 vaultId, uint256 vaultType)`
+- `VaultSettled(address accountOwner, address oTokenAddress, address to, uint256 payout, uint256 vaultId, uint256 vaultType)`
 
-- `VaultLiquidated(address liquidator, address payoutRecipient, address vaultOwner, uint256 auctionPrice, uint256 auctionStartingRound, uint256 collateralPayout, uint256 debtAmount, uint256 vaultId)`
+- `VaultLiquidated(address liquidator, address receiver, address vaultOwner, uint256 auctionPrice, uint256 auctionStartingRound, uint256 collateralPayout, uint256 debtAmount, uint256 vaultId)`
 
 - `CallExecuted(address from, address to, bytes data)`
 
@@ -564,7 +564,7 @@ can liquidate different vaults id in the same operate() call
 
 - `_args`: liquidation action arguments struct
 
-### Function `_call(struct Actions.CallArgs _args) → uint256 internal`
+### Function `_call(struct Actions.CallArgs _args) internal`
 
 execute arbitrary calls
 
@@ -658,11 +658,11 @@ emits an event when a short oToken is burned
 
 emits an event when an oToken is redeemed
 
-### Event `VaultSettled(address accountOwner, address oTokenAddress, address payoutRecipient, uint256 payout, uint256 vaultId, uint256 vaultType)`
+### Event `VaultSettled(address accountOwner, address oTokenAddress, address to, uint256 payout, uint256 vaultId, uint256 vaultType)`
 
 emits an event when a vault is settled
 
-### Event `VaultLiquidated(address liquidator, address payoutRecipient, address vaultOwner, uint256 auctionPrice, uint256 auctionStartingRound, uint256 collateralPayout, uint256 debtAmount, uint256 vaultId)`
+### Event `VaultLiquidated(address liquidator, address receiver, address vaultOwner, uint256 auctionPrice, uint256 auctionStartingRound, uint256 collateralPayout, uint256 debtAmount, uint256 vaultId)`
 
 emits an event when a vault is liquidated
 
