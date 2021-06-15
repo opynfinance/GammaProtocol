@@ -77,7 +77,7 @@ contract Oracle is Ownable {
         address _asset,
         uint256[] calldata _expiries,
         uint256[] calldata _prices
-    ) external {
+    ) external onlyOwner {
         require(!migrated, "Oracle: migration already done");
         require(_expiries.length == _prices.length, "Oracle: invalid migration data");
 
