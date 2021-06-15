@@ -22,6 +22,11 @@ contract Oracle is Ownable {
         uint256 timestamp; // timestamp at which the price is pushed to this oracle
     }
 
+    //// @dev disputer is a role defined by the owner that has the ability to dispute a price during the dispute period
+    address internal disputer;
+
+    bool migrated;
+
     /// @dev mapping of asset pricer to its locking period
     /// locking period is the period of time after the expiry timestamp where a price can not be pushed
     mapping(address => uint256) internal pricerLockingPeriod;
@@ -34,8 +39,6 @@ contract Oracle is Ownable {
     mapping(address => mapping(uint256 => Price)) internal storedPrice;
     /// @dev mapping between stable asset and price
     mapping(address => uint256) internal stablePrice;
-    //// @dev disputer is a role defined by the owner that has the ability to dispute a price during the dispute period
-    address internal disputer;
 
     /// @notice emits an event when the disputer is updated
     event DisputerUpdated(address indexed newDisputer);
@@ -62,6 +65,34 @@ contract Oracle is Ownable {
     );
     /// @notice emits an event when a stable asset price changes
     event StablePriceUpdated(address indexed asset, uint256 price);
+
+    /**
+     * @notice function to mgirate asset prices from old oracle to new deployed oracle
+     * @dev this can only be called by owner, should be used at the deployment time before setting Oracle module into AddressBook
+     * @param _asset asset address
+     * @param _expiries array of expiries timestamps
+     * @param _prices array of prices
+     */
+    function migrateOracle(
+        address _asset,
+        uint256[] calldata _expiries,
+        uint256[] calldata _prices
+    ) external {
+        require(!migrated, "Oracle: migration already done");
+        require(_expiries.length == _prices.length, "Oracle: invalid migration data");
+
+        for (uint256 i; i < _expiries.length; i++) {
+            storedPrice[_asset][_expiries[i]] = Price(_prices[i], now);
+        }
+    }
+
+    /**
+     * @notice end migration process
+     * @dev can only be called by owner, should be called before setting Oracle module into AddressBook
+     */
+    function endMigration() external onlyOwner {
+        migrated = true;
+    }
 
     /**
      * @notice sets the pricer for an asset
