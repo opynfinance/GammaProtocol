@@ -408,7 +408,7 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
         )
           .dividedBy(new BigNumber(10 ** usdcDecimals))
           .toNumber(),
-        errorDelta,
+        new BigNumber(errorDelta).toNumber(),
         'Vault collateral mismatch after liquidation',
       )
       assert.isAtMost(
@@ -631,10 +631,10 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
       assert.equal(vaultAfterLiquidation.shortAmounts[0].toString(), '0', 'Vault was not fully liquidated')
       assert.isAtMost(
         calcRelativeDiff(
-          vaultAfterLiquidation.collateralAmounts[0],
+          new BigNumber(vaultAfterLiquidation.collateralAmounts[0]),
           new BigNumber(vaultBeforeLiquidation.collateralAmounts[0]).minus(new BigNumber(isLiquidatable[1])),
         )
-          .dividedBy(10 ** usdcDecimals)
+          .dividedBy(new BigNumber(10 ** usdcDecimals))
           .toNumber(),
         errorDelta,
         'Vault collateral mismatch after liquidation',
