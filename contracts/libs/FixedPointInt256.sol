@@ -38,9 +38,9 @@ library FixedPointInt256 {
      * @notice constructs an FixedPointInt from an scaled uint with {_decimals} decimals
      * Examples:
      * (1)  USDC    decimals = 6
-     *      Input:  5 * 1e6 USDC  =>    Output: 5 * 1e27 (FixedPoint 8.0 USDC)
+     *      Input:  5 * 1e6 USDC  =>    Output: 5 * 1e27 (FixedPoint 5.0 USDC)
      * (2)  cUSDC   decimals = 8
-     *      Input:  5 * 1e6 cUSDC =>    Output: 5 * 1e25 (FixedPoint 0.08 cUSDC)
+     *      Input:  5 * 1e6 cUSDC =>    Output: 5 * 1e25 (FixedPoint 0.05 cUSDC)
      * @param _a uint256 to convert into a FixedPoint.
      * @param _decimals  original decimals _a has
      * @return the converted FixedPoint, with 27 decimals.
