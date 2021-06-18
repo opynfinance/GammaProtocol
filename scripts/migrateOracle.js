@@ -36,7 +36,7 @@ module.exports = async function(callback) {
       let otokenDetails = await (await Otoken.at(otokenAddress)).getOtokenDetails()
       let expiry = new BigNumber(otokenDetails[4])
 
-      if((otokenDetails[0] == options.asset || otokenDetails[1] == options.asset || otokenDetails[2] == options.asset) && (expiry.toNumber() < currentTimeStamp)) {
+      if((otokenDetails[0] == options.asset || otokenDetails[1] == options.asset || otokenDetails[2] == options.asset) && (expiry.toNumber() < currentTimeStamp) && (!expiriesToMigrate.includes(expiry.toString()))) {
         let priceToMigrate = new BigNumber((await oldOracle.getExpiryPrice(options.asset, expiry.toString()))[0])
 
         expiriesToMigrate.push(expiry.toString())
