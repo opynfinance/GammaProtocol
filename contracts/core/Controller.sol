@@ -766,7 +766,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         (, uint256 typeVault, ) = getVault(_args.owner, _args.vaultId);
 
         if (typeVault == 1) {
-            nakedPoolBalance[_args.asset].add(_args.amount);
+            nakedPoolBalance[_args.asset] = nakedPoolBalance[_args.asset].add(_args.amount);
 
             require(nakedPoolBalance[_args.asset] <= nakedCap[_args.asset], "CO37");
         }
@@ -799,7 +799,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         }
 
         if (typeVault == 1) {
-            nakedPoolBalance[_args.asset].sub(_args.amount);
+            nakedPoolBalance[_args.asset] = nakedPoolBalance[_args.asset].sub(_args.amount);
         }
 
         vaults[_args.owner][_args.vaultId].removeCollateral(_args.asset, _args.amount, _args.index);
@@ -936,7 +936,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         delete vaults[_args.owner][_args.vaultId];
 
         if (typeVault == 1) {
-            nakedPoolBalance[collateral].sub(payout);
+            nakedPoolBalance[collateral] = nakedPoolBalance[collateral].sub(payout);
         }
 
         pool.transferToUser(collateral, _args.to, payout);
@@ -1067,11 +1067,15 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
     /**
      * @notice get cap amount for collateral asset
-     * @param _collateral collateral asset address
+     * @param _asset collateral asset address
      * @return cap amount
      */
-    function getNakedCap(address _collateral) external view returns (uint256) {
-        return nakedCap[_collateral];
+    function getNakedCap(address _asset) external view returns (uint256) {
+        return nakedCap[_asset];
+    }
+
+    function getNakedPoolBalance(address _asset) external view returns (uint256) {
+        return nakedPoolBalance[_asset];
     }
 
     /**
