@@ -128,11 +128,13 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
     const controllerProxyAddress = await addressBook.getController()
     controllerProxy = await Controller.at(controllerProxyAddress)
 
+    // configure controller
+    await controllerProxy.setNakedCap(weth.address, wethCap, {from: owner})
+
     // config calculator
     await calculator.setSpotShock(weth.address, usdc.address, weth.address, isPut, productSpotShockValue)
     await calculator.setOracleDeviation(oracleDeviationValue, {from: owner})
     await calculator.setCollateralDust(weth.address, wethDust, {from: owner})
-    await calculator.setCollateralCap(weth.address, wethCap, {from: owner})
     // set product upper bound values
     await calculator.setUpperBoundValues(weth.address, usdc.address, weth.address, isPut, timeToExpiry, expiryToValue, {
       from: owner,

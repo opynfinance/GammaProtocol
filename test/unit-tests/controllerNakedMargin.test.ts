@@ -132,6 +132,10 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator]) => {
     assert.equal(await controllerProxy.owner(), owner, 'Controller owner address mismatch')
     assert.equal(await controllerProxy.systemPartiallyPaused(), false, 'system is partially paused')
 
+    // set max cap
+    await controllerProxy.setNakedCap(usdc.address, usdcCap, {from: owner})
+    await controllerProxy.setNakedCap(weth.address, wethCap, {from: owner})
+
     // make everyone rich
     await usdc.mint(accountOwner1, createTokenAmount(10000, usdcDecimals))
     await weth.mint(accountOwner1, createTokenAmount(10000, wethDecimals))
@@ -149,9 +153,6 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator]) => {
     await calculator.setCollateralDust(weth.address, wethDust, {from: owner})
     // set USDC dust amount
     await calculator.setCollateralDust(usdc.address, usdcDust, {from: owner})
-    // set max cap
-    await calculator.setCollateralCap(usdc.address, usdcCap, {from: owner})
-    await calculator.setCollateralCap(weth.address, wethCap, {from: owner})
     // set product upper bound values
     await calculator.setUpperBoundValues(weth.address, usdc.address, usdc.address, true, timeToExpiry, expiryToValue, {
       from: owner,
@@ -722,6 +723,9 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator]) => {
       ]
       await usdc.approve(marginPool.address, requiredMargin.toString(), {from: accountOwner1})
       await controllerProxy.operate(mintArgs, {from: accountOwner1})
+
+      console.log('amount to deposit:', requiredMargin.toString())
+      console.log('naked pool:', (await controllerProxy.getNakedPoolBalance(usdc.address)).toString())
 
       const latestVaultUpdateTimestamp = new BigNumber(
         (await controllerProxy.getVault(accountOwner1, vaultCounter.toString()))[2],
