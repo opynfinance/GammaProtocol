@@ -32,12 +32,12 @@ module.exports = async function(callback) {
     let pricesToMigrate = []
 
     for(let i = 0; i < otokenLength.toFixed(); i++) {
-      let otokenAddress = await factory.otokens(i)
-      let otokenDetails = await (await Otoken.at(otokenAddress)).getOtokenDetails()
-      let expiry = new BigNumber(otokenDetails[4])
+      const otokenAddress = await factory.otokens(i)
+      const otokenDetails = await (await Otoken.at(otokenAddress)).getOtokenDetails()
+      const expiry = new BigNumber(otokenDetails[4])
 
       if((otokenDetails[0] == options.asset || otokenDetails[1] == options.asset || otokenDetails[2] == options.asset) && (expiry.toNumber() < currentTimeStamp) && (!expiriesToMigrate.includes(expiry.toString()))) {
-        let priceToMigrate = new BigNumber((await oldOracle.getExpiryPrice(options.asset, expiry.toString()))[0])
+        const priceToMigrate = new BigNumber((await oldOracle.getExpiryPrice(options.asset, expiry.toString()))[0])
 
         expiriesToMigrate.push(expiry.toString())
         pricesToMigrate.push(priceToMigrate.toString())
