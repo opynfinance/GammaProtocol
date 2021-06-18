@@ -985,6 +985,9 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         // decrease amount of short otoken in liquidated vault, index of short otoken to decrease is hardcoded at 0
         vaults[_args.owner][_args.vaultId].removeShort(vault.shortOtokens[0], _args.amount, 0);
 
+        // decrease internal naked margin collateral amount
+        nakedPoolBalance[vault.collateralAssets[0]] = nakedPoolBalance[vault.collateralAssets[0]].sub(collateralToSell);
+
         pool.transferToUser(vault.collateralAssets[0], _args.receiver, collateralToSell);
 
         emit VaultLiquidated(
