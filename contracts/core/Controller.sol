@@ -56,7 +56,7 @@ import {CalleeInterface} from "../interfaces/CalleeInterface.sol";
  * CO33: can not liquidate vault
  * CO34: can not leave less than collateral dust
  * CO35: invalid vault id
- * CO36: invalid naked cap amount
+ * CO36: cap amount should be greater than zero
  * CO37: collateral exceed naked margin cap
  */
 
