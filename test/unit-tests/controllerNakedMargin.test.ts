@@ -50,7 +50,7 @@ enum ActionType {
   InvalidAction,
 }
 
-contract('Controller: naked margin', ([owner, accountOwner1, liquidator]) => {
+contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]) => {
   // ERC20 mock
   let usdc: MockERC20Instance
   let weth: MockERC20Instance
@@ -137,7 +137,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator]) => {
     await controllerProxy.setNakedCap(weth.address, wethCap, {from: owner})
 
     // make everyone rich
-    await usdc.mint(accountOwner1, createTokenAmount(10000, usdcDecimals))
+    await usdc.mint(accountOwner1, createTokenAmount(10000000, usdcDecimals))
     await weth.mint(accountOwner1, createTokenAmount(10000, wethDecimals))
 
     // set calculator configs
@@ -724,9 +724,6 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator]) => {
       await usdc.approve(marginPool.address, requiredMargin.toString(), {from: accountOwner1})
       await controllerProxy.operate(mintArgs, {from: accountOwner1})
 
-      console.log('amount to deposit:', requiredMargin.toString())
-      console.log('naked pool:', (await controllerProxy.getNakedPoolBalance(usdc.address)).toString())
-
       const latestVaultUpdateTimestamp = new BigNumber(
         (await controllerProxy.getVault(accountOwner1, vaultCounter.toString()))[2],
       )
@@ -882,6 +879,63 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator]) => {
         userCollateralBefore.plus(amountAbleToWithdraw).toString(),
         'User collateral after withdraw available remaining collateral mismatch',
       )
+    })
+  })
+
+  describe('Collateral cap', async () => {
+    it('only owner should be able to set naked cap amount', async () => {
+      const wethCap = scaleNum(50000, wethDecimals)
+      await controllerProxy.setNakedCap(weth.address, wethCap, {from: owner})
+
+      const capAmount = new BigNumber(await controllerProxy.getNakedCap(weth.address))
+
+      assert.equal(capAmount.toString(), wethCap.toString(), 'Weth naked cap amount mismatch')
+    })
+
+    it('should revert setting collateral cap from address other than owner', async () => {
+      const wethCap = scaleNum(50000, wethDecimals)
+
+      await expectRevert(
+        controllerProxy.setNakedCap(weth.address, wethCap, {from: random}),
+        'Ownable: caller is not the owner',
+      )
+    })
+
+    it('should revert setting collateral cap amount equal to zero', async () => {
+      const wethCap = scaleNum(0, wethDecimals)
+
+      await expectRevert(controllerProxy.setNakedCap(weth.address, wethCap, {from: owner}), 'CO36')
+    })
+
+    it('should revert depositing collateral in vault that that hit naked cap', async () => {
+      const vaultType = web3.eth.abi.encodeParameter('uint256', 1)
+      const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
+      const capAmount = new BigNumber(await controllerProxy.getNakedCap(usdc.address))
+
+      const mintArgs = [
+        {
+          actionType: ActionType.OpenVault,
+          owner: accountOwner1,
+          secondAddress: accountOwner1,
+          asset: ZERO_ADDR,
+          vaultId: vaultCounter.toString(),
+          amount: '0',
+          index: '0',
+          data: vaultType,
+        },
+        {
+          actionType: ActionType.DepositCollateral,
+          owner: accountOwner1,
+          secondAddress: accountOwner1,
+          asset: usdc.address,
+          vaultId: vaultCounter.toString(),
+          amount: capAmount.toString(),
+          index: '0',
+          data: ZERO_ADDR,
+        },
+      ]
+      await usdc.approve(marginPool.address, capAmount.toString(), {from: accountOwner1})
+      await expectRevert(controllerProxy.operate(mintArgs, {from: accountOwner1}), 'CO37')
     })
   })
 })
