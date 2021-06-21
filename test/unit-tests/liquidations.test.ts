@@ -147,8 +147,8 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
       const isLiquidatable = await calculator.isLiquidatable(vault, vaultType, randomVaultLatestUpdate, randomRoundId)
 
       assert.equal(isLiquidatable[0], false, 'isLiquidatable boolean value mismatch')
-      assert.equal(isLiquidatable[1].toString(), '0', 'debt price value mismatch')
-      assert.equal(isLiquidatable[2].toString(), '0', 'collateral dust value mismatch')
+      assert.equal(new BigNumber(isLiquidatable[1]).toString(), '0', 'debt price value mismatch')
+      assert.equal(new BigNumber(isLiquidatable[2]).toString(), '0', 'collateral dust value mismatch')
     })
 
     it('should not be able to liquidate vault with an expired short otoken', async () => {
@@ -200,8 +200,8 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
       const isLiquidatable = await calculator.isLiquidatable(vault, vaultType, randomVaultLatestUpdate, roundId)
 
       assert.equal(isLiquidatable[0], false, 'isLiquidatable boolean value mismatch')
-      assert.equal(isLiquidatable[1].toString(), '0', 'debt price value mismatch')
-      assert.equal(isLiquidatable[2].toString(), '0', 'collateral dust value mismatch')
+      assert.equal(new BigNumber(isLiquidatable[1]).toString(), '0', 'debt price value mismatch')
+      assert.equal(new BigNumber(isLiquidatable[2]).toString(), '0', 'collateral dust value mismatch')
     })
 
     it('should return liquidatable, the liquidation price and the dust amount for the collateral asset', async () => {
@@ -321,8 +321,8 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
       )
 
       assert.equal(isLiquidatable[0], true, 'isLiquidatable boolean value mismatch')
-      assert.equal(isLiquidatable[1].toNumber(), expectedLiquidationPrice, 'debt price value mismatch')
-      assert.equal(isLiquidatable[2].toString(), usdcDust, 'collateral dust value mismatch')
+      assert.equal(new BigNumber(isLiquidatable[1]).toNumber(), expectedLiquidationPrice, 'debt price value mismatch')
+      assert.equal(new BigNumber(isLiquidatable[2]).toString(), usdcDust, 'collateral dust value mismatch')
     })
   })
 

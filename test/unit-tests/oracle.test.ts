@@ -359,4 +359,41 @@ contract('Oracle', ([owner, disputer, random, collateral, strike]) => {
       )
     })
   })
+
+  describe('Oracle migration', () => {
+    it('should revert migrating when prices and expiries array have different lengths', async () => {
+      const expiries = ['111', '222', '333']
+      const prices = ['150', '200']
+
+      await expectRevert(
+        oracle.migrateOracle(weth.address, expiries, prices, {from: owner}),
+        'Oracle: invalid migration data',
+      )
+    })
+
+    it('migrate prices', async () => {
+      const expiries = ['111', '222', '333']
+      const prices = ['150', '200', '110']
+
+      await oracle.migrateOracle(weth.address, expiries, prices, {from: owner})
+
+      assert.equal(
+        new BigNumber((await oracle.getExpiryPrice(weth.address, expiries[0]))[0]).toString(),
+        new BigNumber(prices[0]).toString(),
+        'Migrate price mismatch',
+      )
+    })
+
+    it('should revert migrating when migration ended', async () => {
+      await oracle.endMigration({from: owner})
+
+      const expiries = ['111', '222', '333']
+      const prices = ['150', '200', '100']
+
+      await expectRevert(
+        oracle.migrateOracle(weth.address, expiries, prices, {from: owner}),
+        'Oracle: migration already done',
+      )
+    })
+  })
 })
