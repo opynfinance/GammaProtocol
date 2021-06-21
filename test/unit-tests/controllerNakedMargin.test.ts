@@ -237,6 +237,9 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
       await usdc.approve(marginPool.address, collateralAmount.toString(), {from: accountOwner1})
       await controllerProxy.operate(mintArgs, {from: accountOwner1})
 
+      const nakedMarginPool = new BigNumber(await controllerProxy.getNakedPoolBalance(usdc.address))
+      assert.equal(nakedMarginPool.toString(), collateralAmount.toString(), 'Naked margin colalteral tracking mismatch')
+
       // go to expiry
       await time.increase(optionExpiry.plus(10).toString())
       const ethPriceAtExpiry = 70
@@ -348,8 +351,18 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
           data: ZERO_ADDR,
         },
       ]
+
+      const nakedMarginPoolBefore = new BigNumber(await controllerProxy.getNakedPoolBalance(usdc.address))
+
       await usdc.approve(marginPool.address, requiredMargin.toString(), {from: accountOwner1})
       await controllerProxy.operate(mintArgs, {from: accountOwner1})
+
+      const nakedMarginPoolAfter = new BigNumber(await controllerProxy.getNakedPoolBalance(usdc.address))
+      assert.equal(
+        nakedMarginPoolAfter.toString(),
+        nakedMarginPoolBefore.plus(requiredMargin).toString(),
+        'Naked margin colalteral tracking mismatch',
+      )
 
       const latestVaultUpdateTimestamp = new BigNumber(
         (await controllerProxy.getVault(accountOwner1, vaultCounter.toString()))[2],
@@ -400,12 +413,21 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
       ]
 
       const liquidatorCollateralBalanceBefore = new BigNumber(await usdc.balanceOf(liquidator))
+      const nakedMarginPoolBefore = new BigNumber(await controllerProxy.getNakedPoolBalance(usdc.address))
 
       await controllerProxy.operate(liquidateArgs, {from: liquidator})
 
       const liquidatorCollateralBalanceAfter = new BigNumber(await usdc.balanceOf(liquidator))
       const vaultAfterLiquidation = (await controllerProxy.getVault(accountOwner1, vaultCounter.toString()))[0]
+      const nakedMarginPoolAfter = new BigNumber(await controllerProxy.getNakedPoolBalance(usdc.address))
 
+      assert.equal(
+        nakedMarginPoolAfter.toString(),
+        nakedMarginPoolBefore
+          .minus(liquidatorCollateralBalanceAfter.minus(liquidatorCollateralBalanceBefore))
+          .toString(),
+        'Naked margin colalteral tracking mismatch',
+      )
       assert.equal(vaultAfterLiquidation.shortAmounts[0].toString(), '0', 'Vault was not fully liquidated')
       assert.isAtMost(
         calcRelativeDiff(
@@ -443,11 +465,18 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
       ]
 
       const userCollateralBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
+      const nakedMarginPoolBefore = new BigNumber(await controllerProxy.getNakedPoolBalance(usdc.address))
 
       await controllerProxy.operate(withdrawArgs, {from: accountOwner1})
 
+      const nakedMarginPoolAfter = new BigNumber(await controllerProxy.getNakedPoolBalance(usdc.address))
       const userCollateralAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
 
+      assert.equal(
+        nakedMarginPoolAfter.toString(),
+        nakedMarginPoolBefore.minus(new BigNumber(vaultAfterLiquidation.collateralAmounts[0])).toString(),
+        'Naked margin colalteral tracking mismatch',
+      )
       assert.equal(
         userCollateralAfter.toString(),
         userCollateralBefore.plus(vaultAfterLiquidation.collateralAmounts[0]).toString(),
@@ -534,8 +563,18 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
           data: ZERO_ADDR,
         },
       ]
+
+      const nakedMarginPoolBefore = new BigNumber(await controllerProxy.getNakedPoolBalance(weth.address))
+
       await weth.approve(marginPool.address, requiredMargin.toString(), {from: accountOwner1})
       await controllerProxy.operate(mintArgs, {from: accountOwner1})
+
+      const nakedMarginPoolAfter = new BigNumber(await controllerProxy.getNakedPoolBalance(weth.address))
+      assert.equal(
+        nakedMarginPoolAfter.toString(),
+        nakedMarginPoolBefore.plus(requiredMargin).toString(),
+        'Naked margin colalteral tracking mismatch',
+      )
 
       const latestVaultUpdateTimestamp = new BigNumber(
         (await controllerProxy.getVault(accountOwner1, vaultCounter.toString()))[2],
@@ -586,12 +625,21 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
       ]
 
       const liquidatorCollateralBalanceBefore = new BigNumber(await weth.balanceOf(liquidator))
+      const nakedMarginPoolBefore = new BigNumber(await controllerProxy.getNakedPoolBalance(weth.address))
 
       await controllerProxy.operate(liquidateArgs, {from: liquidator})
 
       const liquidatorCollateralBalanceAfter = new BigNumber(await weth.balanceOf(liquidator))
       const vaultAfterLiquidation = (await controllerProxy.getVault(accountOwner1, vaultCounter.toString()))[0]
+      const nakedMarginPoolAfter = new BigNumber(await controllerProxy.getNakedPoolBalance(weth.address))
 
+      assert.equal(
+        nakedMarginPoolAfter.toString(),
+        nakedMarginPoolBefore
+          .minus(liquidatorCollateralBalanceAfter.minus(liquidatorCollateralBalanceBefore))
+          .toString(),
+        'Naked margin colalteral tracking mismatch',
+      )
       assert.equal(vaultAfterLiquidation.shortAmounts[0].toString(), '0', 'Vault was not fully liquidated')
       assert.isAtMost(
         calcRelativeDiff(
@@ -629,11 +677,18 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
       ]
 
       const userCollateralBefore = new BigNumber(await weth.balanceOf(accountOwner1))
+      const nakedMarginPoolBefore = new BigNumber(await controllerProxy.getNakedPoolBalance(weth.address))
 
       await controllerProxy.operate(withdrawArgs, {from: accountOwner1})
 
       const userCollateralAfter = new BigNumber(await weth.balanceOf(accountOwner1))
+      const nakedMarginPoolAfter = new BigNumber(await controllerProxy.getNakedPoolBalance(weth.address))
 
+      assert.equal(
+        nakedMarginPoolAfter.toString(),
+        nakedMarginPoolBefore.minus(new BigNumber(vaultAfterLiquidation.collateralAmounts[0])).toString(),
+        'Naked margin colalteral tracking mismatch',
+      )
       assert.equal(
         userCollateralAfter.toString(),
         userCollateralBefore.plus(vaultAfterLiquidation.collateralAmounts[0]).toString(),
