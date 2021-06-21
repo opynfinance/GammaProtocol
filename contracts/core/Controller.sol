@@ -56,6 +56,8 @@ import {CalleeInterface} from "../interfaces/CalleeInterface.sol";
  * CO33: can not liquidate vault
  * CO34: can not leave less than collateral dust
  * CO35: invalid vault id
+ * CO36: cap amount should be greater than zero
+ * CO37: collateral exceed naked margin cap
  */
 
 /**
@@ -105,6 +107,12 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     mapping(address => mapping(uint256 => uint256)) internal vaultType;
     /// @dev mapping to store the timestamp at which the vault was last updated, will be updated in every action that changes the vault state or when calling sync()
     mapping(address => mapping(uint256 => uint256)) internal vaultLatestUpdate;
+
+    /// @dev mapping to store cap amount for naked margin vault per options collateral asset (scaled by collateral asset decimals)
+    mapping(address => uint256) internal nakedCap;
+
+    /// @dev mapping to store amount of naked margin vaults in pool
+    mapping(address => uint256) internal nakedPoolBalance;
 
     /// @notice emits an event when an account operator is updated for a specific account owner
     event AccountOperatorUpdated(address indexed accountOwner, address indexed operator, bool isSet);
@@ -201,6 +209,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     event CallRestricted(bool isRestricted);
     /// @notice emits an event when a donation transfer executed
     event Donated(address indexed donator, address indexed asset, uint256 amount);
+    /// @notice emits an event when naked cap is updated
+    event NakedCapUpdated(address indexed collateral, uint256 cap);
 
     /**
      * @notice modifier to check if the system is not partially paused, where only redeem and settleVault is allowed
@@ -401,6 +411,20 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     function refreshConfiguration() external onlyOwner {
         _refreshConfigInternal();
+    }
+
+    /**
+     * @notice set cap amount for collateral asset used in naked margin
+     * @dev can only be called by owner
+     * @param _collateral collateral asset address
+     * @param _cap cap amount, should be scaled by collateral asset decimals
+     */
+    function setNakedCap(address _collateral, uint256 _cap) external onlyOwner {
+        require(_cap > 0, "CO36");
+
+        nakedCap[_collateral] = _cap;
+
+        emit NakedCapUpdated(_collateral, _cap);
     }
 
     /**
@@ -739,6 +763,14 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         require(whitelist.isWhitelistedCollateral(_args.asset), "CO21");
 
+        (, uint256 typeVault, ) = getVault(_args.owner, _args.vaultId);
+
+        if (typeVault == 1) {
+            nakedPoolBalance[_args.asset] = nakedPoolBalance[_args.asset].add(_args.amount);
+
+            require(nakedPoolBalance[_args.asset] <= nakedCap[_args.asset], "CO37");
+        }
+
         vaults[_args.owner][_args.vaultId].addCollateral(_args.asset, _args.amount, _args.index);
 
         pool.transferToPool(_args.asset, _args.from, _args.amount);
@@ -758,12 +790,16 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     {
         require(_checkVaultId(_args.owner, _args.vaultId), "CO35");
 
-        (MarginVault.Vault memory vault, , ) = getVault(_args.owner, _args.vaultId);
+        (MarginVault.Vault memory vault, uint256 typeVault, ) = getVault(_args.owner, _args.vaultId);
 
         if (_isNotEmpty(vault.shortOtokens)) {
             OtokenInterface otoken = OtokenInterface(vault.shortOtokens[0]);
 
             require(now < otoken.expiryTimestamp(), "CO22");
+        }
+
+        if (typeVault == 1) {
+            nakedPoolBalance[_args.asset] = nakedPoolBalance[_args.asset].sub(_args.amount);
         }
 
         vaults[_args.owner][_args.vaultId].removeCollateral(_args.asset, _args.amount, _args.index);
@@ -899,6 +935,10 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         delete vaults[_args.owner][_args.vaultId];
 
+        if (typeVault == 1) {
+            nakedPoolBalance[collateral] = nakedPoolBalance[collateral].sub(payout);
+        }
+
         pool.transferToUser(collateral, _args.to, payout);
 
         uint256 vaultId = _args.vaultId;
@@ -944,6 +984,9 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         // decrease amount of short otoken in liquidated vault, index of short otoken to decrease is hardcoded at 0
         vaults[_args.owner][_args.vaultId].removeShort(vault.shortOtokens[0], _args.amount, 0);
+
+        // decrease internal naked margin collateral amount
+        nakedPoolBalance[vault.collateralAssets[0]] = nakedPoolBalance[vault.collateralAssets[0]].sub(collateralToSell);
 
         pool.transferToUser(vault.collateralAssets[0], _args.receiver, collateralToSell);
 
@@ -1023,6 +1066,24 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         );
 
         return (vault, isUnderCollat, price, collateralDust);
+    }
+
+    /**
+     * @notice get cap amount for collateral asset
+     * @param _asset collateral asset address
+     * @return cap amount
+     */
+    function getNakedCap(address _asset) external view returns (uint256) {
+        return nakedCap[_asset];
+    }
+
+    /**
+     * @notice get amount of collateral deposited in all naked margin vaults
+     * @param _asset collateral asset address
+     * @return naked pool balance
+     */
+    function getNakedPoolBalance(address _asset) external view returns (uint256) {
+        return nakedPoolBalance[_asset];
     }
 
     /**
