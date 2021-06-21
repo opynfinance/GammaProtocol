@@ -1077,6 +1077,11 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         return nakedCap[_asset];
     }
 
+    /**
+     * @notice get amount of collateral deposited in all naked margin vaults
+     * @param _asset collateral asset address
+     * @return naked pool balance
+     */
     function getNakedPoolBalance(address _asset) external view returns (uint256) {
         return nakedPoolBalance[_asset];
     }
