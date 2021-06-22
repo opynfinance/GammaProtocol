@@ -24,13 +24,13 @@
 <text text-anchor="start" x="8" y="-419.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;addressBook: address</text>
 <polyline fill="none" stroke="#000000" points="0,-411.7 715.5184,-411.7 "/>
 <text text-anchor="start" x="8" y="-395.1" font-family="Times,serif" font-size="14.00" fill="#000000">External:</text>
-<text text-anchor="start" x="8" y="-378.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;isWhitelistedProduct(_underlying: address, _strike: address, _collateral: address, _isPut: bool): bool</text>
-<text text-anchor="start" x="8" y="-361.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;isWhitelistedCollateral(_collateral: address): bool</text>
+<text text-anchor="start" x="8" y="-378.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;whitelistCollateral(_collateral: address)</text>
+<text text-anchor="start" x="8" y="-361.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;isWhitelistedProduct(_underlying: address, _strike: address, _collateral: address, _isPut: bool): bool</text>
 <text text-anchor="start" x="8" y="-344.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;isWhitelistedOtoken(_otoken: address): bool</text>
 <text text-anchor="start" x="8" y="-327.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;isWhitelistedCallee(_callee: address): bool</text>
 <text text-anchor="start" x="8" y="-311.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;whitelistProduct(_underlying: address, _strike: address, _collateral: address, _isPut: bool)</text>
 <text text-anchor="start" x="8" y="-294.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;blacklistProduct(_underlying: address, _strike: address, _collateral: address, _isPut: bool)</text>
-<text text-anchor="start" x="8" y="-277.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;whitelistCollateral(_collateral: address)</text>
+<text text-anchor="start" x="8" y="-277.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;isWhitelistedCollateral(_collateral: address): bool</text>
 <text text-anchor="start" x="8" y="-260.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;blacklistCollateral(_collateral: address)</text>
 <text text-anchor="start" x="8" y="-243.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;whitelistOtoken(_otokenAddress: address)</text>
 <text text-anchor="start" x="8" y="-227.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;blacklistOtoken(_otokenAddress: address)</text>

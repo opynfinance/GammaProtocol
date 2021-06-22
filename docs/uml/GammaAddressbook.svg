@@ -27,15 +27,15 @@
 <text text-anchor="start" x="8" y="-403.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;addresses: mapping(bytes32=&gt;address)</text>
 <polyline fill="none" stroke="#000000" points="0,-394.9 336.7358,-394.9 "/>
 <text text-anchor="start" x="8" y="-378.3" font-family="Times,serif" font-size="14.00" fill="#000000">External:</text>
-<text text-anchor="start" x="8" y="-361.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getOtokenImpl(): address</text>
-<text text-anchor="start" x="8" y="-344.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getOtokenFactory(): address</text>
+<text text-anchor="start" x="8" y="-361.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setOtokenImpl(_otokenImpl: address)</text>
+<text text-anchor="start" x="8" y="-344.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getOtokenImpl(): address</text>
 <text text-anchor="start" x="8" y="-327.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getWhitelist(): address</text>
 <text text-anchor="start" x="8" y="-311.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getController(): address</text>
 <text text-anchor="start" x="8" y="-294.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getMarginPool(): address</text>
 <text text-anchor="start" x="8" y="-277.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getMarginCalculator(): address</text>
 <text text-anchor="start" x="8" y="-260.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getLiquidationManager(): address</text>
 <text text-anchor="start" x="8" y="-243.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getOracle(): address</text>
-<text text-anchor="start" x="8" y="-227.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setOtokenImpl(_otokenImpl: address)</text>
+<text text-anchor="start" x="8" y="-227.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getOtokenFactory(): address</text>
 <text text-anchor="start" x="8" y="-210.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setOtokenFactory(_otokenFactory: address)</text>
 <text text-anchor="start" x="8" y="-193.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setWhitelist(_whitelist: address)</text>
 <text text-anchor="start" x="8" y="-176.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setController(_controller: address)</text>

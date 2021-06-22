@@ -60,3 +60,20 @@ Yearn pricer deployed! 🎉
 Transaction hash: 0xebf12fc6603ee857bcabe1c0c6194XX82639a9888776f7ff6e83a409XXXXXXXX
 Deployed contract address: 0x669cC97687c792fc5369d7bdd38cXXXXXXXXXX
 ```
+
+## Mock Pricer Deployment
+
+To deploy a new `MockPricer.sol`, it is recommended to use the `deployMockPricer` truffle script inside the `scripts` folder.
+
+**Input**
+```sh
+truffle exec scripts/deployMockPricer.js --network mainnet --asset 0x7d78c401c69c56cb21f4bf80c53afd92be0BBBBB --oracle 0xc02aaa39b223fe8d0a0e5c4f27ead9083c7AAaaa --gasPrice 50000000000
+```
+
+**Output**
+```sh
+Deploying mock pricer contract on mainnet 🍕
+Mock pricer deployed! 🎉
+Transaction hash: 0xebf12fc6603ee857bcabe1c0c6194XX82639a9888776f7ff6e83a409XXXXXXXX
+Deployed contract address: 0x669cC97687c792fc5369d7bdd38cXXXXXXXXXX
+```

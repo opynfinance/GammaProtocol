@@ -6,6 +6,10 @@ manages pricers that are used for different assets
 
 ## Functions:
 
+- `migrateOracle(address _asset, uint256[] _expiries, uint256[] _prices) (external)`
+
+- `endMigration() (external)`
+
 - `setAssetPricer(address _asset, address _pricer) (external)`
 
 - `setLockingPeriod(address _pricer, uint256 _lockingPeriod) (external)`
@@ -53,6 +57,26 @@ manages pricers that are used for different assets
 - `ExpiryPriceDisputed(address asset, uint256 expiryTimestamp, uint256 disputedPrice, uint256 newPrice, uint256 disputeTimestamp)`
 
 - `StablePriceUpdated(address asset, uint256 price)`
+
+### Function `migrateOracle(address _asset, uint256[] _expiries, uint256[] _prices) external`
+
+function to mgirate asset prices from old oracle to new deployed oracle
+
+this can only be called by owner, should be used at the deployment time before setting Oracle module into AddressBook
+
+#### Parameters:
+
+- `_asset`: asset address
+
+- `_expiries`: array of expiries timestamps
+
+- `_prices`: array of prices
+
+### Function `endMigration() external`
+
+end migration process
+
+can only be called by owner, should be called before setting Oracle module into AddressBook
 
 ### Function `setAssetPricer(address _asset, address _pricer) external`
 

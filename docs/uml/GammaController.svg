@@ -35,8 +35,8 @@
 <text text-anchor="start" x="8" y="-1159.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;callRestricted: bool</text>
 <polyline fill="none" stroke="#000000" points="0,-1150.9 1203.5038,-1150.9 "/>
 <text text-anchor="start" x="8" y="-1134.3" font-family="Times,serif" font-size="14.00" fill="#000000">Internal:</text>
-<text text-anchor="start" x="8" y="-1117.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_isNotPartiallyPaused()</text>
-<text text-anchor="start" x="8" y="-1100.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_isNotFullyPaused()</text>
+<text text-anchor="start" x="8" y="-1117.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_mintOtoken(_args: Actions.MintArgs)</text>
+<text text-anchor="start" x="8" y="-1100.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_isNotPartiallyPaused()</text>
 <text text-anchor="start" x="8" y="-1083.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_isAuthorized(_sender: address, _accountOwner: address)</text>
 <text text-anchor="start" x="8" y="-1067.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_runActions(_actions: Actions.ActionArgs[]): (bool, address, uint256)</text>
 <text text-anchor="start" x="8" y="-1050.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_verifyFinalState(_owner: address, _vaultId: uint256)</text>
@@ -45,7 +45,7 @@
 <text text-anchor="start" x="8" y="-999.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_withdrawLong(_args: Actions.WithdrawArgs)</text>
 <text text-anchor="start" x="8" y="-983.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_depositCollateral(_args: Actions.DepositArgs)</text>
 <text text-anchor="start" x="8" y="-966.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_withdrawCollateral(_args: Actions.WithdrawArgs)</text>
-<text text-anchor="start" x="8" y="-949.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_mintOtoken(_args: Actions.MintArgs)</text>
+<text text-anchor="start" x="8" y="-949.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_isNotFullyPaused()</text>
 <text text-anchor="start" x="8" y="-932.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_burnOtoken(_args: Actions.BurnArgs)</text>
 <text text-anchor="start" x="8" y="-915.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_redeem(_args: Actions.RedeemArgs)</text>
 <text text-anchor="start" x="8" y="-899.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_settleVault(_args: Actions.SettleVaultArgs)</text>
@@ -57,15 +57,15 @@
 <text text-anchor="start" x="8" y="-798.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_isLiquidatable(_owner: address, _vaultId: uint256, _roundId: uint256): (MarginVault.Vault, bool, uint256, uint256)</text>
 <text text-anchor="start" x="8" y="-781.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_refreshConfigInternal()</text>
 <text text-anchor="start" x="8" y="-764.7" font-family="Times,serif" font-size="14.00" fill="#000000">External:</text>
-<text text-anchor="start" x="8" y="-747.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;initialize(_addressBook: address, _owner: address)</text>
-<text text-anchor="start" x="8" y="-731.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;donate(_asset: address, _amount: uint256)</text>
+<text text-anchor="start" x="8" y="-747.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;refreshConfiguration()</text>
+<text text-anchor="start" x="8" y="-731.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;initialize(_addressBook: address, _owner: address)</text>
 <text text-anchor="start" x="8" y="-714.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setSystemPartiallyPaused(_partiallyPaused: bool)</text>
 <text text-anchor="start" x="8" y="-697.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setSystemFullyPaused(_fullyPaused: bool)</text>
 <text text-anchor="start" x="8" y="-680.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setFullPauser(_fullPauser: address)</text>
 <text text-anchor="start" x="8" y="-663.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setPartialPauser(_partialPauser: address)</text>
 <text text-anchor="start" x="8" y="-647.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setCallRestriction(_isRestricted: bool)</text>
 <text text-anchor="start" x="8" y="-630.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setOperator(_operator: address, _isOperator: bool)</text>
-<text text-anchor="start" x="8" y="-613.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;refreshConfiguration()</text>
+<text text-anchor="start" x="8" y="-613.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;donate(_asset: address, _amount: uint256)</text>
 <text text-anchor="start" x="8" y="-596.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;operate(_actions: Actions.ActionArgs[])</text>
 <text text-anchor="start" x="8" y="-579.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;sync(_owner: address, _vaultId: uint256)</text>
 <text text-anchor="start" x="8" y="-563.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;isOperator(_owner: address, _operator: address): bool</text>
@@ -75,8 +75,8 @@
 <text text-anchor="start" x="8" y="-495.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getAccountVaultCounter(_accountOwner: address): uint256</text>
 <text text-anchor="start" x="8" y="-479.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;hasExpired(_otoken: address): bool</text>
 <text text-anchor="start" x="8" y="-462.3" font-family="Times,serif" font-size="14.00" fill="#000000">Public:</text>
-<text text-anchor="start" x="8" y="-445.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; AccountOperatorUpdated(accountOwner: address, operator: address, isSet: bool)</text>
-<text text-anchor="start" x="8" y="-428.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; VaultOpened(accountOwner: address, vaultId: uint256, vaultType: uint256)</text>
+<text text-anchor="start" x="8" y="-445.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; PartialPauserUpdated(oldPartialPauser: address, newPartialPauser: address)</text>
+<text text-anchor="start" x="8" y="-428.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; AccountOperatorUpdated(accountOwner: address, operator: address, isSet: bool)</text>
 <text text-anchor="start" x="8" y="-411.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; LongOtokenDeposited(otoken: address, accountOwner: address, from: address, vaultId: uint256, amount: uint256)</text>
 <text text-anchor="start" x="8" y="-395.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; LongOtokenWithdrawed(otoken: address, AccountOwner: address, to: address, vaultId: uint256, amount: uint256)</text>
 <text text-anchor="start" x="8" y="-378.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; CollateralAssetDeposited(asset: address, accountOwner: address, from: address, vaultId: uint256, amount: uint256)</text>
@@ -88,7 +88,7 @@
 <text text-anchor="start" x="8" y="-277.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; VaultLiquidated(liquidator: address, receiver: address, vaultOwner: address, auctionPrice: uint256, auctionStartingRound: uint256, collateralPayout: uint256, debtAmount: uint256, vaultId: uint256)</text>
 <text text-anchor="start" x="8" y="-260.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; CallExecuted(from: address, to: address, data: bytes)</text>
 <text text-anchor="start" x="8" y="-243.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; FullPauserUpdated(oldFullPauser: address, newFullPauser: address)</text>
-<text text-anchor="start" x="8" y="-227.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; PartialPauserUpdated(oldPartialPauser: address, newPartialPauser: address)</text>
+<text text-anchor="start" x="8" y="-227.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; VaultOpened(accountOwner: address, vaultId: uint256, vaultType: uint256)</text>
 <text text-anchor="start" x="8" y="-210.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; SystemPartiallyPaused(isPaused: bool)</text>
 <text text-anchor="start" x="8" y="-193.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; SystemFullyPaused(isPaused: bool)</text>
 <text text-anchor="start" x="8" y="-176.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; CallRestricted(isRestricted: bool)</text>
