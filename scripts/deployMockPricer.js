@@ -11,7 +11,7 @@ module.exports = async function(callback) {
       .option('network', {describe: 'Network name', type: 'string', demandOption: true})
       .option('asset', {describe: 'Asset address', type: 'string', demandOption: true})
       .option('oracle', {describe: 'Oracle module address', type: 'string', demandOption: true})
-      .option('gasPrice', {describe: 'Gas price in WEI', type: 'string', demandOption: false})
+      .option('gasPrice', {describe: 'Gas price in WEI', type: 'string', demandOption: false}).argv
 
     console.log(`Deploying chainlink pricer contract on ${options.network} 🍕`)
 
