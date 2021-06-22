@@ -27,15 +27,15 @@
 <text text-anchor="start" x="8" y="-848.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;addresses: mapping(bytes32=&gt;address)</text>
 <polyline fill="none" stroke="#000000" points="0,-840.1 336.7358,-840.1 "/>
 <text text-anchor="start" x="8" y="-823.5" font-family="Times,serif" font-size="14.00" fill="#000000">External:</text>
-<text text-anchor="start" x="8" y="-806.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getOtokenImpl(): address</text>
-<text text-anchor="start" x="8" y="-789.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getOtokenFactory(): address</text>
+<text text-anchor="start" x="8" y="-806.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setOtokenImpl(_otokenImpl: address)</text>
+<text text-anchor="start" x="8" y="-789.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getOtokenImpl(): address</text>
 <text text-anchor="start" x="8" y="-773.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getWhitelist(): address</text>
 <text text-anchor="start" x="8" y="-756.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getController(): address</text>
 <text text-anchor="start" x="8" y="-739.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getMarginPool(): address</text>
 <text text-anchor="start" x="8" y="-722.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getMarginCalculator(): address</text>
 <text text-anchor="start" x="8" y="-705.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getLiquidationManager(): address</text>
 <text text-anchor="start" x="8" y="-689.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getOracle(): address</text>
-<text text-anchor="start" x="8" y="-672.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setOtokenImpl(_otokenImpl: address)</text>
+<text text-anchor="start" x="8" y="-672.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getOtokenFactory(): address</text>
 <text text-anchor="start" x="8" y="-655.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setOtokenFactory(_otokenFactory: address)</text>
 <text text-anchor="start" x="8" y="-638.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setWhitelist(_whitelist: address)</text>
 <text text-anchor="start" x="8" y="-621.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setController(_controller: address)</text>
@@ -76,8 +76,8 @@
 <text text-anchor="start" x="362.616" y="-1159.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;callRestricted: bool</text>
 <polyline fill="none" stroke="#000000" points="354.616,-1150.9 1558.1198,-1150.9 "/>
 <text text-anchor="start" x="362.616" y="-1134.3" font-family="Times,serif" font-size="14.00" fill="#000000">Internal:</text>
-<text text-anchor="start" x="362.616" y="-1117.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_isNotPartiallyPaused()</text>
-<text text-anchor="start" x="362.616" y="-1100.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_isNotFullyPaused()</text>
+<text text-anchor="start" x="362.616" y="-1117.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_mintOtoken(_args: Actions.MintArgs)</text>
+<text text-anchor="start" x="362.616" y="-1100.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_isNotPartiallyPaused()</text>
 <text text-anchor="start" x="362.616" y="-1083.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_isAuthorized(_sender: address, _accountOwner: address)</text>
 <text text-anchor="start" x="362.616" y="-1067.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_runActions(_actions: Actions.ActionArgs[]): (bool, address, uint256)</text>
 <text text-anchor="start" x="362.616" y="-1050.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_verifyFinalState(_owner: address, _vaultId: uint256)</text>
@@ -86,7 +86,7 @@
 <text text-anchor="start" x="362.616" y="-999.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_withdrawLong(_args: Actions.WithdrawArgs)</text>
 <text text-anchor="start" x="362.616" y="-983.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_depositCollateral(_args: Actions.DepositArgs)</text>
 <text text-anchor="start" x="362.616" y="-966.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_withdrawCollateral(_args: Actions.WithdrawArgs)</text>
-<text text-anchor="start" x="362.616" y="-949.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_mintOtoken(_args: Actions.MintArgs)</text>
+<text text-anchor="start" x="362.616" y="-949.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_isNotFullyPaused()</text>
 <text text-anchor="start" x="362.616" y="-932.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_burnOtoken(_args: Actions.BurnArgs)</text>
 <text text-anchor="start" x="362.616" y="-915.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_redeem(_args: Actions.RedeemArgs)</text>
 <text text-anchor="start" x="362.616" y="-899.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_settleVault(_args: Actions.SettleVaultArgs)</text>
@@ -98,15 +98,15 @@
 <text text-anchor="start" x="362.616" y="-798.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_isLiquidatable(_owner: address, _vaultId: uint256, _roundId: uint256): (MarginVault.Vault, bool, uint256, uint256)</text>
 <text text-anchor="start" x="362.616" y="-781.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_refreshConfigInternal()</text>
 <text text-anchor="start" x="362.616" y="-764.7" font-family="Times,serif" font-size="14.00" fill="#000000">External:</text>
-<text text-anchor="start" x="362.616" y="-747.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;initialize(_addressBook: address, _owner: address)</text>
-<text text-anchor="start" x="362.616" y="-731.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;donate(_asset: address, _amount: uint256)</text>
+<text text-anchor="start" x="362.616" y="-747.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;refreshConfiguration()</text>
+<text text-anchor="start" x="362.616" y="-731.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;initialize(_addressBook: address, _owner: address)</text>
 <text text-anchor="start" x="362.616" y="-714.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setSystemPartiallyPaused(_partiallyPaused: bool)</text>
 <text text-anchor="start" x="362.616" y="-697.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setSystemFullyPaused(_fullyPaused: bool)</text>
 <text text-anchor="start" x="362.616" y="-680.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setFullPauser(_fullPauser: address)</text>
 <text text-anchor="start" x="362.616" y="-663.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setPartialPauser(_partialPauser: address)</text>
 <text text-anchor="start" x="362.616" y="-647.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setCallRestriction(_isRestricted: bool)</text>
 <text text-anchor="start" x="362.616" y="-630.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setOperator(_operator: address, _isOperator: bool)</text>
-<text text-anchor="start" x="362.616" y="-613.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;refreshConfiguration()</text>
+<text text-anchor="start" x="362.616" y="-613.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;donate(_asset: address, _amount: uint256)</text>
 <text text-anchor="start" x="362.616" y="-596.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;operate(_actions: Actions.ActionArgs[])</text>
 <text text-anchor="start" x="362.616" y="-579.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;sync(_owner: address, _vaultId: uint256)</text>
 <text text-anchor="start" x="362.616" y="-563.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;isOperator(_owner: address, _operator: address): bool</text>
@@ -116,8 +116,8 @@
 <text text-anchor="start" x="362.616" y="-495.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getAccountVaultCounter(_accountOwner: address): uint256</text>
 <text text-anchor="start" x="362.616" y="-479.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;hasExpired(_otoken: address): bool</text>
 <text text-anchor="start" x="362.616" y="-462.3" font-family="Times,serif" font-size="14.00" fill="#000000">Public:</text>
-<text text-anchor="start" x="362.616" y="-445.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; AccountOperatorUpdated(accountOwner: address, operator: address, isSet: bool)</text>
-<text text-anchor="start" x="362.616" y="-428.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; VaultOpened(accountOwner: address, vaultId: uint256, vaultType: uint256)</text>
+<text text-anchor="start" x="362.616" y="-445.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; PartialPauserUpdated(oldPartialPauser: address, newPartialPauser: address)</text>
+<text text-anchor="start" x="362.616" y="-428.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; AccountOperatorUpdated(accountOwner: address, operator: address, isSet: bool)</text>
 <text text-anchor="start" x="362.616" y="-411.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; LongOtokenDeposited(otoken: address, accountOwner: address, from: address, vaultId: uint256, amount: uint256)</text>
 <text text-anchor="start" x="362.616" y="-395.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; LongOtokenWithdrawed(otoken: address, AccountOwner: address, to: address, vaultId: uint256, amount: uint256)</text>
 <text text-anchor="start" x="362.616" y="-378.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; CollateralAssetDeposited(asset: address, accountOwner: address, from: address, vaultId: uint256, amount: uint256)</text>
@@ -129,7 +129,7 @@
 <text text-anchor="start" x="362.616" y="-277.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; VaultLiquidated(liquidator: address, receiver: address, vaultOwner: address, auctionPrice: uint256, auctionStartingRound: uint256, collateralPayout: uint256, debtAmount: uint256, vaultId: uint256)</text>
 <text text-anchor="start" x="362.616" y="-260.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; CallExecuted(from: address, to: address, data: bytes)</text>
 <text text-anchor="start" x="362.616" y="-243.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; FullPauserUpdated(oldFullPauser: address, newFullPauser: address)</text>
-<text text-anchor="start" x="362.616" y="-227.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; PartialPauserUpdated(oldPartialPauser: address, newPartialPauser: address)</text>
+<text text-anchor="start" x="362.616" y="-227.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; VaultOpened(accountOwner: address, vaultId: uint256, vaultType: uint256)</text>
 <text text-anchor="start" x="362.616" y="-210.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; SystemPartiallyPaused(isPaused: bool)</text>
 <text text-anchor="start" x="362.616" y="-193.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; SystemFullyPaused(isPaused: bool)</text>
 <text text-anchor="start" x="362.616" y="-176.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; CallRestricted(isRestricted: bool)</text>
@@ -165,15 +165,15 @@
 <text text-anchor="start" x="1218.8873" y="-2295.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;oracle: OracleInterface</text>
 <polyline fill="none" stroke="#000000" points="1210.8873,-2287.1 2625.8485,-2287.1 "/>
 <text text-anchor="start" x="1218.8873" y="-2270.5" font-family="Times,serif" font-size="14.00" fill="#000000">Internal:</text>
-<text text-anchor="start" x="1218.8873" y="-2253.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_getExpiredCashValue(_underlying: address, _strike: address, _expiryTimestamp: uint256, _strikePrice: uint256, _isPut: bool): FPI.FixedPointInt</text>
-<text text-anchor="start" x="1218.8873" y="-2236.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_getMarginRequired(_vault: MarginVault.Vault, _vaultDetails: VaultDetails): (FPI.FixedPointInt, FPI.FixedPointInt)</text>
+<text text-anchor="start" x="1218.8873" y="-2253.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_getDebtPrice(_vaultCollateral: FPI.FixedPointInt, _vaultDebt: FPI.FixedPointInt, _cashValue: FPI.FixedPointInt, _spotPrice: FPI.FixedPointInt, _auctionStartingTime: uint256, _collateralDecimals: uint256, _isPut: bool): uint256</text>
+<text text-anchor="start" x="1218.8873" y="-2236.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_getExpiredCashValue(_underlying: address, _strike: address, _expiryTimestamp: uint256, _strikePrice: uint256, _isPut: bool): FPI.FixedPointInt</text>
 <text text-anchor="start" x="1218.8873" y="-2220.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_getNakedMarginRequired(_productHash: bytes32, _shortAmount: FPI.FixedPointInt, _underlyingPrice: FPI.FixedPointInt, _strikePrice: FPI.FixedPointInt, _shortExpiryTimestamp: uint256, _isPut: bool): FPI.FixedPointInt</text>
 <text text-anchor="start" x="1218.8873" y="-2203.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_findUpperBoundValue(_productHash: bytes32, _expiryTimestamp: uint256): FPI.FixedPointInt</text>
 <text text-anchor="start" x="1218.8873" y="-2186.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_getPutSpreadMarginRequired(_shortAmount: FPI.FixedPointInt, _longAmount: FPI.FixedPointInt, _shortStrike: FPI.FixedPointInt, _longStrike: FPI.FixedPointInt): FPI.FixedPointInt</text>
 <text text-anchor="start" x="1218.8873" y="-2169.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_getCallSpreadMarginRequired(_shortAmount: FPI.FixedPointInt, _longAmount: FPI.FixedPointInt, _shortStrike: FPI.FixedPointInt, _longStrike: FPI.FixedPointInt): FPI.FixedPointInt</text>
 <text text-anchor="start" x="1218.8873" y="-2152.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_convertAmountOnLivePrice(_amount: FPI.FixedPointInt, _assetA: address, _assetB: address): FPI.FixedPointInt</text>
 <text text-anchor="start" x="1218.8873" y="-2136.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_convertAmountOnExpiryPrice(_amount: FPI.FixedPointInt, _assetA: address, _assetB: address, _expiry: uint256): FPI.FixedPointInt</text>
-<text text-anchor="start" x="1218.8873" y="-2119.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_getDebtPrice(_vaultCollateral: FPI.FixedPointInt, _vaultDebt: FPI.FixedPointInt, _cashValue: FPI.FixedPointInt, _spotPrice: FPI.FixedPointInt, _auctionStartingTime: uint256, _collateralDecimals: uint256, _isPut: bool): uint256</text>
+<text text-anchor="start" x="1218.8873" y="-2119.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_getMarginRequired(_vault: MarginVault.Vault, _vaultDetails: VaultDetails): (FPI.FixedPointInt, FPI.FixedPointInt)</text>
 <text text-anchor="start" x="1218.8873" y="-2102.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_getVaultDetails(_vault: MarginVault.Vault, _vaultType: uint256): VaultDetails</text>
 <text text-anchor="start" x="1218.8873" y="-2085.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_getExpiredSpreadCashValue(_shortAmount: FPI.FixedPointInt, _longAmount: FPI.FixedPointInt, _shortCashValue: FPI.FixedPointInt, _longCashValue: FPI.FixedPointInt): FPI.FixedPointInt</text>
 <text text-anchor="start" x="1218.8873" y="-2068.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_isNotEmpty(_assets: address[]): bool</text>
@@ -183,15 +183,15 @@
 <text text-anchor="start" x="1218.8873" y="-2001.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_getProductHash(_underlying: address, _strike: address, _collateral: address, _isPut: bool): bytes32</text>
 <text text-anchor="start" x="1218.8873" y="-1984.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_getCashValue(_strikePrice: FPI.FixedPointInt, _underlyingPrice: FPI.FixedPointInt, _isPut: bool): FPI.FixedPointInt</text>
 <text text-anchor="start" x="1218.8873" y="-1968.1" font-family="Times,serif" font-size="14.00" fill="#000000">External:</text>
-<text text-anchor="start" x="1218.8873" y="-1951.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setCollateralDust(_collateral: address, _dust: uint256)</text>
-<text text-anchor="start" x="1218.8873" y="-1934.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setCollateralCap(_collateral: address, _cap: uint256)</text>
+<text text-anchor="start" x="1218.8873" y="-1951.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getTimesToExpiry(_underlying: address, _strike: address, _collateral: address, _isPut: bool): uint256[]</text>
+<text text-anchor="start" x="1218.8873" y="-1934.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setCollateralDust(_collateral: address, _dust: uint256)</text>
 <text text-anchor="start" x="1218.8873" y="-1917.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setUpperBoundValues(_underlying: address, _strike: address, _collateral: address, _isPut: bool, _timesToExpiry: uint256[], _values: uint256[])</text>
 <text text-anchor="start" x="1218.8873" y="-1900.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;updateUpperBoundValue(_underlying: address, _strike: address, _collateral: address, _isPut: bool, _timeToExpiry: uint256, _value: uint256)</text>
 <text text-anchor="start" x="1218.8873" y="-1884.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setSpotShock(_underlying: address, _strike: address, _collateral: address, _isPut: bool, _shockValue: uint256)</text>
 <text text-anchor="start" x="1218.8873" y="-1867.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setOracleDeviation(_deviation: uint256)</text>
 <text text-anchor="start" x="1218.8873" y="-1850.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getCollateralDust(_collateral: address): uint256</text>
 <text text-anchor="start" x="1218.8873" y="-1833.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getCollateralCap(_collateral: address): uint256</text>
-<text text-anchor="start" x="1218.8873" y="-1816.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getTimesToExpiry(_underlying: address, _strike: address, _collateral: address, _isPut: bool): uint256[]</text>
+<text text-anchor="start" x="1218.8873" y="-1816.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setCollateralCap(_collateral: address, _cap: uint256)</text>
 <text text-anchor="start" x="1218.8873" y="-1800.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getMaxPrice(_underlying: address, _strike: address, _collateral: address, _isPut: bool, _timeToExpiry: uint256): uint256</text>
 <text text-anchor="start" x="1218.8873" y="-1783.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getSpotShock(_underlying: address, _strike: address, _collateral: address, _isPut: bool): uint256</text>
 <text text-anchor="start" x="1218.8873" y="-1766.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getOracleDeviation(): uint256</text>
@@ -311,42 +311,46 @@
 <!-- 4 -->
 <g id="node8" class="node">
 <title>4</title>
-<polygon fill="#f2f2f2" stroke="#000000" points="2643.4327,-1741.5 2643.4327,-2319.9 3501.3031,-2319.9 3501.3031,-1741.5 2643.4327,-1741.5"/>
-<text text-anchor="middle" x="3072.3679" y="-2303.3" font-family="Times,serif" font-size="14.00" fill="#000000">Oracle</text>
-<polyline fill="none" stroke="#000000" points="2643.4327,-2295.1 3501.3031,-2295.1 "/>
-<text text-anchor="start" x="2651.4327" y="-2278.5" font-family="Times,serif" font-size="14.00" fill="#000000">Internal:</text>
-<text text-anchor="start" x="2651.4327" y="-2261.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;pricerLockingPeriod: mapping(address=&gt;uint256)</text>
-<text text-anchor="start" x="2651.4327" y="-2244.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;pricerDisputePeriod: mapping(address=&gt;uint256)</text>
-<text text-anchor="start" x="2651.4327" y="-2228.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;assetPricer: mapping(address=&gt;address)</text>
-<text text-anchor="start" x="2651.4327" y="-2211.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;storedPrice: mapping(address=&gt;mapping(uint256=&gt;Price))</text>
-<text text-anchor="start" x="2651.4327" y="-2194.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;stablePrice: mapping(address=&gt;uint256)</text>
-<text text-anchor="start" x="2651.4327" y="-2177.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;disputer: address</text>
+<polygon fill="#f2f2f2" stroke="#000000" points="2643.4327,-1707.9 2643.4327,-2353.5 3501.3031,-2353.5 3501.3031,-1707.9 2643.4327,-1707.9"/>
+<text text-anchor="middle" x="3072.3679" y="-2336.9" font-family="Times,serif" font-size="14.00" fill="#000000">Oracle</text>
+<polyline fill="none" stroke="#000000" points="2643.4327,-2328.7 3501.3031,-2328.7 "/>
+<text text-anchor="start" x="2651.4327" y="-2312.1" font-family="Times,serif" font-size="14.00" fill="#000000">Internal:</text>
+<text text-anchor="start" x="2651.4327" y="-2295.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;disputer: address</text>
+<text text-anchor="start" x="2651.4327" y="-2278.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;pricerLockingPeriod: mapping(address=&gt;uint256)</text>
+<text text-anchor="start" x="2651.4327" y="-2261.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;pricerDisputePeriod: mapping(address=&gt;uint256)</text>
+<text text-anchor="start" x="2651.4327" y="-2244.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;assetPricer: mapping(address=&gt;address)</text>
+<text text-anchor="start" x="2651.4327" y="-2228.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;storedPrice: mapping(address=&gt;mapping(uint256=&gt;Price))</text>
+<text text-anchor="start" x="2651.4327" y="-2211.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;stablePrice: mapping(address=&gt;uint256)</text>
+<text text-anchor="start" x="2651.4327" y="-2194.5" font-family="Times,serif" font-size="14.00" fill="#000000">Public:</text>
+<text text-anchor="start" x="2651.4327" y="-2177.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;migrated: bool</text>
 <polyline fill="none" stroke="#000000" points="2643.4327,-2169.5 3501.3031,-2169.5 "/>
 <text text-anchor="start" x="2651.4327" y="-2152.9" font-family="Times,serif" font-size="14.00" fill="#000000">External:</text>
-<text text-anchor="start" x="2651.4327" y="-2136.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setAssetPricer(_asset: address, _pricer: address)</text>
-<text text-anchor="start" x="2651.4327" y="-2119.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setLockingPeriod(_pricer: address, _lockingPeriod: uint256)</text>
-<text text-anchor="start" x="2651.4327" y="-2102.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setDisputePeriod(_pricer: address, _disputePeriod: uint256)</text>
-<text text-anchor="start" x="2651.4327" y="-2085.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setDisputer(_disputer: address)</text>
-<text text-anchor="start" x="2651.4327" y="-2068.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setStablePrice(_asset: address, _price: uint256)</text>
-<text text-anchor="start" x="2651.4327" y="-2052.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;disputeExpiryPrice(_asset: address, _expiryTimestamp: uint256, _price: uint256)</text>
-<text text-anchor="start" x="2651.4327" y="-2035.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setExpiryPrice(_asset: address, _expiryTimestamp: uint256, _price: uint256)</text>
-<text text-anchor="start" x="2651.4327" y="-2018.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getPrice(_asset: address): uint256</text>
-<text text-anchor="start" x="2651.4327" y="-2001.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getExpiryPrice(_asset: address, _expiryTimestamp: uint256): (uint256, bool)</text>
-<text text-anchor="start" x="2651.4327" y="-1984.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getPricer(_asset: address): address</text>
-<text text-anchor="start" x="2651.4327" y="-1968.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getDisputer(): address</text>
-<text text-anchor="start" x="2651.4327" y="-1951.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getPricerLockingPeriod(_pricer: address): uint256</text>
-<text text-anchor="start" x="2651.4327" y="-1934.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getPricerDisputePeriod(_pricer: address): uint256</text>
-<text text-anchor="start" x="2651.4327" y="-1917.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getChainlinkRoundData(_asset: address, _roundId: uint80): (uint256, uint256)</text>
-<text text-anchor="start" x="2651.4327" y="-1900.9" font-family="Times,serif" font-size="14.00" fill="#000000">Public:</text>
-<text text-anchor="start" x="2651.4327" y="-1884.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; DisputerUpdated(newDisputer: address)</text>
-<text text-anchor="start" x="2651.4327" y="-1867.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; PricerUpdated(asset: address, pricer: address)</text>
-<text text-anchor="start" x="2651.4327" y="-1850.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; PricerLockingPeriodUpdated(pricer: address, lockingPeriod: uint256)</text>
-<text text-anchor="start" x="2651.4327" y="-1833.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; PricerDisputePeriodUpdated(pricer: address, disputePeriod: uint256)</text>
-<text text-anchor="start" x="2651.4327" y="-1816.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; ExpiryPriceUpdated(asset: address, expiryTimestamp: uint256, price: uint256, onchainTimestamp: uint256)</text>
-<text text-anchor="start" x="2651.4327" y="-1800.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; ExpiryPriceDisputed(asset: address, expiryTimestamp: uint256, disputedPrice: uint256, newPrice: uint256, disputeTimestamp: uint256)</text>
-<text text-anchor="start" x="2651.4327" y="-1783.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; StablePriceUpdated(asset: address, price: uint256)</text>
-<text text-anchor="start" x="2651.4327" y="-1766.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;isLockingPeriodOver(_asset: address, _expiryTimestamp: uint256): bool</text>
-<text text-anchor="start" x="2651.4327" y="-1749.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;isDisputePeriodOver(_asset: address, _expiryTimestamp: uint256): bool</text>
+<text text-anchor="start" x="2651.4327" y="-2136.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setExpiryPrice(_asset: address, _expiryTimestamp: uint256, _price: uint256)</text>
+<text text-anchor="start" x="2651.4327" y="-2119.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;migrateOracle(_asset: address, _expiries: uint256[], _prices: uint256[])</text>
+<text text-anchor="start" x="2651.4327" y="-2102.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setAssetPricer(_asset: address, _pricer: address)</text>
+<text text-anchor="start" x="2651.4327" y="-2085.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setLockingPeriod(_pricer: address, _lockingPeriod: uint256)</text>
+<text text-anchor="start" x="2651.4327" y="-2068.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setDisputePeriod(_pricer: address, _disputePeriod: uint256)</text>
+<text text-anchor="start" x="2651.4327" y="-2052.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setDisputer(_disputer: address)</text>
+<text text-anchor="start" x="2651.4327" y="-2035.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setStablePrice(_asset: address, _price: uint256)</text>
+<text text-anchor="start" x="2651.4327" y="-2018.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;disputeExpiryPrice(_asset: address, _expiryTimestamp: uint256, _price: uint256)</text>
+<text text-anchor="start" x="2651.4327" y="-2001.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;endMigration()</text>
+<text text-anchor="start" x="2651.4327" y="-1984.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getPrice(_asset: address): uint256</text>
+<text text-anchor="start" x="2651.4327" y="-1968.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getExpiryPrice(_asset: address, _expiryTimestamp: uint256): (uint256, bool)</text>
+<text text-anchor="start" x="2651.4327" y="-1951.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getPricer(_asset: address): address</text>
+<text text-anchor="start" x="2651.4327" y="-1934.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getDisputer(): address</text>
+<text text-anchor="start" x="2651.4327" y="-1917.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getPricerLockingPeriod(_pricer: address): uint256</text>
+<text text-anchor="start" x="2651.4327" y="-1900.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getPricerDisputePeriod(_pricer: address): uint256</text>
+<text text-anchor="start" x="2651.4327" y="-1884.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getChainlinkRoundData(_asset: address, _roundId: uint80): (uint256, uint256)</text>
+<text text-anchor="start" x="2651.4327" y="-1867.3" font-family="Times,serif" font-size="14.00" fill="#000000">Public:</text>
+<text text-anchor="start" x="2651.4327" y="-1850.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; DisputerUpdated(newDisputer: address)</text>
+<text text-anchor="start" x="2651.4327" y="-1833.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; PricerUpdated(asset: address, pricer: address)</text>
+<text text-anchor="start" x="2651.4327" y="-1816.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; PricerLockingPeriodUpdated(pricer: address, lockingPeriod: uint256)</text>
+<text text-anchor="start" x="2651.4327" y="-1800.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; PricerDisputePeriodUpdated(pricer: address, disputePeriod: uint256)</text>
+<text text-anchor="start" x="2651.4327" y="-1783.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; ExpiryPriceUpdated(asset: address, expiryTimestamp: uint256, price: uint256, onchainTimestamp: uint256)</text>
+<text text-anchor="start" x="2651.4327" y="-1766.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; ExpiryPriceDisputed(asset: address, expiryTimestamp: uint256, disputedPrice: uint256, newPrice: uint256, disputeTimestamp: uint256)</text>
+<text text-anchor="start" x="2651.4327" y="-1749.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; StablePriceUpdated(asset: address, price: uint256)</text>
+<text text-anchor="start" x="2651.4327" y="-1732.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;isLockingPeriodOver(_asset: address, _expiryTimestamp: uint256): bool</text>
+<text text-anchor="start" x="2651.4327" y="-1716.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;isDisputePeriodOver(_asset: address, _expiryTimestamp: uint256): bool</text>
 </g>
 <!-- 4struct0 -->
 <g id="node9" class="node">
@@ -361,8 +365,8 @@
 <!-- 4struct0&#45;&gt;4 -->
 <g id="edge4" class="edge">
 <title>4struct0&#45;&gt;4</title>
-<path fill="none" stroke="#000000" d="M3072.3679,-785.0384C3072.3679,-928.2512 3072.3679,-1408.4906 3072.3679,-1729.1115"/>
-<polygon fill="#000000" stroke="#000000" points="3072.368,-1729.3995 3076.3679,-1735.3995 3072.3679,-1741.3995 3068.3679,-1735.3995 3072.368,-1729.3995"/>
+<path fill="none" stroke="#000000" d="M3072.3679,-785.0384C3072.3679,-923.2944 3072.3679,-1375.6511 3072.3679,-1695.2674"/>
+<polygon fill="#000000" stroke="#000000" points="3072.368,-1695.53 3076.3679,-1701.53 3072.3679,-1707.53 3068.3679,-1701.53 3072.368,-1695.53"/>
 </g>
 <!-- 5 -->
 <g id="node10" class="node">
@@ -453,13 +457,13 @@
 <text text-anchor="start" x="5172.6087" y="-881.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;addressBook: address</text>
 <polyline fill="none" stroke="#000000" points="5164.6087,-873.7 5880.1271,-873.7 "/>
 <text text-anchor="start" x="5172.6087" y="-857.1" font-family="Times,serif" font-size="14.00" fill="#000000">External:</text>
-<text text-anchor="start" x="5172.6087" y="-840.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;isWhitelistedProduct(_underlying: address, _strike: address, _collateral: address, _isPut: bool): bool</text>
-<text text-anchor="start" x="5172.6087" y="-823.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;isWhitelistedCollateral(_collateral: address): bool</text>
+<text text-anchor="start" x="5172.6087" y="-840.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;whitelistCollateral(_collateral: address)</text>
+<text text-anchor="start" x="5172.6087" y="-823.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;isWhitelistedProduct(_underlying: address, _strike: address, _collateral: address, _isPut: bool): bool</text>
 <text text-anchor="start" x="5172.6087" y="-806.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;isWhitelistedOtoken(_otoken: address): bool</text>
 <text text-anchor="start" x="5172.6087" y="-789.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;isWhitelistedCallee(_callee: address): bool</text>
 <text text-anchor="start" x="5172.6087" y="-773.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;whitelistProduct(_underlying: address, _strike: address, _collateral: address, _isPut: bool)</text>
 <text text-anchor="start" x="5172.6087" y="-756.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;blacklistProduct(_underlying: address, _strike: address, _collateral: address, _isPut: bool)</text>
-<text text-anchor="start" x="5172.6087" y="-739.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;whitelistCollateral(_collateral: address)</text>
+<text text-anchor="start" x="5172.6087" y="-739.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;isWhitelistedCollateral(_collateral: address): bool</text>
 <text text-anchor="start" x="5172.6087" y="-722.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;blacklistCollateral(_collateral: address)</text>
 <text text-anchor="start" x="5172.6087" y="-705.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;whitelistOtoken(_otokenAddress: address)</text>
 <text text-anchor="start" x="5172.6087" y="-689.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;blacklistOtoken(_otokenAddress: address)</text>
