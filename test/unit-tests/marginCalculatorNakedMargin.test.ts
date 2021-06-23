@@ -122,35 +122,6 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
     })
   })
 
-  describe('Collateral cap', async () => {
-    it('only owner should be able to set collateral cap amount', async () => {
-      const wethCap = scaleNum(50000, wethDecimals)
-      await calculator.setCollateralCap(weth.address, wethCap, {from: owner})
-
-      const capAmount = new BigNumber(await calculator.getCollateralCap(weth.address))
-
-      assert.equal(capAmount.toString(), wethCap.toString(), 'Weth dust amount mismatch')
-    })
-
-    it('should revert setting collateral cap from address other than owner', async () => {
-      const wethCap = scaleNum(50000, wethDecimals)
-
-      await expectRevert(
-        calculator.setCollateralCap(weth.address, wethCap, {from: random}),
-        'Ownable: caller is not the owner',
-      )
-    })
-
-    it('should revert setting collateral cap amount equal to zero', async () => {
-      const wethCap = scaleNum(0, wethDecimals)
-
-      await expectRevert(
-        calculator.setCollateralCap(weth.address, wethCap, {from: owner}),
-        'MarginCalculator: cap amount should be greater than zero',
-      )
-    })
-  })
-
   describe('Upper bound value', async () => {
     it('should revert setting product upper bound value from non owner', async () => {
       const timeToExpiry = 60 * 24 * 7
@@ -431,8 +402,6 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
 
       await calculator.setCollateralDust(usdc.address, scaleNum(10, usdcDecimals))
       await calculator.setCollateralDust(weth.address, scaleNum(0.01, wethDecimals))
-      await calculator.setCollateralCap(usdc.address, scaleNum(1000000, usdcDecimals))
-      await calculator.setCollateralCap(weth.address, scaleNum(50000, wethDecimals))
     })
 
     it('should return required margin for naked margin vault: 100$ WETH put option with 150 spot price and 1 week to expiry', async () => {
@@ -750,7 +719,6 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
       // update dust amount for this test case to work
       const usdcDust = scaleNum(expectedRequiredNakedMargin - 0.5, usdcDecimals)
       await calculator.setCollateralDust(usdc.address, usdcDust, {from: owner})
-      await calculator.setCollateralCap(usdc.address, scaleNum(50000, usdcDecimals), {from: owner})
 
       // set underlying price in oracle
       await oracle.setRealTimePrice(weth.address, scaledUnderlyingPrice)
