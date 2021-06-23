@@ -489,7 +489,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @return amount of collateral that can be taken out
      */
     function getProceed(address _owner, uint256 _vaultId) external view returns (uint256) {
-        (MarginVault.Vault memory vault, uint256 typeVault, ) = getVault(_owner, _vaultId);
+        (MarginVault.Vault memory vault, uint256 typeVault, ) = getVaultWithDetails(_owner, _vaultId);
 
         (uint256 netValue, bool isExcess) = calculator.getExcessCollateral(vault, typeVault);
 
@@ -542,7 +542,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _expiry otoken expiry timestamp
      * @return True if the oToken has expired AND all oracle prices at the expiry timestamp have been finalized, False if not
      */
-    function isSettlementAllowed(
+    function isSettlementAllowedWithDetails(
         address _underlying,
         address _strike,
         address _collateral,
@@ -551,6 +551,27 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         bool isUnderlyingFinalized = oracle.isDisputePeriodOver(_underlying, _expiry);
         bool isStrikeFinalized = oracle.isDisputePeriodOver(_strike, _expiry);
         bool isCollateralFinalized = oracle.isDisputePeriodOver(_collateral, _expiry);
+
+        return isUnderlyingFinalized && isStrikeFinalized && isCollateralFinalized;
+    }
+
+    /**
+     * @dev return if an expired oToken contract’s settlement price has been finalized
+     * @param _otoken address of the oToken
+     * @return True if the oToken has expired AND all oracle prices at the expiry timestamp have been finalized, False if not
+     */
+    function isSettlementAllowed(address _otoken) public view returns (bool) {
+        OtokenInterface otoken = OtokenInterface(_otoken);
+
+        address underlying = otoken.underlyingAsset();
+        address strike = otoken.strikeAsset();
+        address collateral = otoken.collateralAsset();
+
+        uint256 expiry = otoken.expiryTimestamp();
+
+        bool isUnderlyingFinalized = oracle.isDisputePeriodOver(underlying, expiry);
+        bool isStrikeFinalized = oracle.isDisputePeriodOver(strike, expiry);
+        bool isCollateralFinalized = oracle.isDisputePeriodOver(collateral, expiry);
 
         return isUnderlyingFinalized && isStrikeFinalized && isCollateralFinalized;
     }
@@ -579,9 +600,19 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @notice return a specific vault
      * @param _owner account owner
      * @param _vaultId vault id of vault to return
+     * @return Vault struct that corresponds to the _vaultId of _owner
+     */
+    function getVault(_owner, uint256 _vaultId) external view returns (MarginVault.Vault memory) {
+        return (vaults[_owner][_vaultId]);
+    }
+
+    /**
+     * @notice return a specific vault
+     * @param _owner account owner
+     * @param _vaultId vault id of vault to return
      * @return Vault struct that corresponds to the _vaultId of _owner, vault type and the latest timestamp when the vault was updated
      */
-    function getVault(address _owner, uint256 _vaultId)
+    function getVaultWithDetails(address _owner, uint256 _vaultId)
         public
         view
         returns (
@@ -670,7 +701,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _vaultId vault id of the final vault
      */
     function _verifyFinalState(address _owner, uint256 _vaultId) internal view {
-        (MarginVault.Vault memory vault, uint256 typeVault, ) = getVault(_owner, _vaultId);
+        (MarginVault.Vault memory vault, uint256 typeVault, ) = getVaultWithDetails(_owner, _vaultId);
         (, bool isValidVault) = calculator.getExcessCollateral(vault, typeVault);
 
         require(isValidVault, "CO14");
@@ -763,7 +794,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         require(whitelist.isWhitelistedCollateral(_args.asset), "CO21");
 
-        (, uint256 typeVault, ) = getVault(_args.owner, _args.vaultId);
+        (, uint256 typeVault, ) = getVaultWithDetails(_args.owner, _args.vaultId);
 
         if (typeVault == 1) {
             nakedPoolBalance[_args.asset] = nakedPoolBalance[_args.asset].add(_args.amount);
@@ -790,7 +821,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     {
         require(_checkVaultId(_args.owner, _args.vaultId), "CO35");
 
-        (MarginVault.Vault memory vault, uint256 typeVault, ) = getVault(_args.owner, _args.vaultId);
+        (MarginVault.Vault memory vault, uint256 typeVault, ) = getVaultWithDetails(_args.owner, _args.vaultId);
 
         if (_isNotEmpty(vault.shortOtokens)) {
             OtokenInterface otoken = OtokenInterface(vault.shortOtokens[0]);
@@ -878,7 +909,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         // only allow redeeming expired otoken
         require(now >= expiry, "CO28");
 
-        require(isSettlementAllowed(underlying, strike, collateral, expiry), "CO29");
+        require(isSettlementAllowedWithDetails(underlying, strike, collateral, expiry), "CO29");
 
         uint256 payout = getPayout(_args.otoken, _args.amount);
 
@@ -897,7 +928,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     function _settleVault(Actions.SettleVaultArgs memory _args) internal onlyAuthorized(msg.sender, _args.owner) {
         require(_checkVaultId(_args.owner, _args.vaultId), "CO35");
 
-        (MarginVault.Vault memory vault, uint256 typeVault, ) = getVault(_args.owner, _args.vaultId);
+        (MarginVault.Vault memory vault, uint256 typeVault, ) = getVaultWithDetails(_args.owner, _args.vaultId);
 
         OtokenInterface otoken;
 
@@ -925,7 +956,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         // do not allow settling vault with un-expired otoken
         require(now >= expiry, "CO31");
-        require(isSettlementAllowed(underlying, strike, collateral, expiry), "CO29");
+        require(isSettlementAllowedWithDetails(underlying, strike, collateral, expiry), "CO29");
 
         (uint256 payout, bool isValidVault) = calculator.getExcessCollateral(vault, typeVault);
 
@@ -1057,7 +1088,10 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             uint256
         )
     {
-        (MarginVault.Vault memory vault, uint256 typeVault, uint256 latestUpdateTimestamp) = getVault(_owner, _vaultId);
+        (MarginVault.Vault memory vault, uint256 typeVault, uint256 latestUpdateTimestamp) = getVaultWithDetails(
+            _owner,
+            _vaultId
+        );
         (bool isUnderCollat, uint256 price, uint256 collateralDust) = calculator.isLiquidatable(
             vault,
             typeVault,

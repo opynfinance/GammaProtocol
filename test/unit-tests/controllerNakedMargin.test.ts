@@ -365,7 +365,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
       )
 
       const latestVaultUpdateTimestamp = new BigNumber(
-        (await controllerProxy.getVault(accountOwner1, vaultCounter.toString()))[2],
+        (await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter.toString()))[2],
       )
 
       assert.equal(
@@ -397,7 +397,9 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
       assert.equal(isLiquidatable[0], true, 'Vault liquidation state mismatch')
       assert.isTrue(new BigNumber(isLiquidatable[1]).isGreaterThan(0), 'Liquidation price is equal to zero')
 
-      const vaultBeforeLiquidation = (await controllerProxy.getVault(accountOwner1, vaultCounter.toString()))[0]
+      const vaultBeforeLiquidation = (
+        await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter.toString())
+      )[0]
 
       const liquidateArgs = [
         {
@@ -418,7 +420,9 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
       await controllerProxy.operate(liquidateArgs, {from: liquidator})
 
       const liquidatorCollateralBalanceAfter = new BigNumber(await usdc.balanceOf(liquidator))
-      const vaultAfterLiquidation = (await controllerProxy.getVault(accountOwner1, vaultCounter.toString()))[0]
+      const vaultAfterLiquidation = (
+        await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter.toString())
+      )[0]
       const nakedMarginPoolAfter = new BigNumber(await controllerProxy.getNakedPoolBalance(usdc.address))
 
       assert.equal(
@@ -449,7 +453,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
     })
 
     it('should be able to withdraw remaining collateral', async () => {
-      const vaultAfterLiquidation = (await controllerProxy.getVault(accountOwner1, vaultCounter))[0]
+      const vaultAfterLiquidation = (await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter))[0]
 
       const withdrawArgs = [
         {
@@ -577,7 +581,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
       )
 
       const latestVaultUpdateTimestamp = new BigNumber(
-        (await controllerProxy.getVault(accountOwner1, vaultCounter.toString()))[2],
+        (await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter.toString()))[2],
       )
 
       assert.equal(
@@ -609,7 +613,9 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
       assert.equal(isLiquidatable[0], true, 'Vault liquidation state mismatch')
       assert.isTrue(new BigNumber(isLiquidatable[1]).isGreaterThan(0), 'Liquidation price is equal to zero')
 
-      const vaultBeforeLiquidation = (await controllerProxy.getVault(accountOwner1, vaultCounter.toString()))[0]
+      const vaultBeforeLiquidation = (
+        await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter.toString())
+      )[0]
 
       const liquidateArgs = [
         {
@@ -630,7 +636,9 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
       await controllerProxy.operate(liquidateArgs, {from: liquidator})
 
       const liquidatorCollateralBalanceAfter = new BigNumber(await weth.balanceOf(liquidator))
-      const vaultAfterLiquidation = (await controllerProxy.getVault(accountOwner1, vaultCounter.toString()))[0]
+      const vaultAfterLiquidation = (
+        await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter.toString())
+      )[0]
       const nakedMarginPoolAfter = new BigNumber(await controllerProxy.getNakedPoolBalance(weth.address))
 
       assert.equal(
@@ -661,7 +669,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
     })
 
     it('should be able to withdraw remaining collateral', async () => {
-      const vaultAfterLiquidation = (await controllerProxy.getVault(accountOwner1, vaultCounter))[0]
+      const vaultAfterLiquidation = (await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter))[0]
 
       const withdrawArgs = [
         {
@@ -780,7 +788,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
       await controllerProxy.operate(mintArgs, {from: accountOwner1})
 
       const latestVaultUpdateTimestamp = new BigNumber(
-        (await controllerProxy.getVault(accountOwner1, vaultCounter.toString()))[2],
+        (await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter.toString()))[2],
       )
 
       assert.equal(
@@ -813,7 +821,9 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
       assert.equal(isLiquidatable[0], true, 'Vault liquidation state mismatch')
       assert.isTrue(new BigNumber(isLiquidatable[1]).isGreaterThan(0), 'Liquidation price is equal to zero')
 
-      const vaultBeforeLiquidation = (await controllerProxy.getVault(accountOwner1, vaultCounter.toString()))[0]
+      const vaultBeforeLiquidation = (
+        await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter.toString())
+      )[0]
 
       const liquidateArgs = [
         {
@@ -833,7 +843,9 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
       await controllerProxy.operate(liquidateArgs, {from: liquidator})
 
       const liquidatorCollateralBalanceAfter = new BigNumber(await usdc.balanceOf(liquidator))
-      const vaultAfterLiquidation = (await controllerProxy.getVault(accountOwner1, vaultCounter.toString()))[0]
+      const vaultAfterLiquidation = (
+        await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter.toString())
+      )[0]
 
       assert.equal(
         vaultAfterLiquidation.shortAmounts[0].toString(),
@@ -894,7 +906,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
     })
 
     it('should be able to remove excess collateral after partially liquidating', async () => {
-      const vaultAfterLiquidation = (await controllerProxy.getVault(accountOwner1, vaultCounter))[0]
+      const vaultAfterLiquidation = (await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter))[0]
 
       const requiredVaultMargin = await calculator.getNakedMarginRequired(
         weth.address,

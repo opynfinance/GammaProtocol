@@ -56,13 +56,13 @@ Contract that controls the Gamma Protocol and the interaction of all sub contrac
 
 - `getPayout(address _otoken, uint256 _amount) (public)`
 
-- `isSettlementAllowed(address _underlying, address _strike, address _collateral, uint256 _expiry) (public)`
+- `isSettlementAllowedWithDetails(address _underlying, address _strike, address _collateral, uint256 _expiry) (public)`
 
 - `getAccountVaultCounter(address _accountOwner) (external)`
 
 - `hasExpired(address _otoken) (external)`
 
-- `getVault(address _owner, uint256 _vaultId) (public)`
+- `getVaultWithDetails(address _owner, uint256 _vaultId) (public)`
 
 - `_runActions(struct Actions.ActionArgs[] _actions) (internal)`
 
@@ -376,7 +376,7 @@ get an oToken's payout/cash value after expiry, in the collateral asset
 
 - amount of collateral to pay out
 
-### Function `isSettlementAllowed(address _underlying, address _strike, address _collateral, uint256 _expiry) → bool public`
+### Function `isSettlementAllowedWithDetails(address _underlying, address _strike, address _collateral, uint256 _expiry) → bool public`
 
 return if an expired oToken is ready to be settled, only true when price for underlying,
 
@@ -420,7 +420,7 @@ check if an oToken has expired
 
 - True if the otoken has expired, False if not
 
-### Function `getVault(address _owner, uint256 _vaultId) → struct MarginVault.Vault, uint256, uint256 public`
+### Function `getVaultWithDetails(address _owner, uint256 _vaultId) → struct MarginVault.Vault, uint256, uint256 public`
 
 return a specific vault
 
