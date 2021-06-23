@@ -602,7 +602,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _vaultId vault id of vault to return
      * @return Vault struct that corresponds to the _vaultId of _owner
      */
-    function getVault(_owner, uint256 _vaultId) external view returns (MarginVault.Vault memory) {
+    function getVault(address _owner, uint256 _vaultId) external view returns (MarginVault.Vault memory) {
         return (vaults[_owner][_vaultId]);
     }
 
