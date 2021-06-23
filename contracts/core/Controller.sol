@@ -529,8 +529,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @return amount of collateral to pay out
      */
     function getPayout(address _otoken, uint256 _amount) public view returns (uint256) {
-        uint256 rate = calculator.getExpiredPayoutRate(_otoken);
-        return rate.mul(_amount).div(10**BASE);
+        return calculator.getExpiredPayoutRate(_otoken).mul(_amount).div(10**BASE);
     }
 
     /**
