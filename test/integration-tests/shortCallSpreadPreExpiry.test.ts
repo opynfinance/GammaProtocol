@@ -232,7 +232,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
       const marginPoolLongOtokenBalanceBefore = new BigNumber(await higherStrikeCall.balanceOf(marginPool.address))
 
       // Check that we start at a valid state
-      const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter1)
+      const vaultBefore = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter1)
       const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore[0], vaultBefore[1])
       assert.equal(vaultStateBefore[0].toString(), '0')
       assert.equal(vaultStateBefore[1], true)
@@ -337,7 +337,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
       )
 
       // Check that we end at a valid state
-      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter1)
+      const vaultAfter = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter1)
       const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter[0], vaultAfter[1])
       assert.equal(vaultStateAfter[0].toString(), '0')
       assert.equal(vaultStateAfter[1], true)
@@ -388,7 +388,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
       const marginPoolLongOtokenBalanceBefore = new BigNumber(await higherStrikeCall.balanceOf(marginPool.address))
 
       // Check that we start at a valid state
-      const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter1)
+      const vaultBefore = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter1)
       const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore[0], vaultBefore[1])
       assert.equal(vaultStateBefore[0].toString(), '0')
       assert.equal(vaultStateBefore[1], true)
@@ -465,7 +465,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
       )
 
       // Check that we end at a valid state
-      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter1)
+      const vaultAfter = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter1)
       const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter[0], vaultAfter[1])
       assert.equal(vaultStateAfter[0].toString(), '0')
       assert.equal(vaultStateAfter[1], true)
@@ -508,7 +508,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
       const higherStrikeCallSupplyBefore = new BigNumber(await higherStrikeCall.totalSupply())
 
       // Check that we start at a valid state
-      const vaultBefore = await controllerProxy.getVault(accountOwner2, vaultCounter2)
+      const vaultBefore = await controllerProxy.getVaultWithDetails(accountOwner2, vaultCounter2)
       const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore[0], vaultBefore[1])
       assert.equal(vaultStateBefore[0].toString(), '0')
       assert.equal(vaultStateBefore[1], true)
@@ -561,7 +561,7 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
       )
 
       // Check that we end at a valid state
-      const vaultAfter = await controllerProxy.getVault(accountOwner2, vaultCounter2)
+      const vaultAfter = await controllerProxy.getVaultWithDetails(accountOwner2, vaultCounter2)
       const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter[0], vaultAfter[1])
       assert.equal(vaultStateAfter[0].toString(), '0')
       assert.equal(vaultStateAfter[1], true)

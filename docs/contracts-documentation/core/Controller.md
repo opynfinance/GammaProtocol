@@ -62,7 +62,7 @@ Contract that controls the Gamma Protocol and the interaction of all sub contrac
 
 - `hasExpired(address _otoken) (external)`
 
-- `getVault(address _owner, uint256 _vaultId) (public)`
+- `getVaultWithDetails(address _owner, uint256 _vaultId) (public)`
 
 - `_runActions(struct Actions.ActionArgs[] _actions) (internal)`
 
@@ -420,7 +420,7 @@ check if an oToken has expired
 
 - True if the otoken has expired, False if not
 
-### Function `getVault(address _owner, uint256 _vaultId) → struct MarginVault.Vault, uint256, uint256 public`
+### Function `getVaultWithDetails(address _owner, uint256 _vaultId) → struct MarginVault.Vault, uint256, uint256 public`
 
 return a specific vault
 

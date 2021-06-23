@@ -489,7 +489,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @return amount of collateral that can be taken out
      */
     function getProceed(address _owner, uint256 _vaultId) external view returns (uint256) {
-        (MarginVault.Vault memory vault, uint256 typeVault, ) = getVault(_owner, _vaultId);
+        (MarginVault.Vault memory vault, uint256 typeVault, ) = getVaultWithDetails(_owner, _vaultId);
 
         (uint256 netValue, bool isExcess) = calculator.getExcessCollateral(vault, typeVault);
 
@@ -581,7 +581,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _vaultId vault id of vault to return
      * @return Vault struct that corresponds to the _vaultId of _owner, vault type and the latest timestamp when the vault was updated
      */
-    function getVault(address _owner, uint256 _vaultId)
+    function getVaultWithDetails(address _owner, uint256 _vaultId)
         public
         view
         returns (
@@ -591,6 +591,10 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         )
     {
         return (vaults[_owner][_vaultId], vaultType[_owner][_vaultId], vaultLatestUpdate[_owner][_vaultId]);
+    }
+
+    function getVault(address _owner, uint256 _vaultId) public view returns (MarginVault.Vault memory) {
+        return (vaults[_owner][_vaultId]);
     }
 
     /**
@@ -670,7 +674,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _vaultId vault id of the final vault
      */
     function _verifyFinalState(address _owner, uint256 _vaultId) internal view {
-        (MarginVault.Vault memory vault, uint256 typeVault, ) = getVault(_owner, _vaultId);
+        (MarginVault.Vault memory vault, uint256 typeVault, ) = getVaultWithDetails(_owner, _vaultId);
         (, bool isValidVault) = calculator.getExcessCollateral(vault, typeVault);
 
         require(isValidVault, "CO14");
@@ -763,7 +767,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         require(whitelist.isWhitelistedCollateral(_args.asset), "CO21");
 
-        (, uint256 typeVault, ) = getVault(_args.owner, _args.vaultId);
+        (, uint256 typeVault, ) = getVaultWithDetails(_args.owner, _args.vaultId);
 
         if (typeVault == 1) {
             nakedPoolBalance[_args.asset] = nakedPoolBalance[_args.asset].add(_args.amount);
@@ -790,7 +794,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     {
         require(_checkVaultId(_args.owner, _args.vaultId), "CO35");
 
-        (MarginVault.Vault memory vault, uint256 typeVault, ) = getVault(_args.owner, _args.vaultId);
+        (MarginVault.Vault memory vault, uint256 typeVault, ) = getVaultWithDetails(_args.owner, _args.vaultId);
 
         if (_isNotEmpty(vault.shortOtokens)) {
             OtokenInterface otoken = OtokenInterface(vault.shortOtokens[0]);
@@ -897,7 +901,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     function _settleVault(Actions.SettleVaultArgs memory _args) internal onlyAuthorized(msg.sender, _args.owner) {
         require(_checkVaultId(_args.owner, _args.vaultId), "CO35");
 
-        (MarginVault.Vault memory vault, uint256 typeVault, ) = getVault(_args.owner, _args.vaultId);
+        (MarginVault.Vault memory vault, uint256 typeVault, ) = getVaultWithDetails(_args.owner, _args.vaultId);
 
         OtokenInterface otoken;
 
@@ -1057,7 +1061,10 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             uint256
         )
     {
-        (MarginVault.Vault memory vault, uint256 typeVault, uint256 latestUpdateTimestamp) = getVault(_owner, _vaultId);
+        (MarginVault.Vault memory vault, uint256 typeVault, uint256 latestUpdateTimestamp) = getVaultWithDetails(
+            _owner,
+            _vaultId
+        );
         (bool isUnderCollat, uint256 price, uint256 collateralDust) = calculator.isLiquidatable(
             vault,
             typeVault,
