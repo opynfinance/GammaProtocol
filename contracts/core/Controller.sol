@@ -534,23 +534,22 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
-     * @dev return if an expired oToken is ready to be settled, only true when price for underlying,
-     * strike and collateral assets at this specific expiry is available in our Oracle module
-     * @param _underlying oToken underlying asset
-     * @param _strike oToken strike asset
-     * @param _collateral oToken collateral asset
-     * @param _expiry otoken expiry timestamp
+     * @dev return if an expired oToken contract’s settlement price has been finalized
+     * @param _otoken address of the oToken
      * @return True if the oToken has expired AND all oracle prices at the expiry timestamp have been finalized, False if not
      */
-    function isSettlementAllowed(
-        address _underlying,
-        address _strike,
-        address _collateral,
-        uint256 _expiry
-    ) public view returns (bool) {
-        bool isUnderlyingFinalized = oracle.isDisputePeriodOver(_underlying, _expiry);
-        bool isStrikeFinalized = oracle.isDisputePeriodOver(_strike, _expiry);
-        bool isCollateralFinalized = oracle.isDisputePeriodOver(_collateral, _expiry);
+    function isSettlementAllowed(address _otoken) public view returns (bool) {
+        OtokenInterface otoken = OtokenInterface(_otoken);
+
+        address underlying = otoken.underlyingAsset();
+        address strike = otoken.strikeAsset();
+        address collateral = otoken.collateralAsset();
+
+        uint256 expiry = otoken.expiryTimestamp();
+
+        bool isUnderlyingFinalized = oracle.isDisputePeriodOver(underlying, expiry);
+        bool isStrikeFinalized = oracle.isDisputePeriodOver(strike, expiry);
+        bool isCollateralFinalized = oracle.isDisputePeriodOver(collateral, expiry);
 
         return isUnderlyingFinalized && isStrikeFinalized && isCollateralFinalized;
     }
@@ -882,7 +881,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         // only allow redeeming expired otoken
         require(now >= expiry, "CO28");
 
-        require(isSettlementAllowed(underlying, strike, collateral, expiry), "CO29");
+        require(isSettlementAllowed(address(otoken)), "CO29");
 
         uint256 payout = getPayout(_args.otoken, _args.amount);
 
@@ -929,7 +928,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         // do not allow settling vault with un-expired otoken
         require(now >= expiry, "CO31");
-        require(isSettlementAllowed(underlying, strike, collateral, expiry), "CO29");
+        require(isSettlementAllowed(address(isSettlementAllowed)), "CO29");
 
         (uint256 payout, bool isValidVault) = calculator.getExcessCollateral(vault, typeVault);
 
