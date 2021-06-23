@@ -189,7 +189,7 @@ contract('Naked Put Option expires Otm flow', ([accountOwner1, buyer]) => {
       const oTokenSupplyBefore = new BigNumber(await ethPut.totalSupply())
 
       // Check that we start at a valid state
-      const vaultBefore = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter)
+      const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
       const vaultStateBeforeExpiry = await calculator.getExcessCollateral(vaultBefore[0], vaultBefore[1])
       assert.equal(vaultStateBeforeExpiry[0].toString(), '0')
       assert.equal(vaultStateBeforeExpiry[1], true)
@@ -245,7 +245,7 @@ contract('Naked Put Option expires Otm flow', ([accountOwner1, buyer]) => {
       assert.equal(oTokenSupplyBefore.toString(), oTokenSupplyAfter.toString())
 
       // Check that we end at a valid state
-      const vaultAfter = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter)
+      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
       const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter[0], vaultAfter[1])
       assert.equal(vaultStateAfter[0].toString(), '0')
       assert.equal(vaultStateAfter[1], true)

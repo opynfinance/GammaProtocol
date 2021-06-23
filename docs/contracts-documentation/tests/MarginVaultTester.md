@@ -2,7 +2,7 @@
 
 ## Functions:
 
-- `getVaultWithDetails(uint256 _vaultIndex) (external)`
+- `getVault(uint256 _vaultIndex) (external)`
 
 - `testAddShort(uint256 _vaultIndex, address _shortOtoken, uint256 _amount, uint256 _index) (external)`
 
@@ -16,7 +16,7 @@
 
 - `testRemoveCollateral(uint256 _vaultIndex, address _collateralAsset, uint256 _amount, uint256 _index) (external)`
 
-### Function `getVaultWithDetails(uint256 _vaultIndex) → struct MarginVault.Vault external`
+### Function `getVault(uint256 _vaultIndex) → struct MarginVault.Vault external`
 
 ### Function `testAddShort(uint256 _vaultIndex, address _shortOtoken, uint256 _amount, uint256 _index) external`
 

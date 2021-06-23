@@ -101,7 +101,7 @@
 <text text-anchor="start" x="8" y="-59.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;&lt;&lt;modifier&gt;&gt; onlyWhitelistedCallee(_callee: address)</text>
 <text text-anchor="start" x="8" y="-42.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getPayout(_otoken: address, _amount: uint256): uint256</text>
 <text text-anchor="start" x="8" y="-25.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;isSettlementAllowedWithDetails(_underlying: address, _strike: address, _collateral: address, _expiry: uint256): bool</text>
-<text text-anchor="start" x="8" y="-8.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getVaultWithDetails(_owner: address, _vaultId: uint256): (MarginVault.Vault, uint256, uint256)</text>
+<text text-anchor="start" x="8" y="-8.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getVault(_owner: address, _vaultId: uint256): (MarginVault.Vault, uint256, uint256)</text>
 </g>
 </g>
 </svg>
