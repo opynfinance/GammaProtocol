@@ -162,7 +162,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
     })
 
     it('should revert when removing an already removed operator', async () => {
-      await expectRevert(controllerProxy.setOperator(accountOperator1, false, {from: accountOwner1}), 'CO9')
+      await expectRevert(controllerProxy.setOperator(accountOperator1, false, {from: accountOwner1}), 'C9')
     })
   })
 
@@ -193,7 +193,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           data: ZERO_ADDR,
         },
       ]
-      await expectRevert(controllerProxy.operate(actionArgs, {from: random}), 'CO6')
+      await expectRevert(controllerProxy.operate(actionArgs, {from: random}), 'C6')
     })
 
     it('should revert opening a vault a vault with id equal to zero', async () => {
@@ -397,7 +397,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         ]
 
         await longOtoken.approve(marginPool.address, longToDeposit, {from: accountOwner1})
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO35')
+        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C35')
       })
 
       it('should revert depositing long from an address that is not the msg.sender nor the owner account address', async () => {
@@ -742,7 +742,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           },
         ]
 
-        await expectRevert(controllerProxy.operate(actionArgs, {from: random}), 'CO6')
+        await expectRevert(controllerProxy.operate(actionArgs, {from: random}), 'C6')
       })
 
       it('should revert withdrawing long otoken amount greater than the vault balance', async () => {
@@ -784,7 +784,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           },
         ]
 
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO35')
+        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C35')
       })
 
       it('should withdraw long otoken to any random address where msg.sender is account owner', async () => {
@@ -1195,7 +1195,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         ]
 
         await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO35')
+        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C35')
       })
 
       it('should revert depositing long from an address that is not the msg.sender nor the owner account address', async () => {
@@ -1378,10 +1378,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           },
         ]
 
-        await expectRevert(
-          controllerProxy.operate(actionArgs, {from: accountOwner1}),
-          'MarginVault: invalid collateral asset index',
-        )
+        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'V8')
       })
 
       it('should revert withdrawing collateral asset from an invalid id', async () => {
@@ -1402,7 +1399,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           },
         ]
 
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO35')
+        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C35')
       })
 
       it('should revert withdrawing collateral asset amount greater than the vault balance', async () => {
@@ -1694,7 +1691,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           },
         ]
 
-        await expectRevert(controllerProxy.operate(actionArgs, {from: random}), 'CO6')
+        await expectRevert(controllerProxy.operate(actionArgs, {from: random}), 'C6')
       })
 
       it('should revert minting using un-marginable collateral asset', async () => {
@@ -1753,7 +1750,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           },
         ]
 
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO35')
+        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C35')
       })
 
       it('mint naked short otoken from owner', async () => {
@@ -2211,10 +2208,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           },
         ]
 
-        await expectRevert(
-          controllerProxy.operate(actionArgs, {from: accountOwner1}),
-          'MarginVault: invalid short otoken index',
-        )
+        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'V2')
       })
 
       it('should revert burning when there is no enough balance', async () => {
@@ -2266,7 +2260,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           },
         ]
 
-        await expectRevert(controllerProxy.operate(actionArgs, {from: random}), 'CO6')
+        await expectRevert(controllerProxy.operate(actionArgs, {from: random}), 'C6')
       })
 
       it('should revert minting short with invalid vault id', async () => {
@@ -2286,7 +2280,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           },
         ]
 
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO35')
+        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C35')
       })
 
       it('should revert depositing long from an address that is not the msg.sender nor the owner account address', async () => {
@@ -3252,7 +3246,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         },
       ]
 
-      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO30')
+      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C30')
     })
 
     it('should revert settling vault before expiry', async () => {
@@ -3289,7 +3283,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         },
       ]
 
-      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO31')
+      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C31')
     })
 
     it('should revert settling an invalid vault', async () => {
@@ -3307,7 +3301,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         },
       ]
 
-      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO35')
+      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C35')
     })
 
     it('should revert settling after expiry when price is not finalized', async () => {
@@ -3837,7 +3831,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
     })
 
     it('should revert activating call action restriction when it is already activated', async () => {
-      await expectRevert(controllerProxy.setCallRestriction(true, {from: owner}), 'CO9')
+      await expectRevert(controllerProxy.setCallRestriction(true, {from: owner}), 'C9')
     })
 
     it('should revert calling any arbitrary address when call restriction is activated', async () => {
@@ -3856,7 +3850,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         },
       ]
 
-      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO3')
+      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C3')
     })
 
     it('should call whitelisted callee address when restriction is activated', async () => {
@@ -3890,7 +3884,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
     })
 
     it('should revert deactivating call action restriction when it is already deactivated', async () => {
-      await expectRevert(controllerProxy.setCallRestriction(false, {from: owner}), 'CO9')
+      await expectRevert(controllerProxy.setCallRestriction(false, {from: owner}), 'C9')
     })
   })
 
@@ -3983,7 +3977,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
     })
 
     it('should revert set pauser address to the same previous address', async () => {
-      await expectRevert(controllerProxy.setPauser(await controllerProxy.pauser(), {from: owner}), 'CO9')
+      await expectRevert(controllerProxy.setPauser(pauser, {from: owner}), 'C9')
     })
 
     it('should revert when pausing the system from address other than pauser', async () => {
@@ -3991,7 +3985,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
     })
 
     it('should revert partially un-pausing an already running paused system', async () => {
-      await expectRevert(controllerProxy.setSystemPartiallyPaused(false, {from: pauser}), 'CO9')
+      await expectRevert(controllerProxy.setSystemPartiallyPaused(false, {from: pauser}), 'C9')
     })
 
     it('should pause system', async () => {
@@ -4005,7 +3999,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
     })
 
     it('should revert partially pausing an already patially paused system', async () => {
-      await expectRevert(controllerProxy.setSystemPartiallyPaused(true, {from: pauser}), 'CO9')
+      await expectRevert(controllerProxy.setSystemPartiallyPaused(true, {from: pauser}), 'C9')
     })
 
     it('should revert opening a vault when system is partially paused', async () => {
@@ -4022,7 +4016,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           data: ZERO_ADDR,
         },
       ]
-      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO4')
+      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C4')
     })
 
     it('should revert depositing collateral when system is partially paused', async () => {
@@ -4041,7 +4035,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         },
       ]
       await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
-      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO4')
+      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C4')
     })
 
     it('should revert minting short otoken when system is partially paused', async () => {
@@ -4070,7 +4064,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         },
       ]
       await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
-      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO4')
+      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C4')
     })
 
     it('should revert withdrawing collateral when system is partially paused', async () => {
@@ -4088,7 +4082,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           data: ZERO_ADDR,
         },
       ]
-      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO4')
+      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C4')
     })
 
     it('should revert burning short otoken when system is partially paused', async () => {
@@ -4106,7 +4100,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         },
       ]
 
-      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO4')
+      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C4')
     })
 
     it('should settle vault when system is partially paused', async () => {
@@ -4267,7 +4261,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
     })
 
     it('should revert fully un-pausing an already running system', async () => {
-      await expectRevert(controllerProxy.setSystemFullyPaused(false, {from: pauser}), 'CO9')
+      await expectRevert(controllerProxy.setSystemFullyPaused(false, {from: pauser}), 'C9')
     })
 
     it('should trigger full pause', async () => {
@@ -4281,7 +4275,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
     })
 
     it('should revert fully pausing an already fully paused system', async () => {
-      await expectRevert(controllerProxy.setSystemFullyPaused(true, {from: pauser}), 'CO9')
+      await expectRevert(controllerProxy.setSystemFullyPaused(true, {from: pauser}), 'C9')
     })
 
     it('should revert opening a vault when system is in full pause state', async () => {
@@ -4317,7 +4311,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         },
       ]
       await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
-      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO5')
+      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C5')
     })
 
     it('should revert minting short otoken when system is in full pause state', async () => {
@@ -4346,7 +4340,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         },
       ]
       await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
-      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO5')
+      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C5')
     })
 
     it('should revert withdrawing collateral when system is in full pause state', async () => {
@@ -4364,7 +4358,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           data: ZERO_ADDR,
         },
       ]
-      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO5')
+      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C5')
     })
 
     it('should revert burning short otoken when system is in full pause state', async () => {
@@ -4382,7 +4376,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         },
       ]
 
-      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO5')
+      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C5')
     })
 
     it('should revert settling vault when system is in full pause state', async () => {
@@ -4420,7 +4414,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         },
       ]
 
-      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO5')
+      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C5')
     })
 
     it('should revert redeem when system is in full pause state', async () => {
@@ -4441,7 +4435,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         },
       ]
 
-      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO5')
+      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C5')
     })
   })
 

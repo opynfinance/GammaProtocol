@@ -344,7 +344,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     function setPauser(address _pauser) external onlyOwner {
         require(_pauser != address(0), "C10");
-        require(pauser != pauser, "C9");
+        require(_pauser != pauser, "C9");
 
         emit PauserUpdated(pauser, _pauser);
 
