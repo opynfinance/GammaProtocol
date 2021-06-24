@@ -26,15 +26,15 @@
 <text text-anchor="start" x="8" y="-590.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;migrated: bool</text>
 <polyline fill="none" stroke="#000000" points="0,-582.3 857.8704,-582.3 "/>
 <text text-anchor="start" x="8" y="-565.7" font-family="Times,serif" font-size="14.00" fill="#000000">External:</text>
-<text text-anchor="start" x="8" y="-548.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setExpiryPrice(_asset: address, _expiryTimestamp: uint256, _price: uint256)</text>
-<text text-anchor="start" x="8" y="-532.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;migrateOracle(_asset: address, _expiries: uint256[], _prices: uint256[])</text>
+<text text-anchor="start" x="8" y="-548.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;migrateOracle(_asset: address, _expiries: uint256[], _prices: uint256[])</text>
+<text text-anchor="start" x="8" y="-532.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;endMigration()</text>
 <text text-anchor="start" x="8" y="-515.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setAssetPricer(_asset: address, _pricer: address)</text>
 <text text-anchor="start" x="8" y="-498.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setLockingPeriod(_pricer: address, _lockingPeriod: uint256)</text>
 <text text-anchor="start" x="8" y="-481.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setDisputePeriod(_pricer: address, _disputePeriod: uint256)</text>
 <text text-anchor="start" x="8" y="-464.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setDisputer(_disputer: address)</text>
 <text text-anchor="start" x="8" y="-448.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setStablePrice(_asset: address, _price: uint256)</text>
 <text text-anchor="start" x="8" y="-431.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;disputeExpiryPrice(_asset: address, _expiryTimestamp: uint256, _price: uint256)</text>
-<text text-anchor="start" x="8" y="-414.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;endMigration()</text>
+<text text-anchor="start" x="8" y="-414.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;setExpiryPrice(_asset: address, _expiryTimestamp: uint256, _price: uint256)</text>
 <text text-anchor="start" x="8" y="-397.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getPrice(_asset: address): uint256</text>
 <text text-anchor="start" x="8" y="-380.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getExpiryPrice(_asset: address, _expiryTimestamp: uint256): (uint256, bool)</text>
 <text text-anchor="start" x="8" y="-364.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;getPricer(_asset: address): address</text>
