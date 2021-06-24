@@ -9,6 +9,10 @@ import {MarginVault} from "./MarginVault.sol";
  * @title Actions
  * @author Opyn Team
  * @notice A library that provides a ActionArgs struct, sub types of Action structs, and functions to parse ActionArgs into specific Actions.
+ * errorCode
+ * A01 can only parse arguments for open vault actions
+ * A02 cannot open vault for an invalid account
+ * A03 cannot open vault with an invalid type
  */
 library Actions {
     // possible actions that can be performed
