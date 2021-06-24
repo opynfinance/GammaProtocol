@@ -508,6 +508,19 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /**
      * @dev return if an expired oToken is ready to be settled, only true when price for underlying,
      * strike and collateral assets at this specific expiry is available in our Oracle module
+     * @param _otoken oToken
+     */
+    function isSettlementAllowed(address _otoken) public view returns (bool) {
+        OtokenInterface otoken = OtokenInterface(_otoken);
+        address underlying = otoken.underlyingAsset();
+        address strike = otoken.strikeAsset();
+        address collateral = otoken.collateralAsset();
+        uint256 expiry = otoken.expiryTimestamp();
+        _isSettlementAllowed(underlying, strike, collateral, expiry);
+    }
+
+    /**
+     * @dev return if an expired oToken is ready to be settled
      * @param _underlying oToken underlying asset
      * @param _strike oToken strike asset
      * @param _collateral oToken collateral asset
@@ -520,11 +533,24 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         address _collateral,
         uint256 _expiry
     ) public view returns (bool) {
-        bool isUnderlyingFinalized = oracle.isDisputePeriodOver(_underlying, _expiry);
-        bool isStrikeFinalized = oracle.isDisputePeriodOver(_strike, _expiry);
-        bool isCollateralFinalized = oracle.isDisputePeriodOver(_collateral, _expiry);
+        return _isSettlementAllowed(_underlying, _strike, _collateral, _expiry);
+    }
 
-        return isUnderlyingFinalized && isStrikeFinalized && isCollateralFinalized;
+    /**
+     * @dev return if an expired oToken is ready to be settled, only true when price for underlying,
+     * strike and collateral assets at this specific expiry is available in our Oracle module
+     * @return True if the oToken has expired AND all oracle prices at the expiry timestamp have been finalized, False if not
+     */
+    function _isSettlementAllowed(
+        address _underlying,
+        address _strike,
+        address _collateral,
+        uint256 _expiry
+    ) internal view returns (bool) {
+        return
+            oracle.isDisputePeriodOver(_underlying, _expiry) &&
+            oracle.isDisputePeriodOver(_strike, _expiry) &&
+            oracle.isDisputePeriodOver(_collateral, _expiry);
     }
 
     /**
@@ -921,6 +947,9 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         emit VaultSettled(_args.owner, address(otoken), payoutRecipient, payout, vaultId, typeVault);
     }
 
+    /**
+     * @dev get otoken detail, from both otoken versions
+     */
     function _getOTokenDetail(address _otoken)
         internal
         view
