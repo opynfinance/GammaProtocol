@@ -326,7 +326,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
     /**
      * @notice allows the partialPauser to toggle the systemPartiallyPaused variable and partially pause or partially unpause the system
-     * @dev can only be called by the pauser
+     * @dev can only be called by the partialPauser
      * @param _partiallyPaused new boolean value to set systemPartiallyPaused to
      */
     function setSystemPartiallyPaused(bool _partiallyPaused) external onlyPartialPauser {
@@ -339,7 +339,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
     /**
      * @notice allows the fullPauser to toggle the systemFullyPaused variable and fully pause or fully unpause the system
-     * @dev can only be called by the pauser
+     * @dev can only be called by the fullyPauser
      * @param _fullyPaused new boolean value to set systemFullyPaused to
      */
     function setSystemFullyPaused(bool _fullyPaused) external onlyFullPauser {
