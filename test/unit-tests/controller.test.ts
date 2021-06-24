@@ -255,10 +255,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         },
       ]
 
-      await expectRevert(
-        controllerProxy.operate(actionArgs, {from: accountOwner1}),
-        'Actions: cannot open vault with an invalid type',
-      )
+      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'A3')
     })
 
     it('should revert opening multiple vaults for different owners in the same operate call', async () => {
@@ -2799,10 +2796,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
 
       assert.equal(await controllerProxy.hasExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
 
-      await expectRevert(
-        controllerProxy.operate(actionArgs, {from: holder1}),
-        'Actions: cannot redeem to an invalid account',
-      )
+      await expectRevert(controllerProxy.operate(actionArgs, {from: holder1}), 'A14')
     })
 
     it('should redeem after expiry + price is finalized', async () => {
