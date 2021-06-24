@@ -70,7 +70,7 @@ library MarginVault {
         } else {
             require((_index < _vault.shortOtokens.length) && (_index < _vault.shortAmounts.length), "V2");
             address existingShort = _vault.shortOtokens[_index];
-            require((existingShort == _shortOtoken) || (existingShort == address(0)), "v3");
+            require((existingShort == _shortOtoken) || (existingShort == address(0)), "V3");
 
             _vault.shortAmounts[_index] = _vault.shortAmounts[_index].add(_amount);
             _vault.shortOtokens[_index] = _shortOtoken;
