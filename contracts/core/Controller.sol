@@ -69,11 +69,11 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     using MarginVault for MarginVault.Vault;
     using SafeMath for uint256;
 
-    AddressBookInterface public addressbook;
-    WhitelistInterface public whitelist;
-    OracleInterface public oracle;
-    MarginCalculatorInterface public calculator;
-    MarginPoolInterface public pool;
+    AddressBookInterface private addressbook;
+    WhitelistInterface private whitelist;
+    OracleInterface private oracle;
+    MarginCalculatorInterface private calculator;
+    MarginPoolInterface private pool;
 
     ///@dev scale used in MarginCalculator
     uint256 internal constant BASE = 8;
