@@ -21,7 +21,7 @@ import {CalleeInterface} from "../interfaces/CalleeInterface.sol";
 
 /**
  * Controller Error Codes
- * CO10: sender is not fullPauser
+ * COA: sender is not fullPauser
  * CO2: sender is not partialPauser
  * CO3: callee is not a whitelisted address
  * CO34: system is partially paused
@@ -31,11 +31,11 @@ import {CalleeInterface} from "../interfaces/CalleeInterface.sol";
  * C28: invalid owner address
  * CO9: invalid input
  * CO1: fullPauser cannot be set to address zero
- * CO11: partialPauser cannot be set to address zero
- * CO12: can not run actions for different owners
- * CO13: can not run actions on different vaults
- * CO14: invalid final vault state
- * CO15: can not run actions on inexistent vault
+ * COB: partialPauser cannot be set to address zero
+ * COC: can not run actions for different owners
+ * COD: can not run actions on different vaults
+ * COE: invalid final vault state
+ * COF: can not run actions on inexistent vault
  * CO16: cannot deposit long otoken from this address
  * CO17: otoken is not whitelisted to be used as collateral
  * CO18: otoken used as collateral is already expired
@@ -243,7 +243,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @notice modifier to check if the sender is the partialPauser address
      */
     modifier onlyPartialPauser {
-        require(msg.sender == partialPauser, "10");
+        require(msg.sender == partialPauser, "A");
 
         _;
     }
@@ -370,7 +370,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _partialPauser new partialPauser address
      */
     function setPartialPauser(address _partialPauser) external onlyOwner {
-        require(_partialPauser != address(0), "1");
+        require(_partialPauser != address(0), "10");
         require(partialPauser != _partialPauser, "8");
 
         emit PartialPauserUpdated(partialPauser, _partialPauser);
@@ -632,8 +632,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             ) {
                 // check if this action is manipulating the same vault as all other actions, if a vault has already been updated
                 if (vaultUpdated) {
-                    require(vaultOwner == action.owner, "11");
-                    require(vaultId == action.vaultId, "12");
+                    require(vaultOwner == action.owner, "B");
+                    require(vaultId == action.vaultId, "C");
                 }
                 vaultUpdated = true;
                 vaultId = action.vaultId;
@@ -677,7 +677,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         (MarginVault.Vault memory vault, uint256 typeVault, ) = getVaultWithDetails(_owner, _vaultId);
         (, bool isValidVault) = calculator.getExcessCollateral(vault, typeVault);
 
-        require(isValidVault, "13");
+        require(isValidVault, "D");
     }
 
     /**
@@ -692,7 +692,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     {
         uint256 vaultId = accountVaultCounter[_args.owner].add(1);
 
-        require(_args.vaultId == vaultId, "14");
+        require(_args.vaultId == vaultId, "E");
 
         // store new vault
         accountVaultCounter[_args.owner] = vaultId;
@@ -713,7 +713,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     {
         require(_checkVaultId(_args.owner, _args.vaultId), "4");
         // only allow vault owner or vault operator to deposit long otoken
-        require((_args.from == msg.sender) || (_args.from == _args.owner), "15");
+        require((_args.from == msg.sender) || (_args.from == _args.owner), "F");
 
         require(whitelist.isWhitelistedOtoken(_args.asset), "16");
 
