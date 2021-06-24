@@ -21,43 +21,43 @@ import {CalleeInterface} from "../interfaces/CalleeInterface.sol";
 
 /**
  * Controller Error Codes
- * CO1: sender is not fullPauser
- * CO2: sender is not partialPauser
- * CO3: callee is not a whitelisted address
- * CO4: system is partially paused
- * CO5: system is fully paused
- * CO6: msg.sender is not authorized to run action
- * CO7: invalid addressbook address
- * CO8: invalid owner address
- * CO9: invalid input
- * CO10: fullPauser cannot be set to address zero
- * CO11: partialPauser cannot be set to address zero
- * CO12: can not run actions for different owners
- * CO13: can not run actions on different vaults
- * CO14: invalid final vault state
- * CO15: can not run actions on inexistent vault
- * CO16: cannot deposit long otoken from this address
- * CO17: otoken is not whitelisted to be used as collateral
- * CO18: otoken used as collateral is already expired
- * CO19: can not withdraw an expired otoken
- * CO20: cannot deposit collateral from this address
- * CO21: asset is not whitelisted to be used as collateral
- * CO22: can not withdraw collateral from a vault with an expired short otoken
- * CO23: otoken is not whitelisted to be minted
- * CO24: can not mint expired otoken
- * CO25: cannot burn from this address
- * CO26: can not burn expired otoken
- * CO27: otoken is not whitelisted to be redeemed
- * CO28: can not redeem un-expired otoken
- * CO29: asset prices not finalized yet
- * CO30: can't settle vault with no otoken
- * CO31: can not settle vault with un-expired otoken
- * CO32: can not settle undercollateralized vault
- * CO33: can not liquidate vault
- * CO34: can not leave less than collateral dust
- * CO35: invalid vault id
- * CO36: cap amount should be greater than zero
- * CO37: collateral exceed naked margin cap
+ * C1: sender is not full pauser
+ * C2: sender is not partial pauser
+ * C3: callee is not a whitelisted address
+ * C4: system is partially paused
+ * C5: system is fully paused
+ * C6: msg.sender is not authorized to run action
+ * C7: invalid addressbook address
+ * C8: invalid owner address
+ * C9: invalid input
+ * C10: fullPauser cannot be set to address zero
+ * C11: partialPauser cannot be set to address zero
+ * C12: can not run actions for different owners
+ * C13: can not run actions on different vaults
+ * C14: invalid final vault state
+ * C15: can not run actions on inexistent vault
+ * C16: cannot deposit long otoken from this address
+ * C17: otoken is not whitelisted to be used as collateral
+ * C18: otoken used as collateral is already expired
+ * C19: can not withdraw an expired otoken
+ * C20: cannot deposit collateral from this address
+ * C21: asset is not whitelisted to be used as collateral
+ * C22: can not withdraw collateral from a vault with an expired short otoken
+ * C23: otoken is not whitelisted to be minted
+ * C24: can not mint expired otoken
+ * C25: cannot burn from this address
+ * C26: can not burn expired otoken
+ * C27: otoken is not whitelisted to be redeemed
+ * C28: can not redeem un-expired otoken
+ * C29: asset prices not finalized yet
+ * C30: can't settle vault with no otoken
+ * C31: can not settle vault with un-expired otoken
+ * C32: can not settle undercollateralized vault
+ * C33: can not liquidate vault
+ * C34: can not leave less than collateral dust
+ * C35: invalid vault id
+ * C36: cap amount should be greater than zero
+ * C37: collateral exceed naked margin cap
  */
 
 /**
@@ -234,7 +234,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @notice modifier to check if sender is the fullPauser address
      */
     modifier onlyFullPauser {
-        require(msg.sender == fullPauser, "CO1");
+        require(msg.sender == fullPauser, "C1");
 
         _;
     }
@@ -243,7 +243,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @notice modifier to check if the sender is the partialPauser address
      */
     modifier onlyPartialPauser {
-        require(msg.sender == partialPauser, "CO2");
+        require(msg.sender == partialPauser, "C2");
 
         _;
     }
@@ -265,7 +265,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     modifier onlyWhitelistedCallee(address _callee) {
         if (callRestricted) {
-            require(_isCalleeWhitelisted(_callee), "CO3");
+            require(_isCalleeWhitelisted(_callee), "C3");
         }
 
         _;
@@ -275,14 +275,14 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev check if the system is not in a partiallyPaused state
      */
     function _isNotPartiallyPaused() internal view {
-        require(!systemPartiallyPaused, "CO4");
+        require(!systemPartiallyPaused, "C4");
     }
 
     /**
      * @dev check if the system is not in an fullyPaused state
      */
     function _isNotFullyPaused() internal view {
-        require(!systemFullyPaused, "CO5");
+        require(!systemFullyPaused, "C5");
     }
 
     /**
@@ -291,7 +291,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _accountOwner owner of a vault
      */
     function _isAuthorized(address _sender, address _accountOwner) internal view {
-        require((_sender == _accountOwner) || (operators[_accountOwner][_sender]), "CO6");
+        require((_sender == _accountOwner) || (operators[_accountOwner][_sender]), "C6");
     }
 
     /**
@@ -300,8 +300,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _owner account owner address
      */
     function initialize(address _addressBook, address _owner) external initializer {
-        require(_addressBook != address(0), "CO7");
-        require(_owner != address(0), "CO8");
+        require(_addressBook != address(0), "C7");
+        require(_owner != address(0), "C8");
 
         __Ownable_init(_owner);
         __ReentrancyGuard_init_unchained();
@@ -330,7 +330,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _partiallyPaused new boolean value to set systemPartiallyPaused to
      */
     function setSystemPartiallyPaused(bool _partiallyPaused) external onlyPartialPauser {
-        require(systemPartiallyPaused != _partiallyPaused, "CO9");
+        require(systemPartiallyPaused != _partiallyPaused, "C9");
 
         systemPartiallyPaused = _partiallyPaused;
 
@@ -339,11 +339,11 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
     /**
      * @notice allows the fullPauser to toggle the systemFullyPaused variable and fully pause or fully unpause the system
-     * @dev can only be called by the fullPauser
+     * @dev can only be called by the fullyPauser
      * @param _fullyPaused new boolean value to set systemFullyPaused to
      */
     function setSystemFullyPaused(bool _fullyPaused) external onlyFullPauser {
-        require(systemFullyPaused != _fullyPaused, "CO9");
+        require(systemFullyPaused != _fullyPaused, "C9");
 
         systemFullyPaused = _fullyPaused;
 
@@ -356,11 +356,9 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _fullPauser new fullPauser address
      */
     function setFullPauser(address _fullPauser) external onlyOwner {
-        require(_fullPauser != address(0), "CO10");
-        require(fullPauser != _fullPauser, "CO9");
-
+        require(_fullPauser != address(0), "C10");
+        require(fullPauser != _fullPauser, "C9");
         emit FullPauserUpdated(fullPauser, _fullPauser);
-
         fullPauser = _fullPauser;
     }
 
@@ -370,11 +368,9 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _partialPauser new partialPauser address
      */
     function setPartialPauser(address _partialPauser) external onlyOwner {
-        require(_partialPauser != address(0), "CO11");
-        require(partialPauser != _partialPauser, "CO9");
-
+        require(_partialPauser != address(0), "C11");
+        require(partialPauser != _partialPauser, "C9");
         emit PartialPauserUpdated(partialPauser, _partialPauser);
-
         partialPauser = _partialPauser;
     }
 
@@ -385,7 +381,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _isRestricted new call restriction state
      */
     function setCallRestriction(bool _isRestricted) external onlyOwner {
-        require(callRestricted != _isRestricted, "CO9");
+        require(callRestricted != _isRestricted, "C9");
 
         callRestricted = _isRestricted;
 
@@ -399,7 +395,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _isOperator new boolean value that expresses if the sender is giving or revoking privileges for _operator
      */
     function setOperator(address _operator, bool _isOperator) external {
-        require(operators[msg.sender][_operator] != _isOperator, "CO9");
+        require(operators[msg.sender][_operator] != _isOperator, "C9");
 
         operators[msg.sender][_operator] = _isOperator;
 
@@ -420,7 +416,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _cap cap amount, should be scaled by collateral asset decimals
      */
     function setNakedCap(address _collateral, uint256 _cap) external onlyOwner {
-        require(_cap > 0, "CO36");
+        require(_cap > 0, "C36");
 
         nakedCap[_collateral] = _cap;
 
@@ -489,7 +485,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @return amount of collateral that can be taken out
      */
     function getProceed(address _owner, uint256 _vaultId) external view returns (uint256) {
-        (MarginVault.Vault memory vault, uint256 typeVault, ) = getVault(_owner, _vaultId);
+        (MarginVault.Vault memory vault, uint256 typeVault, ) = getVaultWithDetails(_owner, _vaultId);
 
         (uint256 netValue, bool isExcess) = calculator.getExcessCollateral(vault, typeVault);
 
@@ -529,30 +525,34 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @return amount of collateral to pay out
      */
     function getPayout(address _otoken, uint256 _amount) public view returns (uint256) {
-        uint256 rate = calculator.getExpiredPayoutRate(_otoken);
-        return rate.mul(_amount).div(10**BASE);
+        return calculator.getExpiredPayoutRate(_otoken).mul(_amount).div(10**BASE);
     }
 
     /**
      * @dev return if an expired oToken is ready to be settled, only true when price for underlying,
      * strike and collateral assets at this specific expiry is available in our Oracle module
+     * @param _otoken oToken
+     */
+    function isSettlementAllowed(address _otoken) external view returns (bool) {
+        (address underlying, address strike, address collateral, uint256 expiry) = _getOtokenDetails(_otoken);
+        return _canSettleAssets(underlying, strike, collateral, expiry);
+    }
+
+    /**
+     * @dev return if underlying, strike, collateral are all allowed to be settled
      * @param _underlying oToken underlying asset
      * @param _strike oToken strike asset
      * @param _collateral oToken collateral asset
      * @param _expiry otoken expiry timestamp
      * @return True if the oToken has expired AND all oracle prices at the expiry timestamp have been finalized, False if not
      */
-    function isSettlementAllowed(
+    function canSettleAssets(
         address _underlying,
         address _strike,
         address _collateral,
         uint256 _expiry
-    ) public view returns (bool) {
-        bool isUnderlyingFinalized = oracle.isDisputePeriodOver(_underlying, _expiry);
-        bool isStrikeFinalized = oracle.isDisputePeriodOver(_strike, _expiry);
-        bool isCollateralFinalized = oracle.isDisputePeriodOver(_collateral, _expiry);
-
-        return isUnderlyingFinalized && isStrikeFinalized && isCollateralFinalized;
+    ) external view returns (bool) {
+        return _canSettleAssets(_underlying, _strike, _collateral, _expiry);
     }
 
     /**
@@ -570,9 +570,17 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @return True if the otoken has expired, False if not
      */
     function hasExpired(address _otoken) external view returns (bool) {
-        uint256 otokenExpiryTimestamp = OtokenInterface(_otoken).expiryTimestamp();
+        return now >= OtokenInterface(_otoken).expiryTimestamp();
+    }
 
-        return now >= otokenExpiryTimestamp;
+    /**
+     * @notice return a specific vault
+     * @param _owner account owner
+     * @param _vaultId vault id of vault to return
+     * @return Vault struct that corresponds to the _vaultId of _owner
+     */
+    function getVault(address _owner, uint256 _vaultId) external view returns (MarginVault.Vault memory) {
+        return (vaults[_owner][_vaultId]);
     }
 
     /**
@@ -581,7 +589,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _vaultId vault id of vault to return
      * @return Vault struct that corresponds to the _vaultId of _owner, vault type and the latest timestamp when the vault was updated
      */
-    function getVault(address _owner, uint256 _vaultId)
+    function getVaultWithDetails(address _owner, uint256 _vaultId)
         public
         view
         returns (
@@ -591,6 +599,24 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         )
     {
         return (vaults[_owner][_vaultId], vaultType[_owner][_vaultId], vaultLatestUpdate[_owner][_vaultId]);
+    }
+
+    /**
+     * @notice get cap amount for collateral asset
+     * @param _asset collateral asset address
+     * @return cap amount
+     */
+    function getNakedCap(address _asset) external view returns (uint256) {
+        return nakedCap[_asset];
+    }
+
+    /**
+     * @notice get amount of collateral deposited in all naked margin vaults
+     * @param _asset collateral asset address
+     * @return naked pool balance
+     */
+    function getNakedPoolBalance(address _asset) external view returns (uint256) {
+        return nakedPoolBalance[_asset];
     }
 
     /**
@@ -628,8 +654,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             ) {
                 // check if this action is manipulating the same vault as all other actions, if a vault has already been updated
                 if (vaultUpdated) {
-                    require(vaultOwner == action.owner, "CO12");
-                    require(vaultId == action.vaultId, "CO13");
+                    require(vaultOwner == action.owner, "C12");
+                    require(vaultId == action.vaultId, "C13");
                 }
                 vaultUpdated = true;
                 vaultId = action.vaultId;
@@ -670,10 +696,10 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _vaultId vault id of the final vault
      */
     function _verifyFinalState(address _owner, uint256 _vaultId) internal view {
-        (MarginVault.Vault memory vault, uint256 typeVault, ) = getVault(_owner, _vaultId);
+        (MarginVault.Vault memory vault, uint256 typeVault, ) = getVaultWithDetails(_owner, _vaultId);
         (, bool isValidVault) = calculator.getExcessCollateral(vault, typeVault);
 
-        require(isValidVault, "CO14");
+        require(isValidVault, "C14");
     }
 
     /**
@@ -688,7 +714,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     {
         uint256 vaultId = accountVaultCounter[_args.owner].add(1);
 
-        require(_args.vaultId == vaultId, "CO15");
+        require(_args.vaultId == vaultId, "C15");
 
         // store new vault
         accountVaultCounter[_args.owner] = vaultId;
@@ -707,15 +733,15 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         notPartiallyPaused
         onlyAuthorized(msg.sender, _args.owner)
     {
-        require(_checkVaultId(_args.owner, _args.vaultId), "CO35");
+        require(_checkVaultId(_args.owner, _args.vaultId), "C35");
         // only allow vault owner or vault operator to deposit long otoken
-        require((_args.from == msg.sender) || (_args.from == _args.owner), "CO16");
+        require((_args.from == msg.sender) || (_args.from == _args.owner), "C16");
 
-        require(whitelist.isWhitelistedOtoken(_args.asset), "CO17");
+        require(whitelist.isWhitelistedOtoken(_args.asset), "C17");
 
         OtokenInterface otoken = OtokenInterface(_args.asset);
 
-        require(now < otoken.expiryTimestamp(), "CO18");
+        require(now < otoken.expiryTimestamp(), "C18");
 
         vaults[_args.owner][_args.vaultId].addLong(_args.asset, _args.amount, _args.index);
 
@@ -734,11 +760,11 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         notPartiallyPaused
         onlyAuthorized(msg.sender, _args.owner)
     {
-        require(_checkVaultId(_args.owner, _args.vaultId), "CO35");
+        require(_checkVaultId(_args.owner, _args.vaultId), "C35");
 
         OtokenInterface otoken = OtokenInterface(_args.asset);
 
-        require(now < otoken.expiryTimestamp(), "CO19");
+        require(now < otoken.expiryTimestamp(), "C19");
 
         vaults[_args.owner][_args.vaultId].removeLong(_args.asset, _args.amount, _args.index);
 
@@ -757,18 +783,18 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         notPartiallyPaused
         onlyAuthorized(msg.sender, _args.owner)
     {
-        require(_checkVaultId(_args.owner, _args.vaultId), "CO35");
+        require(_checkVaultId(_args.owner, _args.vaultId), "C35");
         // only allow vault owner or vault operator to deposit collateral
-        require((_args.from == msg.sender) || (_args.from == _args.owner), "CO20");
+        require((_args.from == msg.sender) || (_args.from == _args.owner), "C20");
 
-        require(whitelist.isWhitelistedCollateral(_args.asset), "CO21");
+        require(whitelist.isWhitelistedCollateral(_args.asset), "C21");
 
-        (, uint256 typeVault, ) = getVault(_args.owner, _args.vaultId);
+        (, uint256 typeVault, ) = getVaultWithDetails(_args.owner, _args.vaultId);
 
         if (typeVault == 1) {
             nakedPoolBalance[_args.asset] = nakedPoolBalance[_args.asset].add(_args.amount);
 
-            require(nakedPoolBalance[_args.asset] <= nakedCap[_args.asset], "CO37");
+            require(nakedPoolBalance[_args.asset] <= nakedCap[_args.asset], "C37");
         }
 
         vaults[_args.owner][_args.vaultId].addCollateral(_args.asset, _args.amount, _args.index);
@@ -788,14 +814,14 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         notPartiallyPaused
         onlyAuthorized(msg.sender, _args.owner)
     {
-        require(_checkVaultId(_args.owner, _args.vaultId), "CO35");
+        require(_checkVaultId(_args.owner, _args.vaultId), "C35");
 
-        (MarginVault.Vault memory vault, uint256 typeVault, ) = getVault(_args.owner, _args.vaultId);
+        (MarginVault.Vault memory vault, uint256 typeVault, ) = getVaultWithDetails(_args.owner, _args.vaultId);
 
         if (_isNotEmpty(vault.shortOtokens)) {
             OtokenInterface otoken = OtokenInterface(vault.shortOtokens[0]);
 
-            require(now < otoken.expiryTimestamp(), "CO22");
+            require(now < otoken.expiryTimestamp(), "C22");
         }
 
         if (typeVault == 1) {
@@ -819,12 +845,12 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         notPartiallyPaused
         onlyAuthorized(msg.sender, _args.owner)
     {
-        require(_checkVaultId(_args.owner, _args.vaultId), "CO35");
-        require(whitelist.isWhitelistedOtoken(_args.otoken), "CO23");
+        require(_checkVaultId(_args.owner, _args.vaultId), "C35");
+        require(whitelist.isWhitelistedOtoken(_args.otoken), "C23");
 
         OtokenInterface otoken = OtokenInterface(_args.otoken);
 
-        require(now < otoken.expiryTimestamp(), "CO24");
+        require(now < otoken.expiryTimestamp(), "C24");
 
         vaults[_args.owner][_args.vaultId].addShort(_args.otoken, _args.amount, _args.index);
 
@@ -844,14 +870,14 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         onlyAuthorized(msg.sender, _args.owner)
     {
         // check that vault id is valid for this vault owner
-        require(_checkVaultId(_args.owner, _args.vaultId), "CO35");
+        require(_checkVaultId(_args.owner, _args.vaultId), "C35");
         // only allow vault owner or vault operator to burn otoken
-        require((_args.from == msg.sender) || (_args.from == _args.owner), "CO25");
+        require((_args.from == msg.sender) || (_args.from == _args.owner), "C25");
 
         OtokenInterface otoken = OtokenInterface(_args.otoken);
 
         // do not allow burning expired otoken
-        require(now < otoken.expiryTimestamp(), "CO26");
+        require(now < otoken.expiryTimestamp(), "C26");
 
         // remove otoken from vault
         vaults[_args.owner][_args.vaultId].removeShort(_args.otoken, _args.amount, _args.index);
@@ -871,14 +897,14 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         OtokenInterface otoken = OtokenInterface(_args.otoken);
 
         // check that otoken to redeem is whitelisted
-        require(whitelist.isWhitelistedOtoken(_args.otoken), "CO27");
+        require(whitelist.isWhitelistedOtoken(_args.otoken), "C27");
 
-        (address collateral, address underlying, address strike, , uint256 expiry, ) = otoken.getOtokenDetails();
+        (address collateral, address underlying, address strike, uint256 expiry) = _getOtokenDetails(address(otoken));
 
         // only allow redeeming expired otoken
-        require(now >= expiry, "CO28");
+        require(now >= expiry, "C28");
 
-        require(isSettlementAllowed(underlying, strike, collateral, expiry), "CO29");
+        require(_canSettleAssets(underlying, strike, collateral, expiry), "C29");
 
         uint256 payout = getPayout(_args.otoken, _args.amount);
 
@@ -895,9 +921,9 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _args SettleVaultArgs structure
      */
     function _settleVault(Actions.SettleVaultArgs memory _args) internal onlyAuthorized(msg.sender, _args.owner) {
-        require(_checkVaultId(_args.owner, _args.vaultId), "CO35");
+        require(_checkVaultId(_args.owner, _args.vaultId), "C35");
 
-        (MarginVault.Vault memory vault, uint256 typeVault, ) = getVault(_args.owner, _args.vaultId);
+        (MarginVault.Vault memory vault, uint256 typeVault, ) = getVaultWithDetails(_args.owner, _args.vaultId);
 
         OtokenInterface otoken;
 
@@ -910,7 +936,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             bool hasShort = _isNotEmpty(vault.shortOtokens);
             bool hasLong = _isNotEmpty(vault.longOtokens);
 
-            require(hasShort || hasLong, "CO30");
+            require(hasShort || hasLong, "C30");
 
             otoken = hasShort ? OtokenInterface(vault.shortOtokens[0]) : OtokenInterface(vault.longOtokens[0]);
 
@@ -921,17 +947,17 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             }
         }
 
-        (address collateral, address underlying, address strike, , uint256 expiry, ) = otoken.getOtokenDetails();
+        (address collateral, address underlying, address strike, uint256 expiry) = _getOtokenDetails(address(otoken));
 
         // do not allow settling vault with un-expired otoken
-        require(now >= expiry, "CO31");
-        require(isSettlementAllowed(underlying, strike, collateral, expiry), "CO29");
+        require(now >= expiry, "C31");
+        require(_canSettleAssets(underlying, strike, collateral, expiry), "C29");
 
         (uint256 payout, bool isValidVault) = calculator.getExcessCollateral(vault, typeVault);
 
         // require that vault is valid (has excess collateral) before settling
         // to avoid allowing settling undercollateralized naked margin vault
-        require(isValidVault, "CO32");
+        require(isValidVault, "C32");
 
         delete vaults[_args.owner][_args.vaultId];
 
@@ -953,7 +979,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _args liquidation action arguments struct
      */
     function _liquidate(Actions.LiquidateArgs memory _args) internal notPartiallyPaused {
-        require(_checkVaultId(_args.owner, _args.vaultId), "CO35");
+        require(_checkVaultId(_args.owner, _args.vaultId), "C35");
 
         // check if vault is undercollateralized
         // the price is the amount of collateral asset to pay per 1 repaid debt(otoken)
@@ -964,7 +990,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             _args.roundId
         );
 
-        require(isUnderCollat, "CO33");
+        require(isUnderCollat, "C33");
 
         // amount of collateral to offer to liquidator
         uint256 collateralToSell = _args.amount.mul(price).div(1e8);
@@ -972,7 +998,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         // if vault is partially liquidated (amount of short otoken is still greater than zero)
         // make sure remaining collateral amount is greater than dust amount
         if (vault.shortAmounts[0].sub(_args.amount) > 0) {
-            require(vault.collateralAmounts[0].sub(collateralToSell) >= collateralDust, "CO34");
+            require(vault.collateralAmounts[0].sub(collateralToSell) >= collateralDust, "C34");
         }
 
         // burn short otoken from liquidator address, index of short otoken hardcoded at 0
@@ -1057,7 +1083,10 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             uint256
         )
     {
-        (MarginVault.Vault memory vault, uint256 typeVault, uint256 latestUpdateTimestamp) = getVault(_owner, _vaultId);
+        (MarginVault.Vault memory vault, uint256 typeVault, uint256 latestUpdateTimestamp) = getVaultWithDetails(
+            _owner,
+            _vaultId
+        );
         (bool isUnderCollat, uint256 price, uint256 collateralDust) = calculator.isLiquidatable(
             vault,
             typeVault,
@@ -1069,21 +1098,48 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
-     * @notice get cap amount for collateral asset
-     * @param _asset collateral asset address
-     * @return cap amount
+     * @dev get otoken detail, from both otoken versions
      */
-    function getNakedCap(address _asset) external view returns (uint256) {
-        return nakedCap[_asset];
+    function _getOtokenDetails(address _otoken)
+        internal
+        view
+        returns (
+            address,
+            address,
+            address,
+            uint256
+        )
+    {
+        OtokenInterface otoken = OtokenInterface(_otoken);
+        try otoken.getOtokenDetails() returns (
+            address collateral,
+            address underlying,
+            address strike,
+            uint256,
+            uint256 expiry,
+            bool
+        ) {
+            return (collateral, underlying, strike, expiry);
+        } catch {
+            return (otoken.collateralAsset(), otoken.underlyingAsset(), otoken.strikeAsset(), otoken.expiryTimestamp());
+        }
     }
 
     /**
-     * @notice get amount of collateral deposited in all naked margin vaults
-     * @param _asset collateral asset address
-     * @return naked pool balance
+     * @dev return if an expired oToken is ready to be settled, only true when price for underlying,
+     * strike and collateral assets at this specific expiry is available in our Oracle module
+     * @return True if the oToken has expired AND all oracle prices at the expiry timestamp have been finalized, False if not
      */
-    function getNakedPoolBalance(address _asset) external view returns (uint256) {
-        return nakedPoolBalance[_asset];
+    function _canSettleAssets(
+        address _underlying,
+        address _strike,
+        address _collateral,
+        uint256 _expiry
+    ) internal view returns (bool) {
+        return
+            oracle.isDisputePeriodOver(_underlying, _expiry) &&
+            oracle.isDisputePeriodOver(_strike, _expiry) &&
+            oracle.isDisputePeriodOver(_collateral, _expiry);
     }
 
     /**

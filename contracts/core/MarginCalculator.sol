@@ -364,8 +364,6 @@ contract MarginCalculator is Ownable {
     function getExpiredPayoutRate(address _otoken) external view returns (uint256) {
         require(_otoken != address(0), "MarginCalculator: Invalid token address");
 
-        OtokenInterface otoken = OtokenInterface(_otoken);
-
         (
             address collateral,
             address underlying,
@@ -373,7 +371,7 @@ contract MarginCalculator is Ownable {
             uint256 strikePrice,
             uint256 expiry,
             bool isPut
-        ) = otoken.getOtokenDetails();
+        ) = _getOtokenDetails(_otoken);
 
         require(now >= expiry, "MarginCalculator: Otoken not expired yet");
 
@@ -1072,7 +1070,7 @@ contract MarginCalculator is Ownable {
                 vaultDetails.longStrikePrice,
                 vaultDetails.longExpiryTimestamp,
                 vaultDetails.isLongPut
-            ) = long.getOtokenDetails();
+            ) = _getOtokenDetails(address(long));
             vaultDetails.longCollateralDecimals = uint256(ERC20Interface(vaultDetails.longCollateralAsset).decimals());
         }
 
@@ -1086,7 +1084,7 @@ contract MarginCalculator is Ownable {
                 vaultDetails.shortStrikePrice,
                 vaultDetails.shortExpiryTimestamp,
                 vaultDetails.isShortPut
-            ) = short.getOtokenDetails();
+            ) = _getOtokenDetails(address(short));
             vaultDetails.shortCollateralDecimals = uint256(
                 ERC20Interface(vaultDetails.shortCollateralAsset).decimals()
             );
@@ -1248,5 +1246,43 @@ contract MarginCalculator is Ownable {
         if (_isPut) return _strikePrice.isGreaterThan(_underlyingPrice) ? _strikePrice.sub(_underlyingPrice) : ZERO;
 
         return _underlyingPrice.isGreaterThan(_strikePrice) ? _underlyingPrice.sub(_strikePrice) : ZERO;
+    }
+
+    /**
+     * @dev get otoken detail, from both otoken versions
+     */
+    function _getOtokenDetails(address _otoken)
+        internal
+        view
+        returns (
+            address,
+            address,
+            address,
+            uint256,
+            uint256,
+            bool
+        )
+    {
+        OtokenInterface otoken = OtokenInterface(_otoken);
+        try otoken.getOtokenDetails() returns (
+            address collateral,
+            address underlying,
+            address strike,
+            uint256 strikePrice,
+            uint256 expiry,
+            bool isPut
+        ) {
+            return (collateral, underlying, strike, strikePrice, expiry, isPut);
+        } catch {
+            // v1 otoken
+            return (
+                otoken.collateralAsset(),
+                otoken.underlyingAsset(),
+                otoken.strikeAsset(),
+                otoken.strikePrice(),
+                otoken.expiryTimestamp(),
+                otoken.isPut()
+            );
+        }
     }
 }
