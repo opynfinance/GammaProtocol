@@ -533,7 +533,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * strike and collateral assets at this specific expiry is available in our Oracle module
      * @param _otoken oToken
      */
-    function isSettlementAllowed(address _otoken) public view returns (bool) {
+    function isSettlementAllowed(address _otoken) external view returns (bool) {
         (address underlying, address strike, address collateral, uint256 expiry) = _getOTokenDetail(_otoken);
         return _canSettleAssets(underlying, strike, collateral, expiry);
     }
@@ -553,23 +553,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         uint256 _expiry
     ) external view returns (bool) {
         return _canSettleAssets(_underlying, _strike, _collateral, _expiry);
-    }
-
-    /**
-     * @dev return if an expired oToken is ready to be settled, only true when price for underlying,
-     * strike and collateral assets at this specific expiry is available in our Oracle module
-     * @return True if the oToken has expired AND all oracle prices at the expiry timestamp have been finalized, False if not
-     */
-    function _canSettleAssets(
-        address _underlying,
-        address _strike,
-        address _collateral,
-        uint256 _expiry
-    ) internal view returns (bool) {
-        return
-            oracle.isDisputePeriodOver(_underlying, _expiry) &&
-            oracle.isDisputePeriodOver(_strike, _expiry) &&
-            oracle.isDisputePeriodOver(_collateral, _expiry);
     }
 
     /**
@@ -594,6 +577,16 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @notice return a specific vault
      * @param _owner account owner
      * @param _vaultId vault id of vault to return
+     * @return Vault struct that corresponds to the _vaultId of _owner
+     */
+    function getVault(address _owner, uint256 _vaultId) external view returns (MarginVault.Vault memory) {
+        return (vaults[_owner][_vaultId]);
+    }
+
+    /**
+     * @notice return a specific vault
+     * @param _owner account owner
+     * @param _vaultId vault id of vault to return
      * @return Vault struct that corresponds to the _vaultId of _owner, vault type and the latest timestamp when the vault was updated
      */
     function getVaultWithDetails(address _owner, uint256 _vaultId)
@@ -608,8 +601,22 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         return (vaults[_owner][_vaultId], vaultType[_owner][_vaultId], vaultLatestUpdate[_owner][_vaultId]);
     }
 
-    function getVault(address _owner, uint256 _vaultId) public view returns (MarginVault.Vault memory) {
-        return (vaults[_owner][_vaultId]);
+    /**
+     * @notice get cap amount for collateral asset
+     * @param _asset collateral asset address
+     * @return cap amount
+     */
+    function getNakedCap(address _asset) external view returns (uint256) {
+        return nakedCap[_asset];
+    }
+
+    /**
+     * @notice get amount of collateral deposited in all naked margin vaults
+     * @param _asset collateral asset address
+     * @return naked pool balance
+     */
+    function getNakedPoolBalance(address _asset) external view returns (uint256) {
+        return nakedPoolBalance[_asset];
     }
 
     /**
@@ -967,34 +974,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
-     * @dev get otoken detail, from both otoken versions
-     */
-    function _getOTokenDetail(address _otoken)
-        internal
-        view
-        returns (
-            address,
-            address,
-            address,
-            uint256
-        )
-    {
-        OtokenInterface otoken = OtokenInterface(_otoken);
-        try otoken.getOtokenDetails() returns (
-            address collateral,
-            address underlying,
-            address strike,
-            uint256,
-            uint256 expiry,
-            bool
-        ) {
-            return (collateral, underlying, strike, expiry);
-        } catch {
-            return (otoken.collateralAsset(), otoken.underlyingAsset(), otoken.strikeAsset(), otoken.expiryTimestamp());
-        }
-    }
-
-    /**
      * @notice liquidate naked margin vault
      * @dev can liquidate different vaults id in the same operate() call
      * @param _args liquidation action arguments struct
@@ -1119,21 +1098,48 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
-     * @notice get cap amount for collateral asset
-     * @param _asset collateral asset address
-     * @return cap amount
+     * @dev get otoken detail, from both otoken versions
      */
-    function getNakedCap(address _asset) external view returns (uint256) {
-        return nakedCap[_asset];
+    function _getOTokenDetail(address _otoken)
+        internal
+        view
+        returns (
+            address,
+            address,
+            address,
+            uint256
+        )
+    {
+        OtokenInterface otoken = OtokenInterface(_otoken);
+        try otoken.getOtokenDetails() returns (
+            address collateral,
+            address underlying,
+            address strike,
+            uint256,
+            uint256 expiry,
+            bool
+        ) {
+            return (collateral, underlying, strike, expiry);
+        } catch {
+            return (otoken.collateralAsset(), otoken.underlyingAsset(), otoken.strikeAsset(), otoken.expiryTimestamp());
+        }
     }
 
     /**
-     * @notice get amount of collateral deposited in all naked margin vaults
-     * @param _asset collateral asset address
-     * @return naked pool balance
+     * @dev return if an expired oToken is ready to be settled, only true when price for underlying,
+     * strike and collateral assets at this specific expiry is available in our Oracle module
+     * @return True if the oToken has expired AND all oracle prices at the expiry timestamp have been finalized, False if not
      */
-    function getNakedPoolBalance(address _asset) external view returns (uint256) {
-        return nakedPoolBalance[_asset];
+    function _canSettleAssets(
+        address _underlying,
+        address _strike,
+        address _collateral,
+        uint256 _expiry
+    ) internal view returns (bool) {
+        return
+            oracle.isDisputePeriodOver(_underlying, _expiry) &&
+            oracle.isDisputePeriodOver(_strike, _expiry) &&
+            oracle.isDisputePeriodOver(_collateral, _expiry);
     }
 
     /**
