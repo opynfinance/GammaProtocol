@@ -9,6 +9,7 @@ import {
   ControllerInstance,
   AddressBookInstance,
   OwnedUpgradeabilityProxyInstance,
+  OtokenImplV1Instance,
 } from '../../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 import {createTokenAmount, createScaledNumber} from '../utils'
@@ -17,6 +18,7 @@ const {expectRevert, expectEvent, time} = require('@openzeppelin/test-helpers')
 
 const CallTester = artifacts.require('CallTester.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
+const OtokenImplV1 = artifacts.require('OtokenImplV1.sol')
 const MockOtoken = artifacts.require('MockOtoken.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy.sol')
@@ -3942,6 +3944,136 @@ contract(
           timestampBefore.toNumber(),
           'Vault latest update timestamp did not sync',
         )
+      })
+    })
+
+    describe('Interact with Otoken implementation v1.0.0', () => {
+      let shortOtokenV1: OtokenImplV1Instance
+
+      before(async () => {
+        const expiryTime = new BigNumber(60 * 60 * 24) // after 1 day
+
+        shortOtokenV1 = await OtokenImplV1.new()
+        // init otoken
+        await shortOtokenV1.init(
+          addressBook.address,
+          weth.address,
+          usdc.address,
+          usdc.address,
+          createTokenAmount(200),
+          new BigNumber(await time.latest()).plus(expiryTime),
+          true,
+        )
+        // whitelist otoken to be used in the protocol
+        await whitelist.whitelistOtoken(shortOtokenV1.address, {from: owner})
+        // open new vault, mint naked short, sell it to holder 1
+        const collateralToDespoit = new BigNumber(await shortOtokenV1.strikePrice()).dividedBy(100)
+        const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
+        const amountToMint = createTokenAmount(1)
+        const actionArgs = [
+          {
+            actionType: ActionType.OpenVault,
+            owner: accountOwner1,
+            secondAddress: accountOwner1,
+            asset: ZERO_ADDR,
+            vaultId: vaultCounter.toNumber(),
+            amount: '0',
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.DepositCollateral,
+            owner: accountOwner1,
+            secondAddress: accountOwner1,
+            asset: usdc.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: collateralToDespoit.toNumber(),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+          {
+            actionType: ActionType.MintShortOption,
+            owner: accountOwner1,
+            secondAddress: accountOwner1,
+            asset: shortOtokenV1.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: amountToMint,
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+        await usdc.approve(marginPool.address, collateralToDespoit, {from: accountOwner1})
+        await controllerProxy.operate(actionArgs, {from: accountOwner1})
+
+        //transfer to holder
+        await shortOtokenV1.transfer(holder1, amountToMint, {from: accountOwner1})
+      })
+
+      it('should settle v1 Otoken implementation', async () => {
+        // past time after expiry
+        await time.increase(60 * 61 * 24) // increase time with one hour in seconds
+
+        const expiry = new BigNumber(await shortOtokenV1.expiryTimestamp())
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(150), true)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1), true)
+        const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
+        const actionArgs = [
+          {
+            actionType: ActionType.SettleVault,
+            owner: accountOwner1,
+            secondAddress: accountOwner1,
+            asset: shortOtokenV1.address,
+            vaultId: vaultCounter.toNumber(),
+            amount: '0',
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        const payout = createTokenAmount(150, usdcDecimals)
+        const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
+        const proceed = await controllerProxy.getProceed(accountOwner1, vaultCounter)
+
+        assert.equal(payout, proceed.toString())
+
+        await controllerProxy.operate(actionArgs, {from: accountOwner1})
+
+        const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
+        const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
+
+        assert.equal(
+          marginPoolBalanceBefore.minus(marginPoolBalanceAfter).toString(),
+          payout.toString(),
+          'Margin pool collateral asset balance mismatch',
+        )
+        assert.equal(
+          senderBalanceAfter.minus(senderBalanceBefore).toString(),
+          payout.toString(),
+          'Sender collateral asset balance mismatch',
+        )
+      })
+
+      it('should redeem v1 Otoken implementation', async () => {
+        const redeemArgs = [
+          {
+            actionType: ActionType.Redeem,
+            owner: ZERO_ADDR,
+            secondAddress: holder1,
+            asset: shortOtokenV1.address,
+            vaultId: '0',
+            amount: createTokenAmount(1),
+            index: '0',
+            data: ZERO_ADDR,
+          },
+        ]
+
+        const expectedPayout = createTokenAmount(50, usdcDecimals)
+
+        const userBalanceBefore = new BigNumber(await usdc.balanceOf(holder1))
+        await controllerProxy.operate(redeemArgs, {from: holder1})
+        const userBalanceAfter = new BigNumber(await usdc.balanceOf(holder1))
+        assert.equal(userBalanceAfter.minus(userBalanceBefore).toString(), expectedPayout)
       })
     })
 
