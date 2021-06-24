@@ -234,7 +234,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @notice modifier to check if sender is the fullPauser address
      */
     modifier onlyFullPauser {
-        require(msg.sender == fullPauser, "1");
+        require(msg.sender == fullPauser, "0");
 
         _;
     }
@@ -243,7 +243,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @notice modifier to check if the sender is the partialPauser address
      */
     modifier onlyPartialPauser {
-        require(msg.sender == partialPauser, "2");
+        require(msg.sender == partialPauser, "1");
 
         _;
     }
@@ -265,7 +265,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     modifier onlyWhitelistedCallee(address _callee) {
         if (callRestricted) {
-            require(_isCalleeWhitelisted(_callee), "3");
+            require(_isCalleeWhitelisted(_callee), "2");
         }
 
         _;
@@ -275,14 +275,14 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev check if the system is not in a partiallyPaused state
      */
     function _isNotPartiallyPaused() internal view {
-        require(!systemPartiallyPaused, "4");
+        require(!systemPartiallyPaused, "3");
     }
 
     /**
      * @dev check if the system is not in an fullyPaused state
      */
     function _isNotFullyPaused() internal view {
-        require(!systemFullyPaused, "5");
+        require(!systemFullyPaused, "4");
     }
 
     /**
@@ -291,7 +291,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _accountOwner owner of a vault
      */
     function _isAuthorized(address _sender, address _accountOwner) internal view {
-        require((_sender == _accountOwner) || (operators[_accountOwner][_sender]), "6");
+        require((_sender == _accountOwner) || (operators[_accountOwner][_sender]), "5");
     }
 
     /**
@@ -300,8 +300,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _owner account owner address
      */
     function initialize(address _addressBook, address _owner) external initializer {
-        require(_addressBook != address(0), "7");
-        require(_owner != address(0), "8");
+        require(_addressBook != address(0), "6");
+        require(_owner != address(0), "7");
 
         __Ownable_init(_owner);
         __ReentrancyGuard_init_unchained();
@@ -330,7 +330,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _partiallyPaused new boolean value to set systemPartiallyPaused to
      */
     function setSystemPartiallyPaused(bool _partiallyPaused) external onlyPartialPauser {
-        require(systemPartiallyPaused != _partiallyPaused, "9");
+        require(systemPartiallyPaused != _partiallyPaused, "8");
 
         systemPartiallyPaused = _partiallyPaused;
 
@@ -343,7 +343,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _fullyPaused new boolean value to set systemFullyPaused to
      */
     function setSystemFullyPaused(bool _fullyPaused) external onlyFullPauser {
-        require(systemFullyPaused != _fullyPaused, "9");
+        require(systemFullyPaused != _fullyPaused, "8");
 
         systemFullyPaused = _fullyPaused;
 
@@ -356,8 +356,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _fullPauser new fullPauser address
      */
     function setFullPauser(address _fullPauser) external onlyOwner {
-        require(_fullPauser != address(0), "10");
-        require(fullPauser != _fullPauser, "9");
+        require(_fullPauser != address(0), "9");
+        require(fullPauser != _fullPauser, "10");
 
         emit FullPauserUpdated(fullPauser, _fullPauser);
 
@@ -370,8 +370,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _partialPauser new partialPauser address
      */
     function setPartialPauser(address _partialPauser) external onlyOwner {
-        require(_partialPauser != address(0), "11");
-        require(partialPauser != _partialPauser, "9");
+        require(_partialPauser != address(0), "10");
+        require(partialPauser != _partialPauser, "8");
 
         emit PartialPauserUpdated(partialPauser, _partialPauser);
 
@@ -385,7 +385,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _isRestricted new call restriction state
      */
     function setCallRestriction(bool _isRestricted) external onlyOwner {
-        require(callRestricted != _isRestricted, "9");
+        require(callRestricted != _isRestricted, "8");
 
         callRestricted = _isRestricted;
 
@@ -399,7 +399,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _isOperator new boolean value that expresses if the sender is giving or revoking privileges for _operator
      */
     function setOperator(address _operator, bool _isOperator) external {
-        require(operators[msg.sender][_operator] != _isOperator, "9");
+        require(operators[msg.sender][_operator] != _isOperator, "8");
 
         operators[msg.sender][_operator] = _isOperator;
 
@@ -420,7 +420,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _cap cap amount, should be scaled by collateral asset decimals
      */
     function setNakedCap(address _collateral, uint256 _cap) external onlyOwner {
-        require(_cap > 0, "36");
+        require(_cap > 0, "35");
 
         nakedCap[_collateral] = _cap;
 
@@ -632,8 +632,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             ) {
                 // check if this action is manipulating the same vault as all other actions, if a vault has already been updated
                 if (vaultUpdated) {
-                    require(vaultOwner == action.owner, "12");
-                    require(vaultId == action.vaultId, "13");
+                    require(vaultOwner == action.owner, "11");
+                    require(vaultId == action.vaultId, "12");
                 }
                 vaultUpdated = true;
                 vaultId = action.vaultId;
@@ -677,7 +677,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         (MarginVault.Vault memory vault, uint256 typeVault, ) = getVaultWithDetails(_owner, _vaultId);
         (, bool isValidVault) = calculator.getExcessCollateral(vault, typeVault);
 
-        require(isValidVault, "14");
+        require(isValidVault, "13");
     }
 
     /**
@@ -692,7 +692,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     {
         uint256 vaultId = accountVaultCounter[_args.owner].add(1);
 
-        require(_args.vaultId == vaultId, "15");
+        require(_args.vaultId == vaultId, "14");
 
         // store new vault
         accountVaultCounter[_args.owner] = vaultId;
@@ -711,15 +711,15 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         notPartiallyPaused
         onlyAuthorized(msg.sender, _args.owner)
     {
-        require(_checkVaultId(_args.owner, _args.vaultId), "35");
+        require(_checkVaultId(_args.owner, _args.vaultId), "34");
         // only allow vault owner or vault operator to deposit long otoken
-        require((_args.from == msg.sender) || (_args.from == _args.owner), "16");
+        require((_args.from == msg.sender) || (_args.from == _args.owner), "15");
 
-        require(whitelist.isWhitelistedOtoken(_args.asset), "17");
+        require(whitelist.isWhitelistedOtoken(_args.asset), "16");
 
         OtokenInterface otoken = OtokenInterface(_args.asset);
 
-        require(now < otoken.expiryTimestamp(), "18");
+        require(now < otoken.expiryTimestamp(), "17");
 
         vaults[_args.owner][_args.vaultId].addLong(_args.asset, _args.amount, _args.index);
 
@@ -738,11 +738,11 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         notPartiallyPaused
         onlyAuthorized(msg.sender, _args.owner)
     {
-        require(_checkVaultId(_args.owner, _args.vaultId), "35");
+        require(_checkVaultId(_args.owner, _args.vaultId), "34");
 
         OtokenInterface otoken = OtokenInterface(_args.asset);
 
-        require(now < otoken.expiryTimestamp(), "19");
+        require(now < otoken.expiryTimestamp(), "18");
 
         vaults[_args.owner][_args.vaultId].removeLong(_args.asset, _args.amount, _args.index);
 
@@ -761,18 +761,18 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         notPartiallyPaused
         onlyAuthorized(msg.sender, _args.owner)
     {
-        require(_checkVaultId(_args.owner, _args.vaultId), "35");
+        require(_checkVaultId(_args.owner, _args.vaultId), "34");
         // only allow vault owner or vault operator to deposit collateral
-        require((_args.from == msg.sender) || (_args.from == _args.owner), "20");
+        require((_args.from == msg.sender) || (_args.from == _args.owner), "19");
 
-        require(whitelist.isWhitelistedCollateral(_args.asset), "21");
+        require(whitelist.isWhitelistedCollateral(_args.asset), "20");
 
         (, uint256 typeVault, ) = getVaultWithDetails(_args.owner, _args.vaultId);
 
         if (typeVault == 1) {
             nakedPoolBalance[_args.asset] = nakedPoolBalance[_args.asset].add(_args.amount);
 
-            require(nakedPoolBalance[_args.asset] <= nakedCap[_args.asset], "37");
+            require(nakedPoolBalance[_args.asset] <= nakedCap[_args.asset], "36");
         }
 
         vaults[_args.owner][_args.vaultId].addCollateral(_args.asset, _args.amount, _args.index);
@@ -792,14 +792,14 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         notPartiallyPaused
         onlyAuthorized(msg.sender, _args.owner)
     {
-        require(_checkVaultId(_args.owner, _args.vaultId), "35");
+        require(_checkVaultId(_args.owner, _args.vaultId), "34");
 
         (MarginVault.Vault memory vault, uint256 typeVault, ) = getVaultWithDetails(_args.owner, _args.vaultId);
 
         if (_isNotEmpty(vault.shortOtokens)) {
             OtokenInterface otoken = OtokenInterface(vault.shortOtokens[0]);
 
-            require(now < otoken.expiryTimestamp(), "22");
+            require(now < otoken.expiryTimestamp(), "21");
         }
 
         if (typeVault == 1) {
@@ -823,12 +823,12 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         notPartiallyPaused
         onlyAuthorized(msg.sender, _args.owner)
     {
-        require(_checkVaultId(_args.owner, _args.vaultId), "35");
-        require(whitelist.isWhitelistedOtoken(_args.otoken), "23");
+        require(_checkVaultId(_args.owner, _args.vaultId), "34");
+        require(whitelist.isWhitelistedOtoken(_args.otoken), "22");
 
         OtokenInterface otoken = OtokenInterface(_args.otoken);
 
-        require(now < otoken.expiryTimestamp(), "24");
+        require(now < otoken.expiryTimestamp(), "23");
 
         vaults[_args.owner][_args.vaultId].addShort(_args.otoken, _args.amount, _args.index);
 
@@ -848,14 +848,14 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         onlyAuthorized(msg.sender, _args.owner)
     {
         // check that vault id is valid for this vault owner
-        require(_checkVaultId(_args.owner, _args.vaultId), "35");
+        require(_checkVaultId(_args.owner, _args.vaultId), "34");
         // only allow vault owner or vault operator to burn otoken
-        require((_args.from == msg.sender) || (_args.from == _args.owner), "25");
+        require((_args.from == msg.sender) || (_args.from == _args.owner), "24");
 
         OtokenInterface otoken = OtokenInterface(_args.otoken);
 
         // do not allow burning expired otoken
-        require(now < otoken.expiryTimestamp(), "26");
+        require(now < otoken.expiryTimestamp(), "25");
 
         // remove otoken from vault
         vaults[_args.owner][_args.vaultId].removeShort(_args.otoken, _args.amount, _args.index);
@@ -875,14 +875,14 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         OtokenInterface otoken = OtokenInterface(_args.otoken);
 
         // check that otoken to redeem is whitelisted
-        require(whitelist.isWhitelistedOtoken(_args.otoken), "27");
+        require(whitelist.isWhitelistedOtoken(_args.otoken), "26");
 
         (address collateral, address underlying, address strike, , uint256 expiry, ) = otoken.getOtokenDetails();
 
         // only allow redeeming expired otoken
-        require(now >= expiry, "28");
+        require(now >= expiry, "27");
 
-        require(isSettlementAllowed(underlying, strike, collateral, expiry), "29");
+        require(isSettlementAllowed(underlying, strike, collateral, expiry), "28");
 
         uint256 payout = getPayout(_args.otoken, _args.amount);
 
@@ -899,7 +899,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _args SettleVaultArgs structure
      */
     function _settleVault(Actions.SettleVaultArgs memory _args) internal onlyAuthorized(msg.sender, _args.owner) {
-        require(_checkVaultId(_args.owner, _args.vaultId), "35");
+        require(_checkVaultId(_args.owner, _args.vaultId), "34");
 
         (MarginVault.Vault memory vault, uint256 typeVault, ) = getVaultWithDetails(_args.owner, _args.vaultId);
 
@@ -914,7 +914,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             bool hasShort = _isNotEmpty(vault.shortOtokens);
             bool hasLong = _isNotEmpty(vault.longOtokens);
 
-            require(hasShort || hasLong, "30");
+            require(hasShort || hasLong, "29");
 
             otoken = hasShort ? OtokenInterface(vault.shortOtokens[0]) : OtokenInterface(vault.longOtokens[0]);
 
@@ -929,13 +929,13 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         // do not allow settling vault with un-expired otoken
         require(now >= expiry, "31");
-        require(isSettlementAllowed(underlying, strike, collateral, expiry), "29");
+        require(isSettlementAllowed(underlying, strike, collateral, expiry), "28");
 
         (uint256 payout, bool isValidVault) = calculator.getExcessCollateral(vault, typeVault);
 
         // require that vault is valid (has excess collateral) before settling
         // to avoid allowing settling undercollateralized naked margin vault
-        require(isValidVault, "32");
+        require(isValidVault, "31");
 
         delete vaults[_args.owner][_args.vaultId];
 
@@ -957,7 +957,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _args liquidation action arguments struct
      */
     function _liquidate(Actions.LiquidateArgs memory _args) internal notPartiallyPaused {
-        require(_checkVaultId(_args.owner, _args.vaultId), "35");
+        require(_checkVaultId(_args.owner, _args.vaultId), "34");
 
         // check if vault is undercollateralized
         // the price is the amount of collateral asset to pay per 1 repaid debt(otoken)
@@ -968,7 +968,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             _args.roundId
         );
 
-        require(isUnderCollat, "33");
+        require(isUnderCollat, "32");
 
         // amount of collateral to offer to liquidator
         uint256 collateralToSell = _args.amount.mul(price).div(1e8);
@@ -976,7 +976,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         // if vault is partially liquidated (amount of short otoken is still greater than zero)
         // make sure remaining collateral amount is greater than dust amount
         if (vault.shortAmounts[0].sub(_args.amount) > 0) {
-            require(vault.collateralAmounts[0].sub(collateralToSell) >= collateralDust, "34");
+            require(vault.collateralAmounts[0].sub(collateralToSell) >= collateralDust, "33");
         }
 
         // burn short otoken from liquidator address, index of short otoken hardcoded at 0
