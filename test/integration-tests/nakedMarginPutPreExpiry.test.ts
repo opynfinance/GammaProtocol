@@ -646,7 +646,7 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
         )
           .dividedBy(new BigNumber(10 ** usdcDecimals))
           .toNumber(),
-        errorDelta,
+        new BigNumber(errorDelta).toNumber(),
         'Vault collateral mismatch after liquidation',
       )
       assert.equal(
