@@ -364,8 +364,6 @@ contract MarginCalculator is Ownable {
     function getExpiredPayoutRate(address _otoken) external view returns (uint256) {
         require(_otoken != address(0), "MarginCalculator: Invalid token address");
 
-        OtokenInterface otoken = OtokenInterface(_otoken);
-
         (
             address collateral,
             address underlying,
@@ -373,7 +371,7 @@ contract MarginCalculator is Ownable {
             uint256 strikePrice,
             uint256 expiry,
             bool isPut
-        ) = otoken.getOtokenDetails();
+        ) = _getOTokenDetail(_otoken);
 
         require(now >= expiry, "MarginCalculator: Otoken not expired yet");
 
