@@ -80,10 +80,10 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
     /// @notice address that has permission to partially pause the system, where system functionality is paused
     /// except redeem and settleVault
-    address public partialPauser;
+    // address public partialPauser;
 
-    /// @notice address that has permission to fully pause the system, where all system functionality is paused
-    address public fullPauser;
+    /// @notice address that has permission to fully or partially pause the system, where all system functionality is paused
+    address public pauser;
 
     /// @notice True if all system functionality is paused other than redeem and settle vault
     bool public systemPartiallyPaused;
@@ -198,9 +198,9 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /// @notice emits an event when a call action is executed
     event CallExecuted(address indexed from, address indexed to, bytes data);
     /// @notice emits an event when the fullPauser address changes
-    event FullPauserUpdated(address indexed oldFullPauser, address indexed newFullPauser);
+    event PauserUpdated(address indexed oldFullPauser, address indexed newFullPauser);
     /// @notice emits an event when the partialPauser address changes
-    event PartialPauserUpdated(address indexed oldPartialPauser, address indexed newPartialPauser);
+    // event PartialPauserUpdated(address indexed oldPartialPauser, address indexed newPartialPauser);
     /// @notice emits an event when the system partial paused status changes
     event SystemPartiallyPaused(bool isPaused);
     /// @notice emits an event when the system fully paused status changes
@@ -231,22 +231,22 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
-     * @notice modifier to check if sender is the fullPauser address
+     * @notice modifier to check if sender is the pauser address
      */
-    modifier onlyFullPauser {
-        require(msg.sender == fullPauser, "0");
+    modifier onlyPauser {
+        require(msg.sender == pauser, "0");
 
         _;
     }
 
-    /**
-     * @notice modifier to check if the sender is the partialPauser address
-     */
-    modifier onlyPartialPauser {
-        require(msg.sender == partialPauser, "10");
+    // /**
+    //  * @notice modifier to check if the sender is the partialPauser address
+    //  */
+    // modifier onlyPartialPauser {
+    //     require(msg.sender == partialPauser, "10");
 
-        _;
-    }
+    //     _;
+    // }
 
     /**
      * @notice modifier to check if the sender is the account owner or an approved account operator
@@ -329,7 +329,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev can only be called by the partialPauser
      * @param _partiallyPaused new boolean value to set systemPartiallyPaused to
      */
-    function setSystemPartiallyPaused(bool _partiallyPaused) external onlyPartialPauser {
+    function setSystemPartiallyPaused(bool _partiallyPaused) external onlyPauser {
         require(systemPartiallyPaused != _partiallyPaused, "28");
 
         systemPartiallyPaused = _partiallyPaused;
@@ -342,7 +342,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev can only be called by the fullPauser
      * @param _fullyPaused new boolean value to set systemFullyPaused to
      */
-    function setSystemFullyPaused(bool _fullyPaused) external onlyFullPauser {
+    function setSystemFullyPaused(bool _fullyPaused) external onlyPauser {
         require(systemFullyPaused != _fullyPaused, "8");
 
         systemFullyPaused = _fullyPaused;
@@ -355,13 +355,13 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev can only be called by the owner
      * @param _fullPauser new fullPauser address
      */
-    function setFullPauser(address _fullPauser) external onlyOwner {
-        require(_fullPauser != address(0), "9");
-        require(fullPauser != _fullPauser, "1");
+    function setPauser(address _pauser) external onlyOwner {
+        require(_pauser != address(0), "9");
+        require(pauser != _pauser, "1");
 
-        emit FullPauserUpdated(fullPauser, _fullPauser);
+        emit FullPauserUpdated(pauser, _pauser);
 
-        fullPauser = _fullPauser;
+        pauser = _pauser;
     }
 
     /**
@@ -369,14 +369,14 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev can only be called by the owner
      * @param _partialPauser new partialPauser address
      */
-    function setPartialPauser(address _partialPauser) external onlyOwner {
-        require(_partialPauser != address(0), "1");
-        require(partialPauser != _partialPauser, "8");
+    // function setPartialPauser(address _partialPauser) external onlyOwner {
+    //     require(_partialPauser != address(0), "1");
+    //     require(partialPauser != _partialPauser, "8");
 
-        emit PartialPauserUpdated(partialPauser, _partialPauser);
+    //     emit PartialPauserUpdated(partialPauser, _partialPauser);
 
-        partialPauser = _partialPauser;
-    }
+    //     partialPauser = _partialPauser;
+    // }
 
     /**
      * @notice allows the owner to toggle the restriction on whitelisted call actions and only allow whitelisted
