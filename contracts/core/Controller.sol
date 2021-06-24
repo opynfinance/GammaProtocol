@@ -928,7 +928,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         (address collateral, address underlying, address strike, , uint256 expiry, ) = otoken.getOtokenDetails();
 
         // do not allow settling vault with un-expired otoken
-        require(now >= expiry, "31");
+        require(now >= expiry, "30");
         require(isSettlementAllowed(underlying, strike, collateral, expiry), "28");
 
         (uint256 payout, bool isValidVault) = calculator.getExcessCollateral(vault, typeVault);
