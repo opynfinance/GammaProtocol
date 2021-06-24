@@ -255,7 +255,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
     it('should revert settling an expired undercollateralized naked margin vault', async () => {
       const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
 
-      // settle the secont vault (with only long otoken in it)
+      // settle the second vault (with only long otoken in it)
       const settleArgs = [
         {
           actionType: ActionType.SettleVault,
