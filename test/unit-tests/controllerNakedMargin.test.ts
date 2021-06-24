@@ -269,7 +269,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
         },
       ]
 
-      await expectRevert(controllerProxy.operate(settleArgs, {from: accountOwner1}), 'CO32')
+      await expectRevert(controllerProxy.operate(settleArgs, {from: accountOwner1}), 'C32')
     })
   })
 
@@ -902,7 +902,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
         },
       ]
 
-      await expectRevert(controllerProxy.operate(liquidateArgs, {from: liquidator}), 'CO33')
+      await expectRevert(controllerProxy.operate(liquidateArgs, {from: liquidator}), 'C33')
     })
 
     it('should be able to remove excess collateral after partially liquidating', async () => {
@@ -971,7 +971,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
     it('should revert setting collateral cap amount equal to zero', async () => {
       const wethCap = scaleNum(0, wethDecimals)
 
-      await expectRevert(controllerProxy.setNakedCap(weth.address, wethCap, {from: owner}), 'CO36')
+      await expectRevert(controllerProxy.setNakedCap(weth.address, wethCap, {from: owner}), 'C36')
     })
 
     it('should revert depositing collateral in vault that that hit naked cap', async () => {
@@ -1002,7 +1002,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
         },
       ]
       await usdc.approve(marginPool.address, capAmount.toString(), {from: accountOwner1})
-      await expectRevert(controllerProxy.operate(mintArgs, {from: accountOwner1}), 'CO37')
+      await expectRevert(controllerProxy.operate(mintArgs, {from: accountOwner1}), 'C37')
     })
   })
 })
