@@ -124,13 +124,13 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
     it('should revert when calling initialize with addressbook equal to zero', async () => {
       const controllerImplementation = await Controller.new()
 
-      await expectRevert(controllerImplementation.initialize(ZERO_ADDR, owner), 'CO7')
+      await expectRevert(controllerImplementation.initialize(ZERO_ADDR, owner), 'C7')
     })
 
     it('should revert when calling initialize with owner equal to zero', async () => {
       const controllerImplementation = await Controller.new()
 
-      await expectRevert(controllerImplementation.initialize(addressBook.address, ZERO_ADDR), 'CO8')
+      await expectRevert(controllerImplementation.initialize(addressBook.address, ZERO_ADDR), 'C8')
     })
   })
 
@@ -148,7 +148,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
     })
 
     it('should revert when set an already operator', async () => {
-      await expectRevert(controllerProxy.setOperator(accountOperator1, true, {from: accountOwner1}), 'CO9')
+      await expectRevert(controllerProxy.setOperator(accountOperator1, true, {from: accountOwner1}), 'C9')
     })
 
     it('should be able to remove operator', async () => {
@@ -209,7 +209,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           data: ZERO_ADDR,
         },
       ]
-      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO15')
+      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C15')
     })
 
     it('should revert opening multiple vaults in the same operate call', async () => {
@@ -236,7 +236,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         },
       ]
 
-      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO13')
+      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C13')
     })
 
     it('should revert opening a vault with vault type other than 0 or 1', async () => {
@@ -283,7 +283,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         },
       ]
 
-      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO12')
+      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C12')
     })
 
     it('should open vault', async () => {
@@ -373,7 +373,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         ]
 
         await longOtoken.approve(marginPool.address, longToDeposit, {from: accountOwner1})
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO17')
+        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C17')
       })
 
       it('should revert depositing long with invalid vault id', async () => {
@@ -419,7 +419,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
 
         await longOtoken.approve(marginPool.address, longToDeposit, {from: random})
         await longOtoken.approve(marginPool.address, longToDeposit, {from: accountOperator1})
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOperator1}), 'CO16')
+        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOperator1}), 'C16')
       })
 
       it('should deposit long otoken into vault from account owner', async () => {
@@ -589,10 +589,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         ]
 
         await longOtoken.approve(marginPool.address, longToDeposit, {from: accountOwner1})
-        await expectRevert(
-          controllerProxy.operate(actionArgs, {from: accountOwner1}),
-          'MarginVault: invalid long otoken amount',
-        )
+        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'V4')
       })
 
       it('should revert depositing an expired long otoken', async () => {
@@ -629,7 +626,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         ]
 
         await expiredLongOtoken.approve(marginPool.address, longToDeposit, {from: accountOwner1})
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO18')
+        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C18')
       })
 
       it('should revert when vault have more than 1 long otoken', async () => {
@@ -724,10 +721,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           },
         ]
 
-        await expectRevert(
-          controllerProxy.operate(actionArgs, {from: accountOwner1}),
-          'MarginVault: invalid long otoken index',
-        )
+        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'V5')
       })
 
       it('should revert withdrawing long otoken from random address other than account owner or operator', async () => {
@@ -1068,7 +1062,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
             'Long otoken is not expired yet',
           )
 
-          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO19')
+          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C19')
         })
       })
     })
@@ -1223,7 +1217,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
 
         await usdc.approve(marginPool.address, collateralToDeposit, {from: random})
         await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOperator1})
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOperator1}), 'CO20')
+        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOperator1}), 'C20')
       })
 
       it('should revert depositing a collateral asset with amount equal to zero', async () => {
@@ -1245,10 +1239,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         ]
 
         await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
-        await expectRevert(
-          controllerProxy.operate(actionArgs, {from: accountOwner1}),
-          'MarginVault: invalid collateral amount',
-        )
+        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'V7')
       })
 
       it('should execute depositing collateral into vault in multiple actions', async () => {
@@ -1336,7 +1327,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           ]
 
           await trx.approve(marginPool.address, collateralDeposit, {from: accountOwner1})
-          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO21')
+          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C21')
         })
       })
 
@@ -1959,7 +1950,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           },
         ]
 
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO14')
+        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C14')
       })
 
       it('should withdraw exceeded collateral from naked short position when net value > 0 ', async () => {
@@ -2112,7 +2103,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           ]
 
           await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOperator1})
-          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOperator1}), 'CO23')
+          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOperator1}), 'C23')
         })
       })
 
@@ -2168,7 +2159,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
               data: ZERO_ADDR,
             },
           ]
-          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner2}), 'CO14')
+          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner2}), 'C14')
         })
 
         it('should revert minting 1 wei of oToken with minimal strikePrice without putting collateral', async () => {
@@ -2196,7 +2187,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
             },
           ]
 
-          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner2}), 'CO14')
+          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner2}), 'C14')
         })
       })
     })
@@ -2315,7 +2306,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           },
         ]
 
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOperator1}), 'CO25')
+        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOperator1}), 'C25')
       })
 
       it('should burn short otoken when called from account operator', async () => {
@@ -2557,7 +2548,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
             'Long otoken is not expired yet',
           )
 
-          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO26')
+          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C26')
         })
 
         it('should revert minting an expired short otoken', async () => {
@@ -2590,7 +2581,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
           ]
 
           await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOperator1})
-          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO24')
+          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C24')
         })
 
         it('should revert withdraw collateral from a vault with an expired short otoken', async () => {
@@ -2611,7 +2602,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
             },
           ]
 
-          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO22')
+          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C22')
         })
       })
     })
@@ -2706,7 +2697,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         },
       ]
 
-      await expectRevert(controllerProxy.operate(actionArgs, {from: holder1}), 'CO27')
+      await expectRevert(controllerProxy.operate(actionArgs, {from: holder1}), 'C27')
     })
 
     it('should revert exercising un-expired otoken', async () => {
@@ -2726,7 +2717,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
 
       assert.equal(await controllerProxy.hasExpired(shortOtoken.address), false, 'Short otoken has already expired')
 
-      await expectRevert(controllerProxy.operate(actionArgs, {from: holder1}), 'CO28')
+      await expectRevert(controllerProxy.operate(actionArgs, {from: holder1}), 'C28')
     })
 
     it('should revert exercising after expiry, when underlying price is not finalized yet', async () => {
@@ -2769,7 +2760,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
 
       assert.equal(await controllerProxy.hasExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
 
-      await expectRevert(controllerProxy.operate(actionArgs, {from: holder1}), 'CO29')
+      await expectRevert(controllerProxy.operate(actionArgs, {from: holder1}), 'C29')
     })
 
     it('should revert exercising if cash value receiver address in equal to address zero', async () => {
@@ -3000,7 +2991,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
         },
       ]
 
-      await expectRevert(controllerProxy.operate(redeemArgs, {from: holder1}), 'CO29')
+      await expectRevert(controllerProxy.operate(redeemArgs, {from: holder1}), 'C29')
     })
 
     describe('Redeem multiple Otokens', () => {
@@ -3353,7 +3344,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
 
       assert.equal(await controllerProxy.hasExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
 
-      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CO29')
+      await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C29')
     })
 
     it('should settle ITM otoken after expiry + price is finalized', async () => {
@@ -3725,11 +3716,16 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
       const collateral = await expiredOtoken.collateralAsset()
       const expiryTimestamp = await expiredOtoken.expiryTimestamp()
 
-      const expectedResutl = false
+      const expectedResult = false
       assert.equal(
-        await controllerProxy.isSettlementAllowed(underlying, strike, collateral, expiryTimestamp),
-        expectedResutl,
+        await controllerProxy.canSettleAssets(underlying, strike, collateral, expiryTimestamp),
+        expectedResult,
         'Price is not finalized because dispute period is not over yet',
+      )
+      assert.equal(
+        await controllerProxy.isSettlementAllowed(expiredOtoken.address),
+        expectedResult,
+        'Price is not finalized',
       )
     })
 
@@ -3757,10 +3753,15 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
       const collateral = await expiredOtoken.collateralAsset()
       const expiryTimestamp = await expiredOtoken.expiryTimestamp()
 
-      const expectedResutl = true
+      const expectedResult = true
       assert.equal(
-        await controllerProxy.isSettlementAllowed(underlying, strike, collateral, expiryTimestamp),
-        expectedResutl,
+        await controllerProxy.canSettleAssets(underlying, strike, collateral, expiryTimestamp),
+        expectedResult,
+        'Price is not finalized',
+      )
+      assert.equal(
+        await controllerProxy.isSettlementAllowed(expiredOtoken.address),
+        expectedResult,
         'Price is not finalized',
       )
     })
@@ -3986,7 +3987,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
     })
 
     it('should revert when pausing the system from address other than pauser', async () => {
-      await expectRevert(controllerProxy.setSystemPartiallyPaused(true, {from: random}), 'CO2')
+      await expectRevert(controllerProxy.setSystemPartiallyPaused(true, {from: random}), 'C2')
     })
 
     it('should revert partially un-pausing an already running paused system', async () => {
@@ -4262,7 +4263,7 @@ contract('Controller', ([owner, accountOwner1, accountOwner2, accountOperator1, 
     })
 
     it('should revert when triggering full pause from address other than pauser', async () => {
-      await expectRevert(controllerProxy.setSystemFullyPaused(true, {from: random}), 'CO1')
+      await expectRevert(controllerProxy.setSystemFullyPaused(true, {from: random}), 'C1')
     })
 
     it('should revert fully un-pausing an already running system', async () => {
