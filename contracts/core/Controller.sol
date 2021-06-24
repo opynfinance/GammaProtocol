@@ -80,6 +80,9 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /// @notice address that has permission to fully pause the system, where all system functionality is paused or partially pause the system, where some system functionality is paused
     address public pauser;
 
+    /// @notice old full pauser
+    address public deprecated1;
+
     /// @notice True if all system functionality is paused other than redeem and settle vault
     bool public systemPartiallyPaused;
 
