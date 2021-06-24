@@ -844,7 +844,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         // check that otoken to redeem is whitelisted
         require(whitelist.isWhitelistedOtoken(_args.otoken), "C27");
 
-        (address collateral, address underlying, address strike, , uint256 expiry, ) = otoken.getOtokenDetails();
+        (address collateral, address underlying, address strike, uint256 expiry) = _getOTokenDetail(address(otoken));
 
         // only allow redeeming expired otoken
         require(now >= expiry, "C28");
@@ -892,7 +892,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             }
         }
 
-        (address collateral, address underlying, address strike, , uint256 expiry, ) = otoken.getOtokenDetails();
+        (address collateral, address underlying, address strike, uint256 expiry) = _getOTokenDetail(address(otoken));
 
         // do not allow settling vault with un-expired otoken
         require(now >= expiry, "C31");
@@ -916,6 +916,31 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         address payoutRecipient = _args.to;
 
         emit VaultSettled(_args.owner, address(otoken), payoutRecipient, payout, vaultId, typeVault);
+    }
+
+    function _getOTokenDetail(address _otoken)
+        internal
+        view
+        returns (
+            address,
+            address,
+            address,
+            uint256
+        )
+    {
+        OtokenInterface otoken = OtokenInterface(_otoken);
+        try otoken.getOtokenDetails() returns (
+            address collateral,
+            address underlying,
+            address strike,
+            uint256,
+            uint256 expiry,
+            bool
+        ) {
+            return (collateral, underlying, strike, expiry);
+        } catch {
+            return (otoken.collateralAsset(), otoken.underlyingAsset(), otoken.strikeAsset(), otoken.expiryTimestamp());
+        }
     }
 
     /**
