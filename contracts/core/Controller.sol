@@ -21,43 +21,42 @@ import {CalleeInterface} from "../interfaces/CalleeInterface.sol";
 
 /**
  * Controller Error Codes
- * CO1: sender is not fullPauser
- * CO2: sender is not partialPauser
- * CO3: callee is not a whitelisted address
- * CO4: system is partially paused
- * CO5: system is fully paused
- * CO6: msg.sender is not authorized to run action
- * CO7: invalid addressbook address
- * CO8: invalid owner address
- * CO9: invalid input
- * CO10: fullPauser cannot be set to address zero
- * CO11: partialPauser cannot be set to address zero
- * CO12: can not run actions for different owners
- * CO13: can not run actions on different vaults
- * CO14: invalid final vault state
- * CO15: can not run actions on inexistent vault
- * CO16: cannot deposit long otoken from this address
- * CO17: otoken is not whitelisted to be used as collateral
- * CO18: otoken used as collateral is already expired
- * CO19: can not withdraw an expired otoken
- * CO20: cannot deposit collateral from this address
- * CO21: asset is not whitelisted to be used as collateral
- * CO22: can not withdraw collateral from a vault with an expired short otoken
- * CO23: otoken is not whitelisted to be minted
- * CO24: can not mint expired otoken
- * CO25: cannot burn from this address
- * CO26: can not burn expired otoken
- * CO27: otoken is not whitelisted to be redeemed
- * CO28: can not redeem un-expired otoken
- * CO29: asset prices not finalized yet
- * CO30: can't settle vault with no otoken
- * CO31: can not settle vault with un-expired otoken
- * CO32: can not settle undercollateralized vault
- * CO33: can not liquidate vault
- * CO34: can not leave less than collateral dust
- * CO35: invalid vault id
- * CO36: cap amount should be greater than zero
- * CO37: collateral exceed naked margin cap
+ * C1: sender is not pauser
+ * C3: callee is not a whitelisted address
+ * C4: system is partially paused
+ * C5: system is fully paused
+ * C6: msg.sender is not authorized to run action
+ * C7: invalid addressbook address
+ * C8: invalid owner address
+ * C9: invalid input
+ * C10: fullPauser cannot be set to address zero
+ * C11: partialPauser cannot be set to address zero
+ * C12: can not run actions for different owners
+ * C13: can not run actions on different vaults
+ * C14: invalid final vault state
+ * C15: can not run actions on inexistent vault
+ * C16: cannot deposit long otoken from this address
+ * C17: otoken is not whitelisted to be used as collateral
+ * C18: otoken used as collateral is already expired
+ * C19: can not withdraw an expired otoken
+ * C20: cannot deposit collateral from this address
+ * C21: asset is not whitelisted to be used as collateral
+ * C22: can not withdraw collateral from a vault with an expired short otoken
+ * C23: otoken is not whitelisted to be minted
+ * C24: can not mint expired otoken
+ * C25: cannot burn from this address
+ * C26: can not burn expired otoken
+ * C27: otoken is not whitelisted to be redeemed
+ * C28: can not redeem un-expired otoken
+ * C29: asset prices not finalized yet
+ * C30: can't settle vault with no otoken
+ * C31: can not settle vault with un-expired otoken
+ * C32: can not settle undercollateralized vault
+ * C33: can not liquidate vault
+ * C34: can not leave less than collateral dust
+ * C35: invalid vault id
+ * C36: cap amount should be greater than zero
+ * C37: collateral exceed naked margin cap
  */
 
 /**
@@ -69,11 +68,11 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     using MarginVault for MarginVault.Vault;
     using SafeMath for uint256;
 
-    AddressBookInterface private addressbook;
-    WhitelistInterface private whitelist;
-    OracleInterface private oracle;
-    MarginCalculatorInterface private calculator;
-    MarginPoolInterface private pool;
+    AddressBookInterface public addressbook;
+    WhitelistInterface public whitelist;
+    OracleInterface public oracle;
+    MarginCalculatorInterface public calculator;
+    MarginPoolInterface public pool;
 
     ///@dev scale used in MarginCalculator
     uint256 internal constant BASE = 8;
