@@ -21,16 +21,16 @@ import {CalleeInterface} from "../interfaces/CalleeInterface.sol";
 
 /**
  * Controller Error Codes
- * CO1: sender is not fullPauser
+ * CO10: sender is not fullPauser
  * CO2: sender is not partialPauser
  * CO3: callee is not a whitelisted address
- * CO4: system is partially paused
+ * CO34: system is partially paused
  * CO5: system is fully paused
  * CO6: msg.sender is not authorized to run action
  * CO7: invalid addressbook address
- * CO8: invalid owner address
+ * C28: invalid owner address
  * CO9: invalid input
- * CO10: fullPauser cannot be set to address zero
+ * CO1: fullPauser cannot be set to address zero
  * CO11: partialPauser cannot be set to address zero
  * CO12: can not run actions for different owners
  * CO13: can not run actions on different vaults
@@ -48,13 +48,13 @@ import {CalleeInterface} from "../interfaces/CalleeInterface.sol";
  * CO25: cannot burn from this address
  * CO26: can not burn expired otoken
  * CO27: otoken is not whitelisted to be redeemed
- * CO28: can not redeem un-expired otoken
+ * CO8: can not redeem un-expired otoken
  * CO29: asset prices not finalized yet
  * CO30: can't settle vault with no otoken
  * CO31: can not settle vault with un-expired otoken
  * CO32: can not settle undercollateralized vault
  * CO33: can not liquidate vault
- * CO34: can not leave less than collateral dust
+ * CO4: can not leave less than collateral dust
  * CO35: invalid vault id
  * CO36: cap amount should be greater than zero
  * CO37: collateral exceed naked margin cap
@@ -243,7 +243,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @notice modifier to check if the sender is the partialPauser address
      */
     modifier onlyPartialPauser {
-        require(msg.sender == partialPauser, "1");
+        require(msg.sender == partialPauser, "10");
 
         _;
     }
@@ -282,7 +282,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @dev check if the system is not in an fullyPaused state
      */
     function _isNotFullyPaused() internal view {
-        require(!systemFullyPaused, "4");
+        require(!systemFullyPaused, "34");
     }
 
     /**
@@ -330,7 +330,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _partiallyPaused new boolean value to set systemPartiallyPaused to
      */
     function setSystemPartiallyPaused(bool _partiallyPaused) external onlyPartialPauser {
-        require(systemPartiallyPaused != _partiallyPaused, "8");
+        require(systemPartiallyPaused != _partiallyPaused, "28");
 
         systemPartiallyPaused = _partiallyPaused;
 
@@ -357,7 +357,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     function setFullPauser(address _fullPauser) external onlyOwner {
         require(_fullPauser != address(0), "9");
-        require(fullPauser != _fullPauser, "10");
+        require(fullPauser != _fullPauser, "1");
 
         emit FullPauserUpdated(fullPauser, _fullPauser);
 
@@ -370,7 +370,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _partialPauser new partialPauser address
      */
     function setPartialPauser(address _partialPauser) external onlyOwner {
-        require(_partialPauser != address(0), "10");
+        require(_partialPauser != address(0), "1");
         require(partialPauser != _partialPauser, "8");
 
         emit PartialPauserUpdated(partialPauser, _partialPauser);
@@ -711,7 +711,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         notPartiallyPaused
         onlyAuthorized(msg.sender, _args.owner)
     {
-        require(_checkVaultId(_args.owner, _args.vaultId), "34");
+        require(_checkVaultId(_args.owner, _args.vaultId), "4");
         // only allow vault owner or vault operator to deposit long otoken
         require((_args.from == msg.sender) || (_args.from == _args.owner), "15");
 
@@ -738,7 +738,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         notPartiallyPaused
         onlyAuthorized(msg.sender, _args.owner)
     {
-        require(_checkVaultId(_args.owner, _args.vaultId), "34");
+        require(_checkVaultId(_args.owner, _args.vaultId), "4");
 
         OtokenInterface otoken = OtokenInterface(_args.asset);
 
@@ -761,7 +761,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         notPartiallyPaused
         onlyAuthorized(msg.sender, _args.owner)
     {
-        require(_checkVaultId(_args.owner, _args.vaultId), "34");
+        require(_checkVaultId(_args.owner, _args.vaultId), "4");
         // only allow vault owner or vault operator to deposit collateral
         require((_args.from == msg.sender) || (_args.from == _args.owner), "19");
 
@@ -792,7 +792,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         notPartiallyPaused
         onlyAuthorized(msg.sender, _args.owner)
     {
-        require(_checkVaultId(_args.owner, _args.vaultId), "34");
+        require(_checkVaultId(_args.owner, _args.vaultId), "4");
 
         (MarginVault.Vault memory vault, uint256 typeVault, ) = getVaultWithDetails(_args.owner, _args.vaultId);
 
@@ -823,7 +823,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         notPartiallyPaused
         onlyAuthorized(msg.sender, _args.owner)
     {
-        require(_checkVaultId(_args.owner, _args.vaultId), "34");
+        require(_checkVaultId(_args.owner, _args.vaultId), "4");
         require(whitelist.isWhitelistedOtoken(_args.otoken), "22");
 
         OtokenInterface otoken = OtokenInterface(_args.otoken);
@@ -848,7 +848,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         onlyAuthorized(msg.sender, _args.owner)
     {
         // check that vault id is valid for this vault owner
-        require(_checkVaultId(_args.owner, _args.vaultId), "34");
+        require(_checkVaultId(_args.owner, _args.vaultId), "4");
         // only allow vault owner or vault operator to burn otoken
         require((_args.from == msg.sender) || (_args.from == _args.owner), "24");
 
@@ -882,7 +882,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         // only allow redeeming expired otoken
         require(now >= expiry, "27");
 
-        require(isSettlementAllowed(underlying, strike, collateral, expiry), "28");
+        require(isSettlementAllowed(underlying, strike, collateral, expiry), "8");
 
         uint256 payout = getPayout(_args.otoken, _args.amount);
 
@@ -899,7 +899,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _args SettleVaultArgs structure
      */
     function _settleVault(Actions.SettleVaultArgs memory _args) internal onlyAuthorized(msg.sender, _args.owner) {
-        require(_checkVaultId(_args.owner, _args.vaultId), "34");
+        require(_checkVaultId(_args.owner, _args.vaultId), "4");
 
         (MarginVault.Vault memory vault, uint256 typeVault, ) = getVaultWithDetails(_args.owner, _args.vaultId);
 
@@ -929,7 +929,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         // do not allow settling vault with un-expired otoken
         require(now >= expiry, "30");
-        require(isSettlementAllowed(underlying, strike, collateral, expiry), "28");
+        require(isSettlementAllowed(underlying, strike, collateral, expiry), "8");
 
         (uint256 payout, bool isValidVault) = calculator.getExcessCollateral(vault, typeVault);
 
@@ -957,7 +957,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _args liquidation action arguments struct
      */
     function _liquidate(Actions.LiquidateArgs memory _args) internal notPartiallyPaused {
-        require(_checkVaultId(_args.owner, _args.vaultId), "34");
+        require(_checkVaultId(_args.owner, _args.vaultId), "4");
 
         // check if vault is undercollateralized
         // the price is the amount of collateral asset to pay per 1 repaid debt(otoken)
