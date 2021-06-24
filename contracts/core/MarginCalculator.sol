@@ -371,7 +371,7 @@ contract MarginCalculator is Ownable {
             uint256 strikePrice,
             uint256 expiry,
             bool isPut
-        ) = _getOTokenDetail(_otoken);
+        ) = _getOtokenDetails(_otoken);
 
         require(now >= expiry, "MarginCalculator: Otoken not expired yet");
 
@@ -1070,7 +1070,7 @@ contract MarginCalculator is Ownable {
                 vaultDetails.longStrikePrice,
                 vaultDetails.longExpiryTimestamp,
                 vaultDetails.isLongPut
-            ) = _getOTokenDetail(address(long));
+            ) = _getOtokenDetails(address(long));
             vaultDetails.longCollateralDecimals = uint256(ERC20Interface(vaultDetails.longCollateralAsset).decimals());
         }
 
@@ -1084,7 +1084,7 @@ contract MarginCalculator is Ownable {
                 vaultDetails.shortStrikePrice,
                 vaultDetails.shortExpiryTimestamp,
                 vaultDetails.isShortPut
-            ) = _getOTokenDetail(address(short));
+            ) = _getOtokenDetails(address(short));
             vaultDetails.shortCollateralDecimals = uint256(
                 ERC20Interface(vaultDetails.shortCollateralAsset).decimals()
             );
@@ -1251,7 +1251,7 @@ contract MarginCalculator is Ownable {
     /**
      * @dev get otoken detail, from both otoken versions
      */
-    function _getOTokenDetail(address _otoken)
+    function _getOtokenDetails(address _otoken)
         internal
         view
         returns (

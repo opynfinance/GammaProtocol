@@ -534,7 +534,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _otoken oToken
      */
     function isSettlementAllowed(address _otoken) external view returns (bool) {
-        (address underlying, address strike, address collateral, uint256 expiry) = _getOTokenDetail(_otoken);
+        (address underlying, address strike, address collateral, uint256 expiry) = _getOtokenDetails(_otoken);
         return _canSettleAssets(underlying, strike, collateral, expiry);
     }
 
@@ -899,7 +899,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         // check that otoken to redeem is whitelisted
         require(whitelist.isWhitelistedOtoken(_args.otoken), "C27");
 
-        (address collateral, address underlying, address strike, uint256 expiry) = _getOTokenDetail(address(otoken));
+        (address collateral, address underlying, address strike, uint256 expiry) = _getOtokenDetails(address(otoken));
 
         // only allow redeeming expired otoken
         require(now >= expiry, "C28");
@@ -947,7 +947,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             }
         }
 
-        (address collateral, address underlying, address strike, uint256 expiry) = _getOTokenDetail(address(otoken));
+        (address collateral, address underlying, address strike, uint256 expiry) = _getOtokenDetails(address(otoken));
 
         // do not allow settling vault with un-expired otoken
         require(now >= expiry, "C31");
@@ -1100,7 +1100,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /**
      * @dev get otoken detail, from both otoken versions
      */
-    function _getOTokenDetail(address _otoken)
+    function _getOtokenDetails(address _otoken)
         internal
         view
         returns (
