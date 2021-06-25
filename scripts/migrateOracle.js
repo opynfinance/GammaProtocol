@@ -1,11 +1,6 @@
 const BigNumber = require('bignumber.js')
-
 const yargs = require('yargs')
-
-const OtokenFactory = artifacts.require('OtokenFactory.sol')
 const Oracle = artifacts.require('Oracle.sol')
-const Otoken = artifacts.require('Otoken.sol')
-
 const fetch = require('node-fetch')
 
 const postQuery = async (endpoint, query) => {
@@ -26,14 +21,15 @@ const postQuery = async (endpoint, query) => {
 
 /**
  * Get all oTokens
+ * @returns {Promise<any[]>}
  */
-async function getOTokens() {
+async function getOTokens(network, internal) {
   const currentTimeStamp = Math.floor(Date.now() / 1000)
 
   const query = `
   {
     otokens (
-      first: 500,
+      first: 1000,
       where: {
         expiryTimestamp_lt: ${currentTimeStamp},
       }
@@ -52,7 +48,10 @@ async function getOTokens() {
     }
   }`
   try {
-    const response = await postQuery('https://api.thegraph.com/subgraphs/name/opynfinance/gamma-kovan', query)
+    const prefixt = internal ? 'gamma-internal' : 'gamma'
+    const url = `https://api.thegraph.com/subgraphs/name/opynfinance/${prefixt}-${network}`
+    console.log(`Requesting subgraph`, url)
+    const response = await postQuery(url, query)
     return response.data.otokens
   } catch (error) {
     console.error(error)
@@ -60,69 +59,129 @@ async function getOTokens() {
   }
 }
 
+/**
+ * Get all oTokens
+ */
+async function getAllSettlementPrices(asset, network, internal) {
+  const query = `
+  {
+    expiryPrices (where:{
+      asset: "${asset}"
+    }, first:1000) {
+      expiry
+      price
+    }
+  }
+  `
+  try {
+    const prefixt = internal ? 'gamma-internal' : 'gamma'
+    const url = `https://api.thegraph.com/subgraphs/name/opynfinance/${prefixt}-${network}`
+    const response = await postQuery(url, query)
+    return response.data.expiryPrices
+  } catch (error) {
+    console.error(error)
+    return []
+  }
+}
+
+/**
+ *
+ */
+async function getCoinGeckData(coinId, expiry) {
+  const date = new Date(expiry * 1000)
+  const yyyymmdd = date.toISOString().split('T')[0]
+  const [year, month, day] = yyyymmdd.split('-')
+  const dateString = `${day}-${month}-${year}`
+  const url = `https://api.coingecko.com/api/v3/coins/${coinId}/history?date=${dateString}&localization=false`
+  const data = await (await fetch(url)).json()
+  return Math.floor(data.market_data.current_price.usd * 1e8)
+}
+
+/**
+ * @example
+ * truffle exec scripts/migrateOracle.js
+ *  --network kovan
+ *  --internal true
+ *  --newOracle 0x8b71104e11931775957932728717b0F81461bc0d
+ *  --asset 0x50570256f0da172a1908207aAf0c80d4b279f303
+ *  --coinId bitcoin
+ */
 module.exports = async function(callback) {
   try {
     const options = yargs
       .usage(
-        'Usage: --network <network> --factory <otokenFactory> --oldOracle <oldOracle> --newOracle <newOracle> --asset <asset> --gasPrice <gasPrice>',
+        'Usage: --network <network> --internal <internal> --newOracle <newOracle> --asset <asset> --gasPrice <gasPrice>',
       )
       .option('network', {describe: '0x exchange address', type: 'string', demandOption: true})
-      .option('factory', {describe: 'Otoken factory address', type: 'string', demandOption: true})
-      .option('oldOracle', {describe: 'Old oracle module address', type: 'string', demandOption: true})
       .option('newOracle', {describe: 'New oracle module address', type: 'string', demandOption: true})
       .option('asset', {describe: 'Asset address to migrate', type: 'string', demandOption: true})
+      .option('internal', {describe: 'Internal network or not', type: 'string', demandOption: true})
+      .option('coinId', {
+        describe: 'coingecko id used to search for price if it was not reported in our oracle',
+        type: 'string',
+      })
       .option('gasPrice', {describe: 'Gas price in WEI', type: 'string', demandOption: false}).argv
 
     console.log('Init contracts 🍕')
 
-    const factory = await OtokenFactory.at(options.factory)
-    const oldOracle = await Oracle.at(options.oldOracle)
+    const asset = options.asset.toLowerCase()
+
+    // const factory = await OtokenFactory.at(options.factory)
+    // const oldOracle = await Oracle.at(options.oldOracle)
     const newOracle = await Oracle.at(options.newOracle)
 
-    console.log(`Getting list of create Otokens with asset ${options.asset} 🍕`)
+    console.log(`Getting list of create Otokens with asset ${asset} 🍕`)
 
-    const currentTimeStamp = Math.floor(Date.now() / 1000)
-    const otokenLength = new BigNumber(await factory.getOtokensLength())
+    // const expiriesToMigrate = []
+    // const pricesToMigrate = []
 
-    const expiriesToMigrate = []
-    const pricesToMigrate = []
+    const otokens = await getOTokens(options.network, options.internal === 'true')
 
-    console.log(`total tokens: ${otokenLength}`)
+    console.log(`# of otokens from subgraph: ${otokens.length}`)
 
-    const otokens = await getOTokens()
+    const prices = await getAllSettlementPrices(asset, options.network, options.internal)
 
-    console.log(`fromSubgraph: ${otokens.length}`)
+    const oTokensWithAsset = otokens.filter(
+      otoken =>
+        otoken.underlyingAsset.id === asset || otoken.collateralAsset.id === asset || otoken.strikeAsset.id === asset,
+    )
 
-    for (let i = 0; i < otokens.length; i++) {
-      // const otokenAddress = await factory.otokens(i)
-
-      const otoken = otokens[i]
-
-      // const otoken = await Otoken.at(otokenAddress)
-
-      const strike = otoken.strikeAsset.id
-      const collateral = otoken.collateralAsset.id
-      const underlying = otoken.underlyingAsset.id
-      const expiry = otoken.expiryTimestamp
-      if (
-        (strike.toLowerCase() == options.asset.toLowerCase() ||
-          collateral.toLowerCase() == options.asset.toLowerCase() ||
-          underlying.toLowerCase() == options.asset.toLowerCase()) &&
-        !expiriesToMigrate.includes(expiry.toString())
-      ) {
-        const priceToMigrate = new BigNumber((await oldOracle.getExpiryPrice(options.asset, expiry.toString()))[0])
-
-        expiriesToMigrate.push(expiry.toString())
-        pricesToMigrate.push(priceToMigrate.toString())
-        console.log('pushed', expiriesToMigrate.length)
+    const filteredExpiries = oTokensWithAsset.reduce((prev, curr) => {
+      if (!prev.includes(curr.expiryTimestamp)) {
+        return [...prev, curr.expiryTimestamp]
       } else {
+        return [...prev]
       }
+    }, [])
+
+    const knownRecordSubgraph = prices.filter(priceObj => filteredExpiries.includes(priceObj.expiry))
+    const missingExpires = filteredExpiries.filter(
+      expiry => !knownRecordSubgraph.map(obj => obj.expiry).includes(expiry),
+    )
+
+    const missingPrices = []
+    for (const expiry of missingExpires) {
+      const price = await getCoinGeckData(options.coinId, expiry)
+      missingPrices.push(price.toString())
+      console.log(`Got price for expiry ${expiry} from CoinGeck: ${price}`)
     }
 
-    console.log(`Found ${expiriesToMigrate.length} expiry price 🎉`)
+    const knownPrices = knownRecordSubgraph.map(obj => obj.price)
+    const knownExpires = knownRecordSubgraph.map(obj => obj.expiry)
+
+    const finalPrices = [...knownPrices, ...missingPrices]
+    const finalExpires = [...knownExpires, ...missingExpires]
+
+    console.log(`Final expires`, finalExpires)
+    console.log(`Final prices`, finalPrices)
+
+    // console.log(`Found ${expiriesToMigrate.length} expiry price 🎉`)
+
+    if (finalPrices.length === 0) throw 'Nothing to Migrate'
+
     console.log(`Migrating prices to new Oracle at ${newOracle.address} 🎉`)
 
-    const tx = await newOracle.migrateOracle(options.asset, expiriesToMigrate, pricesToMigrate)
+    const tx = await newOracle.migrateOracle(options.asset, finalExpires, finalPrices)
 
     console.log(`Oracle prices migration done for asset ${options.asset}! 🎉`)
     console.log(`Transaction hash: ${tx.tx}`)
