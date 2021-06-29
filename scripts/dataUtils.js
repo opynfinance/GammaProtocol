@@ -3,8 +3,8 @@ const fetch = require('node-fetch')
 const postQuery = async (endpoint, query) => {
   const options = {
     method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({query}),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query }),
   }
   const url = endpoint
   const response = await fetch(url, options)
@@ -14,6 +14,15 @@ const postQuery = async (endpoint, query) => {
   } else {
     return data
   }
+}
+
+const getSubgraphUrl = (network, internal) => {
+  const prefix = internal ? 'gamma-internal' : 'gamma'
+  let url = `https://api.thegraph.com/subgraphs/name/opynfinance/${prefix}-${network}`
+  if (network === 'mainnet' && internal) {
+    url = 'https://api.thegraph.com/subgraphs/name/opynfinance/playground'
+  }
+  return url
 }
 
 /**
@@ -45,8 +54,7 @@ module.exports.getOTokens = async (network, internal) => {
     }
   }`
   try {
-    const prefixt = internal ? 'gamma-internal' : 'gamma'
-    const url = `https://api.thegraph.com/subgraphs/name/opynfinance/${prefixt}-${network}`
+    const url = getSubgraphUrl(network, internal)
     console.log(`Requesting subgraph`, url)
     const response = await postQuery(url, query)
     return response.data.otokens
@@ -71,8 +79,7 @@ module.exports.getAllSettlementPrices = async (asset, network, internal) => {
   }
   `
   try {
-    const prefixt = internal ? 'gamma-internal' : 'gamma'
-    const url = `https://api.thegraph.com/subgraphs/name/opynfinance/${prefixt}-${network}`
+    const url = getSubgraphUrl(network, internal)
     const response = await postQuery(url, query)
     return response.data.expiryPrices
   } catch (error) {

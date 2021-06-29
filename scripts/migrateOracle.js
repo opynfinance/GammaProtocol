@@ -16,17 +16,17 @@ module.exports = async function(callback) {
   try {
     const options = yargs
       .usage(
-        'Usage: --network <network> --internal <internal> --newOracle <newOracle> --asset <asset> --gasPrice <gasPrice>',
+        'Usage: --network <network> --internal <internal> --newOracle <newOracle> --asset <asset> --coinId <coinId> --gasPrice <gasPrice>',
       )
-      .option('network', {describe: '0x exchange address', type: 'string', demandOption: true})
-      .option('newOracle', {describe: 'New oracle module address', type: 'string', demandOption: true})
-      .option('asset', {describe: 'Asset address to migrate', type: 'string', demandOption: true})
-      .option('internal', {describe: 'Internal network or not', type: 'string', demandOption: true})
+      .option('network', { describe: '0x exchange address', type: 'string', demandOption: true })
+      .option('newOracle', { describe: 'New oracle module address', type: 'string', demandOption: true })
+      .option('asset', { describe: 'Asset address to migrate', type: 'string', demandOption: true })
+      .option('internal', { describe: 'Internal network or not', type: 'string', demandOption: true })
       .option('coinId', {
         describe: 'coingecko id used to search for price if it was not reported in our oracle',
         type: 'string',
       })
-      .option('gasPrice', {describe: 'Gas price in WEI', type: 'string', demandOption: false}).argv
+      .option('gasPrice', { describe: 'Gas price in WEI', type: 'string', demandOption: false }).argv
 
     console.log('Init contracts 🍕')
 
@@ -52,6 +52,8 @@ module.exports = async function(callback) {
         otoken.underlyingAsset.id === asset || otoken.collateralAsset.id === asset || otoken.strikeAsset.id === asset,
     )
 
+    console.log(`oTokensWithAsset`, oTokensWithAsset.length)
+
     const filteredExpiries = oTokensWithAsset.reduce((prev, curr) => {
       if (!prev.includes(curr.expiryTimestamp)) {
         return [...prev, curr.expiryTimestamp]
@@ -60,23 +62,36 @@ module.exports = async function(callback) {
       }
     }, [])
 
-    const knownRecordSubgraph = prices.filter(priceObj => filteredExpiries.includes(priceObj.expiry))
-    const missingExpires = filteredExpiries.filter(
-      expiry => !knownRecordSubgraph.map(obj => obj.expiry).includes(expiry),
-    )
+    console.log(`expires needed to fill in ${filteredExpiries.length}`)
 
-    const missingPrices = []
-    for (const expiry of missingExpires) {
-      const price = await apis.getCoinGeckData(options.coinId, expiry)
-      missingPrices.push(price.toString())
-      console.log(`Got price for expiry ${expiry} from CoinGeck: ${price}`)
-    }
+    const knownRecordSubgraph = prices.filter(priceObj => filteredExpiries.includes(priceObj.expiry))
 
     const knownPrices = knownRecordSubgraph.map(obj => obj.price)
     const knownExpires = knownRecordSubgraph.map(obj => obj.expiry)
 
-    const finalPrices = [...knownPrices, ...missingPrices]
-    const finalExpires = [...knownExpires, ...missingExpires]
+    let finalPrices = []
+    let finalExpires = []
+
+    if (options.coinId) {
+      const missingExpires = filteredExpiries.filter(
+        expiry => !knownRecordSubgraph.map(obj => obj.expiry).includes(expiry),
+      )
+
+      console.log(`Using coinID ${options.coinId} to fill in ${missingExpires.length} missing prices! `)
+
+      const missingPrices = []
+      for (const expiry of missingExpires) {
+        const price = await apis.getCoinGeckData(options.coinId, expiry)
+        missingPrices.push(price.toString())
+        console.log(`Got price for expiry ${expiry} from CoinGeck: ${price}`)
+      }
+
+      finalPrices = [...knownPrices, ...missingPrices]
+      finalExpires = [...knownExpires, ...missingExpires]
+    } else {
+      finalPrices = knownPrices
+      finalExpires = knownExpires
+    }
 
     console.log(`Final expires`, finalExpires)
     console.log(`Final prices`, finalPrices)
@@ -87,7 +102,8 @@ module.exports = async function(callback) {
 
     console.log(`Migrating prices to new Oracle at ${newOracle.address} 🎉`)
 
-    const tx = await newOracle.migrateOracle(options.asset, finalExpires, finalPrices)
+    const overrideOptions = options.gasPrice ? { gasPrice: options.gasPrice } : undefined
+    const tx = await newOracle.migrateOracle(options.asset, finalExpires, finalPrices, overrideOptions)
 
     console.log(`Oracle prices migration done for asset ${options.asset}! 🎉`)
     console.log(`Transaction hash: ${tx.tx}`)
