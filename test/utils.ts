@@ -163,7 +163,7 @@ export const expectedLiqudidationPrice = (
   const endingPrice = new BigNumber(collateral).dividedBy(debt)
   const auctionElapsedTime = currentBlockTime - auctionStartingTime
 
-  if (auctionElapsedTime > 3600) {
+  if (auctionElapsedTime > 5400) {
     // return Math.floor(endingPrice)
     return endingPrice.multipliedBy(10 ** collateralDecimals).toNumber()
   }
@@ -183,7 +183,12 @@ export const expectedLiqudidationPrice = (
   }
 
   const price = startingPrice
-    .plus(endingPrice.minus(startingPrice).multipliedBy(auctionElapsedTime).dividedBy(3600))
+    .plus(
+      endingPrice
+        .minus(startingPrice)
+        .multipliedBy(auctionElapsedTime)
+        .dividedBy(5400),
+    )
     .multipliedBy(10 ** collateralDecimals)
 
   if (price.isGreaterThan(endingPrice.multipliedBy(10 ** collateralDecimals)))
