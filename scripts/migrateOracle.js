@@ -32,27 +32,20 @@ module.exports = async function(callback) {
 
     const asset = options.asset.toLowerCase()
 
-    // const factory = await OtokenFactory.at(options.factory)
-    // const oldOracle = await Oracle.at(options.oldOracle)
     const newOracle = await Oracle.at(options.newOracle)
 
     console.log(`Getting list of create Otokens with asset ${asset} 🍕`)
-
-    // const expiriesToMigrate = []
-    // const pricesToMigrate = []
 
     const otokens = await apis.getOTokens(options.network, options.internal === 'true')
 
     console.log(`# of otokens from subgraph: ${otokens.length}`)
 
-    const prices = await apis.getAllSettlementPrices(asset, options.network, options.internal)
+    const prices = await apis.getAllSettlementPrices(asset, options.network, options.internal === 'true')
 
     const oTokensWithAsset = otokens.filter(
       otoken =>
         otoken.underlyingAsset.id === asset || otoken.collateralAsset.id === asset || otoken.strikeAsset.id === asset,
     )
-
-    console.log(`oTokensWithAsset`, oTokensWithAsset.length)
 
     const filteredExpiries = oTokensWithAsset.reduce((prev, curr) => {
       if (!prev.includes(curr.expiryTimestamp)) {
@@ -72,11 +65,11 @@ module.exports = async function(callback) {
     let finalPrices = []
     let finalExpires = []
 
-    if (options.coinId) {
-      const missingExpires = filteredExpiries.filter(
-        expiry => !knownRecordSubgraph.map(obj => obj.expiry).includes(expiry),
-      )
+    const missingExpires = filteredExpiries.filter(
+      expiry => !knownRecordSubgraph.map(obj => obj.expiry).includes(expiry),
+    )
 
+    if (options.coinId) {
       console.log(`Using coinID ${options.coinId} to fill in ${missingExpires.length} missing prices! `)
 
       const missingPrices = []
@@ -89,6 +82,12 @@ module.exports = async function(callback) {
       finalPrices = [...knownPrices, ...missingPrices]
       finalExpires = [...knownExpires, ...missingExpires]
     } else {
+      if (missingExpires.length > 0) {
+        console.log(
+          `Missing ${missingExpires.length} prices to support redeeming all options. Please put in coinId to fetch those `,
+        )
+      }
+
       finalPrices = knownPrices
       finalExpires = knownExpires
     }

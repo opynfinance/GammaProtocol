@@ -22,6 +22,7 @@ const getSubgraphUrl = (network, internal) => {
   if (network === 'mainnet' && internal) {
     url = 'https://api.thegraph.com/subgraphs/name/opynfinance/playground'
   }
+  console.log(`Using subgraph endpoint`, url)
   return url
 }
 
@@ -55,7 +56,6 @@ module.exports.getOTokens = async (network, internal) => {
   }`
   try {
     const url = getSubgraphUrl(network, internal)
-    console.log(`Requesting subgraph`, url)
     const response = await postQuery(url, query)
     return response.data.otokens
   } catch (error) {
@@ -70,13 +70,17 @@ module.exports.getOTokens = async (network, internal) => {
 module.exports.getAllSettlementPrices = async (asset, network, internal) => {
   const query = `
   {
-    expiryPrices (where:{
-      asset: "${asset}"
-    }, first:1000) {
+    expiryPrices(
+      first: 1000,
+      where: {
+        asset: "${asset}"
+      }
+    ){
       expiry
       price
     }
   }
+  
   `
   try {
     const url = getSubgraphUrl(network, internal)
@@ -84,7 +88,8 @@ module.exports.getAllSettlementPrices = async (asset, network, internal) => {
     return response.data.expiryPrices
   } catch (error) {
     console.error(error)
-    return []
+    throw 'WTF'
+    return null
   }
 }
 
