@@ -22,9 +22,6 @@ contract STETHPricer is OpynPricerInterface {
     /// @notice underlying asset for this yToken
     ERC20Interface public underlying;
 
-    /// @notice decimals for the underlying asset
-    uint8 public underlyingDecimals;
-
     /**
      * @param _stETH stETH
      * @param _underlying underlying asset for stETH
@@ -39,10 +36,8 @@ contract STETHPricer is OpynPricerInterface {
         require(_underlying != address(0), "STETHPricer: underlying address can not be 0");
         require(_oracle != address(0), "STETHPricer: oracle address can not be 0");
 
-        ERC20Interface underlyingToken = ERC20Interface(_underlying);
-        underlyingDecimals = underlyingToken.decimals();
         stETH = STETHInterface(_stETH);
-        underlying = underlyingToken;
+        underlying = ERC20Interface(_underlying);
         oracle = OracleInterface(_oracle);
     }
 
