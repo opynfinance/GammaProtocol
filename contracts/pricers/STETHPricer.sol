@@ -3,7 +3,7 @@ pragma solidity 0.6.10;
 
 import {OracleInterface} from "../interfaces/OracleInterface.sol";
 import {OpynPricerInterface} from "../interfaces/OpynPricerInterface.sol";
-import {STETHInterface} from "../interfaces/YearnVaultInterface.sol";
+import {STETHInterface} from "../interfaces/STETHInterface.sol";
 import {ERC20Interface} from "../interfaces/ERC20Interface.sol";
 import {SafeMath} from "../packages/oz/SafeMath.sol";
 
