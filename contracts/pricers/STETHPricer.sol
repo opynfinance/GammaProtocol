@@ -46,7 +46,7 @@ contract STETHPricer is OpynPricerInterface {
      * @dev overrides the getPrice function in OpynPricerInterface
      * @return price of 1e18 stETH in USD, scaled by 1e18
      */
-    function getPrice() external override view returns (uint256) {
+    function getPrice() external view override returns (uint256) {
         uint256 underlyingPrice = oracle.getPrice(address(underlying));
         require(underlyingPrice > 0, "STETHPricer: underlying price is 0");
         return _underlyingPriceToSTETHPrice(underlyingPrice);
@@ -70,13 +70,13 @@ contract STETHPricer is OpynPricerInterface {
      * @return price of 1e8 stETH in USD, scaled by 1e8
      */
     function _underlyingPriceToSTETHPrice(uint256 _underlyingPrice) private view returns (uint256) {
-        uint256 pricePerShare = stETH.getPooledEthByShares(1 * 10 ** 18);
+        uint256 pricePerShare = stETH.getPooledEthByShares(1 ether);
         uint8 underlyingDecimals = underlying.decimals();
 
         return pricePerShare.mul(_underlyingPrice).div(10**uint256(underlyingDecimals));
     }
 
-    function getHistoricalPrice(uint80 _roundId) external override view returns (uint256, uint256) {
+    function getHistoricalPrice(uint80 _roundId) external view override returns (uint256, uint256) {
         revert("STETHPricer: Deprecated");
     }
 }

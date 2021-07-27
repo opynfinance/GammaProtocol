@@ -22,7 +22,7 @@ const STETHPricer = artifacts.require('STETHPricer.sol')
 // address(0)
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
-contract('YearnPricer', ([owner, random]) => {
+contract('STETHPricer', ([owner, random]) => {
   let oracle: MockOracleInstance
   let weth: MockERC20Instance
   let stETH: MockSTETHTokenInstance
@@ -53,7 +53,7 @@ contract('YearnPricer', ([owner, random]) => {
     it('should revert if initializing with stETH = 0', async () => {
       await expectRevert(
         STETHPricer.new(ZERO_ADDR, weth.address, oracle.address),
-        'STETHPricer: yToken address can not be 0',
+        'STETHPricer: stETH address can not be 0',
       )
     })
     it('should revert if initializing with underlying = 0 address', async () => {
