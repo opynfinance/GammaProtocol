@@ -5,10 +5,10 @@ import {
   MockOracleInstance,
   MockOtokenInstance,
 } from '../../build/types/truffle-types'
-import {createVault, createScaledNumber as scaleNum, createTokenAmount} from '../utils'
-import {assert} from 'chai'
+import { createVault, createScaledNumber as scaleNum, createTokenAmount } from '../utils'
+import { assert } from 'chai'
 
-const {expectRevert, time} = require('@openzeppelin/test-helpers')
+const { expectRevert, time } = require('@openzeppelin/test-helpers')
 const MockAddressBook = artifacts.require('MockAddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const MockOtoken = artifacts.require('MockOtoken.sol')

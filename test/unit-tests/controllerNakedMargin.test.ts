@@ -18,7 +18,7 @@ import {
   calcRelativeDiff,
 } from '../utils'
 
-const {expectRevert, time} = require('@openzeppelin/test-helpers')
+const { expectRevert, time } = require('@openzeppelin/test-helpers')
 
 const CallTester = artifacts.require('CallTester.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
@@ -100,7 +100,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
     weth = await MockERC20.new('WETH', 'WETH', wethDecimals)
     weth2 = await MockERC20.new('WETH', 'WETH', wethDecimals)
     // deploy Oracle module
-    oracle = await MockOracle.new(addressBook.address, {from: owner})
+    oracle = await MockOracle.new(addressBook.address, { from: owner })
     // calculator deployment
     calculator = await MarginCalculator.new(oracle.address)
     // margin pool deployment
@@ -121,7 +121,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
     controllerImplementation = await Controller.new()
 
     // set controller address in AddressBook
-    await addressBook.setController(controllerImplementation.address, {from: owner})
+    await addressBook.setController(controllerImplementation.address, { from: owner })
 
     // check controller deployment
     const controllerProxyAddress = await addressBook.getController()
@@ -133,8 +133,8 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
     assert.equal(await controllerProxy.systemPartiallyPaused(), false, 'system is partially paused')
 
     // set max cap
-    await controllerProxy.setNakedCap(usdc.address, usdcCap, {from: owner})
-    await controllerProxy.setNakedCap(weth.address, wethCap, {from: owner})
+    await controllerProxy.setNakedCap(usdc.address, usdcCap, { from: owner })
+    await controllerProxy.setNakedCap(weth.address, wethCap, { from: owner })
 
     // make everyone rich
     await usdc.mint(accountOwner1, createTokenAmount(10000000, usdcDecimals))
@@ -148,11 +148,11 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
     await calculator.setSpotShock(weth.address, usdc.address, usdc.address, true, productSpotShockValue)
     await calculator.setSpotShock(weth.address, usdc.address, weth.address, false, productSpotShockValue)
     // set oracle deviation
-    await calculator.setOracleDeviation(oracleDeviationValue, {from: owner})
+    await calculator.setOracleDeviation(oracleDeviationValue, { from: owner })
     // set WETH dust amount
-    await calculator.setCollateralDust(weth.address, wethDust, {from: owner})
+    await calculator.setCollateralDust(weth.address, wethDust, { from: owner })
     // set USDC dust amount
-    await calculator.setCollateralDust(usdc.address, usdcDust, {from: owner})
+    await calculator.setCollateralDust(usdc.address, usdcDust, { from: owner })
     // set product upper bound values
     await calculator.setUpperBoundValues(weth.address, usdc.address, usdc.address, true, timeToExpiry, expiryToValue, {
       from: owner,
@@ -234,8 +234,8 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
           data: ZERO_ADDR,
         },
       ]
-      await usdc.approve(marginPool.address, collateralAmount.toString(), {from: accountOwner1})
-      await controllerProxy.operate(mintArgs, {from: accountOwner1})
+      await usdc.approve(marginPool.address, collateralAmount.toString(), { from: accountOwner1 })
+      await controllerProxy.operate(mintArgs, { from: accountOwner1 })
 
       const nakedMarginPool = new BigNumber(await controllerProxy.getNakedPoolBalance(usdc.address))
       assert.equal(nakedMarginPool.toString(), collateralAmount.toString(), 'Naked margin colalteral tracking mismatch')
@@ -269,7 +269,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
         },
       ]
 
-      await expectRevert(controllerProxy.operate(settleArgs, {from: accountOwner1}), 'C32')
+      await expectRevert(controllerProxy.operate(settleArgs, { from: accountOwner1 }), 'C32')
     })
   })
 
@@ -354,8 +354,8 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
 
       const nakedMarginPoolBefore = new BigNumber(await controllerProxy.getNakedPoolBalance(usdc.address))
 
-      await usdc.approve(marginPool.address, requiredMargin.toString(), {from: accountOwner1})
-      await controllerProxy.operate(mintArgs, {from: accountOwner1})
+      await usdc.approve(marginPool.address, requiredMargin.toString(), { from: accountOwner1 })
+      await controllerProxy.operate(mintArgs, { from: accountOwner1 })
 
       const nakedMarginPoolAfter = new BigNumber(await controllerProxy.getNakedPoolBalance(usdc.address))
       assert.equal(
@@ -417,7 +417,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
       const liquidatorCollateralBalanceBefore = new BigNumber(await usdc.balanceOf(liquidator))
       const nakedMarginPoolBefore = new BigNumber(await controllerProxy.getNakedPoolBalance(usdc.address))
 
-      await controllerProxy.operate(liquidateArgs, {from: liquidator})
+      await controllerProxy.operate(liquidateArgs, { from: liquidator })
 
       const liquidatorCollateralBalanceAfter = new BigNumber(await usdc.balanceOf(liquidator))
       const vaultAfterLiquidation = (
@@ -471,7 +471,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
       const userCollateralBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
       const nakedMarginPoolBefore = new BigNumber(await controllerProxy.getNakedPoolBalance(usdc.address))
 
-      await controllerProxy.operate(withdrawArgs, {from: accountOwner1})
+      await controllerProxy.operate(withdrawArgs, { from: accountOwner1 })
 
       const nakedMarginPoolAfter = new BigNumber(await controllerProxy.getNakedPoolBalance(usdc.address))
       const userCollateralAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
@@ -570,8 +570,8 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
 
       const nakedMarginPoolBefore = new BigNumber(await controllerProxy.getNakedPoolBalance(weth.address))
 
-      await weth.approve(marginPool.address, requiredMargin.toString(), {from: accountOwner1})
-      await controllerProxy.operate(mintArgs, {from: accountOwner1})
+      await weth.approve(marginPool.address, requiredMargin.toString(), { from: accountOwner1 })
+      await controllerProxy.operate(mintArgs, { from: accountOwner1 })
 
       const nakedMarginPoolAfter = new BigNumber(await controllerProxy.getNakedPoolBalance(weth.address))
       assert.equal(
@@ -633,7 +633,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
       const liquidatorCollateralBalanceBefore = new BigNumber(await weth.balanceOf(liquidator))
       const nakedMarginPoolBefore = new BigNumber(await controllerProxy.getNakedPoolBalance(weth.address))
 
-      await controllerProxy.operate(liquidateArgs, {from: liquidator})
+      await controllerProxy.operate(liquidateArgs, { from: liquidator })
 
       const liquidatorCollateralBalanceAfter = new BigNumber(await weth.balanceOf(liquidator))
       const vaultAfterLiquidation = (
@@ -687,7 +687,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
       const userCollateralBefore = new BigNumber(await weth.balanceOf(accountOwner1))
       const nakedMarginPoolBefore = new BigNumber(await controllerProxy.getNakedPoolBalance(weth.address))
 
-      await controllerProxy.operate(withdrawArgs, {from: accountOwner1})
+      await controllerProxy.operate(withdrawArgs, { from: accountOwner1 })
 
       const userCollateralAfter = new BigNumber(await weth.balanceOf(accountOwner1))
       const nakedMarginPoolAfter = new BigNumber(await controllerProxy.getNakedPoolBalance(weth.address))
@@ -784,8 +784,8 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
           data: ZERO_ADDR,
         },
       ]
-      await usdc.approve(marginPool.address, requiredMargin.toString(), {from: accountOwner1})
-      await controllerProxy.operate(mintArgs, {from: accountOwner1})
+      await usdc.approve(marginPool.address, requiredMargin.toString(), { from: accountOwner1 })
+      await controllerProxy.operate(mintArgs, { from: accountOwner1 })
 
       const latestVaultUpdateTimestamp = new BigNumber(
         (await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter.toString()))[2],
@@ -840,7 +840,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
 
       const liquidatorCollateralBalanceBefore = new BigNumber(await usdc.balanceOf(liquidator))
 
-      await controllerProxy.operate(liquidateArgs, {from: liquidator})
+      await controllerProxy.operate(liquidateArgs, { from: liquidator })
 
       const liquidatorCollateralBalanceAfter = new BigNumber(await usdc.balanceOf(liquidator))
       const vaultAfterLiquidation = (
@@ -902,7 +902,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
         },
       ]
 
-      await expectRevert(controllerProxy.operate(liquidateArgs, {from: liquidator}), 'C33')
+      await expectRevert(controllerProxy.operate(liquidateArgs, { from: liquidator }), 'C33')
     })
 
     it('should be able to remove excess collateral after partially liquidating', async () => {
@@ -937,7 +937,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
 
       const userCollateralBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
 
-      await controllerProxy.operate(withdrawArgs, {from: accountOwner1})
+      await controllerProxy.operate(withdrawArgs, { from: accountOwner1 })
 
       const userCollateralAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
 
@@ -952,7 +952,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
   describe('Collateral cap', async () => {
     it('only owner should be able to set naked cap amount', async () => {
       const wethCap = scaleNum(50000, wethDecimals)
-      await controllerProxy.setNakedCap(weth.address, wethCap, {from: owner})
+      await controllerProxy.setNakedCap(weth.address, wethCap, { from: owner })
 
       const capAmount = new BigNumber(await controllerProxy.getNakedCap(weth.address))
 
@@ -963,7 +963,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
       const wethCap = scaleNum(50000, wethDecimals)
 
       await expectRevert(
-        controllerProxy.setNakedCap(weth.address, wethCap, {from: random}),
+        controllerProxy.setNakedCap(weth.address, wethCap, { from: random }),
         'Ownable: caller is not the owner',
       )
     })
@@ -971,7 +971,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
     it('should revert setting collateral cap amount equal to zero', async () => {
       const wethCap = scaleNum(0, wethDecimals)
 
-      await expectRevert(controllerProxy.setNakedCap(weth.address, wethCap, {from: owner}), 'C36')
+      await expectRevert(controllerProxy.setNakedCap(weth.address, wethCap, { from: owner }), 'C36')
     })
 
     it('should revert depositing collateral in vault that that hit naked cap', async () => {
@@ -1001,8 +1001,8 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
           data: ZERO_ADDR,
         },
       ]
-      await usdc.approve(marginPool.address, capAmount.toString(), {from: accountOwner1})
-      await expectRevert(controllerProxy.operate(mintArgs, {from: accountOwner1}), 'C37')
+      await usdc.approve(marginPool.address, capAmount.toString(), { from: accountOwner1 })
+      await expectRevert(controllerProxy.operate(mintArgs, { from: accountOwner1 }), 'C37')
     })
   })
 })
