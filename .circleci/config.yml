@@ -24,7 +24,7 @@ workflows:
             - build
       - integration-test:
           requires:
-            - build
+            - unit-test
       # - e2e-test:
       #     context: COVERALLS_REPO_TOKEN
       #     requires:
@@ -38,6 +38,8 @@ workflows:
           context: COVERALLS_REPO_TOKEN
           requires:
             - unit-test
+            - integration-test
+            - coverage
 
 jobs:
 
