@@ -22,7 +22,7 @@
     "build"
   ],
   "scripts": {
-    "ganache": "ganache-cli -d --port 8545 --defaultBalanceEther 500",
+    "ganache": "ganache-cli -d --port 8545 --defaultBalanceEther 1000",
     "migrate": "truffle migrate",
     "build": "npm run compile:contracts && npm run compile:types",
     "compile:contracts": "truffle compile",
@@ -87,6 +87,7 @@
   },
   "dependencies": {
     "@truffle/hdwallet-provider": "^1.0.44",
+    "ganache-cli": "^6.12.2",
     "solc-0.6.10": "npm:solc@0.6.10",
     "solidity-docgen": "^0.5.6",
     "yargs": "^13.2.4"
@@ -122,7 +123,7 @@
     "solhint-plugin-prettier": "0.0.4",
     "solidity-coverage": "0.7.5",
     "surya": "^0.4.0",
-    "truffle": "^5.1.32",
+    "truffle": "^5.4.3",
     "truffle-assertions": "0.9.2",
     "truffle-contract-size": "^2.0.0",
     "truffle-plugin-verify": "^0.5.2",
