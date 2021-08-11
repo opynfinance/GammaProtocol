@@ -9,10 +9,10 @@ import {
   MarginPoolInstance,
   OtokenFactoryInstance,
 } from '../../build/types/truffle-types'
-import {createTokenAmount, createValidExpiry} from '../utils'
+import { createTokenAmount, createValidExpiry } from '../utils'
 import BigNumber from 'bignumber.js'
 
-const {time} = require('@openzeppelin/test-helpers')
+const { time } = require('@openzeppelin/test-helpers')
 const AddressBook = artifacts.require('AddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const Otoken = artifacts.require('Otoken.sol')
@@ -164,8 +164,8 @@ contract('Short Put Spread Option expires Otm flow', ([accountOwner1, nakedBuyer
     await usdc.mint(nakedBuyer, nakedBuyerUsdc)
 
     // have the user approve all the usdc transfers
-    await usdc.approve(marginPool.address, accountOwner1Usdc, {from: accountOwner1})
-    await usdc.approve(marginPool.address, accountOwner2Usdc, {from: accountOwner2})
+    await usdc.approve(marginPool.address, accountOwner1Usdc, { from: accountOwner1 })
+    await usdc.approve(marginPool.address, accountOwner2Usdc, { from: accountOwner2 })
 
     const vaultCounter1Before = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
     vaultCounter1 = vaultCounter1Before.toNumber() + 1
@@ -216,10 +216,10 @@ contract('Short Put Spread Option expires Otm flow', ([accountOwner1, nakedBuyer
           },
         ]
 
-        await controllerProxy.operate(actionArgsAccountOwner2, {from: accountOwner2})
+        await controllerProxy.operate(actionArgsAccountOwner2, { from: accountOwner2 })
 
         // accountOwner2 transfers their lower strike put option to accountOwner1
-        await lowerStrikePut.transfer(accountOwner1, scaledOptionsAmount, {from: accountOwner2})
+        await lowerStrikePut.transfer(accountOwner1, scaledOptionsAmount, { from: accountOwner2 })
 
         const actionArgsAccountOwner1 = [
           {
@@ -264,8 +264,8 @@ contract('Short Put Spread Option expires Otm flow', ([accountOwner1, nakedBuyer
           },
         ]
 
-        await lowerStrikePut.approve(marginPool.address, scaledOptionsAmount, {from: accountOwner1})
-        await controllerProxy.operate(actionArgsAccountOwner1, {from: accountOwner1})
+        await lowerStrikePut.approve(marginPool.address, scaledOptionsAmount, { from: accountOwner1 })
+        await controllerProxy.operate(actionArgsAccountOwner1, { from: accountOwner1 })
       },
     )
 
@@ -312,7 +312,7 @@ contract('Short Put Spread Option expires Otm flow', ([accountOwner1, nakedBuyer
         },
       ]
 
-      await controllerProxy.operate(actionArgs, {from: accountOwner1})
+      await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
       // keep track of balances after
       const ownerUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
@@ -362,7 +362,7 @@ contract('Short Put Spread Option expires Otm flow', ([accountOwner1, nakedBuyer
 
     it('nakedBuyer: redeem OTM put option after expiry', async () => {
       // accountOwner1 transfers their higher strike put option to the nakedBuyer
-      await higherStrikePut.transfer(nakedBuyer, scaledOptionsAmount, {from: accountOwner1})
+      await higherStrikePut.transfer(nakedBuyer, scaledOptionsAmount, { from: accountOwner1 })
 
       // Keep track of balances before
       const nakedBuyerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(nakedBuyer))
@@ -383,7 +383,7 @@ contract('Short Put Spread Option expires Otm flow', ([accountOwner1, nakedBuyer
         },
       ]
 
-      await controllerProxy.operate(actionArgs, {from: nakedBuyer})
+      await controllerProxy.operate(actionArgs, { from: nakedBuyer })
 
       // keep track of balances after
       const nakedBuyerUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(nakedBuyer))
@@ -431,7 +431,7 @@ contract('Short Put Spread Option expires Otm flow', ([accountOwner1, nakedBuyer
         },
       ]
 
-      await controllerProxy.operate(actionArgs, {from: accountOwner2})
+      await controllerProxy.operate(actionArgs, { from: accountOwner2 })
 
       // keep track of balances after
       const ownerUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner2))

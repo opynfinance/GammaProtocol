@@ -6,11 +6,11 @@ import {
   CompoundPricerInstance,
 } from '../../build/types/truffle-types'
 
-import {underlyingPriceToCtokenPrice} from '../utils'
+import { underlyingPriceToCtokenPrice } from '../utils'
 
 import BigNumber from 'bignumber.js'
-import {createScaledNumber} from '../utils'
-const {expectRevert, time} = require('@openzeppelin/test-helpers')
+import { createScaledNumber } from '../utils'
+const { expectRevert, time } = require('@openzeppelin/test-helpers')
 
 const MockPricer = artifacts.require('MockPricer.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
@@ -36,7 +36,7 @@ contract('CompoundPricer', ([owner, random]) => {
 
   before('Deployment', async () => {
     // deploy mock contracts
-    oracle = await MockOracle.new({from: owner})
+    oracle = await MockOracle.new({ from: owner })
     weth = await MockERC20.new('WETH', 'WETH', 18)
     usdc = await MockERC20.new('USDC', 'USDC', 6)
     cETH = await MockCToken.new('CETH', 'CETH')
@@ -147,7 +147,7 @@ contract('CompoundPricer', ([owner, random]) => {
 
     it('should set price successfully by arbitrary address', async () => {
       await oracle.setExpiryPrice(weth.address, expiry, ethPrice)
-      await cethPricer.setExpiryPriceInOracle(expiry, {from: random})
+      await cethPricer.setExpiryPriceInOracle(expiry, { from: random })
       const [price] = await oracle.getExpiryPrice(cETH.address, expiry)
       const expectedResult = await underlyingPriceToCtokenPrice(ethPrice, exchangeRate, weth)
       assert.equal(price.toString(), expectedResult.toString())
