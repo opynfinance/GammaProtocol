@@ -12,7 +12,7 @@ abstract contract Proxy {
      * @dev Tells the address of the implementation where every call will be delegated.
      * @return address of the implementation to which it will be delegated
      */
-    function implementation() public virtual view returns (address);
+    function implementation() public view virtual returns (address);
 
     /**
      * @dev Fallback function allowing to perform a delegatecall to the given implementation.
@@ -30,12 +30,12 @@ abstract contract Proxy {
             returndatacopy(ptr, 0, size)
 
             switch result
-                case 0 {
-                    revert(ptr, size)
-                }
-                default {
-                    return(ptr, size)
-                }
+            case 0 {
+                revert(ptr, size)
+            }
+            default {
+                return(ptr, size)
+            }
         }
     }
 }
