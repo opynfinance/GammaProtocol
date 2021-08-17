@@ -31,9 +31,9 @@ contract WstethPricer is OpynPricerInterface {
         address _underlying,
         address _oracle
     ) public {
-        require(_wstETH != address(0), "WSTETHPricer: wstETH address can not be 0");
-        require(_underlying != address(0), "WSTETHPricer: underlying address can not be 0");
-        require(_oracle != address(0), "WSTETHPricer: oracle address can not be 0");
+        require(_wstETH != address(0), "WstethPricer: wstETH address can not be 0");
+        require(_underlying != address(0), "WstethPricer: underlying address can not be 0");
+        require(_oracle != address(0), "WstethPricer: oracle address can not be 0");
 
         wstETH = WSTETHInterface(_wstETH);
         oracle = OracleInterface(_oracle);
@@ -47,7 +47,7 @@ contract WstethPricer is OpynPricerInterface {
      */
     function getPrice() external view override returns (uint256) {
         uint256 underlyingPrice = oracle.getPrice(address(underlying));
-        require(underlyingPrice > 0, "STETHPricer: underlying price is 0");
+        require(underlyingPrice > 0, "WstethPricer: underlying price is 0");
         return _underlyingPriceToWstethPrice(underlyingPrice);
     }
 
@@ -58,7 +58,7 @@ contract WstethPricer is OpynPricerInterface {
      */
     function setExpiryPriceInOracle(uint256 _expiryTimestamp) external {
         (uint256 underlyingPriceExpiry, ) = oracle.getExpiryPrice(underlying, _expiryTimestamp);
-        require(underlyingPriceExpiry > 0, "WSTETHPricer: underlying price not set yet");
+        require(underlyingPriceExpiry > 0, "WstethPricer: underlying price not set yet");
         uint256 wstEthPrice = _underlyingPriceToWstethPrice(underlyingPriceExpiry);
         oracle.setExpiryPrice(address(wstETH), _expiryTimestamp, wstEthPrice);
     }
@@ -75,6 +75,6 @@ contract WstethPricer is OpynPricerInterface {
     }
 
     function getHistoricalPrice(uint80 _roundId) external view override returns (uint256, uint256) {
-        revert("WSTETHPricer: Deprecated");
+        revert("WstethPricer: Deprecated");
     }
 }
