@@ -7,7 +7,7 @@ import {WSTETHInterface} from "../interfaces/WSTETHInterface.sol";
 import {SafeMath} from "../packages/oz/SafeMath.sol";
 
 /**
- * @notice A Pricer contract for a Yearn yToken
+ * @notice A Pricer contract for a wstETH token
  */
 contract WstethPricer is OpynPricerInterface {
     using SafeMath for uint256;
@@ -53,7 +53,7 @@ contract WstethPricer is OpynPricerInterface {
 
     /**
      * @notice set the expiry price in the oracle
-     * @dev requires that the underlying price has been set before setting a yToken price
+     * @dev requires that the underlying price has been set before setting a wstETH price
      * @param _expiryTimestamp expiry to set a price for
      */
     function setExpiryPriceInOracle(uint256 _expiryTimestamp) external {
