@@ -6,11 +6,11 @@ import {
   WstethPricerInstance,
 } from '../../build/types/truffle-types'
 
-import { underlyingPriceToYTokenPrice } from '../utils'
+import {underlyingPriceToYTokenPrice} from '../utils'
 
 import BigNumber from 'bignumber.js'
-import { createScaledNumber } from '../utils'
-const { expectRevert, time } = require('@openzeppelin/test-helpers')
+import {createScaledNumber} from '../utils'
+const {expectRevert, time} = require('@openzeppelin/test-helpers')
 
 const MockPricer = artifacts.require('MockPricer.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
@@ -33,7 +33,7 @@ contract('WstethPricer', ([owner, random]) => {
 
   before('Deployment', async () => {
     // deploy mock contracts
-    oracle = await MockOracle.new({ from: owner })
+    oracle = await MockOracle.new({from: owner})
     weth = await MockERC20.new('WETH', 'WETH', 18)
     wstETH = await MockWSTETHToken.new('wstETH', 'wstETH')
     // mock underlying pricers
@@ -50,23 +50,17 @@ contract('WstethPricer', ([owner, random]) => {
       assert.equal(await wstethPricer.underlying(), weth.address)
       assert.equal(await wstethPricer.oracle(), oracle.address)
     })
+
     it('should revert if initializing with wstETH = 0', async () => {
-      await expectRevert(
-        WstethPricer.new(ZERO_ADDR, weth.address, oracle.address),
-        'WstethPricer: wstETH address can not be 0',
-      )
+      await expectRevert(WstethPricer.new(ZERO_ADDR, weth.address, oracle.address), 'W1')
     })
+
     it('should revert if initializing with underlying = 0 address', async () => {
-      await expectRevert(
-        WstethPricer.new(wstETH.address, ZERO_ADDR, oracle.address),
-        'WstethPricer: underlying address can not be 0',
-      )
+      await expectRevert(WstethPricer.new(wstETH.address, ZERO_ADDR, oracle.address), 'W2')
     })
+
     it('should revert if initializing with oracle = 0 address', async () => {
-      await expectRevert(
-        WstethPricer.new(wstETH.address, weth.address, ZERO_ADDR),
-        'WstethPricer: oracle address can not be 0',
-      )
+      await expectRevert(WstethPricer.new(wstETH.address, weth.address, ZERO_ADDR), 'W3')
     })
   })
 
@@ -87,6 +81,7 @@ contract('WstethPricer', ([owner, random]) => {
       // 1 yWETH = 9.4 USD
       assert.equal(wstETHprice.toString(), '47435353746')
     })
+
     it('should return the new price after resetting answer in underlying pricer', async () => {
       const newPrice = createScaledNumber(500)
       // await wethPricer.setPrice(newPrice)
@@ -95,10 +90,11 @@ contract('WstethPricer', ([owner, random]) => {
       const expectedResult = await underlyingPriceToYTokenPrice(new BigNumber(newPrice), pricePerShare, weth)
       assert.equal(wstETHprice.toString(), expectedResult.toString())
     })
+
     it('should revert if price is lower than 0', async () => {
       // await wethPricer.setPrice('0')
       await oracle.setRealTimePrice(weth.address, '0')
-      await expectRevert(wstethPricer.getPrice(), 'WstethPricer: underlying price is 0')
+      await expectRevert(wstethPricer.getPrice(), 'W4')
     })
   })
 
@@ -112,12 +108,12 @@ contract('WstethPricer', ([owner, random]) => {
     })
 
     it("should revert if oracle don't have price of underlying yet", async () => {
-      await expectRevert(wstethPricer.setExpiryPriceInOracle(expiry), 'WstethPricer: underlying price not set yet')
+      await expectRevert(wstethPricer.setExpiryPriceInOracle(expiry), 'W5')
     })
 
     it('should set price successfully by arbitrary address', async () => {
       await oracle.setExpiryPrice(weth.address, expiry, ethPrice)
-      await wstethPricer.setExpiryPriceInOracle(expiry, { from: random })
+      await wstethPricer.setExpiryPriceInOracle(expiry, {from: random})
       const [price] = await oracle.getExpiryPrice(wstETH.address, expiry)
       const expectedResult = await underlyingPriceToYTokenPrice(ethPrice, pricePerShare, weth)
       assert.equal(price.toString(), expectedResult.toString())

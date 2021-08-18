@@ -7,6 +7,18 @@ import {WSTETHInterface} from "../interfaces/WSTETHInterface.sol";
 import {SafeMath} from "../packages/oz/SafeMath.sol";
 
 /**
+ * Error Codes
+ * W1: cannot deploy pricer, wstETH address cannot be 0
+ * W2: cannot deploy pricer, underlying address cannot be 0
+ * W3: cannot deploy pricer, oracle address cannot be 0
+ * W4: cannot retrieve price, underlying price is 0
+ * W5: cannot set expiry price in oracle, underlying price is 0 and has not been set
+ * W6: cannot retrieve historical prices, getHistoricalPrice has been deprecated
+ */
+
+/**
+ * @title WstethPricer
+ * @author Opyn Team
  * @notice A Pricer contract for a wstETH token
  */
 contract WstethPricer is OpynPricerInterface {
@@ -31,9 +43,9 @@ contract WstethPricer is OpynPricerInterface {
         address _underlying,
         address _oracle
     ) public {
-        require(_wstETH != address(0), "WstethPricer: wstETH address can not be 0");
-        require(_underlying != address(0), "WstethPricer: underlying address can not be 0");
-        require(_oracle != address(0), "WstethPricer: oracle address can not be 0");
+        require(_wstETH != address(0), "W1");
+        require(_underlying != address(0), "W2");
+        require(_oracle != address(0), "W3");
 
         wstETH = WSTETHInterface(_wstETH);
         oracle = OracleInterface(_oracle);
@@ -47,7 +59,7 @@ contract WstethPricer is OpynPricerInterface {
      */
     function getPrice() external view override returns (uint256) {
         uint256 underlyingPrice = oracle.getPrice(address(underlying));
-        require(underlyingPrice > 0, "WstethPricer: underlying price is 0");
+        require(underlyingPrice > 0, "W4");
         return _underlyingPriceToWstethPrice(underlyingPrice);
     }
 
@@ -58,7 +70,7 @@ contract WstethPricer is OpynPricerInterface {
      */
     function setExpiryPriceInOracle(uint256 _expiryTimestamp) external {
         (uint256 underlyingPriceExpiry, ) = oracle.getExpiryPrice(underlying, _expiryTimestamp);
-        require(underlyingPriceExpiry > 0, "WstethPricer: underlying price not set yet");
+        require(underlyingPriceExpiry > 0, "W5");
         uint256 wstEthPrice = _underlyingPriceToWstethPrice(underlyingPriceExpiry);
         oracle.setExpiryPrice(address(wstETH), _expiryTimestamp, wstEthPrice);
     }
@@ -74,7 +86,7 @@ contract WstethPricer is OpynPricerInterface {
         return stEthPerWsteth.mul(_underlyingPrice).div(1e18);
     }
 
-    function getHistoricalPrice(uint80 _roundId) external view override returns (uint256, uint256) {
-        revert("WstethPricer: Deprecated");
+    function getHistoricalPrice(uint80) external view override returns (uint256, uint256) {
+        revert("W6");
     }
 }
