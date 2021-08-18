@@ -26,4 +26,5 @@
   * pricers
     * [ChainlinkPricer](docs/contracts-documentation/pricers/ChainlinkPricer.md)
     * [CompoundPricer](docs/contracts-documentation/pricers/CompoundPricer.md)
+    * [StakedaoEcrvPricer](docs/contracts-documentation/pricers/StakedaoEcrvPricer.md)
     * [YearnPricer](docs/contracts-documentation/pricers/YearnPricer.md)
