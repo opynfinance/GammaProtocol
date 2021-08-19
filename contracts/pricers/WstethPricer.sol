@@ -58,7 +58,7 @@ contract WstethPricer is OpynPricerInterface {
      * @return price of 1e18 stETH in USD, scaled by 1e8
      */
     function getPrice() external view override returns (uint256) {
-        uint256 underlyingPrice = oracle.getPrice(address(underlying));
+        uint256 underlyingPrice = oracle.getPrice(underlying);
         require(underlyingPrice > 0, "W4");
         return _underlyingPriceToWstethPrice(underlyingPrice);
     }
