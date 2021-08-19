@@ -64,7 +64,7 @@ contract StakedaoEcrvPricer {
     /**
      * @notice get the live price for the asset
      * @dev overrides the getPrice function in OpynPricerInterface
-     * @return price of 1e8 lpToken in USD, scaled by 1e8
+     * @return price of 1 lpToken in USD, scaled by 1e8
      */
     function getPrice() external view returns (uint256) {
         uint256 underlyingPrice = oracle.getPrice(address(underlying));
@@ -86,15 +86,16 @@ contract StakedaoEcrvPricer {
 
     /**
      * @dev convert underlying price to lpToken price with the lpToken to underlying exchange rate
-     * @param _underlyingPrice price of 1 underlying token (ie 1e6 USDC, 1e18 WETH) in USD, scaled by 1e8
-     * @return price of 1e8 lpToken in USD, scaled by 1e8
+     * @param _underlyingPrice price of 1 underlying token (hardcoded 1e18 for WETH) in USD, scaled by 1e8
+     * @return price of 1 lpToken in USD, scaled by 1e8
      */
     function _underlyingPriceToYtokenPrice(uint256 _underlyingPrice) private view returns (uint256) {
         uint256 pricePerShare = lpToken.getPricePerFullShare();
-        uint8 underlyingDecimals = 18;
         uint256 curvePrice = curve.get_virtual_price();
 
-        return pricePerShare.mul(_underlyingPrice).mul(curvePrice).div(10**uint256(2 * underlyingDecimals));
+        // scale by 1e36 to return price of 1 lpToken in USD, scaled by 1e8
+        // assumes underlying (WETH) is 1e18, curve price is 1e18
+        return pricePerShare.mul(_underlyingPrice).mul(curvePrice).div(1e36);
     }
 
     function getHistoricalPrice(uint80) external pure returns (uint256, uint256) {
