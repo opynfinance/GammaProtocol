@@ -2,7 +2,6 @@
 
 pragma solidity 0.6.10;
 
-import {ERC20Interface} from "../interfaces/ERC20Interface.sol";
 import {ICurve} from "../interfaces/ICurve.sol";
 import {IStakeDao} from "../interfaces/IStakeDao.sol";
 import {OracleInterface} from "../interfaces/OracleInterface.sol";
@@ -30,14 +29,14 @@ contract StakedaoEcrvPricer {
     /// @notice curve pool
     ICurve public curve;
 
-    /// @notice underlying asset for this lpToken
-    ERC20Interface public underlying;
+    /// @notice lpToken that this pricer will a get price for
+    IStakeDao public lpToken;
 
     /// @notice opyn oracle address
     OracleInterface public oracle;
 
-    /// @notice lpToken that this pricer will a get price for
-    IStakeDao public lpToken;
+    /// @notice underlying asset for this lpToken
+    address public underlying;
 
     /**
      * @param _lpToken lpToken asset
@@ -57,7 +56,7 @@ contract StakedaoEcrvPricer {
         require(_curve != address(0), "P4");
 
         lpToken = IStakeDao(_lpToken);
-        underlying = ERC20Interface(_underlying);
+        underlying = _underlying;
         oracle = OracleInterface(_oracle);
         curve = ICurve(_curve);
     }
@@ -79,7 +78,7 @@ contract StakedaoEcrvPricer {
      * @param _expiryTimestamp expiry to set a price for
      */
     function setExpiryPriceInOracle(uint256 _expiryTimestamp) external {
-        (uint256 underlyingPriceExpiry, ) = oracle.getExpiryPrice(address(underlying), _expiryTimestamp);
+        (uint256 underlyingPriceExpiry, ) = oracle.getExpiryPrice(underlying, _expiryTimestamp);
         require(underlyingPriceExpiry > 0, "P6");
         uint256 lpTokenPrice = _underlyingPriceToYtokenPrice(underlyingPriceExpiry);
         oracle.setExpiryPrice(address(lpToken), _expiryTimestamp, lpTokenPrice);
