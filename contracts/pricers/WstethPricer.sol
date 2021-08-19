@@ -55,7 +55,7 @@ contract WstethPricer is OpynPricerInterface {
     /**
      * @notice get the live price for the asset
      * @dev overrides the getPrice function in OpynPricerInterface
-     * @return price of 1e18 stETH in USD, scaled by 1e8
+     * @return price of 1 wstETH in USD, scaled by 1e8
      */
     function getPrice() external view override returns (uint256) {
         uint256 underlyingPrice = oracle.getPrice(underlying);
@@ -76,9 +76,9 @@ contract WstethPricer is OpynPricerInterface {
     }
 
     /**
-     * @dev convert underlying price to wstETH price with the wstETH to stETH exchange rate (1stETH = 1 ETH)
+     * @dev convert underlying price to wstETH price with the wstETH to stETH exchange rate (1 stETH ≈ 1 ETH)
      * @param _underlyingPrice price of 1 underlying token (ie 1e18 WETH) in USD, scaled by 1e8
-     * @return price of 1e8 wstETH in USD, scaled by 1e8
+     * @return price of 1 wstETH in USD, scaled by 1e8
      */
     function _underlyingPriceToWstethPrice(uint256 _underlyingPrice) private view returns (uint256) {
         uint256 stEthPerWsteth = wstETH.stEthPerToken();
