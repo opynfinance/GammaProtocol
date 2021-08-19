@@ -30,7 +30,7 @@ overrides the getPrice function in OpynPricerInterface
 
 #### Return Values:
 
-- price of 1e18 stETH in USD, scaled by 1e8
+- price of 1 wstETH in USD, scaled by 1e8
 
 ### Function `setExpiryPriceInOracle(uint256 _expiryTimestamp) external`
 
