@@ -61,9 +61,9 @@
 <polyline fill="none" stroke="#000000" points="946.2756,-268.5 1467.6504,-268.5 "/>
 <text text-anchor="start" x="954.2756" y="-251.9" font-family="Times,serif" font-size="14.00" fill="#000000">Public:</text>
 <text text-anchor="start" x="954.2756" y="-235.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;curve: ICurve</text>
-<text text-anchor="start" x="954.2756" y="-218.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;underlying: ERC20Interface</text>
+<text text-anchor="start" x="954.2756" y="-218.3" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;lpToken: IStakeDao</text>
 <text text-anchor="start" x="954.2756" y="-201.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;oracle: OracleInterface</text>
-<text text-anchor="start" x="954.2756" y="-184.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;lpToken: IStakeDao</text>
+<text text-anchor="start" x="954.2756" y="-184.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;underlying: address</text>
 <polyline fill="none" stroke="#000000" points="946.2756,-176.5 1467.6504,-176.5 "/>
 <text text-anchor="start" x="954.2756" y="-159.9" font-family="Times,serif" font-size="14.00" fill="#000000">Private:</text>
 <text text-anchor="start" x="954.2756" y="-143.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;&#160;_underlyingPriceToYtokenPrice(_underlyingPrice: uint256): uint256</text>

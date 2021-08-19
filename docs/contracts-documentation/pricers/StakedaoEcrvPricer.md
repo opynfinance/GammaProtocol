@@ -32,7 +32,7 @@ overrides the getPrice function in OpynPricerInterface
 
 #### Return Values:
 
-- price of 1e8 lpToken in USD, scaled by 1e8
+- price of 1 lpToken in USD, scaled by 1e8
 
 ### Function `setExpiryPriceInOracle(uint256 _expiryTimestamp) external`
 
