@@ -12,9 +12,9 @@ import {
   OtokenImplV1Instance,
 } from '../../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
-import {createTokenAmount, createScaledNumber} from '../utils'
+import { createTokenAmount, createScaledNumber } from '../utils'
 
-const {expectRevert, expectEvent, time} = require('@openzeppelin/test-helpers')
+const { expectRevert, expectEvent, time } = require('@openzeppelin/test-helpers')
 
 const CallTester = artifacts.require('CallTester.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
@@ -78,7 +78,7 @@ contract(
       weth = await MockERC20.new('WETH', 'WETH', wethDecimals)
       weth2 = await MockERC20.new('WETH', 'WETH', wethDecimals)
       // deploy Oracle module
-      oracle = await MockOracle.new(addressBook.address, {from: owner})
+      oracle = await MockOracle.new(addressBook.address, { from: owner })
       // calculator deployment
       calculator = await MarginCalculator.new(oracle.address)
       // margin pool deployment
@@ -99,7 +99,7 @@ contract(
       controllerImplementation = await Controller.new()
 
       // set controller address in AddressBook
-      await addressBook.setController(controllerImplementation.address, {from: owner})
+      await addressBook.setController(controllerImplementation.address, { from: owner })
 
       // check controller deployment
       const controllerProxyAddress = await addressBook.getController()
@@ -146,7 +146,7 @@ contract(
           'Address is already an operator',
         )
 
-        await controllerProxy.setOperator(accountOperator1, true, {from: accountOwner1})
+        await controllerProxy.setOperator(accountOperator1, true, { from: accountOwner1 })
 
         assert.equal(
           await controllerProxy.isOperator(accountOwner1, accountOperator1),
@@ -156,11 +156,11 @@ contract(
       })
 
       it('should revert when set an already operator', async () => {
-        await expectRevert(controllerProxy.setOperator(accountOperator1, true, {from: accountOwner1}), 'C9')
+        await expectRevert(controllerProxy.setOperator(accountOperator1, true, { from: accountOwner1 }), 'C9')
       })
 
       it('should be able to remove operator', async () => {
-        await controllerProxy.setOperator(accountOperator1, false, {from: accountOwner1})
+        await controllerProxy.setOperator(accountOperator1, false, { from: accountOwner1 })
 
         assert.equal(
           await controllerProxy.isOperator(accountOwner1, accountOperator1),
@@ -170,7 +170,7 @@ contract(
       })
 
       it('should revert when removing an already removed operator', async () => {
-        await expectRevert(controllerProxy.setOperator(accountOperator1, false, {from: accountOwner1}), 'C9')
+        await expectRevert(controllerProxy.setOperator(accountOperator1, false, { from: accountOwner1 }), 'C9')
       })
     })
 
@@ -201,7 +201,7 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-        await expectRevert(controllerProxy.operate(actionArgs, {from: random}), 'C6')
+        await expectRevert(controllerProxy.operate(actionArgs, { from: random }), 'C6')
       })
 
       it('should revert opening a vault a vault with id equal to zero', async () => {
@@ -217,7 +217,7 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C15')
+        await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C15')
       })
 
       it('should revert opening multiple vaults in the same operate call', async () => {
@@ -244,7 +244,7 @@ contract(
           },
         ]
 
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C13')
+        await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C13')
       })
 
       it('should revert opening a vault with vault type other than 0 or 1', async () => {
@@ -263,11 +263,11 @@ contract(
           },
         ]
 
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'A3')
+        await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'A3')
       })
 
       it('should revert opening multiple vaults for different owners in the same operate call', async () => {
-        await controllerProxy.setOperator(accountOwner1, true, {from: accountOwner2})
+        await controllerProxy.setOperator(accountOwner1, true, { from: accountOwner2 })
         const actionArgs = [
           {
             actionType: ActionType.OpenVault,
@@ -291,7 +291,7 @@ contract(
           },
         ]
 
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C12')
+        await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C12')
       })
 
       it('should open vault', async () => {
@@ -310,14 +310,14 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-        await controllerProxy.operate(actionArgs, {from: accountOwner1})
+        await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
         const vaultCounterAfter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         assert.equal(vaultCounterAfter.minus(vaultCounterBefore).toString(), '1', 'vault counter after mismatch')
       })
 
       it('should open vault from account operator', async () => {
-        await controllerProxy.setOperator(accountOperator1, true, {from: accountOwner1})
+        await controllerProxy.setOperator(accountOperator1, true, { from: accountOwner1 })
         assert.equal(
           await controllerProxy.isOperator(accountOwner1, accountOperator1),
           true,
@@ -338,7 +338,7 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-        await controllerProxy.operate(actionArgs, {from: accountOperator1})
+        await controllerProxy.operate(actionArgs, { from: accountOperator1 })
 
         const vaultCounterAfter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         assert.equal(vaultCounterAfter.minus(vaultCounterBefore).toString(), '1', 'vault counter after mismatch')
@@ -384,8 +384,8 @@ contract(
             },
           ]
 
-          await longOtoken.approve(marginPool.address, longToDeposit, {from: accountOwner1})
-          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C17')
+          await longOtoken.approve(marginPool.address, longToDeposit, { from: accountOwner1 })
+          await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C17')
         })
 
         it('should revert depositing long with invalid vault id', async () => {
@@ -408,8 +408,8 @@ contract(
             },
           ]
 
-          await longOtoken.approve(marginPool.address, longToDeposit, {from: accountOwner1})
-          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C35')
+          await longOtoken.approve(marginPool.address, longToDeposit, { from: accountOwner1 })
+          await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C35')
         })
 
         it('should revert depositing long from an address that is not the msg.sender nor the owner account address', async () => {
@@ -429,9 +429,9 @@ contract(
             },
           ]
 
-          await longOtoken.approve(marginPool.address, longToDeposit, {from: random})
-          await longOtoken.approve(marginPool.address, longToDeposit, {from: accountOperator1})
-          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOperator1}), 'C16')
+          await longOtoken.approve(marginPool.address, longToDeposit, { from: random })
+          await longOtoken.approve(marginPool.address, longToDeposit, { from: accountOperator1 })
+          await expectRevert(controllerProxy.operate(actionArgs, { from: accountOperator1 }), 'C16')
         })
 
         it('should deposit long otoken into vault from account owner', async () => {
@@ -452,8 +452,8 @@ contract(
           const marginPoolBalanceBefore = new BigNumber(await longOtoken.balanceOf(marginPool.address))
           const senderBalanceBefore = new BigNumber(await longOtoken.balanceOf(accountOwner1))
 
-          await longOtoken.approve(marginPool.address, longToDeposit, {from: accountOwner1})
-          await controllerProxy.operate(actionArgs, {from: accountOwner1})
+          await longOtoken.approve(marginPool.address, longToDeposit, { from: accountOwner1 })
+          await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
           const marginPoolBalanceAfter = new BigNumber(await longOtoken.balanceOf(marginPool.address))
           const senderBalanceAfter = new BigNumber(await longOtoken.balanceOf(accountOwner1))
@@ -507,8 +507,8 @@ contract(
           const senderBalanceBefore = new BigNumber(await longOtoken.balanceOf(accountOperator1))
           const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
 
-          await longOtoken.approve(marginPool.address, longToDeposit, {from: accountOperator1})
-          await controllerProxy.operate(actionArgs, {from: accountOperator1})
+          await longOtoken.approve(marginPool.address, longToDeposit, { from: accountOperator1 })
+          await controllerProxy.operate(actionArgs, { from: accountOperator1 })
 
           const marginPoolBalanceAfter = new BigNumber(await longOtoken.balanceOf(marginPool.address))
           const senderBalanceAfter = new BigNumber(await longOtoken.balanceOf(accountOperator1))
@@ -566,8 +566,10 @@ contract(
           const senderBalanceBefore = new BigNumber(await longOtoken.balanceOf(accountOwner1))
           const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
 
-          await longOtoken.approve(marginPool.address, longToDeposit.multipliedBy(2).toString(), {from: accountOwner1})
-          await controllerProxy.operate(actionArgs, {from: accountOwner1})
+          await longOtoken.approve(marginPool.address, longToDeposit.multipliedBy(2).toString(), {
+            from: accountOwner1,
+          })
+          await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
           const marginPoolBalanceAfter = new BigNumber(await longOtoken.balanceOf(marginPool.address))
           const senderBalanceAfter = new BigNumber(await longOtoken.balanceOf(accountOwner1))
@@ -612,8 +614,8 @@ contract(
             },
           ]
 
-          await longOtoken.approve(marginPool.address, longToDeposit, {from: accountOwner1})
-          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'V4')
+          await longOtoken.approve(marginPool.address, longToDeposit, { from: accountOwner1 })
+          await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'V4')
         })
 
         it('should revert depositing an expired long otoken', async () => {
@@ -649,8 +651,8 @@ contract(
             },
           ]
 
-          await expiredLongOtoken.approve(marginPool.address, longToDeposit, {from: accountOwner1})
-          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C18')
+          await expiredLongOtoken.approve(marginPool.address, longToDeposit, { from: accountOwner1 })
+          await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C18')
         })
 
         it('should revert when vault have more than 1 long otoken', async () => {
@@ -685,9 +687,9 @@ contract(
             },
           ]
 
-          await secondLongOtoken.approve(marginPool.address, longToDeposit, {from: accountOwner1})
+          await secondLongOtoken.approve(marginPool.address, longToDeposit, { from: accountOwner1 })
           await expectRevert(
-            controllerProxy.operate(actionArgs, {from: accountOwner1}),
+            controllerProxy.operate(actionArgs, { from: accountOwner1 }),
             'MarginCalculator: Too many long otokens in the vault',
           )
         })
@@ -718,9 +720,9 @@ contract(
             },
           ]
 
-          await longOtoken.approve(marginPool.address, longToDeposit, {from: accountOwner1})
+          await longOtoken.approve(marginPool.address, longToDeposit, { from: accountOwner1 })
           await expectRevert(
-            controllerImplementation.operate(actionArgs, {from: accountOwner1}),
+            controllerImplementation.operate(actionArgs, { from: accountOwner1 }),
             'MarginPool: Sender is not Controller',
           )
         })
@@ -745,7 +747,7 @@ contract(
             },
           ]
 
-          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'V5')
+          await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'V5')
         })
 
         it('should revert withdrawing long otoken from random address other than account owner or operator', async () => {
@@ -766,7 +768,7 @@ contract(
             },
           ]
 
-          await expectRevert(controllerProxy.operate(actionArgs, {from: random}), 'C6')
+          await expectRevert(controllerProxy.operate(actionArgs, { from: random }), 'C6')
         })
 
         it('should revert withdrawing long otoken amount greater than the vault balance', async () => {
@@ -789,7 +791,7 @@ contract(
           ]
 
           await expectRevert(
-            controllerProxy.operate(actionArgs, {from: accountOwner1}),
+            controllerProxy.operate(actionArgs, { from: accountOwner1 }),
             'SafeMath: subtraction overflow',
           )
         })
@@ -811,7 +813,7 @@ contract(
             },
           ]
 
-          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C35')
+          await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C35')
         })
 
         it('should withdraw long otoken to any random address where msg.sender is account owner', async () => {
@@ -835,7 +837,7 @@ contract(
           const receiverBalanceBefore = new BigNumber(await longOtoken.balanceOf(random))
           const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
 
-          await controllerProxy.operate(actionArgs, {from: accountOwner1})
+          await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
           const marginPoolBalanceAfter = new BigNumber(await longOtoken.balanceOf(marginPool.address))
           const receiverBalanceAfter = new BigNumber(await longOtoken.balanceOf(random))
@@ -886,7 +888,7 @@ contract(
           const receiverBalanceBefore = new BigNumber(await longOtoken.balanceOf(random))
           const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
 
-          await controllerProxy.operate(actionArgs, {from: accountOperator1})
+          await controllerProxy.operate(actionArgs, { from: accountOperator1 })
 
           const marginPoolBalanceAfter = new BigNumber(await longOtoken.balanceOf(marginPool.address))
           const receiverBalanceAfter = new BigNumber(await longOtoken.balanceOf(random))
@@ -941,7 +943,7 @@ contract(
           const receiverBalanceBefore = new BigNumber(await longOtoken.balanceOf(accountOwner1))
           const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
 
-          await controllerProxy.operate(actionArgs, {from: accountOwner1})
+          await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
           const marginPoolBalanceAfter = new BigNumber(await longOtoken.balanceOf(marginPool.address))
           const receiverBalanceAfter = new BigNumber(await longOtoken.balanceOf(accountOwner1))
@@ -987,7 +989,7 @@ contract(
           const marginPoolBalanceBefore = new BigNumber(await longOtoken.balanceOf(marginPool.address))
           const receiverBalanceBefore = new BigNumber(await longOtoken.balanceOf(accountOwner1))
 
-          await controllerProxy.operate(actionArgs, {from: accountOwner1})
+          await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
           const marginPoolBalanceAfter = new BigNumber(await longOtoken.balanceOf(marginPool.address))
           const receiverBalanceAfter = new BigNumber(await longOtoken.balanceOf(accountOwner1))
@@ -1032,7 +1034,7 @@ contract(
             const longToDeposit = createTokenAmount(100)
             await expiredLongOtoken.mintOtoken(accountOwner1, longToDeposit)
             // whitelist otoken
-            await whitelist.whitelistOtoken(expiredLongOtoken.address, {from: owner})
+            await whitelist.whitelistOtoken(expiredLongOtoken.address, { from: owner })
             // deposit long otoken into vault
             const vaultId = new BigNumber('1')
             const actionArgs = [
@@ -1047,8 +1049,8 @@ contract(
                 data: ZERO_ADDR,
               },
             ]
-            await expiredLongOtoken.approve(marginPool.address, longToDeposit, {from: accountOwner1})
-            await controllerProxy.operate(actionArgs, {from: accountOwner1})
+            await expiredLongOtoken.approve(marginPool.address, longToDeposit, { from: accountOwner1 })
+            await controllerProxy.operate(actionArgs, { from: accountOwner1 })
             const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultId)
             assert.equal(vaultAfter.longOtokens.length, 1, 'Vault long otoken array length mismatch')
             assert.equal(
@@ -1089,7 +1091,7 @@ contract(
               'Long otoken is not expired yet',
             )
 
-            await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C19')
+            await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C19')
           })
         })
       })
@@ -1120,8 +1122,8 @@ contract(
           const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
           const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
 
-          await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
-          await controllerProxy.operate(actionArgs, {from: accountOwner1})
+          await usdc.approve(marginPool.address, collateralToDeposit, { from: accountOwner1 })
+          await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
           const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
           const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
@@ -1172,8 +1174,8 @@ contract(
           const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOperator1))
           const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
 
-          await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOperator1})
-          await controllerProxy.operate(actionArgs, {from: accountOperator1})
+          await usdc.approve(marginPool.address, collateralToDeposit, { from: accountOperator1 })
+          await controllerProxy.operate(actionArgs, { from: accountOperator1 })
 
           const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
           const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOperator1))
@@ -1221,8 +1223,8 @@ contract(
             },
           ]
 
-          await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
-          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C35')
+          await usdc.approve(marginPool.address, collateralToDeposit, { from: accountOwner1 })
+          await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C35')
         })
 
         it('should revert depositing long from an address that is not the msg.sender nor the owner account address', async () => {
@@ -1242,9 +1244,9 @@ contract(
             },
           ]
 
-          await usdc.approve(marginPool.address, collateralToDeposit, {from: random})
-          await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOperator1})
-          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOperator1}), 'C20')
+          await usdc.approve(marginPool.address, collateralToDeposit, { from: random })
+          await usdc.approve(marginPool.address, collateralToDeposit, { from: accountOperator1 })
+          await expectRevert(controllerProxy.operate(actionArgs, { from: accountOperator1 }), 'C20')
         })
 
         it('should revert depositing a collateral asset with amount equal to zero', async () => {
@@ -1265,8 +1267,8 @@ contract(
             },
           ]
 
-          await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
-          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'V7')
+          await usdc.approve(marginPool.address, collateralToDeposit, { from: accountOwner1 })
+          await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'V7')
         })
 
         it('should execute depositing collateral into vault in multiple actions', async () => {
@@ -1298,8 +1300,8 @@ contract(
           const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
           const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
 
-          await usdc.approve(marginPool.address, collateralToDeposit.multipliedBy(2), {from: accountOwner1})
-          await controllerProxy.operate(actionArgs, {from: accountOwner1})
+          await usdc.approve(marginPool.address, collateralToDeposit.multipliedBy(2), { from: accountOwner1 })
+          await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
           const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
           const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
@@ -1353,8 +1355,8 @@ contract(
               },
             ]
 
-            await trx.approve(marginPool.address, collateralDeposit, {from: accountOwner1})
-            await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C21')
+            await trx.approve(marginPool.address, collateralDeposit, { from: accountOwner1 })
+            await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C21')
           })
         })
 
@@ -1378,9 +1380,9 @@ contract(
             },
           ]
 
-          await weth.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
+          await weth.approve(marginPool.address, collateralToDeposit, { from: accountOwner1 })
           await expectRevert(
-            controllerProxy.operate(actionArgs, {from: accountOwner1}),
+            controllerProxy.operate(actionArgs, { from: accountOwner1 }),
             'MarginCalculator: Too many collateral assets in the vault',
           )
         })
@@ -1405,7 +1407,7 @@ contract(
             },
           ]
 
-          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'V8')
+          await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'V8')
         })
 
         it('should revert withdrawing collateral asset from an invalid id', async () => {
@@ -1426,7 +1428,7 @@ contract(
             },
           ]
 
-          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C35')
+          await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C35')
         })
 
         it('should revert withdrawing collateral asset amount greater than the vault balance', async () => {
@@ -1449,7 +1451,7 @@ contract(
           ]
 
           await expectRevert(
-            controllerProxy.operate(actionArgs, {from: accountOwner1}),
+            controllerProxy.operate(actionArgs, { from: accountOwner1 }),
             'SafeMath: subtraction overflow',
           )
         })
@@ -1475,7 +1477,7 @@ contract(
           const receiverBalanceBefore = new BigNumber(await usdc.balanceOf(random))
           const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
 
-          await controllerProxy.operate(actionArgs, {from: accountOwner1})
+          await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
           const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
           const receiverBalanceAfter = new BigNumber(await usdc.balanceOf(random))
@@ -1528,7 +1530,7 @@ contract(
           const receiverBalanceBefore = new BigNumber(await usdc.balanceOf(random))
           const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
 
-          await controllerProxy.operate(actionArgs, {from: accountOperator1})
+          await controllerProxy.operate(actionArgs, { from: accountOperator1 })
 
           const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
           const receiverBalanceAfter = new BigNumber(await usdc.balanceOf(random))
@@ -1585,7 +1587,7 @@ contract(
           const receiverBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
           const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
 
-          await controllerProxy.operate(actionArgs, {from: accountOwner1})
+          await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
           const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
           const receiverBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
@@ -1633,7 +1635,7 @@ contract(
           const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
           const receiverBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
 
-          await controllerProxy.operate(actionArgs, {from: accountOwner1})
+          await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
           const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
           const receiverBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
@@ -1696,7 +1698,7 @@ contract(
         )
 
         // whitelist short otoken to be used in the protocol
-        await whitelist.whitelistOtoken(shortOtoken.address, {from: owner})
+        await whitelist.whitelistOtoken(shortOtoken.address, { from: owner })
 
         // give free money
         await longOtoken.mintOtoken(accountOwner1, new BigNumber('100'))
@@ -1725,7 +1727,7 @@ contract(
             },
           ]
 
-          await expectRevert(controllerProxy.operate(actionArgs, {from: random}), 'C6')
+          await expectRevert(controllerProxy.operate(actionArgs, { from: random }), 'C6')
         })
 
         it('should revert minting using un-marginable collateral asset', async () => {
@@ -1760,9 +1762,9 @@ contract(
           // free money
           await weth.mint(accountOwner1, collateralToDeposit)
 
-          await weth.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
+          await weth.approve(marginPool.address, collateralToDeposit, { from: accountOwner1 })
           await expectRevert(
-            controllerProxy.operate(actionArgs, {from: accountOwner1}),
+            controllerProxy.operate(actionArgs, { from: accountOwner1 }),
             'MarginCalculator: collateral asset not marginable for short asset',
           )
         })
@@ -1784,7 +1786,7 @@ contract(
             },
           ]
 
-          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C35')
+          await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C35')
         })
 
         it('mint naked short otoken from owner', async () => {
@@ -1821,8 +1823,8 @@ contract(
           const senderShortBalanceBefore = new BigNumber(await shortOtoken.balanceOf(accountOwner1))
           const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
 
-          await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
-          await controllerProxy.operate(actionArgs, {from: accountOwner1})
+          await usdc.approve(marginPool.address, collateralToDeposit, { from: accountOwner1 })
+          await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
           const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
           const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
@@ -1904,8 +1906,8 @@ contract(
           const senderShortBalanceBefore = new BigNumber(await shortOtoken.balanceOf(accountOperator1))
           const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
 
-          await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOperator1})
-          await controllerProxy.operate(actionArgs, {from: accountOperator1})
+          await usdc.approve(marginPool.address, collateralToDeposit, { from: accountOperator1 })
+          await controllerProxy.operate(actionArgs, { from: accountOperator1 })
 
           const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
           const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOperator1))
@@ -1981,7 +1983,7 @@ contract(
             },
           ]
 
-          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C14')
+          await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C14')
         })
 
         it('should withdraw exceeded collateral from naked short position when net value > 0 ', async () => {
@@ -2002,8 +2004,8 @@ contract(
               data: ZERO_ADDR,
             },
           ]
-          await usdc.approve(marginPool.address, excessCollateralToDeposit, {from: accountOwner1})
-          await controllerProxy.operate(firstActionArgs, {from: accountOwner1})
+          await usdc.approve(marginPool.address, excessCollateralToDeposit, { from: accountOwner1 })
+          await controllerProxy.operate(firstActionArgs, { from: accountOwner1 })
 
           const vaultBefore = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter)
           const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
@@ -2030,7 +2032,7 @@ contract(
             },
           ]
 
-          await controllerProxy.operate(secondActionArgs, {from: accountOwner1})
+          await controllerProxy.operate(secondActionArgs, { from: accountOwner1 })
 
           const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
           const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
@@ -2060,7 +2062,7 @@ contract(
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
-          await whitelist.whitelistOtoken(longOtoken.address, {from: owner})
+          await whitelist.whitelistOtoken(longOtoken.address, { from: owner })
 
           const amountToMint = '1'
 
@@ -2078,7 +2080,7 @@ contract(
           ]
 
           await expectRevert(
-            controllerProxy.operate(actionArgs, {from: accountOwner1}),
+            controllerProxy.operate(actionArgs, { from: accountOwner1 }),
             'MarginCalculator: Too many short otokens in the vault',
           )
         })
@@ -2133,8 +2135,8 @@ contract(
               },
             ]
 
-            await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOperator1})
-            await expectRevert(controllerProxy.operate(actionArgs, {from: accountOperator1}), 'C23')
+            await usdc.approve(marginPool.address, collateralToDeposit, { from: accountOperator1 })
+            await expectRevert(controllerProxy.operate(actionArgs, { from: accountOperator1 }), 'C23')
           })
         })
 
@@ -2190,7 +2192,7 @@ contract(
                 data: ZERO_ADDR,
               },
             ]
-            await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner2}), 'C14')
+            await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner2 }), 'C14')
           })
 
           it('should revert minting 1 wei of oToken with minimal strikePrice without putting collateral', async () => {
@@ -2218,7 +2220,7 @@ contract(
               },
             ]
 
-            await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner2}), 'C14')
+            await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner2 }), 'C14')
           })
         })
       })
@@ -2242,13 +2244,13 @@ contract(
             },
           ]
 
-          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'V2')
+          await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'V2')
         })
 
         it('should revert burning when there is no enough balance', async () => {
           // transfer operator balance
           const operatorShortBalance = new BigNumber(await shortOtoken.balanceOf(accountOperator1))
-          await shortOtoken.transfer(accountOwner1, operatorShortBalance, {from: accountOperator1})
+          await shortOtoken.transfer(accountOwner1, operatorShortBalance, { from: accountOperator1 })
 
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
@@ -2268,12 +2270,12 @@ contract(
           ]
 
           await expectRevert(
-            controllerProxy.operate(actionArgs, {from: accountOperator1}),
+            controllerProxy.operate(actionArgs, { from: accountOperator1 }),
             'ERC20: burn amount exceeds balance',
           )
 
           // transfer back
-          await shortOtoken.transfer(accountOperator1, operatorShortBalance, {from: accountOwner1})
+          await shortOtoken.transfer(accountOperator1, operatorShortBalance, { from: accountOwner1 })
         })
 
         it('should revert burning when called from an address other than account owner or operator', async () => {
@@ -2294,7 +2296,7 @@ contract(
             },
           ]
 
-          await expectRevert(controllerProxy.operate(actionArgs, {from: random}), 'C6')
+          await expectRevert(controllerProxy.operate(actionArgs, { from: random }), 'C6')
         })
 
         it('should revert minting short with invalid vault id', async () => {
@@ -2314,7 +2316,7 @@ contract(
             },
           ]
 
-          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C35')
+          await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C35')
         })
 
         it('should revert depositing long from an address that is not the msg.sender nor the owner account address', async () => {
@@ -2334,7 +2336,7 @@ contract(
             },
           ]
 
-          await expectRevert(controllerProxy.operate(actionArgs, {from: accountOperator1}), 'C25')
+          await expectRevert(controllerProxy.operate(actionArgs, { from: accountOperator1 }), 'C25')
         })
 
         it('should burn short otoken when called from account operator', async () => {
@@ -2358,7 +2360,7 @@ contract(
           ]
           const sellerBalanceBefore = new BigNumber(await shortOtoken.balanceOf(accountOperator1))
 
-          await controllerProxy.operate(actionArgs, {from: accountOperator1})
+          await controllerProxy.operate(actionArgs, { from: accountOperator1 })
 
           const sellerBalanceAfter = new BigNumber(await shortOtoken.balanceOf(accountOperator1))
           const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
@@ -2384,7 +2386,7 @@ contract(
         it('should remove short otoken address from short otokens array if amount is equal to zero after burning', async () => {
           // send back all short otoken to owner
           const operatorShortBalance = new BigNumber(await shortOtoken.balanceOf(accountOperator1))
-          await shortOtoken.transfer(accountOwner1, operatorShortBalance, {from: accountOperator1})
+          await shortOtoken.transfer(accountOwner1, operatorShortBalance, { from: accountOperator1 })
 
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
@@ -2406,7 +2408,7 @@ contract(
           ]
           const sellerBalanceBefore = new BigNumber(await shortOtoken.balanceOf(accountOwner1))
 
-          await controllerProxy.operate(actionArgs, {from: accountOwner1})
+          await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
           const sellerBalanceAfter = new BigNumber(await shortOtoken.balanceOf(accountOwner1))
           const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
@@ -2462,7 +2464,7 @@ contract(
             },
           ]
           const senderShortBalanceBefore = new BigNumber(await shortOtoken.balanceOf(accountOwner1))
-          await controllerProxy.operate(actionArgs, {from: accountOwner1})
+          await controllerProxy.operate(actionArgs, { from: accountOwner1 })
           const senderShortBalanceAfter = new BigNumber(await shortOtoken.balanceOf(accountOwner1))
           const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
           assert.equal(vaultAfter.shortOtokens.length, 1, 'Vault short otoken array length mismatch')
@@ -2493,7 +2495,7 @@ contract(
             )
 
             // whitelist otoken to be minted
-            await whitelist.whitelistOtoken(expiredShortOtoken.address, {from: owner})
+            await whitelist.whitelistOtoken(expiredShortOtoken.address, { from: owner })
 
             const collateralToDeposit = new BigNumber(await expiredShortOtoken.strikePrice()).dividedBy(100)
             const amountToMint = createTokenAmount(1)
@@ -2533,8 +2535,8 @@ contract(
             const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
             const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
 
-            await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
-            await controllerProxy.operate(actionArgs, {from: accountOwner1})
+            await usdc.approve(marginPool.address, collateralToDeposit, { from: accountOwner1 })
+            await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
             const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
             const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
@@ -2576,7 +2578,7 @@ contract(
               'Long otoken is not expired yet',
             )
 
-            await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C26')
+            await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C26')
           })
 
           it('should revert minting an expired short otoken', async () => {
@@ -2608,8 +2610,8 @@ contract(
               },
             ]
 
-            await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOperator1})
-            await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C24')
+            await usdc.approve(marginPool.address, collateralToDeposit, { from: accountOperator1 })
+            await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C24')
           })
 
           it('should revert withdraw collateral from a vault with an expired short otoken', async () => {
@@ -2630,7 +2632,7 @@ contract(
               },
             ]
 
-            await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C22')
+            await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C22')
           })
         })
       })
@@ -2668,7 +2670,7 @@ contract(
         )
 
         // whitelist short otoken to be used in the protocol
-        await whitelist.whitelistOtoken(shortOtoken.address, {from: owner})
+        await whitelist.whitelistOtoken(shortOtoken.address, { from: owner })
         // open new vault, mintnaked short, sell it to holder 1
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
         const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(100)
@@ -2705,10 +2707,10 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-        await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
-        await controllerProxy.operate(actionArgs, {from: accountOwner1})
+        await usdc.approve(marginPool.address, collateralToDeposit, { from: accountOwner1 })
+        await controllerProxy.operate(actionArgs, { from: accountOwner1 })
         // transfer minted short otoken to hodler`
-        await shortOtoken.transfer(holder1, amountToMint.toString(), {from: accountOwner1})
+        await shortOtoken.transfer(holder1, amountToMint.toString(), { from: accountOwner1 })
       })
       it('should revert exercising non-whitelisted otoken', async () => {
         const shortAmountToBurn = new BigNumber('1')
@@ -2725,7 +2727,7 @@ contract(
           },
         ]
 
-        await expectRevert(controllerProxy.operate(actionArgs, {from: holder1}), 'C27')
+        await expectRevert(controllerProxy.operate(actionArgs, { from: holder1 }), 'C27')
       })
 
       it('should revert exercising un-expired otoken', async () => {
@@ -2745,7 +2747,7 @@ contract(
 
         assert.equal(await controllerProxy.hasExpired(shortOtoken.address), false, 'Short otoken has already expired')
 
-        await expectRevert(controllerProxy.operate(actionArgs, {from: holder1}), 'C28')
+        await expectRevert(controllerProxy.operate(actionArgs, { from: holder1 }), 'C28')
       })
 
       it('should revert exercising after expiry, when underlying price is not finalized yet', async () => {
@@ -2788,7 +2790,7 @@ contract(
 
         assert.equal(await controllerProxy.hasExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
 
-        await expectRevert(controllerProxy.operate(actionArgs, {from: holder1}), 'C29')
+        await expectRevert(controllerProxy.operate(actionArgs, { from: holder1 }), 'C29')
       })
 
       it('should revert exercising if cash value receiver address in equal to address zero', async () => {
@@ -2815,7 +2817,7 @@ contract(
 
         assert.equal(await controllerProxy.hasExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
 
-        await expectRevert(controllerProxy.operate(actionArgs, {from: holder1}), 'A14')
+        await expectRevert(controllerProxy.operate(actionArgs, { from: holder1 }), 'A14')
       })
 
       it('should redeem after expiry + price is finalized', async () => {
@@ -2839,7 +2841,7 @@ contract(
         const senderBalanceBefore = new BigNumber(await usdc.balanceOf(holder1))
         const senderShortBalanceBefore = new BigNumber(await shortOtoken.balanceOf(holder1))
 
-        await controllerProxy.operate(actionArgs, {from: holder1})
+        await controllerProxy.operate(actionArgs, { from: holder1 })
 
         const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
         const senderBalanceAfter = new BigNumber(await usdc.balanceOf(holder1))
@@ -2879,7 +2881,7 @@ contract(
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
         const amountCollateral = createTokenAmount(1, wethDecimals)
         await weth.mint(accountOwner1, amountCollateral)
-        await weth.approve(marginPool.address, amountCollateral, {from: accountOwner1})
+        await weth.approve(marginPool.address, amountCollateral, { from: accountOwner1 })
         const amountOtoken = createTokenAmount(1)
         const actionArgs = [
           {
@@ -2914,8 +2916,8 @@ contract(
           },
         ]
 
-        await controllerProxy.operate(actionArgs, {from: accountOwner1})
-        await call.transfer(holder1, amountOtoken, {from: accountOwner1})
+        await controllerProxy.operate(actionArgs, { from: accountOwner1 })
+        await call.transfer(holder1, amountOtoken, { from: accountOwner1 })
 
         await time.increaseTo(expiry + 10)
         await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(400), true)
@@ -2936,7 +2938,7 @@ contract(
         const expectedPayout = createTokenAmount(0.5, wethDecimals)
 
         const userBalanceBefore = new BigNumber(await weth.balanceOf(holder1))
-        await controllerProxy.operate(redeemArgs, {from: holder1})
+        await controllerProxy.operate(redeemArgs, { from: holder1 })
         const userBalanceAfter = new BigNumber(await weth.balanceOf(holder1))
         assert.equal(userBalanceAfter.minus(userBalanceBefore).toString(), expectedPayout)
       })
@@ -2963,7 +2965,7 @@ contract(
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
         const amountCollateral = createTokenAmount(1, wethDecimals)
         await weth2.mint(accountOwner1, amountCollateral)
-        await weth2.approve(marginPool.address, amountCollateral, {from: accountOwner1})
+        await weth2.approve(marginPool.address, amountCollateral, { from: accountOwner1 })
 
         const amountOtoken = createTokenAmount(1)
         const actionArgs = [
@@ -2999,8 +3001,8 @@ contract(
           },
         ]
 
-        await controllerProxy.operate(actionArgs, {from: accountOwner1})
-        await call.transfer(holder1, amountOtoken, {from: accountOwner1})
+        await controllerProxy.operate(actionArgs, { from: accountOwner1 })
+        await call.transfer(holder1, amountOtoken, { from: accountOwner1 })
 
         await time.increaseTo(expiry + 10)
         await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(400), true)
@@ -3019,7 +3021,7 @@ contract(
           },
         ]
 
-        await expectRevert(controllerProxy.operate(redeemArgs, {from: holder1}), 'C29')
+        await expectRevert(controllerProxy.operate(redeemArgs, { from: holder1 }), 'C29')
       })
 
       describe('Redeem multiple Otokens', () => {
@@ -3053,8 +3055,8 @@ contract(
             true,
           )
           // whitelist otoken to be used in the protocol
-          await whitelist.whitelistOtoken(firstOtoken.address, {from: owner})
-          await whitelist.whitelistOtoken(secondOtoken.address, {from: owner})
+          await whitelist.whitelistOtoken(firstOtoken.address, { from: owner })
+          await whitelist.whitelistOtoken(secondOtoken.address, { from: owner })
 
           // open new vault, mint naked short, sell it to holder 1
           const firstCollateralToDeposit = new BigNumber(await firstOtoken.strikePrice()).dividedBy(100)
@@ -3093,8 +3095,8 @@ contract(
               data: ZERO_ADDR,
             },
           ]
-          await usdc.approve(marginPool.address, firstCollateralToDeposit, {from: accountOwner1})
-          await controllerProxy.operate(actionArgs, {from: accountOwner1})
+          await usdc.approve(marginPool.address, firstCollateralToDeposit, { from: accountOwner1 })
+          await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
           vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
           actionArgs = [
@@ -3129,11 +3131,11 @@ contract(
               data: ZERO_ADDR,
             },
           ]
-          await usdc.approve(marginPool.address, firstCollateralToDeposit, {from: accountOwner1})
-          await controllerProxy.operate(actionArgs, {from: accountOwner1})
+          await usdc.approve(marginPool.address, firstCollateralToDeposit, { from: accountOwner1 })
+          await controllerProxy.operate(actionArgs, { from: accountOwner1 })
           // transfer minted short otoken to hodler
-          await firstOtoken.transfer(holder1, amountToMint, {from: accountOwner1})
-          await secondOtoken.transfer(holder1, amountToMint, {from: accountOwner1})
+          await firstOtoken.transfer(holder1, amountToMint, { from: accountOwner1 })
+          await secondOtoken.transfer(holder1, amountToMint, { from: accountOwner1 })
         })
 
         it('should redeem multiple Otokens in one transaction', async () => {
@@ -3194,7 +3196,7 @@ contract(
           const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
           const senderBalanceBefore = new BigNumber(await usdc.balanceOf(holder1))
 
-          await controllerProxy.operate(actionArgs, {from: holder1})
+          await controllerProxy.operate(actionArgs, { from: holder1 })
 
           const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
           const senderBalanceAfter = new BigNumber(await usdc.balanceOf(holder1))
@@ -3235,7 +3237,7 @@ contract(
           true,
         )
         // whitelist otoken to be used in the protocol
-        await whitelist.whitelistOtoken(shortOtoken.address, {from: owner})
+        await whitelist.whitelistOtoken(shortOtoken.address, { from: owner })
         // open new vault, mint naked short, sell it to holder 1
         const collateralToDespoit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(100)
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
@@ -3261,8 +3263,8 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-        await usdc.approve(marginPool.address, collateralToDespoit, {from: accountOwner1})
-        await controllerProxy.operate(actionArgs, {from: accountOwner1})
+        await usdc.approve(marginPool.address, collateralToDespoit, { from: accountOwner1 })
+        await controllerProxy.operate(actionArgs, { from: accountOwner1 })
       })
 
       it('should revert settling a vault that have no long or short otoken', async () => {
@@ -3280,7 +3282,7 @@ contract(
           },
         ]
 
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C30')
+        await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C30')
       })
 
       it('should revert settling vault before expiry', async () => {
@@ -3300,8 +3302,8 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-        await controllerProxy.operate(actionArgs, {from: accountOwner1})
-        await shortOtoken.transfer(holder1, amountToMint, {from: accountOwner1})
+        await controllerProxy.operate(actionArgs, { from: accountOwner1 })
+        await shortOtoken.transfer(holder1, amountToMint, { from: accountOwner1 })
 
         vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         actionArgs = [
@@ -3317,7 +3319,7 @@ contract(
           },
         ]
 
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C31')
+        await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C31')
       })
 
       it('should revert settling an invalid vault', async () => {
@@ -3335,7 +3337,7 @@ contract(
           },
         ]
 
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C35')
+        await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C35')
       })
 
       it('should revert settling after expiry when price is not finalized', async () => {
@@ -3372,7 +3374,7 @@ contract(
 
         assert.equal(await controllerProxy.hasExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
 
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C29')
+        await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C29')
       })
 
       it('should settle ITM otoken after expiry + price is finalized', async () => {
@@ -3400,7 +3402,7 @@ contract(
 
         assert.equal(payout, proceed.toString())
 
-        await controllerProxy.operate(actionArgs, {from: accountOwner1})
+        await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
         const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
         const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
@@ -3470,8 +3472,8 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-        await usdc.approve(marginPool.address, collateralAmount, {from: accountOwner1})
-        await controllerProxy.operate(mintArgs, {from: accountOwner1})
+        await usdc.approve(marginPool.address, collateralAmount, { from: accountOwner1 })
+        await controllerProxy.operate(mintArgs, { from: accountOwner1 })
 
         // Use the newly minted otoken as long and put it in a new vault
         const newVulatId = vaultCounter.toNumber() + 1
@@ -3498,9 +3500,9 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-        await longOtoken.approve(marginPool.address, longAmount, {from: accountOwner1})
+        await longOtoken.approve(marginPool.address, longAmount, { from: accountOwner1 })
         await whitelist.whitelistOtoken(longOtoken.address)
-        await controllerProxy.operate(newVaultArgs, {from: accountOwner1})
+        await controllerProxy.operate(newVaultArgs, { from: accountOwner1 })
         // go to expiry
         await time.increaseTo(expiry.toNumber() + 10)
         const ethPriceAtExpiry = 200
@@ -3532,7 +3534,7 @@ contract(
 
         assert.equal(amountPayout.toString(), expectedPayout.toString(), 'payout calculation mismatch')
 
-        await controllerProxy.operate(settleArgs, {from: accountOwner1})
+        await controllerProxy.operate(settleArgs, { from: accountOwner1 })
         const ownerUSDCBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
         const poolOtokenAfter = new BigNumber(await longOtoken.balanceOf(marginPool.address))
         assert.equal(
@@ -3565,7 +3567,7 @@ contract(
             true,
           )
           // whitelist otoken to be used in the protocol
-          await whitelist.whitelistOtoken(firstShortOtoken.address, {from: owner})
+          await whitelist.whitelistOtoken(firstShortOtoken.address, { from: owner })
           // open new vault, mint naked short, sell it to holder 1
           let collateralToDespoit = createTokenAmount(200, usdcDecimals)
           let amountToMint = createTokenAmount(1)
@@ -3602,8 +3604,8 @@ contract(
               data: ZERO_ADDR,
             },
           ]
-          await usdc.approve(marginPool.address, collateralToDespoit, {from: accountOwner1})
-          await controllerProxy.operate(actionArgs, {from: accountOwner1})
+          await usdc.approve(marginPool.address, collateralToDespoit, { from: accountOwner1 })
+          await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
           expiryTime = new BigNumber(60 * 60 * 24 * 2) // after 1 day
           secondShortOtoken = await MockOtoken.new()
@@ -3617,7 +3619,7 @@ contract(
             true,
           )
           // whitelist otoken to be used in the protocol
-          await whitelist.whitelistOtoken(secondShortOtoken.address, {from: owner})
+          await whitelist.whitelistOtoken(secondShortOtoken.address, { from: owner })
           // open new vault, mint naked short, sell it to holder 1
           collateralToDespoit = createTokenAmount(200, usdcDecimals)
           amountToMint = createTokenAmount(1)
@@ -3654,8 +3656,8 @@ contract(
               data: ZERO_ADDR,
             },
           ]
-          await usdc.approve(marginPool.address, collateralToDespoit, {from: accountOwner1})
-          await controllerProxy.operate(actionArgs, {from: accountOwner1})
+          await usdc.approve(marginPool.address, collateralToDespoit, { from: accountOwner1 })
+          await controllerProxy.operate(actionArgs, { from: accountOwner1 })
         })
 
         it('should settle multiple vaults in one transaction (ATM,OTM)', async () => {
@@ -3694,7 +3696,7 @@ contract(
           const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
           const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
 
-          controllerProxy.operate(actionArgs, {from: accountOwner1})
+          controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
           const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
           const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
@@ -3843,7 +3845,7 @@ contract(
 
       it('should call any arbitrary destination address when restriction is not activated', async () => {
         //whitelist callee before call action
-        await whitelist.whitelistCallee(callTester.address, {from: owner})
+        await whitelist.whitelistCallee(callTester.address, { from: owner })
 
         const actionArgs = [
           {
@@ -3858,7 +3860,7 @@ contract(
           },
         ]
 
-        expectEvent(await controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CallExecuted', {
+        expectEvent(await controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'CallExecuted', {
           from: accountOwner1,
           to: callTester.address,
           data: ZERO_ADDR,
@@ -3866,11 +3868,14 @@ contract(
       })
 
       it('should revert activating call action restriction from non-owner', async () => {
-        await expectRevert(controllerProxy.setCallRestriction(true, {from: random}), 'Ownable: caller is not the owner')
+        await expectRevert(
+          controllerProxy.setCallRestriction(true, { from: random }),
+          'Ownable: caller is not the owner',
+        )
       })
 
       it('should revert activating call action restriction when it is already activated', async () => {
-        await expectRevert(controllerProxy.setCallRestriction(true, {from: owner}), 'C9')
+        await expectRevert(controllerProxy.setCallRestriction(true, { from: owner }), 'C9')
       })
 
       it('should revert calling any arbitrary address when call restriction is activated', async () => {
@@ -3889,12 +3894,12 @@ contract(
           },
         ]
 
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C3')
+        await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C3')
       })
 
       it('should call whitelisted callee address when restriction is activated', async () => {
         // whitelist callee
-        await whitelist.whitelistCallee(callTester.address, {from: owner})
+        await whitelist.whitelistCallee(callTester.address, { from: owner })
 
         const actionArgs = [
           {
@@ -3909,7 +3914,7 @@ contract(
           },
         ]
 
-        expectEvent(await controllerProxy.operate(actionArgs, {from: accountOwner1}), 'CallExecuted', {
+        expectEvent(await controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'CallExecuted', {
           from: accountOwner1,
           to: callTester.address,
           data: ZERO_ADDR,
@@ -3917,13 +3922,13 @@ contract(
       })
 
       it('should deactivate call action restriction from owner', async () => {
-        await controllerProxy.setCallRestriction(false, {from: owner})
+        await controllerProxy.setCallRestriction(false, { from: owner })
 
         assert.equal(await controllerProxy.callRestricted(), false, 'Call action restriction deactivation failed')
       })
 
       it('should revert deactivating call action restriction when it is already deactivated', async () => {
-        await expectRevert(controllerProxy.setCallRestriction(false, {from: owner}), 'C9')
+        await expectRevert(controllerProxy.setCallRestriction(false, { from: owner }), 'C9')
       })
     })
 
@@ -3934,7 +3939,7 @@ contract(
           (await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter.toNumber()))[2],
         )
 
-        await controllerProxy.sync(accountOwner1, vaultCounter.toNumber(), {from: random})
+        await controllerProxy.sync(accountOwner1, vaultCounter.toNumber(), { from: random })
 
         const timestampAfter = new BigNumber(
           (await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter.toNumber()))[2],
@@ -3965,7 +3970,7 @@ contract(
           true,
         )
         // whitelist otoken to be used in the protocol
-        await whitelist.whitelistOtoken(shortOtokenV1.address, {from: owner})
+        await whitelist.whitelistOtoken(shortOtokenV1.address, { from: owner })
         // open new vault, mint naked short, sell it to holder 1
         const collateralToDespoit = new BigNumber(await shortOtokenV1.strikePrice()).dividedBy(100)
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
@@ -4002,11 +4007,11 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-        await usdc.approve(marginPool.address, collateralToDespoit, {from: accountOwner1})
-        await controllerProxy.operate(actionArgs, {from: accountOwner1})
+        await usdc.approve(marginPool.address, collateralToDespoit, { from: accountOwner1 })
+        await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
         //transfer to holder
-        await shortOtokenV1.transfer(holder1, amountToMint, {from: accountOwner1})
+        await shortOtokenV1.transfer(holder1, amountToMint, { from: accountOwner1 })
       })
 
       it('should settle v1 Otoken implementation', async () => {
@@ -4037,7 +4042,7 @@ contract(
 
         assert.equal(payout, proceed.toString())
 
-        await controllerProxy.operate(actionArgs, {from: accountOwner1})
+        await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
         const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
         const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
@@ -4071,7 +4076,7 @@ contract(
         const expectedPayout = createTokenAmount(50, usdcDecimals)
 
         const userBalanceBefore = new BigNumber(await usdc.balanceOf(holder1))
-        await controllerProxy.operate(redeemArgs, {from: holder1})
+        await controllerProxy.operate(redeemArgs, { from: holder1 })
         const userBalanceAfter = new BigNumber(await usdc.balanceOf(holder1))
         assert.equal(userBalanceAfter.minus(userBalanceBefore).toString(), expectedPayout)
       })
@@ -4096,7 +4101,7 @@ contract(
         )
 
         // whitelist otoken to be minted
-        await whitelist.whitelistOtoken(shortOtoken.address, {from: owner})
+        await whitelist.whitelistOtoken(shortOtoken.address, { from: owner })
 
         const collateralToDeposit = createTokenAmount(200, usdcDecimals)
         const amountToMint = createTokenAmount(1) // mint 1 otoken
@@ -4132,46 +4137,46 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-        await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
-        await controllerProxy.operate(actionArgs, {from: accountOwner1})
+        await usdc.approve(marginPool.address, collateralToDeposit, { from: accountOwner1 })
+        await controllerProxy.operate(actionArgs, { from: accountOwner1 })
       })
 
       it('should revert set pauser address from non-owner', async () => {
         await expectRevert(
-          controllerProxy.setPartialPauser(partialPauser, {from: random}),
+          controllerProxy.setPartialPauser(partialPauser, { from: random }),
           'Ownable: caller is not the owner',
         )
       })
 
       it('should set pauser address', async () => {
-        await controllerProxy.setPartialPauser(partialPauser, {from: owner})
+        await controllerProxy.setPartialPauser(partialPauser, { from: owner })
         assert.equal(await controllerProxy.partialPauser(), partialPauser, 'pauser address mismatch')
       })
 
       it('should revert set pauser address to the same previous address', async () => {
-        await expectRevert(controllerProxy.setPartialPauser(partialPauser, {from: owner}), 'C9')
+        await expectRevert(controllerProxy.setPartialPauser(partialPauser, { from: owner }), 'C9')
       })
 
       it('should revert when pausing the system from address other than pauser', async () => {
-        await expectRevert(controllerProxy.setSystemPartiallyPaused(true, {from: random}), 'C2')
+        await expectRevert(controllerProxy.setSystemPartiallyPaused(true, { from: random }), 'C2')
       })
 
       it('should revert partially un-pausing an already running system', async () => {
-        await expectRevert(controllerProxy.setSystemPartiallyPaused(false, {from: partialPauser}), 'C9')
+        await expectRevert(controllerProxy.setSystemPartiallyPaused(false, { from: partialPauser }), 'C9')
       })
 
       it('should pause system', async () => {
         const stateBefore = await controllerProxy.systemPartiallyPaused()
         assert.equal(stateBefore, false, 'System already paused')
 
-        await controllerProxy.setSystemPartiallyPaused(true, {from: partialPauser})
+        await controllerProxy.setSystemPartiallyPaused(true, { from: partialPauser })
 
         const stateAfter = await controllerProxy.systemPartiallyPaused()
         assert.equal(stateAfter, true, 'System not paused')
       })
 
       it('should revert partially pausing an already patially paused system', async () => {
-        await expectRevert(controllerProxy.setSystemPartiallyPaused(true, {from: partialPauser}), 'C9')
+        await expectRevert(controllerProxy.setSystemPartiallyPaused(true, { from: partialPauser }), 'C9')
       })
 
       it('should revert opening a vault when system is partially paused', async () => {
@@ -4188,7 +4193,7 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C4')
+        await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C4')
       })
 
       it('should revert depositing collateral when system is partially paused', async () => {
@@ -4206,8 +4211,8 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-        await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C4')
+        await usdc.approve(marginPool.address, collateralToDeposit, { from: accountOwner1 })
+        await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C4')
       })
 
       it('should revert minting short otoken when system is partially paused', async () => {
@@ -4235,8 +4240,8 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-        await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C4')
+        await usdc.approve(marginPool.address, collateralToDeposit, { from: accountOwner1 })
+        await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C4')
       })
 
       it('should revert withdrawing collateral when system is partially paused', async () => {
@@ -4254,7 +4259,7 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C4')
+        await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C4')
       })
 
       it('should revert burning short otoken when system is partially paused', async () => {
@@ -4272,7 +4277,7 @@ contract(
           },
         ]
 
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C4')
+        await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C4')
       })
 
       it('should settle vault when system is partially paused', async () => {
@@ -4301,7 +4306,7 @@ contract(
         const marginPoolBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
         const senderBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
 
-        await controllerProxy.operate(actionArgs, {from: accountOwner1})
+        await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
         const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
         const senderBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
@@ -4321,7 +4326,7 @@ contract(
       it('should redeem when system is partially paused', async () => {
         const amountToRedeem = createTokenAmount(1)
         // transfer to holder
-        await shortOtoken.transfer(holder1, amountToRedeem, {from: accountOwner1})
+        await shortOtoken.transfer(holder1, amountToRedeem, { from: accountOwner1 })
 
         const actionArgs = [
           {
@@ -4342,7 +4347,7 @@ contract(
         const senderBalanceBefore = new BigNumber(await usdc.balanceOf(holder1))
         const senderShortBalanceBefore = new BigNumber(await shortOtoken.balanceOf(holder1))
 
-        await controllerProxy.operate(actionArgs, {from: holder1})
+        await controllerProxy.operate(actionArgs, { from: holder1 })
 
         const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
         const senderBalanceAfter = new BigNumber(await usdc.balanceOf(holder1))
@@ -4371,7 +4376,7 @@ contract(
 
       before(async () => {
         // deactivate pausing mechanism
-        await controllerProxy.setSystemPartiallyPaused(false, {from: partialPauser})
+        await controllerProxy.setSystemPartiallyPaused(false, { from: partialPauser })
 
         const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         const expiryTime = new BigNumber(60 * 60) // after 1 hour
@@ -4388,7 +4393,7 @@ contract(
         )
 
         // whitelist otoken to be minted
-        await whitelist.whitelistOtoken(shortOtoken.address, {from: owner})
+        await whitelist.whitelistOtoken(shortOtoken.address, { from: owner })
 
         const collateralToDeposit = createTokenAmount(200, usdcDecimals)
         const amountToMint = createTokenAmount(1) // mint 1 otoken
@@ -4424,46 +4429,46 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-        await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
-        await controllerProxy.operate(actionArgs, {from: accountOwner1})
+        await usdc.approve(marginPool.address, collateralToDeposit, { from: accountOwner1 })
+        await controllerProxy.operate(actionArgs, { from: accountOwner1 })
       })
 
       it('should revert set fullPauser address from non-owner', async () => {
         await expectRevert(
-          controllerProxy.setFullPauser(fullPauser, {from: random}),
+          controllerProxy.setFullPauser(fullPauser, { from: random }),
           'Ownable: caller is not the owner',
         )
       })
 
       it('should revert set fullPauser address to address zero', async () => {
-        await expectRevert(controllerProxy.setFullPauser(ZERO_ADDR, {from: owner}), 'C10')
+        await expectRevert(controllerProxy.setFullPauser(ZERO_ADDR, { from: owner }), 'C10')
       })
 
       it('should set fullPauser', async () => {
-        await controllerProxy.setFullPauser(fullPauser, {from: owner})
+        await controllerProxy.setFullPauser(fullPauser, { from: owner })
         assert.equal(await controllerProxy.fullPauser(), fullPauser, 'Full pauser wrong')
       })
 
       it('should revert when triggering full pause from address other than pauser', async () => {
-        await expectRevert(controllerProxy.setSystemFullyPaused(true, {from: random}), 'C1')
+        await expectRevert(controllerProxy.setSystemFullyPaused(true, { from: random }), 'C1')
       })
 
       it('should revert fully un-pausing an already running system', async () => {
-        await expectRevert(controllerProxy.setSystemFullyPaused(false, {from: fullPauser}), 'C9')
+        await expectRevert(controllerProxy.setSystemFullyPaused(false, { from: fullPauser }), 'C9')
       })
 
       it('should trigger full pause', async () => {
         const stateBefore = await controllerProxy.systemFullyPaused()
         assert.equal(stateBefore, false, 'System already in full pause state')
 
-        await controllerProxy.setSystemFullyPaused(true, {from: fullPauser})
+        await controllerProxy.setSystemFullyPaused(true, { from: fullPauser })
 
         const stateAfter = await controllerProxy.systemFullyPaused()
         assert.equal(stateAfter, true, 'System not in full pause state')
       })
 
       it('should revert fully pausing an already fully paused system', async () => {
-        await expectRevert(controllerProxy.setSystemFullyPaused(true, {from: fullPauser}), 'C9')
+        await expectRevert(controllerProxy.setSystemFullyPaused(true, { from: fullPauser }), 'C9')
       })
 
       it('should revert opening a vault when system is in full pause state', async () => {
@@ -4480,7 +4485,7 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), '.')
+        await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), '.')
       })
 
       it('should revert depositing collateral when system is in full pause state', async () => {
@@ -4498,8 +4503,8 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-        await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C5')
+        await usdc.approve(marginPool.address, collateralToDeposit, { from: accountOwner1 })
+        await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C5')
       })
 
       it('should revert minting short otoken when system is in full pause state', async () => {
@@ -4527,8 +4532,8 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-        await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C5')
+        await usdc.approve(marginPool.address, collateralToDeposit, { from: accountOwner1 })
+        await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C5')
       })
 
       it('should revert withdrawing collateral when system is in full pause state', async () => {
@@ -4546,7 +4551,7 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C5')
+        await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C5')
       })
 
       it('should revert burning short otoken when system is in full pause state', async () => {
@@ -4564,7 +4569,7 @@ contract(
           },
         ]
 
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C5')
+        await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C5')
       })
 
       it('should revert settling vault when system is in full pause state', async () => {
@@ -4602,13 +4607,13 @@ contract(
           },
         ]
 
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C5')
+        await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C5')
       })
 
       it('should revert redeem when system is in full pause state', async () => {
         const shortAmountToBurn = new BigNumber('1')
         // transfer to holder
-        await shortOtoken.transfer(holder1, shortAmountToBurn, {from: accountOwner1})
+        await shortOtoken.transfer(holder1, shortAmountToBurn, { from: accountOwner1 })
 
         const actionArgs = [
           {
@@ -4623,7 +4628,7 @@ contract(
           },
         ]
 
-        await expectRevert(controllerProxy.operate(actionArgs, {from: accountOwner1}), 'C5')
+        await expectRevert(controllerProxy.operate(actionArgs, { from: accountOwner1 }), 'C5')
       })
     })
 
@@ -4632,8 +4637,8 @@ contract(
         const amountToDonate = createTokenAmount(10, usdcDecimals)
         const storedBalanceBefore = new BigNumber(await marginPool.getStoredBalance(usdc.address))
 
-        await usdc.approve(marginPool.address, amountToDonate, {from: donor})
-        await controllerProxy.donate(usdc.address, amountToDonate, {from: donor})
+        await usdc.approve(marginPool.address, amountToDonate, { from: donor })
+        await controllerProxy.donate(usdc.address, amountToDonate, { from: donor })
 
         const storedBalanceAfter = new BigNumber(await marginPool.getStoredBalance(usdc.address))
 
@@ -4647,15 +4652,15 @@ contract(
 
     describe('Refresh configuration', () => {
       it('should revert refreshing configuration from address other than owner', async () => {
-        await expectRevert(controllerProxy.refreshConfiguration({from: random}), 'Ownable: caller is not the owner')
+        await expectRevert(controllerProxy.refreshConfiguration({ from: random }), 'Ownable: caller is not the owner')
       })
 
       it('should refresh configuratiom', async () => {
         // update modules
-        const oracle = await MockOracle.new(addressBook.address, {from: owner})
-        const calculator = await MarginCalculator.new(addressBook.address, {from: owner})
-        const marginPool = await MarginPool.new(addressBook.address, {from: owner})
-        const whitelist = await MockWhitelistModule.new({from: owner})
+        const oracle = await MockOracle.new(addressBook.address, { from: owner })
+        const calculator = await MarginCalculator.new(addressBook.address, { from: owner })
+        const marginPool = await MarginPool.new(addressBook.address, { from: owner })
+        const whitelist = await MockWhitelistModule.new({ from: owner })
 
         await addressBook.setOracle(oracle.address)
         await addressBook.setMarginCalculator(calculator.address)
@@ -4691,8 +4696,8 @@ contract(
           },
         ]
 
-        await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
-        await expectRevert.unspecified(controllerProxy.operate(actionArgs, {from: accountOwner1}))
+        await usdc.approve(marginPool.address, collateralToDeposit, { from: accountOwner1 })
+        await expectRevert.unspecified(controllerProxy.operate(actionArgs, { from: accountOwner1 }))
       })
     })
   },

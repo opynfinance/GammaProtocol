@@ -13,9 +13,9 @@ import {
   CalleeAllowanceTesterInstance,
 } from '../../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
-import {createTokenAmount, createScaledNumber} from '../utils'
+import { createTokenAmount, createScaledNumber } from '../utils'
 
-const {expectRevert, time} = require('@openzeppelin/test-helpers')
+const { expectRevert, time } = require('@openzeppelin/test-helpers')
 
 const WETH9 = artifacts.require('WETH9.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
@@ -79,7 +79,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
     usdc = await MockERC20.new('USDC', 'USDC', usdcDecimals)
     weth = await WETH9.new()
     // deploy Oracle module
-    oracle = await MockOracle.new(addressBook.address, {from: owner})
+    oracle = await MockOracle.new(addressBook.address, { from: owner })
     // calculator deployment
     calculator = await MarginCalculator.new(oracle.address)
     // margin pool deployment
@@ -102,7 +102,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
     controllerImplementation = await Controller.new()
 
     // set controller address in AddressBook
-    await addressBook.setController(controllerImplementation.address, {from: owner})
+    await addressBook.setController(controllerImplementation.address, { from: owner })
 
     // check controller deployment
     const controllerProxyAddress = await addressBook.getController()
@@ -122,7 +122,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
   describe('Wrap ETH and execute actions', () => {
     it('should deposit a whitelisted collateral asset from account owner', async () => {
       // set payabale proxy as operator
-      await controllerProxy.setOperator(payableProxyController.address, true, {from: accountOwner1})
+      await controllerProxy.setOperator(payableProxyController.address, true, { from: accountOwner1 })
       // whitelist weth
       await whitelist.whitelistCollateral(weth.address)
 
@@ -309,7 +309,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
     })
 
     it('should wrap eth and make it accessable to callee contract', async () => {
-      await whitelist.whitelistCallee(testerCallee.address, {from: owner})
+      await whitelist.whitelistCallee(testerCallee.address, { from: owner })
 
       const amountEth = createTokenAmount(0.5, 18)
       const wethBalanceBefore = new BigNumber(await weth.balanceOf(testerCallee.address))
@@ -389,9 +389,9 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
         true,
       )
       // whitelist short otoken to be used in the protocol
-      await whitelist.whitelistOtoken(shortOtoken.address, {from: owner})
+      await whitelist.whitelistOtoken(shortOtoken.address, { from: owner })
       // whitelist collateral
-      await whitelist.whitelistCollateral(usdc.address, {from: owner})
+      await whitelist.whitelistCollateral(usdc.address, { from: owner })
       // open new vault, mintnaked short, sell it to holder 1
       const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
       const collateralToDeposit = createTokenAmount(strikePrice, 6)
@@ -428,10 +428,10 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
           data: ZERO_ADDR,
         },
       ]
-      await usdc.approve(marginPool.address, collateralToDeposit, {from: accountOwner1})
-      await payableProxyController.operate(actionArgs, accountOwner1, {from: accountOwner1})
+      await usdc.approve(marginPool.address, collateralToDeposit, { from: accountOwner1 })
+      await payableProxyController.operate(actionArgs, accountOwner1, { from: accountOwner1 })
       // transfer minted short otoken to hodler`
-      await shortOtoken.transfer(holder1, amountToMint.toString(), {from: accountOwner1})
+      await shortOtoken.transfer(holder1, amountToMint.toString(), { from: accountOwner1 })
       // increase time with one hour in seconds
       await time.increase(60 * 61 * 24)
       await oracle.setExpiryPriceFinalizedAllPeiodOver(
@@ -464,8 +464,8 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
       ]
       assert.equal(await controllerProxy.hasExpired(shortOtoken.address), true, 'Short otoken is not expired yet')
 
-      await shortOtoken.transfer(payableProxyController.address, amountToRedeem.toString(), {from: holder1})
-      await payableProxyController.operate(actionArgs, holder1, {from: holder1})
+      await shortOtoken.transfer(payableProxyController.address, amountToRedeem.toString(), { from: holder1 })
+      await payableProxyController.operate(actionArgs, holder1, { from: holder1 })
     })
   })
 })

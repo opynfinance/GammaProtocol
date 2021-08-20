@@ -12,10 +12,10 @@ import {
   createScaledBigNumber,
   createScaledNumber,
 } from '../utils'
-import {assert} from 'chai'
+import { assert } from 'chai'
 import BigNumber from 'bignumber.js'
 
-const {expectRevert, time} = require('@openzeppelin/test-helpers')
+const { expectRevert, time } = require('@openzeppelin/test-helpers')
 const MockAddressBook = artifacts.require('MockAddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const MockOtoken = artifacts.require('MockOtoken.sol')
@@ -90,13 +90,13 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
     oracle = await MockOracle.new()
     await addressBook.setOracle(oracle.address)
     // setup calculator
-    calculator = await MarginCalculator.new(oracle.address, {from: owner})
+    calculator = await MarginCalculator.new(oracle.address, { from: owner })
   })
 
   describe('Collateral dust', async () => {
     it('only owner should be able to set collateral dust amount', async () => {
       const wethDust = scaleNum(1, wethDecimals)
-      await calculator.setCollateralDust(weth.address, wethDust, {from: owner})
+      await calculator.setCollateralDust(weth.address, wethDust, { from: owner })
 
       const dustAmount = new BigNumber(await calculator.getCollateralDust(weth.address))
 
@@ -107,7 +107,7 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
       const wethDust = scaleNum(1, wethDecimals)
 
       await expectRevert(
-        calculator.setCollateralDust(weth.address, wethDust, {from: random}),
+        calculator.setCollateralDust(weth.address, wethDust, { from: random }),
         'Ownable: caller is not the owner',
       )
     })
@@ -116,7 +116,7 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
       const wethDust = scaleNum(0, wethDecimals)
 
       await expectRevert(
-        calculator.setCollateralDust(weth.address, wethDust, {from: owner}),
+        calculator.setCollateralDust(weth.address, wethDust, { from: owner }),
         'MarginCalculator: dust amount should be greater than zero',
       )
     })
@@ -135,7 +135,7 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
           true,
           [timeToExpiry],
           [upperBoundValue],
-          {from: random},
+          { from: random },
         ),
         'Ownable: caller is not the owner',
       )
@@ -176,7 +176,7 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
           true,
           [timeToExpiry],
           [upperBoundValue],
-          {from: owner},
+          { from: owner },
         ),
         'MarginCalculator: no expiry upper bound value found',
       )
@@ -193,7 +193,7 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
         true,
         [timeToExpiry],
         [upperBoundValue],
-        {from: owner},
+        { from: owner },
       )
 
       assert.equal(
@@ -251,7 +251,7 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
       const spotShockValue = scaleNum(0.75, 27)
 
       await expectRevert(
-        calculator.setSpotShock(weth.address, usdc.address, usdc.address, true, spotShockValue, {from: random}),
+        calculator.setSpotShock(weth.address, usdc.address, usdc.address, true, spotShockValue, { from: random }),
         'Ownable: caller is not the owner',
       )
     })
@@ -260,7 +260,7 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
       const spotShockValue = scaleNum(0, 27)
 
       await expectRevert(
-        calculator.setSpotShock(weth.address, usdc.address, usdc.address, true, spotShockValue, {from: owner}),
+        calculator.setSpotShock(weth.address, usdc.address, usdc.address, true, spotShockValue, { from: owner }),
         'MarginCalculator: invalid spot shock value',
       )
     })
@@ -268,7 +268,7 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
     it('should set spot shock value', async () => {
       const spotShockValue = scaleNum(0.75, 27)
 
-      await calculator.setSpotShock(weth.address, usdc.address, usdc.address, true, spotShockValue, {from: owner})
+      await calculator.setSpotShock(weth.address, usdc.address, usdc.address, true, spotShockValue, { from: owner })
 
       assert.equal(
         new BigNumber(await calculator.getSpotShock(weth.address, usdc.address, usdc.address, true)).toString(),
@@ -283,7 +283,7 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
       const oracleDeviationValue = scaleNum(0.05, 27)
 
       await expectRevert(
-        calculator.setOracleDeviation(oracleDeviationValue, {from: random}),
+        calculator.setOracleDeviation(oracleDeviationValue, { from: random }),
         'Ownable: caller is not the owner',
       )
     })
@@ -291,7 +291,7 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
     it('should set oracle deviation value', async () => {
       const oracleDeviationValue = scaleNum(0.05, 27)
 
-      await calculator.setOracleDeviation(oracleDeviationValue, {from: owner})
+      await calculator.setOracleDeviation(oracleDeviationValue, { from: owner })
 
       assert.equal(
         new BigNumber(await calculator.getOracleDeviation()).toString(),
@@ -370,7 +370,7 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
 
     before(async () => {
       // setup new calculator
-      calculator = await MarginCalculator.new(oracle.address, {from: owner})
+      calculator = await MarginCalculator.new(oracle.address, { from: owner })
 
       // set product spot shock value
       await calculator.setSpotShock(weth.address, usdc.address, usdc.address, true, productSpotShockValue)
@@ -460,7 +460,7 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
     it('should return required margin for naked margin vault: 1 options 2500$ WETH call option with 1800 spot price and 1 week to expiry', async () => {
       // set product shock value
       const spotShockValue = scaleNum(0.75, 27)
-      await calculator.setSpotShock(weth.address, usdc.address, weth.address, false, spotShockValue, {from: owner})
+      await calculator.setSpotShock(weth.address, usdc.address, weth.address, false, spotShockValue, { from: owner })
 
       const shortAmount = 1
       const shortStrike = 2500
@@ -517,7 +517,7 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
     it('should return required margin for naked margin vault: 100k options 2500$ WETH call option with 1800 spot price and 1 week to expiry', async () => {
       // set product shock value
       const spotShockValue = scaleNum(0.75, 27)
-      await calculator.setSpotShock(weth.address, usdc.address, weth.address, false, spotShockValue, {from: owner})
+      await calculator.setSpotShock(weth.address, usdc.address, weth.address, false, spotShockValue, { from: owner })
 
       const shortAmount = 100000
       const shortStrike = 2500
@@ -653,7 +653,7 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
     it('should revert if naked margin vault have collateral amount less than dust amount', async () => {
       // set dust amount for USDC
       const usdcDustAmount = createScaledBigNumber(30, usdcDecimals)
-      await calculator.setCollateralDust(usdc.address, usdcDustAmount, {from: owner})
+      await calculator.setCollateralDust(usdc.address, usdcDustAmount, { from: owner })
 
       const optionExpiry = new BigNumber(await time.latest()).plus(timeToExpiry[1])
       const shortOtoken = await MockOtoken.new()
@@ -718,7 +718,7 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
 
       // update dust amount for this test case to work
       const usdcDust = scaleNum(expectedRequiredNakedMargin - 0.5, usdcDecimals)
-      await calculator.setCollateralDust(usdc.address, usdcDust, {from: owner})
+      await calculator.setCollateralDust(usdc.address, usdcDust, { from: owner })
 
       // set underlying price in oracle
       await oracle.setRealTimePrice(weth.address, scaledUnderlyingPrice)
@@ -860,7 +860,7 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
           true,
           timeToExpiry,
           upperBoundValue,
-          {from: owner},
+          { from: owner },
         ),
         'MarginCalculator: invalid option upper bound value',
       )
@@ -878,7 +878,7 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
           true,
           timeToExpiry,
           upperBoundValue,
-          {from: owner},
+          { from: owner },
         ),
         'MarginCalculator: upper bound value not found',
       )
@@ -903,7 +903,7 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
         true,
         timeToExpiry,
         upperBoundValue,
-        {from: owner},
+        { from: owner },
       )
 
       const updatedUpperBoundValue = await calculator.getMaxPrice(

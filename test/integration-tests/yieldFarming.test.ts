@@ -12,10 +12,10 @@ import {
   MockCTokenInstance,
   CompoundPricerInstance,
 } from '../../build/types/truffle-types'
-import {createTokenAmount, createValidExpiry} from '../utils'
+import { createTokenAmount, createValidExpiry } from '../utils'
 import BigNumber from 'bignumber.js'
 
-const {time} = require('@openzeppelin/test-helpers')
+const { time } = require('@openzeppelin/test-helpers')
 const AddressBook = artifacts.require('AddressBook.sol')
 const Oracle = artifacts.require('Oracle.sol')
 const Otoken = artifacts.require('Otoken.sol')
@@ -140,7 +140,7 @@ contract('Yield Farming: Naked Put Option closed before expiry flow', ([admin, a
     usdc.mint(accountOwner1, accountOwner1Usdc)
 
     // have the user approve all the usdc transfers
-    usdc.approve(marginPool.address, accountOwner1Usdc, {from: accountOwner1})
+    usdc.approve(marginPool.address, accountOwner1Usdc, { from: accountOwner1 })
 
     const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
     vaultCounter = vaultCounterBefore.plus(1).toNumber()
@@ -184,11 +184,11 @@ contract('Yield Farming: Naked Put Option closed before expiry flow', ([admin, a
         },
       ]
 
-      await controllerProxy.operate(actionArgs, {from: accountOwner1})
+      await controllerProxy.operate(actionArgs, { from: accountOwner1 })
     })
 
     it('admin should be able to remove excess collateral sent to the margin pool', async () => {
-      await marginPool.setFarmer(admin, {from: admin})
+      await marginPool.setFarmer(admin, { from: admin })
       const usdcAmount = new BigNumber(15)
       const scaledUsdcAmount = createTokenAmount(usdcAmount.toNumber(), usdcDecimals)
 
@@ -196,8 +196,8 @@ contract('Yield Farming: Naked Put Option closed before expiry flow', ([admin, a
 
       // random person sends usdc to margin pool
       await usdc.mint(random, scaledUsdcAmount)
-      await usdc.approve(marginPool.address, usdcAmount, {from: random})
-      await usdc.transfer(marginPool.address, scaledUsdcAmount, {from: random})
+      await usdc.approve(marginPool.address, usdcAmount, { from: random })
+      await usdc.transfer(marginPool.address, scaledUsdcAmount, { from: random })
 
       const marginPoolUsdcBalanceAfterInterestEarned = new BigNumber(await usdc.balanceOf(marginPool.address))
 
@@ -280,12 +280,12 @@ contract('Yield Farming: Naked Put Option closed before expiry flow', ([admin, a
       cusdcCollateralAmount = new BigNumber(usdcCollateralAmount).div(cusdcPrice)
       const scaledCollateralAmount = createTokenAmount(cusdcCollateralAmount.toNumber(), cusdcDecimals)
       cusdc.mint(accountOwner1, scaledCollateralAmount)
-      cusdc.approve(marginPool.address, scaledCollateralAmount, {from: accountOwner1})
+      cusdc.approve(marginPool.address, scaledCollateralAmount, { from: accountOwner1 })
 
       const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
       vaultCounter = vaultCounterBefore.plus(1).toNumber()
 
-      await marginPool.setFarmer(admin, {from: admin})
+      await marginPool.setFarmer(admin, { from: admin })
     })
 
     it('accountOwner1 should be able to open a short put spread position', async () => {
@@ -336,7 +336,7 @@ contract('Yield Farming: Naked Put Option closed before expiry flow', ([admin, a
         },
       ]
 
-      await controllerProxy.operate(actionArgs, {from: accountOwner1})
+      await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
       // keep track of balances after
       const ownerCusdcBalanceAfter = new BigNumber(await cusdc.balanceOf(accountOwner1))
@@ -444,7 +444,7 @@ contract('Yield Farming: Naked Put Option closed before expiry flow', ([admin, a
         },
       ]
 
-      await controllerProxy.operate(actionArgs, {from: accountOwner1})
+      await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
       // keep track of balances after
       const ownerCusdcBalanceAfter = new BigNumber(await cusdc.balanceOf(accountOwner1))
@@ -482,7 +482,7 @@ contract('Yield Farming: Naked Put Option closed before expiry flow', ([admin, a
     it('Buyer: exercise ITM put option after expiry', async () => {
       const scaledOptionsAmount = createTokenAmount(optionsAmount, 8)
       // owner sells their put option
-      cusdcEthPut.transfer(buyer, scaledOptionsAmount, {from: accountOwner1})
+      cusdcEthPut.transfer(buyer, scaledOptionsAmount, { from: accountOwner1 })
       // oracle orice decreases
       const strikePriceChange = strikePrice - ethPriceAtExpiry
 
@@ -505,8 +505,8 @@ contract('Yield Farming: Naked Put Option closed before expiry flow', ([admin, a
         },
       ]
 
-      await cusdcEthPut.approve(marginPool.address, scaledOptionsAmount, {from: buyer})
-      await controllerProxy.operate(actionArgs, {from: buyer})
+      await cusdcEthPut.approve(marginPool.address, scaledOptionsAmount, { from: buyer })
+      await controllerProxy.operate(actionArgs, { from: buyer })
 
       // keep track of balances after
       const buyerCusdcBalanceAfter = new BigNumber(await cusdc.balanceOf(buyer))
