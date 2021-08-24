@@ -69,7 +69,7 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
   const shortStrike = 2000
   const isPut = true // delta error because liquidation price differ based on block timestamp of isLiquidatable() and the actual liquidation tx
   const shortAmount = 1
-  const errorDelta = 0.1
+  const errorDelta = 0.25
 
   let addressBook: AddressBookInstance
   let calculator: MarginCalculatorInstance
