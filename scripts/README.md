@@ -49,7 +49,7 @@ To deploy a new `PermitCallee.sol`, it is recommended to use the `deployPermitCa
 truffle exec scripts/deployPermitCallee.js --network kovan --gasPrice 50000000000
 ```
 
-## Stakedao eCRV Pricer Deployment
+## Stakedao Pricer Deployment
 
 To deploy a new `StakedaoPricer.sol`, it is recommended to use the `deployStakedaoPricer` truffle script inside the `scripts` folder.
 
@@ -62,8 +62,8 @@ truffle exec scripts/deployStakedaoPricer.js --network mainnet --lpToken 0x7d78c
 **Output**
 
 ```sh
-Deploying Stakedao eCRV pricer contract to mainnet 🍕
-Stakedao eCRV pricer deployed! 🎉
+Deploying Stakedao pricer contract to mainnet 🍕
+Stakedao pricer deployed! 🎉
 Transaction hash: 0xebf12fc6603ee857bcabe1c0c6194XX82639a9888776f7ff6e83a409XXXXXXXX
 Deployed contract address: 0x669cC97687c792fc5369d7bdd38cXXXXXXXXXX
 ```

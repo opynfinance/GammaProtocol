@@ -90,8 +90,8 @@ contract StakedaoPricer {
      * @return price of 1 lpToken in USD, scaled by 1e8
      */
     function _underlyingPriceToYtokenPrice(uint256 _underlyingPrice) private view returns (uint256) {
-        uint256 pricePerShare = lpToken.getPricePerFullShare();
-        uint256 curvePrice = curve.get_virtual_price();
+        uint256 pricePerShare = lpToken.getPricePerFullShare(); // 18 decimals
+        uint256 curvePrice = curve.get_virtual_price(); // 18 decimals
 
         // scale by 1e36 to return price of 1 lpToken in USD, scaled by 1e8
         // assumes underlyingPrice is 1e8, curve price is 1e18, pricePerShare is 1e18

@@ -57,7 +57,7 @@
 <g id="node3" class="node">
 <title>2</title>
 <polygon fill="#f2f2f2" stroke="#000000" points="946.2756,-34.1 946.2756,-293.3 1467.6504,-293.3 1467.6504,-34.1 946.2756,-34.1"/>
-<text text-anchor="middle" x="1206.963" y="-276.7" font-family="Times,serif" font-size="14.00" fill="#000000">StakedaoEcrvPricer</text>
+<text text-anchor="middle" x="1206.963" y="-276.7" font-family="Times,serif" font-size="14.00" fill="#000000">StakedaoPricer</text>
 <polyline fill="none" stroke="#000000" points="946.2756,-268.5 1467.6504,-268.5 "/>
 <text text-anchor="start" x="954.2756" y="-251.9" font-family="Times,serif" font-size="14.00" fill="#000000">Public:</text>
 <text text-anchor="start" x="954.2756" y="-235.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;curve: ICurve</text>

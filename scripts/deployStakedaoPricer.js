@@ -1,6 +1,6 @@
 const yargs = require('yargs')
 
-const StakedaoEcrvPricer = artifacts.require('StakedaoPricer.sol')
+const StakedaoPricer = artifacts.require('StakedaoPricer.sol')
 
 module.exports = async function(callback) {
   try {
@@ -16,14 +16,14 @@ module.exports = async function(callback) {
       .option('gasPrice', {describe: 'Gas price in WEI', type: 'string', demandOption: false})
       .option('gasLimit', {describe: 'Gas Limit in WEI', type: 'string', demandOption: false}).argv
 
-    console.log(`Deploying Stakedao eCRV pricer contract to ${options.network} 🍕`)
+    console.log(`Deploying Stakedao pricer contract to ${options.network} 🍕`)
 
     const tx = await StakedaoPricer.new(options.lpToken, options.underlying, options.oracle, options.curve, {
       gasPrice: options.gasPrice,
       gas: options.gasLimit,
     })
 
-    console.log('Stakedao eCRV pricer deployed! 🎉')
+    console.log('Stakedao pricer deployed! 🎉')
     console.log(`Transaction hash: ${tx.transactionHash}`)
     console.log(`Deployed contract address: ${tx.address}`)
 
