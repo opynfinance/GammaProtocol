@@ -19,11 +19,11 @@ import {SafeMath} from "../packages/oz/SafeMath.sol";
  */
 
 /**
- * @title StakedaoEcrvPricer
+ * @title StakedaoPricer
  * @author Opyn Team
  * @notice A Pricer contract for a Stakedao lpToken
  */
-contract StakedaoEcrvPricer {
+contract StakedaoPricer {
     using SafeMath for uint256;
 
     /// @notice curve pool
@@ -94,7 +94,7 @@ contract StakedaoEcrvPricer {
         uint256 curvePrice = curve.get_virtual_price();
 
         // scale by 1e36 to return price of 1 lpToken in USD, scaled by 1e8
-        // assumes underlying (WETH) is 1e18, curve price is 1e18
+        // assumes underlyingPrice is 1e8, curve price is 1e18, pricePerShare is 1e18
         return pricePerShare.mul(_underlyingPrice).mul(curvePrice).div(1e36);
     }
 

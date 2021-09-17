@@ -1,4 +1,4 @@
-# `StakedaoEcrvPricer`
+# `StakedaoPricer`
 
 A Pricer contract for a Stakedao lpToken
 

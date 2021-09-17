@@ -51,12 +51,12 @@ truffle exec scripts/deployPermitCallee.js --network kovan --gasPrice 5000000000
 
 ## Stakedao eCRV Pricer Deployment
 
-To deploy a new `StakedaoEcrvPricer.sol`, it is recommended to use the `deployStakedaoEcrvPricer` truffle script inside the `scripts` folder.
+To deploy a new `StakedaoPricer.sol`, it is recommended to use the `deployStakedaoPricer` truffle script inside the `scripts` folder.
 
 **Input**
 
 ```sh
-truffle exec scripts/deployStakedaoEcrvPricer.js --network mainnet --lpToken 0x7d78c401c69c56cb21f4bf80c53afd92be0BBBBB --underlying 0xc02aaa39b223fe8d0a0e5c4f27ead9083c7AAaaa --oracle 0xef196aA0e3Cb8EA6d5720557C3B611Eff6OOOOOO --curve 0x1d78z401c69c56cb21f4bf80c53afd92be0CCCCC --gasPrice 50000000000
+truffle exec scripts/deployStakedaoPricer.js --network mainnet --lpToken 0x7d78c401c69c56cb21f4bf80c53afd92be0BBBBB --underlying 0xc02aaa39b223fe8d0a0e5c4f27ead9083c7AAaaa --oracle 0xef196aA0e3Cb8EA6d5720557C3B611Eff6OOOOOO --curve 0x1d78z401c69c56cb21f4bf80c53afd92be0CCCCC --gasPrice 50000000000
 ```
 
 **Output**
