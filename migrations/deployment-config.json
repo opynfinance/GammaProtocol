@@ -16,11 +16,5 @@
         "mainnet": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
         "arbitrum_mainnet": "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8",
         "arbitrum_testnet": "0x9B12B281FeFbedC76527679C3851B6AF5BC10397"
-    },
-    "WBTC-AGGREGATOR": {
-        "arbitrum_mainnet": "0x6ce185860a4963106506C203335A2910413708e9",
-    },
-    "WETH-AGGREGATOR": {
-        "arbitrum_mainnet": "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612",
     }
 }

@@ -13,22 +13,22 @@ const Controller = artifacts.require('Controller')
 module.exports = async function(deployer, network, accounts) {
   const [deployerAddress] = accounts
 
+  // arbitrum networks count gas differently, will need to set a higher gas limit for big contracts
+  const txOptionOverride = network.contains('arbitrum') ? {gas: 200000000} : {}
+
   // deploy AddressBook & transfer ownership
   await deployer.deploy(AddressBook, {from: deployerAddress})
   const addressbook = await AddressBook.deployed()
-  // const addressbook = await AddressBook.at('0x9a33230f59Cc7Cc9A084E0098A2b2934FC7BF7c0')
-  // 0x9a33230f59Cc7Cc9A084E0098A2b2934FC7BF7c0
 
   // deploy Otoken implementation & set address
-  await deployer.deploy(Otoken, {from: deployerAddress, gas: 200000000})
+  await deployer.deploy(Otoken, {from: deployerAddress, ...txOptionOverride})
   const otokenImpl = await Otoken.deployed()
   await addressbook.setOtokenImpl(otokenImpl.address, {from: deployerAddress})
 
   // deploy OtokenFactory & set address
-  // await deployer.deploy(OtokenFactory, addressbook.address, {from: deployerAddress})
-  // const otokenFactory = await OtokenFactory.deployed()
-  // 0x4D3a52A0e98144CAf46Ac226d83e8f144b5c654D
-  // await addressbook.setOtokenFactory(otokenFactory.address, {from: deployerAddress})
+  await deployer.deploy(OtokenFactory, addressbook.address, {from: deployerAddress})
+  const otokenFactory = await OtokenFactory.deployed()
+  await addressbook.setOtokenFactory(otokenFactory.address, {from: deployerAddress})
 
   // deploy Whitelist module & set address
   await deployer.deploy(Whitelist, addressbook.address, {from: deployerAddress})
@@ -46,7 +46,7 @@ module.exports = async function(deployer, network, accounts) {
   await addressbook.setMarginPool(pool.address, {from: deployerAddress})
 
   // deploy Calculator module & set address
-  await deployer.deploy(MarginCalculator, addressbook.address, {from: deployerAddress, gas: 200000000})
+  await deployer.deploy(MarginCalculator, addressbook.address, {from: deployerAddress, txOptionOverride})
   const calculator = await MarginCalculator.deployed()
   await addressbook.setMarginCalculator(calculator.address, {from: deployerAddress})
 
@@ -54,7 +54,7 @@ module.exports = async function(deployer, network, accounts) {
   // deploy MarginVault library
   await deployer.deploy(MarginVault, {from: deployerAddress})
   await deployer.link(MarginVault, Controller)
-  await deployer.deploy(Controller, {from: deployerAddress, gas: 200000000})
+  await deployer.deploy(Controller, {from: deployerAddress, txOptionOverride})
   const controller = await Controller.deployed()
   await addressbook.setController(controller.address, {from: deployerAddress})
 
