@@ -684,9 +684,15 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
         createTokenAmount(0),
         'Liquidator vault short amount mismatch',
       )
-      assert.equal(
-        new BigNumber(userVaultAfter[0].collateralAmounts[0].toString()).toString(),
-        new BigNumber(userVaultBefore[0].collateralAmounts[0]).minus(new BigNumber(isLiquidatable[1])).toString(),
+
+      assert.isAtMost(
+        calcRelativeDiff(
+          new BigNumber(userVaultAfter[0].collateralAmounts[0]),
+          new BigNumber(userVaultBefore[0].collateralAmounts[0]).minus(new BigNumber(isLiquidatable[1])),
+        )
+          .dividedBy(new BigNumber(10 ** wethDecimals))
+          .toNumber(),
+        new BigNumber(errorDelta).toNumber(),
         'User vault short amount mismatch after liquidation',
       )
     })
