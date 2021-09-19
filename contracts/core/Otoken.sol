@@ -38,6 +38,17 @@ contract Otoken is ERC20PermitUpgradeable {
     uint256 private constant STRIKE_PRICE_SCALE = 1e8;
     uint256 private constant STRIKE_PRICE_DIGITS = 8;
 
+    event OTokenInitiated(
+        string name,
+        string symbol,
+        address indexed underlying,
+        address indexed strike,
+        address indexed collateral,
+        uint256 strikePrice,
+        uint256 expiry,
+        bool isPut
+    );
+
     /**
      * @notice initialize the oToken
      * @param _addressBook addressbook module
@@ -65,6 +76,18 @@ contract Otoken is ERC20PermitUpgradeable {
         expiryTimestamp = _expiryTimestamp;
         isPut = _isPut;
         (string memory tokenName, string memory tokenSymbol) = _getNameAndSymbol();
+
+        emit OTokenInitiated(
+            tokenName,
+            tokenSymbol,
+            _underlyingAsset,
+            _strikeAsset,
+            _collateralAsset,
+            _strikePrice,
+            _expiryTimestamp,
+            _isPut
+        );
+
         __ERC20_init_unchained(tokenName, tokenSymbol);
         __ERC20Permit_init(tokenName);
         _setupDecimals(8);

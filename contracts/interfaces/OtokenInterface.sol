@@ -2,6 +2,12 @@
 pragma solidity 0.6.10;
 
 interface OtokenInterface {
+    function name() external view returns (string memory);
+
+    function symbol() external view returns (string memory);
+
+    function decimals() external view returns (uint256);
+
     function addressBook() external view returns (address);
 
     function underlyingAsset() external view returns (address);

@@ -36,6 +36,9 @@ contract AddressBook is Ownable {
     /// @notice emits an event when a new address is added
     event AddressAdded(bytes32 indexed id, address indexed add);
 
+    event WhitelistUpdated(address whitelist);
+    event OtokenImplUpdated(address implementation);
+
     /**
      * @notice return Otoken implementation address
      * @return Otoken implementation address
@@ -107,6 +110,7 @@ contract AddressBook is Ownable {
      */
     function setOtokenImpl(address _otokenImpl) external onlyOwner {
         setAddress(OTOKEN_IMPL, _otokenImpl);
+        emit OtokenImplUpdated(_otokenImpl);
     }
 
     /**
@@ -125,6 +129,7 @@ contract AddressBook is Ownable {
      */
     function setWhitelist(address _whitelist) external onlyOwner {
         setAddress(WHITELIST, _whitelist);
+        emit WhitelistUpdated(_whitelist);
     }
 
     /**

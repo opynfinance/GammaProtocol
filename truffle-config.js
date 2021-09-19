@@ -63,13 +63,17 @@ module.exports = {
       skipDryRun: false,
       gasPrice: 120000000000,
     },
-    arbitrum: {
-      provider: function() {
-        return wrapProvider(new HDWalletProvider(mnemonic, 'https://kovan4.arbitrum.io/rpc'))
-      },
-      network_id: 212984383488152, // Match any network id
-      gasPrice: 0,
-      timeoutBlocks: 50,
+    arbitrum_testnet: {
+      // gas: 200000000,
+      network_id: 421611,
+      provider: () => new HDWalletProvider(mnemonic, `https://rinkeby.arbitrum.io/rpc`),
+      gasPrice: 30000000, // 0.03 gwei
+    },
+    arbitrum_mainnet: {
+      network_id: 42161,
+      chain_id: 42161,
+      gasPrice: 600000000, // 0.6 gwei
+      provider: () => new HDWalletProvider(mnemonic, `https://arb1.arbitrum.io/rpc`),
     },
   },
 
@@ -96,7 +100,7 @@ module.exports = {
       settings: {
         optimizer: {
           enabled: true,
-          runs: 200,
+          runs: 1,
         },
       },
     },
