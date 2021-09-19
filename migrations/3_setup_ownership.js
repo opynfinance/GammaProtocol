@@ -5,7 +5,6 @@ const MarginPool = artifacts.require('MarginPool')
 const AddressBook = artifacts.require('AddressBook')
 const Controller = artifacts.require('Controller')
 
-const MarginVault = artifacts.require('MarginVault')
 const MarginCalculator = artifacts.require('MarginCalculator')
 
 // import config file

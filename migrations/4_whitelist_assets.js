@@ -17,9 +17,6 @@ module.exports = async function(deployer, network, accounts) {
     console.log(`Missing one of WETH, WBTC, USD, skipping this step.`)
     return
   }
-  console.log(`Whitelisting WETH with address ${weth}`)
-  console.log(`Whitelisting WBTC with address ${wbtc}`)
-  console.log(`Whitelisting USDC with address ${usdc}`)
 
   // whitelist collateral
   await whitelist.whitelistCollateral(weth, {from: deployerAddress})
