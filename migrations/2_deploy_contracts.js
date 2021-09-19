@@ -14,9 +14,9 @@ module.exports = async function(deployer, network, accounts) {
   const [deployerAddress] = accounts
 
   // deploy AddressBook & transfer ownership
-  // await deployer.deploy(AddressBook, {from: deployerAddress})
-  // const addressbook = await AddressBook.deployed()
-  const addressbook = await AddressBook.at('0x9a33230f59Cc7Cc9A084E0098A2b2934FC7BF7c0')
+  await deployer.deploy(AddressBook, {from: deployerAddress})
+  const addressbook = await AddressBook.deployed()
+  // const addressbook = await AddressBook.at('0x9a33230f59Cc7Cc9A084E0098A2b2934FC7BF7c0')
   // 0x9a33230f59Cc7Cc9A084E0098A2b2934FC7BF7c0
 
   // deploy Otoken implementation & set address
