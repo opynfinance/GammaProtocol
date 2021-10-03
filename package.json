@@ -99,6 +99,7 @@
     "@types/chai": "4.2.5",
     "@typescript-eslint/eslint-plugin": "^2.9.0",
     "@typescript-eslint/parser": "^2.9.0",
+    "arb-ethers-web3-bridge": "^0.7.3",
     "bignumber.js": "^9.0.0",
     "chai": "4.2.0",
     "coveralls": "^3.0.11",
