@@ -30,6 +30,7 @@
     "deploy:development": "npm run build && npm run migrate -- --network development",
     "deploy:mainnet": "npm run build && npm run migrate -- --network mainnet",
     "deploy:ropsten": "npm run build && npm run migrate -- --network ropsten",
+    "deploy:rinkeby": "npm run build && npm run migrate -- --network rinkeby",
     "deploy:kovan": "npm run build && npm run migrate -- --network kovan",
     "lint:tests": "eslint 'test/**/*.ts'",
     "lint:tests:fix": "npm run lint:tests -- --fix",
@@ -86,8 +87,7 @@
     ]
   },
   "dependencies": {
-    "@truffle/hdwallet-provider": "^1.0.44",
-    "solc-0.6.10": "npm:solc@0.6.10",
+    "solc-0.6.10": "npm:solc@^0.6.10",
     "solidity-docgen": "^0.5.6",
     "yargs": "^13.2.4"
   },
@@ -99,6 +99,7 @@
     "@types/chai": "4.2.5",
     "@typescript-eslint/eslint-plugin": "^2.9.0",
     "@typescript-eslint/parser": "^2.9.0",
+    "arb-ethers-web3-bridge": "^0.7.3",
     "bignumber.js": "^9.0.0",
     "chai": "4.2.0",
     "coveralls": "^3.0.11",

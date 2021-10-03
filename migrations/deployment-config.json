@@ -1,3 +1,20 @@
 {
-    "MULTISIG": "0x543361Be968e2f59087316514eaee9e9E9A30aF7"
+    "MULTISIG": {
+        "mainnet": "0x543361Be968e2f59087316514eaee9e9E9A30aF7"
+    },
+    "WBTC": {
+        "mainnet": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
+        "arbitrum_mainnet": "0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f",
+        "arbitrum_testnet": "0xED0c1A7f28Bf6F2e3C9F178adC02De1a4f97d563"
+    },
+    "WETH": {
+        "mainnet": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+        "arbitrum_mainnet": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
+        "arbitrum_testnet": "0xB47e6A5f8b33b3F17603C83a0535A9dcD7E32681"
+    },
+    "USDC": {
+        "mainnet": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+        "arbitrum_mainnet": "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8",
+        "arbitrum_testnet": "0x9B12B281FeFbedC76527679C3851B6AF5BC10397"
+    }
 }

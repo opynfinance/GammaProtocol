@@ -1,4 +1,5 @@
 require('ts-node/register')
+const wrapProvider = require('arb-ethers-web3-bridge').wrapProvider
 require('dotenv').config()
 
 const HDWalletProvider = require('@truffle/hdwallet-provider')
@@ -60,7 +61,19 @@ module.exports = {
       confirmations: 2,
       timeoutBlocks: 50,
       skipDryRun: false,
-      gasPrice: 100000000000,
+      gasPrice: 120000000000,
+    },
+    arbitrum_testnet: {
+      // gas: 200000000,
+      network_id: 421611,
+      provider: () => new HDWalletProvider(mnemonic, `https://rinkeby.arbitrum.io/rpc`),
+      gasPrice: 30000000, // 0.03 gwei
+    },
+    arbitrum_mainnet: {
+      network_id: 42161,
+      chain_id: 42161,
+      gasPrice: 600000000, // 0.6 gwei
+      provider: () => new HDWalletProvider(mnemonic, `https://arb1.arbitrum.io/rpc`),
     },
   },
 
@@ -87,7 +100,7 @@ module.exports = {
       settings: {
         optimizer: {
           enabled: true,
-          runs: 200,
+          runs: 1,
         },
       },
     },

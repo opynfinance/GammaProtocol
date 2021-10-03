@@ -6,12 +6,12 @@ module.exports = async function(callback) {
   try {
     const options = yargs
       .usage('Usage: --network <network> --gasPrice <gasPrice>')
-      .option('network', {describe: '0x exchange address', type: 'string', demandOption: true})
-      .option('gasPrice', {describe: 'Gas price in WEI', type: 'string', demandOption: false}).argv
+      .option('network', { describe: '0x exchange address', type: 'string', demandOption: true })
+      .option('gasPrice', { describe: 'Gas price in WEI', type: 'string', demandOption: false }).argv
 
     console.log(`Deploying Permit callee contract on ${options.network} 🍕`)
 
-    const tx = await PermitCallee.new({gasPrice: options.gasPrice})
+    const tx = await PermitCallee.new({ gasPrice: options.gasPrice })
 
     console.log('Permit callee deployed! 🎉')
     console.log(`Transaction hash: ${tx.transactionHash}`)
