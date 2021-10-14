@@ -56,7 +56,7 @@ To deploy a new `StakedaoPricer.sol`, it is recommended to use the `deployStaked
 **Input**
 
 ```sh
-truffle exec scripts/deployStakedaoPricer.js --network mainnet --lpToken 0x7d78c401c69c56cb21f4bf80c53afd92be0BBBBB --underlying 0xc02aaa39b223fe8d0a0e5c4f27ead9083c7AAaaa --oracle 0xef196aA0e3Cb8EA6d5720557C3B611Eff6OOOOOO --curve 0x1d78z401c69c56cb21f4bf80c53afd92be0CCCCC --gasPrice 50000000000
+truffle exec scripts/deployStakedaoPricer.js --network mainnet --lpToken 0x5af15DA84A4a6EDf2d9FA6720De921E1026E37b7 --underlying 0x853d955aCEf822Db058eb8505911ED77F175b99e --oracle 0x789cD7AB3742e23Ce0952F6Bc3Eb3A73A0E08833 --curve 0xd632f22692FaC7611d2AA1C0D552930D43CAEd3B --gasPrice 160000000000
 ```
 
 **Output**
@@ -104,4 +104,13 @@ Deploying mock pricer contract on mainnet 🍕
 Mock pricer deployed! 🎉
 Transaction hash: 0xebf12fc6603ee857bcabe1c0c6194XX82639a9888776f7ff6e83a409XXXXXXXX
 Deployed contract address: 0x669cC97687c792fc5369d7bdd38cXXXXXXXXXX
+```
+
+
+## Verification 
+
+Run a script similar to the following. Remember to change the contract name and address
+
+```sh
+truffle run verify ContractName@0xb4cbBd4b1f8B9C4AbF3ab1E144afD1d2151b39c3 --network mainnet
 ```
