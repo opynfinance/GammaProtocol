@@ -109,7 +109,8 @@ Deployed contract address: 0x669cC97687c792fc5369d7bdd38cXXXXXXXXXX
 
 ## Verification 
 
-Run a script similar to the following. Remember to change the contract name and address
+1. Make sure truffle-verify is installed. See https://www.npmjs.com/package/truffle-plugin-verify for more information. 
+2. Run a script similar to the following. Remember to change the contract name and address
 
 ```sh
 truffle run verify ContractName@0xb4cbBd4b1f8B9C4AbF3ab1E144afD1d2151b39c3 --network mainnet
