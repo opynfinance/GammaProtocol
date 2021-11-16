@@ -341,7 +341,7 @@ contract Oracle is Ownable {
             address pricer = assetPricer[_asset];
             uint256 disputePeriod = pricerDisputePeriod[pricer];
 
-            return now > price.timestamp.add(disputePeriod);
+            return now > _expiryTimestamp.add(disputePeriod);
         }
 
         return true;
