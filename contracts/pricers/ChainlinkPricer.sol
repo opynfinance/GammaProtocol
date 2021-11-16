@@ -25,26 +25,20 @@ contract ChainLinkPricer is OpynPricerInterface {
 
     /// @notice asset that this pricer will a get price for
     address public asset;
-    /// @notice bot address that is allowed to call setExpiryPriceInOracle
-    address public bot;
 
     /**
-     * @param _bot priveleged address that can call setExpiryPriceInOracle
      * @param _asset asset that this pricer will get a price for
      * @param _aggregator Chainlink aggregator contract for the asset
      * @param _oracle Opyn Oracle address
      */
     constructor(
-        address _bot,
         address _asset,
         address _aggregator,
         address _oracle
     ) public {
-        require(_bot != address(0), "ChainLinkPricer: Cannot set 0 address as bot");
         require(_oracle != address(0), "ChainLinkPricer: Cannot set 0 address as oracle");
         require(_aggregator != address(0), "ChainLinkPricer: Cannot set 0 address as aggregator");
 
-        bot = _bot;
         oracle = OracleInterface(_oracle);
         aggregator = AggregatorInterface(_aggregator);
         asset = _asset;
@@ -53,24 +47,29 @@ contract ChainLinkPricer is OpynPricerInterface {
     }
 
     /**
-     * @notice modifier to check if sender address is equal to bot address
-     */
-    modifier onlyBot() {
-        require(msg.sender == bot, "ChainLinkPricer: unauthorized sender");
-
-        _;
-    }
-
-    /**
      * @notice set the expiry price in the oracle, can only be called by Bot address
      * @dev a roundId must be provided to confirm price validity, which is the first Chainlink price provided after the expiryTimestamp
      * @param _expiryTimestamp expiry to set a price for
      * @param _roundId the first roundId after expiryTimestamp
      */
-    function setExpiryPriceInOracle(uint256 _expiryTimestamp, uint80 _roundId) external onlyBot {
+    function setExpiryPriceInOracle(uint256 _expiryTimestamp, uint80 _roundId) external {
         (, int256 price, , uint256 roundTimestamp, ) = aggregator.getRoundData(_roundId);
-
         require(_expiryTimestamp <= roundTimestamp, "ChainLinkPricer: invalid roundId");
+
+        bool isCorrectRoundId;
+        uint80 previousRoundId = _roundId--;
+
+        while (!isCorrectRoundId) {
+            (, int256 price, , uint256 roundTimestamp, ) = aggregator.getRoundData(previousRoundId);
+
+            if (roundTimestamp == 0) {
+                previousRoundId--;
+            } else if (roundTimestamp > _expiryTimestamp) {
+                revert("ChainLinkPricer: invalid roundId");
+            } else {
+                isCorrectRoundId = true;
+            }
+        }
 
         oracle.setExpiryPrice(asset, _expiryTimestamp, uint256(price));
     }
