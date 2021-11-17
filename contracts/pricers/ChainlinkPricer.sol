@@ -57,14 +57,14 @@ contract ChainLinkPricer is OpynPricerInterface {
         require(_expiryTimestamp <= roundTimestamp, "ChainLinkPricer: invalid roundId");
 
         bool isCorrectRoundId;
-        uint80 previousRoundId = _roundId--;
+        uint80 previousRoundId = uint80(uint256(_roundId).sub(1));
 
         while (!isCorrectRoundId) {
-            (, int256 price, , uint256 roundTimestamp, ) = aggregator.getRoundData(previousRoundId);
+            (, , , uint256 previousRoundTimestamp, ) = aggregator.getRoundData(previousRoundId);
 
-            if (roundTimestamp == 0) {
-                previousRoundId--;
-            } else if (roundTimestamp > _expiryTimestamp) {
+            if (previousRoundTimestamp == 0) {
+                previousRoundId = uint80(uint256(previousRoundId).sub(1));
+            } else if (previousRoundTimestamp > _expiryTimestamp) {
                 revert("ChainLinkPricer: invalid roundId");
             } else {
                 isCorrectRoundId = true;
