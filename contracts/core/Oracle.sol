@@ -20,6 +20,7 @@ contract Oracle is Ownable {
     struct Price {
         uint256 price;
         uint256 timestamp; // timestamp at which the price is pushed to this oracle
+        bool isDisputed;
     }
 
     //// @dev disputer is a role defined by the owner that has the ability to dispute a price during the dispute period
@@ -178,8 +179,6 @@ contract Oracle is Ownable {
         require(!isDisputePeriodOver(_asset, _expiryTimestamp), "Oracle: dispute period over");
 
         Price storage priceToUpdate = storedPrice[_asset][_expiryTimestamp];
-
-        require(priceToUpdate.timestamp != 0, "Oracle: price to dispute does not exist");
 
         uint256 oldPrice = priceToUpdate.price;
         priceToUpdate.price = _price;
@@ -341,7 +340,7 @@ contract Oracle is Ownable {
             address pricer = assetPricer[_asset];
             uint256 disputePeriod = pricerDisputePeriod[pricer];
 
-            return now > _expiryTimestamp.add(disputePeriod);
+            return now > price.timestamp.add(disputePeriod);
         }
 
         return true;
