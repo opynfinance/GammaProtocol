@@ -253,13 +253,6 @@ contract('Oracle', ([owner, disputer, random, collateral, strike]) => {
       )
     })
 
-    it('should revert disputing price before it get pushed by pricer', async () => {
-      await expectRevert(
-        oracle.disputeExpiryPrice(weth.address, otokenExpiry.plus(10), disputePrice, { from: disputer }),
-        'Oracle: price to dispute does not exist',
-      )
-    })
-
     it('should dispute price during dispute period', async () => {
       await oracle.disputeExpiryPrice(weth.address, otokenExpiry, disputePrice, { from: disputer })
 
@@ -306,6 +299,14 @@ contract('Oracle', ([owner, disputer, random, collateral, strike]) => {
         oracle.setExpiryPrice(weth.address, otokenExpiry, assetPrice, { from: disputer }),
         'Oracle: caller is not authorized to set expiry price',
       )
+    })
+
+    it('should set exiry price by disputing in case price not pushed', async () => {
+      await oracle.disputeExpiryPrice(weth.address, otokenExpiry.plus(10), new BigNumber(700), { from: disputer })
+
+      const [price, isFinalized] = await oracle.getExpiryPrice(weth.address, otokenExpiry.plus(10))
+      assert.equal(price.toString(), '700')
+      assert.equal(isFinalized, false)
     })
   })
 
