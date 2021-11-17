@@ -83,7 +83,8 @@ contract Oracle is Ownable {
         require(_expiries.length == _prices.length, "Oracle: invalid migration data");
 
         for (uint256 i; i < _expiries.length; i++) {
-            storedPrice[_asset][_expiries[i]] = Price(_prices[i], now);
+            // set migrated prices as disputed to no allow disputing old pirces
+            storedPrice[_asset][_expiries[i]] = Price(_prices[i], now, true);
         }
     }
 
@@ -180,8 +181,11 @@ contract Oracle is Ownable {
 
         Price storage priceToUpdate = storedPrice[_asset][_expiryTimestamp];
 
+        require(!priceToUpdate.isDisputed, "Oracle: price already disputed");
+
         uint256 oldPrice = priceToUpdate.price;
         priceToUpdate.price = _price;
+        priceToUpdate.isDisputed = true;
 
         emit ExpiryPriceDisputed(_asset, _expiryTimestamp, oldPrice, _price, now);
     }
@@ -202,7 +206,7 @@ contract Oracle is Ownable {
         require(isLockingPeriodOver(_asset, _expiryTimestamp), "Oracle: locking period is not over yet");
         require(storedPrice[_asset][_expiryTimestamp].timestamp == 0, "Oracle: dispute period started");
 
-        storedPrice[_asset][_expiryTimestamp] = Price(_price, now);
+        storedPrice[_asset][_expiryTimestamp] = Price(_price, now, false);
         emit ExpiryPriceUpdated(_asset, _expiryTimestamp, _price, now);
     }
 
