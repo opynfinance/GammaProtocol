@@ -40,7 +40,7 @@ contract('Pricer + Oracle', ([owner, bot, disputer, random]) => {
     ceth = await MockCToken.new('cETH', 'cETH')
 
     oracle = await Oracle.new()
-    wethPricer = await ChainlinkPricer.new(bot, weth.address, wethAggregator.address, oracle.address)
+    wethPricer = await ChainlinkPricer.new(weth.address, wethAggregator.address, oracle.address)
     cethPricer = await CompoundPricer.new(ceth.address, weth.address, oracle.address)
   })
 
@@ -159,18 +159,6 @@ contract('Pricer + Oracle', ([owner, bot, disputer, random]) => {
       await expectRevert(
         cethPricer.setExpiryPriceInOracle(expiryTimestamp),
         'CompoundPricer: underlying price not set yet',
-      )
-    })
-
-    it('should revert set weth price if sender is not bot address', async () => {
-      const expiryTimestamp = (t0 + t1) / 2 // between t0 and t1
-      if ((await time.latest()) < expiryTimestamp + lockingPeriod) {
-        await time.increaseTo(expiryTimestamp + lockingPeriod + 10)
-      }
-      const roundId = 1
-      await expectRevert(
-        wethPricer.setExpiryPriceInOracle(expiryTimestamp, roundId, { from: random }),
-        'ChainLinkPricer: unauthorized sender',
       )
     })
 
