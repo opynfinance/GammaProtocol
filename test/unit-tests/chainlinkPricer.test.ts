@@ -122,15 +122,6 @@ contract('ChainlinkPricer', ([owner, bot, random]) => {
       assert.equal(p1.toString(), priceFromOracle[0].toString())
     })
 
-    // it('should revert if sender is not bot address', async () => {
-    //   const expiryTimestamp = (t1 + t2) / 2 // between t0 and t1
-    //   const roundId = 1
-    //   await expectRevert(
-    //     pricer.setExpiryPriceInOracle(expiryTimestamp, roundId, { from: random }),
-    //     'ChainLinkPricer: unauthorized sender',
-    //   )
-    // })
-
     it('should revert if round ID is incorrect: price[roundId].timestamp < expiry', async () => {
       const expiryTimestamp = (t1 + t2) / 2 // between t0 and t1
       const roundId = 1
