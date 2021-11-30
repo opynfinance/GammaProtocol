@@ -62,6 +62,17 @@ module.exports = {
       skipDryRun: false,
       gasPrice: 100000000000,
     },
+    avax: {
+      provider: () => new HDWalletProvider(mnemonic, 'https://api.avax.network/ext/bc/C/rpc'),
+      network_id: 1,
+    },
+    fuji: {
+      provider: () => new HDWalletProvider(mnemonic, 'https://api.avax-test.network/ext/bc/C/rpc'),
+      network_id: 1,
+      gas: 8000000,
+      gasPrice: 250000000000,
+      skipDryRun: true,
+    }
   },
 
   mocha: {

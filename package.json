@@ -31,6 +31,8 @@
     "deploy:mainnet": "npm run build && npm run migrate -- --network mainnet",
     "deploy:ropsten": "npm run build && npm run migrate -- --network ropsten",
     "deploy:kovan": "npm run build && npm run migrate -- --network kovan",
+    "deploy:avax": "npm run build && npm run migrate -- --network avax",
+    "deploy:fuji": "npm run build && npm run migrate -- --network fuji",
     "lint:tests": "eslint 'test/**/*.ts'",
     "lint:tests:fix": "npm run lint:tests -- --fix",
     "lint:sol": "solhint -f table contracts/**/*.sol",
@@ -86,7 +88,7 @@
     ]
   },
   "dependencies": {
-    "@truffle/hdwallet-provider": "^1.0.44",
+    "@truffle/hdwallet-provider": "^1.6.0",
     "solc-0.6.10": "npm:solc@0.6.10",
     "solidity-docgen": "^0.5.6",
     "yargs": "^13.2.4"
@@ -122,7 +124,7 @@
     "solhint-plugin-prettier": "0.0.4",
     "solidity-coverage": "0.7.5",
     "surya": "^0.4.0",
-    "truffle": "5.1.32",
+    "truffle": "^5.1.32",
     "truffle-assertions": "0.9.2",
     "truffle-contract-size": "^2.0.0",
     "truffle-plugin-verify": "^0.5.2",
