@@ -128,13 +128,30 @@ contract('ChainlinkPricer', ([owner, bot, random]) => {
       assert.equal(p1.toString(), priceFromOracle[0].toString())
     })
 
-    it('should revert if sender is not bot address and roundId is incorrect', async () => {
+    it('should revert if sender is not bot address and roundId is too early', async () => {
       const expiryTimestamp = (t1 + t2) / 2 // between t0 and t1
       const roundId = 1
       await expectRevert(
         pricer.setExpiryPriceInOracle(expiryTimestamp, roundId, {from: random}),
         'ChainLinkPricer: invalid roundId',
       )
+    })
+
+    it('should revert if sender is not bot address and roundId is too late', async () => {
+      const expiryTimestamp = (t1 + t2) / 2 // between t0 and t1
+      const roundId = 3
+      await expectRevert(
+        pricer.setExpiryPriceInOracle(expiryTimestamp, roundId, {from: random}),
+        'ChainLinkPricer: invalid roundId',
+      )
+    })
+
+    it('anyone should be able to set prices', async () => {
+      const expiryTimestamp = (t1 + t2) / 2 // between t0 and t1
+      const roundId = 2
+      await pricer.setExpiryPriceInOracle(expiryTimestamp, roundId, {from: random})
+      const priceFromOracle = await oracle.getExpiryPrice(weth.address, expiryTimestamp)
+      assert.equal(p2.toString(), priceFromOracle[0].toString())
     })
 
     it('should revert if round ID is incorrect: price[roundId].timestamp < expiry', async () => {
