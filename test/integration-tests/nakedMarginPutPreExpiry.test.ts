@@ -18,7 +18,7 @@ import {
 } from '../utils'
 import BigNumber from 'bignumber.js'
 
-const {expectRevert, time} = require('@openzeppelin/test-helpers')
+const { expectRevert, time } = require('@openzeppelin/test-helpers')
 
 const AddressBook = artifacts.require('AddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
@@ -69,7 +69,7 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
   const shortStrike = 2000
   const isPut = true // delta error because liquidation price differ based on block timestamp of isLiquidatable() and the actual liquidation tx
   const shortAmount = 1
-  const errorDelta = 0.1
+  const errorDelta = 0.25
 
   let addressBook: AddressBookInstance
   let calculator: MarginCalculatorInstance
@@ -128,11 +128,13 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
     const controllerProxyAddress = await addressBook.getController()
     controllerProxy = await Controller.at(controllerProxyAddress)
 
+    // configure controller
+    await controllerProxy.setNakedCap(usdc.address, usdcCap, { from: owner })
+
     // config calculator
     await calculator.setSpotShock(weth.address, usdc.address, usdc.address, isPut, productSpotShockValue)
-    await calculator.setOracleDeviation(oracleDeviationValue, {from: owner})
-    await calculator.setCollateralDust(usdc.address, usdcDust, {from: owner})
-    await calculator.setCollateralCap(usdc.address, usdcCap, {from: owner})
+    await calculator.setOracleDeviation(oracleDeviationValue, { from: owner })
+    await calculator.setCollateralDust(usdc.address, usdcDust, { from: owner })
     // set product upper bound values
     await calculator.setUpperBoundValues(weth.address, usdc.address, usdc.address, isPut, timeToExpiry, expiryToValue, {
       from: owner,
@@ -224,12 +226,12 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
       const userUsdcBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
       const poolUsdcBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
 
-      await usdc.approve(marginPool.address, collateralToDeposit.toString(), {from: accountOwner1})
-      await controllerProxy.operate(mintArgs, {from: accountOwner1})
+      await usdc.approve(marginPool.address, collateralToDeposit.toString(), { from: accountOwner1 })
+      await controllerProxy.operate(mintArgs, { from: accountOwner1 })
 
       const userUsdcAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
       const poolUsdcAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
-      const userVaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const userVaultAfter = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter)
 
       assert.equal(
         userUsdcBefore.minus(userUsdcAfter).toString(),
@@ -275,7 +277,7 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
         usdcDecimals,
         isPut,
       )
-      const userVaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const userVaultBefore = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter)
       const amountToWithdraw = new BigNumber(userVaultBefore[0].collateralAmounts[0]).minus(
         new BigNumber(collateralNeeded),
       )
@@ -293,9 +295,9 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
       ]
       const userCollateralBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
 
-      await controllerProxy.operate(withdrawArgs, {from: accountOwner1})
+      await controllerProxy.operate(withdrawArgs, { from: accountOwner1 })
 
-      const userVaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const userVaultAfter = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter)
       const userCollateralAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
 
       assert.equal(
@@ -315,22 +317,22 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
       scaledUnderlyingPrice = scaleBigNum(underlyingPrice, 8)
       await oracle.setRealTimePrice(weth.address, scaledUnderlyingPrice)
 
-      await expectRevert(controllerProxy.sync(accountOwner1, vaultCounter, {from: accountOwner1}), 'CO14')
+      await expectRevert(controllerProxy.sync(accountOwner1, vaultCounter, { from: accountOwner1 }), 'C14')
 
       roundId = new BigNumber(10)
       await oracle.setChainlinkRoundData(weth.address, roundId, scaledUnderlyingPrice, (await time.latest()).toString())
     })
 
     it('update price, OTM position is overcollateralized again, user call sync, liquidation should revert with price timestamp T at underwater', async () => {
-      await shortOtoken.transfer(liquidator, createTokenAmount(shortAmount), {from: accountOwner1})
+      await shortOtoken.transfer(liquidator, createTokenAmount(shortAmount), { from: accountOwner1 })
 
       const underlyingPrice = 3000
       scaledUnderlyingPrice = scaleBigNum(underlyingPrice, 8)
       await oracle.setRealTimePrice(weth.address, scaledUnderlyingPrice)
 
-      await controllerProxy.sync(accountOwner1, vaultCounter, {from: accountOwner1})
+      await controllerProxy.sync(accountOwner1, vaultCounter, { from: accountOwner1 })
 
-      const userVault = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const userVault = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter)
 
       assert.equal(
         userVault[2].toString(),
@@ -352,15 +354,15 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
       ]
 
       await expectRevert(
-        controllerProxy.operate(liquidateArgs, {from: liquidator}),
+        controllerProxy.operate(liquidateArgs, { from: liquidator }),
         'MarginCalculator: auction timestamp should be post vault latest update',
       )
 
-      await shortOtoken.transfer(accountOwner1, createTokenAmount(shortAmount), {from: liquidator})
+      await shortOtoken.transfer(accountOwner1, createTokenAmount(shortAmount), { from: liquidator })
     })
 
     it('update price, position near ATM, undercollateralized, liquidator should be able to liquidate', async () => {
-      await shortOtoken.transfer(liquidator, createTokenAmount(shortAmount), {from: accountOwner1})
+      await shortOtoken.transfer(liquidator, createTokenAmount(shortAmount), { from: accountOwner1 })
 
       // advance time
       await time.increase(600)
@@ -393,12 +395,16 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
       ]
 
       const liquidatorCollateralBalanceBefore = new BigNumber(await usdc.balanceOf(liquidator))
-      const vaultBeforeLiquidation = (await controllerProxy.getVault(accountOwner1, vaultCounter.toString()))[0]
+      const vaultBeforeLiquidation = (
+        await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter.toString())
+      )[0]
 
-      await controllerProxy.operate(liquidateArgs, {from: liquidator})
+      await controllerProxy.operate(liquidateArgs, { from: liquidator })
 
       const liquidatorCollateralBalanceAfter = new BigNumber(await usdc.balanceOf(liquidator))
-      const vaultAfterLiquidation = (await controllerProxy.getVault(accountOwner1, vaultCounter.toString()))[0]
+      const vaultAfterLiquidation = (
+        await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter.toString())
+      )[0]
 
       assert.equal(vaultAfterLiquidation.shortAmounts[0].toString(), '0', 'Vault was not fully liquidated')
       assert.isAtMost(
@@ -408,7 +414,7 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
         )
           .dividedBy(new BigNumber(10 ** usdcDecimals))
           .toNumber(),
-        errorDelta,
+        new BigNumber(errorDelta).toNumber(),
         'Vault collateral mismatch after liquidation',
       )
       assert.isAtMost(
@@ -505,12 +511,12 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
       const userUsdcBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
       const poolUsdcBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
 
-      await usdc.approve(marginPool.address, collateralToDeposit.toString(), {from: accountOwner1})
-      await controllerProxy.operate(mintArgs, {from: accountOwner1})
+      await usdc.approve(marginPool.address, collateralToDeposit.toString(), { from: accountOwner1 })
+      await controllerProxy.operate(mintArgs, { from: accountOwner1 })
 
       const userUsdcAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
       const poolUsdcAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
-      const userVaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const userVaultAfter = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter)
 
       assert.equal(
         userUsdcBefore.minus(userUsdcAfter).toString(),
@@ -565,7 +571,7 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
         isPut,
       )
 
-      await usdc.approve(marginPool.address, collateralToDeposit.toString(), {from: liquidator})
+      await usdc.approve(marginPool.address, collateralToDeposit.toString(), { from: liquidator })
 
       const isLiquidatable = await controllerProxy.isLiquidatable(accountOwner1, vaultCounter.toString(), roundId)
 
@@ -615,46 +621,50 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
         },
       ]
 
-      const vaultBeforeLiquidation = (await controllerProxy.getVault(accountOwner1, vaultCounter.toString()))[0]
+      const vaultBeforeLiquidation = (
+        await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter.toString())
+      )[0]
       const liquidatorUsdcBefore = new BigNumber(await usdc.balanceOf(liquidator))
       const poolUsdcBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
-      const userVaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const userVaultBefore = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter)
 
-      await controllerProxy.operate(mintLiquidateArgs, {from: liquidator})
+      await controllerProxy.operate(mintLiquidateArgs, { from: liquidator })
 
       const liquidatorUsdcAfter = new BigNumber(await usdc.balanceOf(liquidator))
       const poolUsdcAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
-      const userVaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
-      const liquidatorVaultAfter = await controllerProxy.getVault(liquidator, liquidatorVaultCounter)
-      const vaultAfterLiquidation = (await controllerProxy.getVault(accountOwner1, vaultCounter.toString()))[0]
+      const userVaultAfter = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter)
+      const liquidatorVaultAfter = await controllerProxy.getVaultWithDetails(liquidator, liquidatorVaultCounter)
+      const vaultAfterLiquidation = (
+        await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter.toString())
+      )[0]
 
       assert.equal(vaultAfterLiquidation.shortAmounts[0].toString(), '0', 'Vault was not fully liquidated')
+
       assert.isAtMost(
         calcRelativeDiff(
-          vaultAfterLiquidation.collateralAmounts[0],
+          new BigNumber(vaultAfterLiquidation.collateralAmounts[0]),
           new BigNumber(vaultBeforeLiquidation.collateralAmounts[0]).minus(new BigNumber(isLiquidatable[1])),
         )
-          .dividedBy(10 ** usdcDecimals)
+          .dividedBy(new BigNumber(10 ** usdcDecimals))
           .toNumber(),
-        errorDelta,
+        new BigNumber(errorDelta).toNumber(),
         'Vault collateral mismatch after liquidation',
       )
-      assert.equal(
-        liquidatorUsdcAfter.toString(),
-        liquidatorUsdcBefore
-          .minus(collateralToDeposit)
-          .plus(isLiquidatable[1])
-          .toString(),
+
+      assert.isAtMost(
+        calcRelativeDiff(liquidatorUsdcAfter, liquidatorUsdcBefore.minus(collateralToDeposit).plus(isLiquidatable[1]))
+          .dividedBy(new BigNumber(10 ** usdcDecimals))
+          .toNumber(),
+        new BigNumber(errorDelta).toNumber(),
         'Liquidator collateral balance mismatch after liquidation',
       )
+
       assert.equal(
-        poolUsdcAfter
-          .plus(isLiquidatable[1].toString())
-          .minus(collateralToDeposit.toString())
-          .toString(),
+        poolUsdcAfter.plus(isLiquidatable[1].toString()).minus(collateralToDeposit.toString()).toString(),
         poolUsdcBefore.toString(),
         'Pool balance after openining position mismatch',
       )
+
       assert.equal(
         liquidatorVaultAfter[0].collateralAmounts[0].toString(),
         collateralToDeposit.toString(),
@@ -685,7 +695,7 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
 
     it('advance time after option expiry, seller should withdraw remaining collateral, buyer should be able to redeem, liquiator should be able to settle', async () => {
       // transfer otoken to buyer
-      await shortOtoken.transfer(buyer1, createTokenAmount(shortAmount), {from: accountOwner1})
+      await shortOtoken.transfer(buyer1, createTokenAmount(shortAmount), { from: accountOwner1 })
       assert.equal(
         new BigNumber(await shortOtoken.balanceOf(buyer1)).toString(),
         createTokenAmount(shortAmount),
@@ -698,7 +708,7 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
 
       await time.increaseTo(optionExpiry.toNumber() + 10)
 
-      const userVaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const userVaultBefore = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter)
       const amountToWithdraw = new BigNumber(await controllerProxy.getProceed(accountOwner1, vaultCounter))
 
       const withdrawArgs = [
@@ -715,9 +725,9 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
       ]
       const userCollateralBefore = new BigNumber(await usdc.balanceOf(accountOwner1))
 
-      await controllerProxy.operate(withdrawArgs, {from: accountOwner1})
+      await controllerProxy.operate(withdrawArgs, { from: accountOwner1 })
 
-      const userVaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const userVaultAfter = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter)
       const userCollateralAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
 
       assert.equal(
@@ -747,7 +757,7 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
       const buyerUsdcAfter = new BigNumber(await usdc.balanceOf(buyer1))
       const payout = new BigNumber(await controllerProxy.getPayout(shortOtoken.address, createTokenAmount(shortAmount)))
 
-      await controllerProxy.operate(redeemArgs, {from: buyer1})
+      await controllerProxy.operate(redeemArgs, { from: buyer1 })
 
       assert.equal(buyerUsdcAfter.minus(buyerUsdcBefore).toString(), payout.toString(), 'buyer payout amount mismatch')
 
@@ -766,7 +776,7 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
       const liquidatorUsdcBefore = new BigNumber(await usdc.balanceOf(liquidator))
       const settleAmount = new BigNumber(await controllerProxy.getProceed(liquidator, liquidatorVaultCounter))
 
-      await controllerProxy.operate(settleArgs, {from: liquidator})
+      await controllerProxy.operate(settleArgs, { from: liquidator })
 
       const liquidatorUsdcAfter = new BigNumber(await usdc.balanceOf(liquidator))
 

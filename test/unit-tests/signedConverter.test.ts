@@ -1,7 +1,7 @@
-import {SignedConverterTesterInstance} from '../../build/types/truffle-types'
+import { SignedConverterTesterInstance } from '../../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
-const {expectRevert} = require('@openzeppelin/test-helpers')
+const { expectRevert } = require('@openzeppelin/test-helpers')
 
 const SignedConverterTester = artifacts.require('SignedConverterTester.sol')
 

@@ -4,10 +4,10 @@ import {
   OtokenInstance,
   MockAddressBookInstance,
 } from '../../build/types/truffle-types'
-import {BigNumber} from 'bignumber.js'
-import {createTokenAmount} from '../utils'
+import { BigNumber } from 'bignumber.js'
+import { createTokenAmount } from '../utils'
 
-const {expectRevert} = require('@openzeppelin/test-helpers')
+const { expectRevert } = require('@openzeppelin/test-helpers')
 
 const Otoken = artifacts.require('Otoken.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
@@ -57,11 +57,7 @@ contract('MarginVault', ([deployer, controller]) => {
   describe('Add short', async () => {
     it('should revert if trying to add short otoken with index greater than short otoken array length', async () => {
       const vaultCounter = new BigNumber(0)
-
-      await expectRevert(
-        marginVaultTester.testAddShort(vaultCounter, otoken.address, 10, 4),
-        'MarginVault: invalid short otoken index',
-      )
+      await expectRevert(marginVaultTester.testAddShort(vaultCounter, otoken.address, 10, 4), 'V2')
     })
 
     it('should add short otokens', async () => {
@@ -75,10 +71,7 @@ contract('MarginVault', ([deployer, controller]) => {
     it('should revert when adding 0 short', async () => {
       const vaultCounter = new BigNumber(0)
 
-      await expectRevert(
-        marginVaultTester.testAddShort(vaultCounter, otoken.address, 0, 0),
-        'MarginVault: invalid short otoken amount',
-      )
+      await expectRevert(marginVaultTester.testAddShort(vaultCounter, otoken.address, 0, 0), 'V1')
     })
 
     it('should add a different short otokens to a different index', async () => {
@@ -100,10 +93,7 @@ contract('MarginVault', ([deployer, controller]) => {
     it('should revert if trying to add wrong short otoken to an index', async () => {
       const vaultCounter = new BigNumber(0)
 
-      await expectRevert(
-        marginVaultTester.testAddShort(vaultCounter, otoken.address, 10, 1),
-        'MarginVault: short otoken address mismatch',
-      )
+      await expectRevert(marginVaultTester.testAddShort(vaultCounter, otoken.address, 10, 1), 'V3')
     })
   })
 
@@ -144,10 +134,7 @@ contract('MarginVault', ([deployer, controller]) => {
     it('should revert when trying to remove wrong short otoken from an index', async () => {
       const vaultCounter = new BigNumber(0)
 
-      await expectRevert(
-        marginVaultTester.testRemoveShort(vaultCounter, otoken2.address, 1, 0),
-        'MarginVault: short otoken address mismatch',
-      )
+      await expectRevert(marginVaultTester.testRemoveShort(vaultCounter, otoken2.address, 1, 0), 'V3')
     })
 
     it('should be able to add different short in the index of the old short otoken without increase short array length', async () => {
@@ -169,10 +156,7 @@ contract('MarginVault', ([deployer, controller]) => {
     it('should revert if trying to add long otoken with index greater than long otoken array length', async () => {
       const vaultCounter = new BigNumber(0)
 
-      await expectRevert(
-        marginVaultTester.testAddLong(vaultCounter, otoken.address, 10, 4),
-        'MarginVault: invalid long otoken index',
-      )
+      await expectRevert(marginVaultTester.testAddLong(vaultCounter, otoken.address, 10, 4), 'V5')
     })
 
     it('should add long otokens', async () => {
@@ -210,10 +194,7 @@ contract('MarginVault', ([deployer, controller]) => {
       const amount = 10
       const vaultCounter = new BigNumber(0)
 
-      await expectRevert(
-        marginVaultTester.testAddLong(vaultCounter, otoken.address, amount, index),
-        'MarginVault: long otoken address mismatch',
-      )
+      await expectRevert(marginVaultTester.testAddLong(vaultCounter, otoken.address, amount, index), 'V6')
     })
   })
 
@@ -254,10 +235,7 @@ contract('MarginVault', ([deployer, controller]) => {
     it('should revert when trying to remove wrong long otoken from an index', async () => {
       const vaultCounter = new BigNumber(0)
 
-      await expectRevert(
-        marginVaultTester.testRemoveLong(vaultCounter, otoken2.address, 1, 0),
-        'MarginVault: long otoken address mismatch',
-      )
+      await expectRevert(marginVaultTester.testRemoveLong(vaultCounter, otoken2.address, 1, 0), 'V6')
     })
 
     it('should be able to add different long in the index of the old long otoken without increase long array length', async () => {
@@ -275,10 +253,7 @@ contract('MarginVault', ([deployer, controller]) => {
     it('should revert if trying to add collateral asset with index greater than collateral asset array length', async () => {
       const vaultCounter = new BigNumber(0)
 
-      await expectRevert(
-        marginVaultTester.testAddCollateral(vaultCounter, weth.address, 10, 4),
-        'MarginVault: invalid collateral token index',
-      )
+      await expectRevert(marginVaultTester.testAddCollateral(vaultCounter, weth.address, 10, 4), 'V8')
     })
 
     it('should add weth collateral', async () => {
@@ -323,10 +298,7 @@ contract('MarginVault', ([deployer, controller]) => {
       const index = 0
       const vaultCounter = new BigNumber(0)
 
-      await expectRevert(
-        marginVaultTester.testAddCollateral(vaultCounter, usdc.address, changeAmt, index),
-        'MarginVault: collateral token address mismatch',
-      )
+      await expectRevert(marginVaultTester.testAddCollateral(vaultCounter, usdc.address, changeAmt, index), 'V9')
     })
 
     it('should add some more usdc collateral', async () => {
@@ -351,10 +323,7 @@ contract('MarginVault', ([deployer, controller]) => {
       const index = 1
       const vaultCounter = new BigNumber(0)
 
-      await expectRevert(
-        marginVaultTester.testAddCollateral(vaultCounter, otoken.address, changeAmt, index),
-        'MarginVault: collateral token address mismatch',
-      )
+      await expectRevert(marginVaultTester.testAddCollateral(vaultCounter, otoken.address, changeAmt, index), 'V9')
     })
   })
 
@@ -399,10 +368,7 @@ contract('MarginVault', ([deployer, controller]) => {
     it('should revert when trying to remove wrong collateral asset from an index', async () => {
       const vaultCounter = new BigNumber(0)
 
-      await expectRevert(
-        marginVaultTester.testRemoveCollateral(vaultCounter, weth.address, 1, 0),
-        'MarginVault: collateral token address mismatch',
-      )
+      await expectRevert(marginVaultTester.testRemoveCollateral(vaultCounter, weth.address, 1, 0), 'V9')
     })
 
     it('should be able to add different collateral asset in the index of the old collateral asset without increase collateral array length', async () => {

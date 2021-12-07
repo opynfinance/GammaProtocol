@@ -31,6 +31,8 @@
     "deploy:mainnet": "npm run build && npm run migrate -- --network mainnet",
     "deploy:ropsten": "npm run build && npm run migrate -- --network ropsten",
     "deploy:kovan": "npm run build && npm run migrate -- --network kovan",
+    "deploy:avax": "npm run build && npm run migrate -- --network avax",
+    "deploy:fuji": "npm run build && npm run migrate -- --network fuji",
     "lint:tests": "eslint 'test/**/*.ts'",
     "lint:tests:fix": "npm run lint:tests -- --fix",
     "lint:sol": "solhint -f table contracts/**/*.sol",
@@ -40,7 +42,7 @@
     "test:integration": "truffle test ./test/integration-tests/*.ts",
     "test:testing-engine": "truffle test ./test/test-engine/*.ts",
     "test:mainnet-fork": "./scripts/local-e2e.sh",
-    "coverage": "truffle run coverage  --file \"test/unit-tests/*.test.ts\"",
+    "coverage": "truffle run coverage --testfiles \"test/unit-tests/*.test.ts\" \"test/integration-tests/*.test.ts\"",
     "contract-size": "truffle run contract-size --checkMaxSize",
     "generate:doc": "npm run generate:doc:control-flow & npm run generate:doc:uml",
     "generate:doc:control-flow": "npm run doc:control-flow & npm run doc:control-flow:high-level & npm run doc:control-flow:controller & npm run doc:control-flow:pool & npm run doc:control-flow:oracle & npm run doc:control-flow:pricer & npm run doc:control-flow:otoken & npm run doc:control-flow:factory & npm run doc:control-flow:whitelist & npm run doc:control-flow:addressbook ",
@@ -86,7 +88,7 @@
     ]
   },
   "dependencies": {
-    "@truffle/hdwallet-provider": "^1.0.44",
+    "@truffle/hdwallet-provider": "^1.6.0",
     "solc-0.6.10": "npm:solc@0.6.10",
     "solidity-docgen": "^0.5.6",
     "yargs": "^13.2.4"
@@ -115,8 +117,8 @@
     "ethers": "^5.0.26",
     "husky": "^3.1.0",
     "lint-staged": "^9.5.0",
-    "prettier": "^1.19.1",
-    "prettier-plugin-solidity": "^1.0.0-alpha.54",
+    "prettier": "2.3.2",
+    "prettier-plugin-solidity": "1.0.0-beta.17",
     "sol2uml": "^1.1.25",
     "solhint": "3.0.0",
     "solhint-plugin-prettier": "0.0.4",

@@ -9,10 +9,10 @@ import {
   MarginPoolInstance,
   OtokenFactoryInstance,
 } from '../../build/types/truffle-types'
-import {createTokenAmount, createValidExpiry} from '../utils'
+import { createTokenAmount, createValidExpiry } from '../utils'
 import BigNumber from 'bignumber.js'
 
-const {time} = require('@openzeppelin/test-helpers')
+const { time } = require('@openzeppelin/test-helpers')
 const AddressBook = artifacts.require('AddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const Otoken = artifacts.require('Otoken.sol')
@@ -165,8 +165,8 @@ contract('Long Put Spread Option expires Otm flow', ([accountOwner1, nakedBuyer,
     await usdc.mint(nakedBuyer, nakedBuyerUsdc)
 
     // have the user approve all the usdc transfers
-    await usdc.approve(marginPool.address, accountOwner1Usdc, {from: accountOwner1})
-    await usdc.approve(marginPool.address, accountOwner2Usdc, {from: accountOwner2})
+    await usdc.approve(marginPool.address, accountOwner1Usdc, { from: accountOwner1 })
+    await usdc.approve(marginPool.address, accountOwner2Usdc, { from: accountOwner2 })
 
     const vaultCounter1Before = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
     vaultCounter1 = vaultCounter1Before.toNumber() + 1
@@ -216,10 +216,10 @@ contract('Long Put Spread Option expires Otm flow', ([accountOwner1, nakedBuyer,
           },
         ]
 
-        await controllerProxy.operate(actionArgsAccountOwner2, {from: accountOwner2})
+        await controllerProxy.operate(actionArgsAccountOwner2, { from: accountOwner2 })
 
         // accountOwner2 transfers their higher strike put option to accountOwner1
-        await higherStrikePut.transfer(accountOwner1, scaledOptionsAmount, {from: accountOwner2})
+        await higherStrikePut.transfer(accountOwner1, scaledOptionsAmount, { from: accountOwner2 })
 
         const actionArgsAccountOwner1 = [
           {
@@ -254,8 +254,8 @@ contract('Long Put Spread Option expires Otm flow', ([accountOwner1, nakedBuyer,
           },
         ]
 
-        await higherStrikePut.approve(marginPool.address, scaledOptionsAmount, {from: accountOwner1})
-        await controllerProxy.operate(actionArgsAccountOwner1, {from: accountOwner1})
+        await higherStrikePut.approve(marginPool.address, scaledOptionsAmount, { from: accountOwner1 })
+        await controllerProxy.operate(actionArgsAccountOwner1, { from: accountOwner1 })
       },
     )
 
@@ -269,7 +269,7 @@ contract('Long Put Spread Option expires Otm flow', ([accountOwner1, nakedBuyer,
       const longOtokenSupplyBefore = new BigNumber(await higherStrikePut.totalSupply())
 
       // Check that we start at a valid state
-      const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter1)
+      const vaultBefore = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter1)
       const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore[0], vaultBefore[1])
       assert.equal(vaultStateBefore[0].toString(), '0')
       assert.equal(vaultStateBefore[1], true)
@@ -301,7 +301,7 @@ contract('Long Put Spread Option expires Otm flow', ([accountOwner1, nakedBuyer,
         },
       ]
 
-      await controllerProxy.operate(actionArgs, {from: accountOwner1})
+      await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
       // keep track of balances after
       const ownerUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
@@ -328,7 +328,7 @@ contract('Long Put Spread Option expires Otm flow', ([accountOwner1, nakedBuyer,
       )
 
       // Check that we end at a valid state
-      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter1)
+      const vaultAfter = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter1)
       const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter[0], vaultAfter[1])
       assert.equal(vaultStateAfter[0].toString(), '0')
       assert.equal(vaultStateAfter[1], true)
@@ -349,7 +349,7 @@ contract('Long Put Spread Option expires Otm flow', ([accountOwner1, nakedBuyer,
 
     it('nakedBuyer: redeem lower strike OTM put option after expiry', async () => {
       // accountOwner1 transfers their lower strike put option
-      await lowerStrikePut.transfer(nakedBuyer, scaledOptionsAmount, {from: accountOwner1})
+      await lowerStrikePut.transfer(nakedBuyer, scaledOptionsAmount, { from: accountOwner1 })
 
       // Keep track of balances before
       const nakedBuyerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(nakedBuyer))
@@ -370,7 +370,7 @@ contract('Long Put Spread Option expires Otm flow', ([accountOwner1, nakedBuyer,
         },
       ]
 
-      await controllerProxy.operate(actionArgs, {from: nakedBuyer})
+      await controllerProxy.operate(actionArgs, { from: nakedBuyer })
 
       // keep track of balances after
       const nakedBuyerUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(nakedBuyer))
@@ -400,7 +400,7 @@ contract('Long Put Spread Option expires Otm flow', ([accountOwner1, nakedBuyer,
       const scaledPayoutAmount = createTokenAmount(collateralPayout, usdcDecimals)
 
       // Check that after expiry, the vault excess balance has updated as expected
-      const vaultBefore = await controllerProxy.getVault(accountOwner2, vaultCounter2)
+      const vaultBefore = await controllerProxy.getVaultWithDetails(accountOwner2, vaultCounter2)
       const vaultStateBeforeSettlement = await calculator.getExcessCollateral(vaultBefore[0], vaultBefore[1])
       assert.equal(vaultStateBeforeSettlement[0].toString(), scaledPayoutAmount)
       assert.equal(vaultStateBeforeSettlement[1], true)
@@ -418,7 +418,7 @@ contract('Long Put Spread Option expires Otm flow', ([accountOwner1, nakedBuyer,
         },
       ]
 
-      await controllerProxy.operate(actionArgs, {from: accountOwner2})
+      await controllerProxy.operate(actionArgs, { from: accountOwner2 })
 
       // keep track of balances after
       const ownerUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner2))
@@ -438,7 +438,7 @@ contract('Long Put Spread Option expires Otm flow', ([accountOwner1, nakedBuyer,
       assert.equal(shortOtokenSupplyBefore.toString(), shortOtokenSupplyAfter.toString())
 
       // Check that we end at a valid state
-      const vaultAfter = await controllerProxy.getVault(accountOwner2, vaultCounter2)
+      const vaultAfter = await controllerProxy.getVaultWithDetails(accountOwner2, vaultCounter2)
       const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter[0], vaultAfter[1])
       assert.equal(vaultStateAfter[0].toString(), '0')
       assert.equal(vaultStateAfter[1], true)

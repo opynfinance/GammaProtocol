@@ -9,10 +9,10 @@ import {
   MarginPoolInstance,
   OtokenFactoryInstance,
 } from '../../build/types/truffle-types'
-import {createTokenAmount, createValidExpiry} from '../utils'
+import { createTokenAmount, createValidExpiry } from '../utils'
 import BigNumber from 'bignumber.js'
 
-const {expectRevert, time} = require('@openzeppelin/test-helpers')
+const { expectRevert, time } = require('@openzeppelin/test-helpers')
 const AddressBook = artifacts.require('AddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const Otoken = artifacts.require('Otoken.sol')
@@ -155,14 +155,14 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
 
     ethPut2 = await Otoken.at(ethPut2Address)
 
-    await controllerProxy.setOperator(accountOperator1, true, {from: accountOwner1})
+    await controllerProxy.setOperator(accountOperator1, true, { from: accountOwner1 })
 
     // mint usdc to user
     const accountOwner1Usdc = createTokenAmount(2 * collateralAmount1, usdcDecimals)
     await usdc.mint(accountOwner1, accountOwner1Usdc)
 
     // have the user approve all the usdc transfers
-    await usdc.approve(marginPool.address, accountOwner1Usdc, {from: accountOwner1})
+    await usdc.approve(marginPool.address, accountOwner1Usdc, { from: accountOwner1 })
 
     const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
     vaultCounter = vaultCounterBefore.toNumber() + 1
@@ -179,7 +179,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
       const oTokenSupplyBefore = new BigNumber(await ethPut1.totalSupply())
 
       // Check that we start at a valid state
-      const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const vaultBefore = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter)
       const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore[0], vaultBefore[1])
       assert.equal(vaultStateBefore[0].toString(), '0')
       assert.equal(vaultStateBefore[1], true)
@@ -234,7 +234,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
         },
       ]
 
-      await controllerProxy.operate(actionArgs, {from: accountOperator1})
+      await controllerProxy.operate(actionArgs, { from: accountOperator1 })
 
       // keep track of balances after
       const ownerUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
@@ -256,7 +256,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
       assert.equal(oTokenSupplyBefore.plus(scaledOptionsAmount).toString(), oTokenSupplyAfter.toString())
 
       // Check that we end at a valid state
-      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const vaultAfter = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter)
       const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter[0], vaultAfter[1])
       assert.equal(vaultStateAfter[0].toString(), '0')
       assert.equal(vaultStateAfter[1], true)
@@ -302,7 +302,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
       const oToken2SupplyBefore = new BigNumber(await ethPut2.totalSupply())
 
       // Check that we start at a valid state
-      const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const vaultBefore = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter)
       const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore[0], vaultBefore[1])
       assert.equal(vaultStateBefore[0].toString(), '0')
       assert.equal(vaultStateBefore[1], true)
@@ -340,7 +340,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
         },
       ]
 
-      await controllerProxy.operate(actionArgs, {from: accountOperator1})
+      await controllerProxy.operate(actionArgs, { from: accountOperator1 })
 
       // keep track of balances after
       const operatorUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(accountOperator1))
@@ -373,7 +373,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
       assert.equal(oToken2SupplyBefore.plus(scaledOptionsAmount).toString(), oToken2SupplyAfter.toString())
 
       // Check that we end at a valid state
-      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const vaultAfter = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter)
       const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter[0], vaultAfter[1])
       assert.equal(vaultStateAfter[0].toString(), '0')
       assert.equal(vaultStateAfter[1], true)
@@ -450,7 +450,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
           },
         ]
 
-        await controllerProxy.operate(actionArgs, {from: accountOperator1})
+        await controllerProxy.operate(actionArgs, { from: accountOperator1 })
       },
     )
 
@@ -461,7 +461,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
       const scaledCollateralAmount1 = createTokenAmount(collateralAmount1, usdcDecimals)
 
       // Check that we start at a valid state
-      const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const vaultBefore = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter)
       const vaultStateBeforeExpiry = await calculator.getExcessCollateral(vaultBefore[0], vaultBefore[1])
       assert.equal(vaultStateBeforeExpiry[0].toString(), '0')
       assert.equal(vaultStateBeforeExpiry[1], true)
@@ -520,8 +520,8 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
         },
       ]
 
-      await usdc.approve(marginPool.address, scaledCollateralAmount2, {from: accountOperator1})
-      await controllerProxy.operate(actionArgs, {from: accountOperator1})
+      await usdc.approve(marginPool.address, scaledCollateralAmount2, { from: accountOperator1 })
+      await controllerProxy.operate(actionArgs, { from: accountOperator1 })
 
       // keep track of balances after
       const operatorUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(accountOperator1))
@@ -551,7 +551,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
       assert.equal(oToken2SupplyBefore.plus(scaledOptionsAmount).toString(), oToken2SupplyAfter.toString())
 
       // Check that we end at a valid state
-      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const vaultAfter = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter)
       const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter[0], vaultAfter[1])
       assert.equal(vaultStateAfter[0].toString(), '0')
       assert.equal(vaultStateAfter[1], true)

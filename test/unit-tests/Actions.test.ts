@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js'
-import {ActionTesterInstance} from '../../build/types/truffle-types'
+import { ActionTesterInstance } from '../../build/types/truffle-types'
 
-const {BN, expectRevert} = require('@openzeppelin/test-helpers')
+const { BN, expectRevert } = require('@openzeppelin/test-helpers')
 
 const ActionTester = artifacts.require('ActionTester.sol')
 
@@ -24,7 +24,7 @@ contract('Actions', ([owner, random, random2, random3, liquidator]) => {
   const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
   before('Deployment', async () => {
-    actionTester = await ActionTester.new({from: owner})
+    actionTester = await ActionTester.new({ from: owner })
   })
 
   describe('Parse Deposit Arguments', () => {
@@ -40,10 +40,7 @@ contract('Actions', ([owner, random, random2, random3, liquidator]) => {
         data: ZERO_ADDR,
       }
 
-      await expectRevert(
-        actionTester.testParseDespositAction(data),
-        'Actions: can only parse arguments for deposit actions',
-      )
+      await expectRevert(actionTester.testParseDespositAction(data), 'A8')
     })
     it('should not be able to parse an invalid sender address', async () => {
       const data = {
@@ -57,7 +54,7 @@ contract('Actions', ([owner, random, random2, random3, liquidator]) => {
         data: ZERO_ADDR,
       }
 
-      await expectRevert(actionTester.testParseDespositAction(data), 'Actions: cannot deposit to an invalid account')
+      await expectRevert(actionTester.testParseDespositAction(data), 'A9')
     })
     it('should be able to parse arguments for a deposit long action', async () => {
       const actionType = ActionType.DepositLongOption
@@ -132,10 +129,7 @@ contract('Actions', ([owner, random, random2, random3, liquidator]) => {
         data: ZERO_ADDR,
       }
 
-      await expectRevert(
-        actionTester.testParseOpenVaultAction(data),
-        'Actions: can only parse arguments for open vault actions',
-      )
+      await expectRevert(actionTester.testParseOpenVaultAction(data), 'A1')
     })
     it('should not be able to parse an invalid owner address', async () => {
       const actionType = ActionType.OpenVault
@@ -156,10 +150,7 @@ contract('Actions', ([owner, random, random2, random3, liquidator]) => {
         data: bytesArgs,
       }
 
-      await expectRevert(
-        actionTester.testParseOpenVaultAction(data),
-        'Actions: cannot open vault for an invalid account',
-      )
+      await expectRevert(actionTester.testParseOpenVaultAction(data), 'A2')
     })
     it('should be able to parse arguments for an open vault action', async () => {
       const actionType = ActionType.OpenVault
@@ -201,10 +192,7 @@ contract('Actions', ([owner, random, random2, random3, liquidator]) => {
         data: ZERO_ADDR,
       }
 
-      await expectRevert(
-        actionTester.testParseRedeemAction(data),
-        'Actions: can only parse arguments for redeem actions',
-      )
+      await expectRevert(actionTester.testParseRedeemAction(data), 'A13')
     })
 
     it('should be able to parse arguments for an redeem action', async () => {
@@ -255,10 +243,7 @@ contract('Actions', ([owner, random, random2, random3, liquidator]) => {
         data: bytesArgs,
       }
 
-      await expectRevert(
-        actionTester.testParseSettleVaultAction(data),
-        'Actions: can only parse arguments for settle vault actions',
-      )
+      await expectRevert(actionTester.testParseSettleVaultAction(data), 'A15')
     })
     it('should not be able to parse an invalid owner address', async () => {
       const actionType = ActionType.SettleVault
@@ -279,10 +264,7 @@ contract('Actions', ([owner, random, random2, random3, liquidator]) => {
         data: bytesArgs,
       }
 
-      await expectRevert(
-        actionTester.testParseSettleVaultAction(data),
-        'Actions: cannot settle vault for an invalid account',
-      )
+      await expectRevert(actionTester.testParseSettleVaultAction(data), 'A16')
     })
     it('should be able to parse arguments for a settle vault action', async () => {
       const actionType = ActionType.SettleVault
@@ -329,10 +311,7 @@ contract('Actions', ([owner, random, random2, random3, liquidator]) => {
         data: bytesArgs,
       }
 
-      await expectRevert(
-        actionTester.testParseSettleVaultAction(data),
-        'Actions: cannot withdraw payout to an invalid account',
-      )
+      await expectRevert(actionTester.testParseSettleVaultAction(data), 'A17')
     })
   })
 
@@ -356,10 +335,7 @@ contract('Actions', ([owner, random, random2, random3, liquidator]) => {
         data: bytesArgs,
       }
 
-      await expectRevert(
-        actionTester.testParseWithdrawAction(data),
-        'Actions: can only parse arguments for withdraw actions',
-      )
+      await expectRevert(actionTester.testParseWithdrawAction(data), 'A10')
     })
     it('should not be able to parse an invalid sender address', async () => {
       const actionType = ActionType.WithdrawCollateral
@@ -380,7 +356,7 @@ contract('Actions', ([owner, random, random2, random3, liquidator]) => {
         data: bytesArgs,
       }
 
-      await expectRevert(actionTester.testParseWithdrawAction(data), 'Actions: cannot withdraw to an invalid account')
+      await expectRevert(actionTester.testParseWithdrawAction(data), 'A12')
     })
     it('should not be able to parse an invalid owner address', async () => {
       const actionType = ActionType.WithdrawCollateral
@@ -401,7 +377,7 @@ contract('Actions', ([owner, random, random2, random3, liquidator]) => {
         data: bytesArgs,
       }
 
-      await expectRevert(actionTester.testParseWithdrawAction(data), 'Actions: cannot withdraw from an invalid account')
+      await expectRevert(actionTester.testParseWithdrawAction(data), 'A11')
     })
     it('should be able to parse arguments for a withdraw long action', async () => {
       const actionType = ActionType.WithdrawLongOption
@@ -476,7 +452,7 @@ contract('Actions', ([owner, random, random2, random3, liquidator]) => {
         data: ZERO_ADDR,
       }
 
-      await expectRevert(actionTester.testParseMintAction(data), 'Actions: can only parse arguments for mint actions')
+      await expectRevert(actionTester.testParseMintAction(data), 'A4')
     })
     it('should not be able to parse an invalid sender address', async () => {
       const actionType = ActionType.MintShortOption
@@ -497,7 +473,7 @@ contract('Actions', ([owner, random, random2, random3, liquidator]) => {
         data: bytesArgs,
       }
 
-      await expectRevert(actionTester.testParseMintAction(data), 'Actions: cannot mint from an invalid account')
+      await expectRevert(actionTester.testParseMintAction(data), 'A5')
     })
     it('should be able to parse arguments for a mint short action', async () => {
       const actionType = ActionType.MintShortOption
@@ -579,7 +555,7 @@ contract('Actions', ([owner, random, random2, random3, liquidator]) => {
         data: bytesArgs,
       }
 
-      await expectRevert(actionTester.testParseBurnAction(data), 'Actions: can only parse arguments for burn actions')
+      await expectRevert(actionTester.testParseBurnAction(data), 'A6')
     })
     it('should not be able to parse an invalid sender address', async () => {
       const actionType = ActionType.BurnShortOption
@@ -600,7 +576,7 @@ contract('Actions', ([owner, random, random2, random3, liquidator]) => {
         data: bytesArgs,
       }
 
-      await expectRevert(actionTester.testParseBurnAction(data), 'Actions: cannot burn from an invalid account')
+      await expectRevert(actionTester.testParseBurnAction(data), 'A7')
     })
     it('should be able to parse arguments for a burn short action', async () => {
       const actionType = ActionType.BurnShortOption
@@ -675,7 +651,7 @@ contract('Actions', ([owner, random, random2, random3, liquidator]) => {
         index: 0,
       }
 
-      await expectRevert(actionTester.testParseCallAction(data), 'Actions: can only parse arguments for call actions')
+      await expectRevert(actionTester.testParseCallAction(data), 'A22')
     })
     it('should not be able to parse an invalid sender address (call target address)', async () => {
       const data = {
@@ -689,7 +665,7 @@ contract('Actions', ([owner, random, random2, random3, liquidator]) => {
         index: 0,
       }
 
-      await expectRevert(actionTester.testParseCallAction(data), 'Actions: target address cannot be address(0)')
+      await expectRevert(actionTester.testParseCallAction(data), 'A23')
     })
     it('should be able to parse arguments for a call action', async () => {
       const data = {
@@ -724,10 +700,7 @@ contract('Actions', ([owner, random, random2, random3, liquidator]) => {
         index: 0,
       }
 
-      await expectRevert(
-        actionTester.testParseLiquidateActions(data),
-        'Actions: can only parse arguments for liquidate action',
-      )
+      await expectRevert(actionTester.testParseLiquidateActions(data), 'A18')
     })
 
     it('should not be able to parse a Liquidate action with invalid vault owner address', async () => {
@@ -742,10 +715,7 @@ contract('Actions', ([owner, random, random2, random3, liquidator]) => {
         index: 0,
       }
 
-      await expectRevert(
-        actionTester.testParseLiquidateActions(data),
-        'Actions: cannot liquidate vault for an invalid account owner',
-      )
+      await expectRevert(actionTester.testParseLiquidateActions(data), 'A19')
     })
 
     it('should not be able to parse a Liquidate action with invalid receiver address', async () => {
@@ -760,10 +730,7 @@ contract('Actions', ([owner, random, random2, random3, liquidator]) => {
         index: 0,
       }
 
-      await expectRevert(
-        actionTester.testParseLiquidateActions(data),
-        'Actions: cannot send collateral to an invalid account',
-      )
+      await expectRevert(actionTester.testParseLiquidateActions(data), 'A20')
     })
 
     it('should not be able to parse a Liquidate action with no chainlink round id', async () => {
@@ -778,10 +745,7 @@ contract('Actions', ([owner, random, random2, random3, liquidator]) => {
         index: 0,
       }
 
-      await expectRevert(
-        actionTester.testParseLiquidateActions(data),
-        'Actions: cannot parse liquidate action with no round id',
-      )
+      await expectRevert(actionTester.testParseLiquidateActions(data), 'A21')
     })
 
     it('should parse a Liquidate action', async () => {

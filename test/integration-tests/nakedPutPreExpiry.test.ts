@@ -9,10 +9,10 @@ import {
   MarginPoolInstance,
   OtokenFactoryInstance,
 } from '../../build/types/truffle-types'
-import {createTokenAmount, createValidExpiry} from '../utils'
+import { createTokenAmount, createValidExpiry } from '../utils'
 import BigNumber from 'bignumber.js'
 
-const {time} = require('@openzeppelin/test-helpers')
+const { time } = require('@openzeppelin/test-helpers')
 const AddressBook = artifacts.require('AddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const Otoken = artifacts.require('Otoken.sol')
@@ -135,7 +135,7 @@ contract('Naked Put Option closed before expiry flow', ([accountOwner1]) => {
     await usdc.mint(accountOwner1, accountOwner1Usdc)
 
     // have the user approve all the usdc transfers
-    await usdc.approve(marginPool.address, accountOwner1Usdc, {from: accountOwner1})
+    await usdc.approve(marginPool.address, accountOwner1Usdc, { from: accountOwner1 })
     // get the vault counter
     const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
     vaultCounter = vaultCounterBefore.toNumber() + 1
@@ -152,7 +152,7 @@ contract('Naked Put Option closed before expiry flow', ([accountOwner1]) => {
       const oTokenSupplyBefore = new BigNumber(await ethPut.totalSupply())
 
       // Check that the vault has 0 exess collateral
-      const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const vaultBefore = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter)
       const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore[0], vaultBefore[1])
       assert.equal(vaultStateBefore[0].toString(), '0', 'Incorrect amount of excess collateral')
       assert.equal(vaultStateBefore[1], true, 'Incorrect boolean of excess collateral')
@@ -207,7 +207,7 @@ contract('Naked Put Option closed before expiry flow', ([accountOwner1]) => {
         },
       ]
 
-      await controllerProxy.operate(actionArgs, {from: accountOwner1})
+      await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
       // keep track of owner and pool balances after
       const ownerUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
@@ -239,7 +239,7 @@ contract('Naked Put Option closed before expiry flow', ([accountOwner1]) => {
       )
 
       // Check that we have 0 excess collateral in the vault after
-      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const vaultAfter = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter)
       const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter[0], vaultAfter[1])
       assert.equal(vaultStateAfter[0].toString(), '0', 'Incorrect amount of excess collateral')
       assert.equal(vaultStateAfter[1], true, 'Incorrect boolean of excess collateral')
@@ -280,7 +280,7 @@ contract('Naked Put Option closed before expiry flow', ([accountOwner1]) => {
       const oTokenSupplyBefore = new BigNumber(await ethPut.totalSupply())
 
       // Check that there is 0 excess collateral
-      const vaultBefore = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const vaultBefore = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter)
       const vaultStateBefore = await calculator.getExcessCollateral(vaultBefore[0], vaultBefore[1])
       assert.equal(vaultStateBefore[0].toString(), '0', 'Incorrect amount of excess collateral')
       assert.equal(vaultStateBefore[1], true, 'Incorrect boolean of excess collateral')
@@ -308,7 +308,7 @@ contract('Naked Put Option closed before expiry flow', ([accountOwner1]) => {
         },
       ]
 
-      await controllerProxy.operate(actionArgs, {from: accountOwner1})
+      await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
       // keep track of user and pool balances after
       const ownerUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
@@ -327,7 +327,7 @@ contract('Naked Put Option closed before expiry flow', ([accountOwner1]) => {
       assert.equal(oTokenSupplyBefore.minus(scaledOptionsAmount).toString(), oTokenSupplyAfter.toString())
 
       // Check that there is 0 excess collateral after
-      const vaultAfter = await controllerProxy.getVault(accountOwner1, vaultCounter)
+      const vaultAfter = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter)
       const vaultStateAfter = await calculator.getExcessCollateral(vaultAfter[0], vaultAfter[1])
       assert.equal(vaultStateAfter[0].toString(), '0', 'Incorrect amount of excess collateral')
       assert.equal(vaultStateAfter[1], true, 'Incorrect boolean of excess collateral')

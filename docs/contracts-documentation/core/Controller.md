@@ -42,6 +42,8 @@ Contract that controls the Gamma Protocol and the interaction of all sub contrac
 
 - `refreshConfiguration() (external)`
 
+- `setNakedCap(address _collateral, uint256 _cap) (external)`
+
 - `operate(struct Actions.ActionArgs[] _actions) (external)`
 
 - `sync(address _owner, uint256 _vaultId) (external)`
@@ -56,13 +58,21 @@ Contract that controls the Gamma Protocol and the interaction of all sub contrac
 
 - `getPayout(address _otoken, uint256 _amount) (public)`
 
-- `isSettlementAllowed(address _underlying, address _strike, address _collateral, uint256 _expiry) (public)`
+- `isSettlementAllowed(address _otoken) (external)`
+
+- `canSettleAssets(address _underlying, address _strike, address _collateral, uint256 _expiry) (external)`
 
 - `getAccountVaultCounter(address _accountOwner) (external)`
 
 - `hasExpired(address _otoken) (external)`
 
-- `getVault(address _owner, uint256 _vaultId) (public)`
+- `getVault(address _owner, uint256 _vaultId) (external)`
+
+- `getVaultWithDetails(address _owner, uint256 _vaultId) (public)`
+
+- `getNakedCap(address _asset) (external)`
+
+- `getNakedPoolBalance(address _asset) (external)`
 
 - `_runActions(struct Actions.ActionArgs[] _actions) (internal)`
 
@@ -97,6 +107,10 @@ Contract that controls the Gamma Protocol and the interaction of all sub contrac
 - `_isCalleeWhitelisted(address _callee) (internal)`
 
 - `_isLiquidatable(address _owner, uint256 _vaultId, uint256 _roundId) (internal)`
+
+- `_getOtokenDetails(address _otoken) (internal)`
+
+- `_canSettleAssets(address _underlying, address _strike, address _collateral, uint256 _expiry) (internal)`
 
 - `_refreshConfigInternal() (internal)`
 
@@ -137,6 +151,8 @@ Contract that controls the Gamma Protocol and the interaction of all sub contrac
 - `CallRestricted(bool isRestricted)`
 
 - `Donated(address donator, address asset, uint256 amount)`
+
+- `NakedCapUpdated(address collateral, uint256 cap)`
 
 ### Modifier `notPartiallyPaused()`
 
@@ -226,7 +242,7 @@ can only be called by the partialPauser
 
 allows the fullPauser to toggle the systemFullyPaused variable and fully pause or fully unpause the system
 
-can only be called by the fullPauser
+can only be called by the fullyPauser
 
 #### Parameters:
 
@@ -279,6 +295,18 @@ can only be updated by the vault owner
 ### Function `refreshConfiguration() external`
 
 updates the configuration of the controller. can only be called by the owner
+
+### Function `setNakedCap(address _collateral, uint256 _cap) external`
+
+set cap amount for collateral asset used in naked margin
+
+can only be called by owner
+
+#### Parameters:
+
+- `_collateral`: collateral asset address
+
+- `_cap`: cap amount, should be scaled by collateral asset decimals
 
 ### Function `operate(struct Actions.ActionArgs[] _actions) external`
 
@@ -376,11 +404,19 @@ get an oToken's payout/cash value after expiry, in the collateral asset
 
 - amount of collateral to pay out
 
-### Function `isSettlementAllowed(address _underlying, address _strike, address _collateral, uint256 _expiry) → bool public`
+### Function `isSettlementAllowed(address _otoken) → bool external`
 
 return if an expired oToken is ready to be settled, only true when price for underlying,
 
 strike and collateral assets at this specific expiry is available in our Oracle module
+
+#### Parameters:
+
+- `_otoken`: oToken
+
+### Function `canSettleAssets(address _underlying, address _strike, address _collateral, uint256 _expiry) → bool external`
+
+return if underlying, strike, collateral are all allowed to be settled
 
 #### Parameters:
 
@@ -420,7 +456,21 @@ check if an oToken has expired
 
 - True if the otoken has expired, False if not
 
-### Function `getVault(address _owner, uint256 _vaultId) → struct MarginVault.Vault, uint256, uint256 public`
+### Function `getVault(address _owner, uint256 _vaultId) → struct MarginVault.Vault external`
+
+return a specific vault
+
+#### Parameters:
+
+- `_owner`: account owner
+
+- `_vaultId`: vault id of vault to return
+
+#### Return Values:
+
+- Vault struct that corresponds to the _vaultId of _owner
+
+### Function `getVaultWithDetails(address _owner, uint256 _vaultId) → struct MarginVault.Vault, uint256, uint256 public`
 
 return a specific vault
 
@@ -433,6 +483,30 @@ return a specific vault
 #### Return Values:
 
 - Vault struct that corresponds to the _vaultId of _owner, vault type and the latest timestamp when the vault was updated
+
+### Function `getNakedCap(address _asset) → uint256 external`
+
+get cap amount for collateral asset
+
+#### Parameters:
+
+- `_asset`: collateral asset address
+
+#### Return Values:
+
+- cap amount
+
+### Function `getNakedPoolBalance(address _asset) → uint256 external`
+
+get amount of collateral deposited in all naked margin vaults
+
+#### Parameters:
+
+- `_asset`: collateral asset address
+
+#### Return Values:
+
+- naked pool balance
 
 ### Function `_runActions(struct Actions.ActionArgs[] _actions) → bool, address, uint256 internal`
 
@@ -618,6 +692,20 @@ check if a vault is liquidatable in a specific round id
 
 - vault struct, isLiquidatable, true if vault is undercollateralized, the price of 1 repaid otoken and the otoken collateral dust amount
 
+### Function `_getOtokenDetails(address _otoken) → address, address, address, uint256 internal`
+
+get otoken detail, from both otoken versions
+
+### Function `_canSettleAssets(address _underlying, address _strike, address _collateral, uint256 _expiry) → bool internal`
+
+return if an expired oToken is ready to be settled, only true when price for underlying,
+
+strike and collateral assets at this specific expiry is available in our Oracle module
+
+#### Return Values:
+
+- True if the oToken has expired AND all oracle prices at the expiry timestamp have been finalized, False if not
+
 ### Function `_refreshConfigInternal() internal`
 
 updates the internal configuration of the controller
@@ -693,3 +781,7 @@ emits an event when the call action restriction changes
 ### Event `Donated(address donator, address asset, uint256 amount)`
 
 emits an event when a donation transfer executed
+
+### Event `NakedCapUpdated(address collateral, uint256 cap)`
+
+emits an event when naked cap is updated
