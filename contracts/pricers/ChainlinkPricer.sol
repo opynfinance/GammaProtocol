@@ -61,7 +61,8 @@ contract ChainLinkPricer is OpynPricerInterface {
     function setExpiryPriceInOracle(uint256 _expiryTimestamp, uint80 _roundId) external {
         (, int256 price, , uint256 roundTimestamp, ) = aggregator.getRoundData(_roundId);
 
-        require(_expiryTimestamp <= roundTimestamp, "ChainLinkPricer: invalid roundId");
+        require(_expiryTimestamp <= roundTimestamp, "ChainLinkPricer: roundId not first after expiry");
+        require(price >= 0, "ChainLinkPricer: invalid price");
 
         if (msg.sender != bot) {
             bool isCorrectRoundId;
@@ -71,9 +72,10 @@ contract ChainLinkPricer is OpynPricerInterface {
                 (, , , uint256 previousRoundTimestamp, ) = aggregator.getRoundData(previousRoundId);
 
                 if (previousRoundTimestamp == 0) {
-                    previousRoundId = uint80(uint256(previousRoundId).sub(1));
+                    require(previousRoundId > 0, "ChainLinkPricer: Invalid previousRoundId");
+                    previousRoundId = previousRoundId - 1;
                 } else if (previousRoundTimestamp > _expiryTimestamp) {
-                    revert("ChainLinkPricer: invalid roundId");
+                    revert("ChainLinkPricer: previousRoundId not last before expiry");
                 } else {
                     isCorrectRoundId = true;
                 }

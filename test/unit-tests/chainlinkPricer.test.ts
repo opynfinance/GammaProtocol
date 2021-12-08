@@ -128,38 +128,38 @@ contract('ChainlinkPricer', ([owner, bot, random]) => {
       assert.equal(p1.toString(), priceFromOracle[0].toString())
     })
 
-    it('should revert if sender is not bot address and roundId is too early', async () => {
-      const expiryTimestamp = (t1 + t2) / 2 // between t0 and t1
+    it('should revert if sender is not bot address and roundId is too old', async () => {
+      const expiryTimestamp = (t1 + t2) / 2 // between t1 and t2
       const roundId = 1
       await expectRevert(
         pricer.setExpiryPriceInOracle(expiryTimestamp, roundId, {from: random}),
-        'ChainLinkPricer: invalid roundId',
+        'ChainLinkPricer: roundId not first after expiry',
       )
     })
 
     it('should revert if sender is not bot address and roundId is too late', async () => {
-      const expiryTimestamp = (t1 + t2) / 2 // between t0 and t1
+      const expiryTimestamp = (t1 + t2) / 2 // between t1 and t2
       const roundId = 3
       await expectRevert(
         pricer.setExpiryPriceInOracle(expiryTimestamp, roundId, {from: random}),
-        'ChainLinkPricer: invalid roundId',
+        'ChainLinkPricer: previousRoundId not last before expiry',
       )
     })
 
     it('anyone should be able to set prices', async () => {
-      const expiryTimestamp = (t1 + t2) / 2 // between t0 and t1
+      const expiryTimestamp = (t1 + t2) / 2 // between t1 and t2
       const roundId = 2
       await pricer.setExpiryPriceInOracle(expiryTimestamp, roundId, {from: random})
       const priceFromOracle = await oracle.getExpiryPrice(weth.address, expiryTimestamp)
       assert.equal(p2.toString(), priceFromOracle[0].toString())
     })
 
-    it('should revert if round ID is incorrect: price[roundId].timestamp < expiry', async () => {
-      const expiryTimestamp = (t1 + t2) / 2 // between t0 and t1
+    it('should revert if round ID is too late: price[roundId].timestamp < expiry', async () => {
+      const expiryTimestamp = (t1 + t2) / 2 // between t1 and t2
       const roundId = 1
       await expectRevert(
         pricer.setExpiryPriceInOracle(expiryTimestamp, roundId, {from: bot}),
-        'ChainLinkPricer: invalid roundId',
+        'ChainLinkPricer: roundId not first after expiry',
       )
     })
   })
