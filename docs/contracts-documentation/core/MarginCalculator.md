@@ -8,8 +8,6 @@ Calculator module that checks if a given vault is valid, calculates margin requi
 
 - `setCollateralDust(address _collateral, uint256 _dust) (external)`
 
-- `setCollateralCap(address _collateral, uint256 _cap) (external)`
-
 - `setUpperBoundValues(address _underlying, address _strike, address _collateral, bool _isPut, uint256[] _timesToExpiry, uint256[] _values) (external)`
 
 - `updateUpperBoundValue(address _underlying, address _strike, address _collateral, bool _isPut, uint256 _timeToExpiry, uint256 _value) (external)`
@@ -19,8 +17,6 @@ Calculator module that checks if a given vault is valid, calculates margin requi
 - `setOracleDeviation(uint256 _deviation) (external)`
 
 - `getCollateralDust(address _collateral) (external)`
-
-- `getCollateralCap(address _collateral) (external)`
 
 - `getTimesToExpiry(address _underlying, address _strike, address _collateral, bool _isPut) (external)`
 
@@ -74,11 +70,11 @@ Calculator module that checks if a given vault is valid, calculates margin requi
 
 - `_getCashValue(struct FixedPointInt256.FixedPointInt _strikePrice, struct FixedPointInt256.FixedPointInt _underlyingPrice, bool _isPut) (internal)`
 
+- `_getOtokenDetails(address _otoken) (internal)`
+
 ## Events:
 
 - `CollateralDustUpdated(address collateral, uint256 dust)`
-
-- `CollateralCapUpdated(address collateral, uint256 cap)`
 
 - `TimeToExpiryAdded(bytes32 productHash, uint256 timeToExpiry)`
 
@@ -109,18 +105,6 @@ can only be called by owner
 - `_collateral`: collateral asset address
 
 - `_dust`: dust amount, should be scaled by collateral asset decimals
-
-### Function `setCollateralCap(address _collateral, uint256 _cap) external`
-
-set cap amount for collateral asset used in naked margin
-
-can only be called by owner
-
-#### Parameters:
-
-- `_collateral`: collateral asset address
-
-- `_cap`: cap amount, should be scaled by collateral asset decimals
 
 ### Function `setUpperBoundValues(address _underlying, address _strike, address _collateral, bool _isPut, uint256[] _timesToExpiry, uint256[] _values) external`
 
@@ -201,18 +185,6 @@ get dust amount for collateral asset
 #### Return Values:
 
 - dust amount
-
-### Function `getCollateralCap(address _collateral) → uint256 external`
-
-get cap amount for collateral asset
-
-#### Parameters:
-
-- `_collateral`: collateral asset address
-
-#### Return Values:
-
-- cap amount
 
 ### Function `getTimesToExpiry(address _underlying, address _strike, address _collateral, bool _isPut) → uint256[] external`
 
@@ -694,13 +666,13 @@ cash value = max(underlying price - strike price, 0)
 
 - `_isPut`: option type, true for put and false for call option
 
+### Function `_getOtokenDetails(address _otoken) → address, address, address, uint256, uint256, bool internal`
+
+get otoken detail, from both otoken versions
+
 ### Event `CollateralDustUpdated(address collateral, uint256 dust)`
 
 emits an event when collateral dust is updated
-
-### Event `CollateralCapUpdated(address collateral, uint256 cap)`
-
-emits an event when collateral cap is updated
 
 ### Event `TimeToExpiryAdded(bytes32 productHash, uint256 timeToExpiry)`
 
