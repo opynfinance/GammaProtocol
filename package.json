@@ -96,6 +96,7 @@
   "devDependencies": {
     "@0x/protocol-utils": "^1.4.0",
     "@codechecks/client": "^0.1.10",
+    "@metamask/eth-sig-util": "^4.0.0",
     "@openzeppelin/cli": "^2.8.2",
     "@openzeppelin/test-helpers": "^0.5.4",
     "@types/chai": "4.2.5",
