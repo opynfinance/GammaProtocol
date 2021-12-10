@@ -90,7 +90,7 @@ contract ChainLinkPricer is OpynPricerInterface {
      * @dev overides the getPrice function in OpynPricerInterface
      * @return price of the asset in USD, scaled by 1e8
      */
-    function getPrice() external override view returns (uint256) {
+    function getPrice() external view override returns (uint256) {
         (, int256 answer, , , ) = aggregator.latestRoundData();
         require(answer > 0, "ChainLinkPricer: price is lower than 0");
         // chainlink's answer is already 1e8
@@ -102,7 +102,7 @@ contract ChainLinkPricer is OpynPricerInterface {
      * @param _roundId chainlink round id
      * @return round price and timestamp
      */
-    function getHistoricalPrice(uint80 _roundId) external override view returns (uint256, uint256) {
+    function getHistoricalPrice(uint80 _roundId) external view override returns (uint256, uint256) {
         (, int256 price, , uint256 roundTimestamp, ) = aggregator.getRoundData(_roundId);
         return (_scaleToBase(uint256(price)), roundTimestamp);
     }
