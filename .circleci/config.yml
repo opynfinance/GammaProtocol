@@ -33,7 +33,7 @@ workflows:
           context: COVERALLS_REPO_TOKEN
           requires:
             - unit-test
-            - integration-test
+     #       - integration-test
       - gas-report:
           context: COVERALLS_REPO_TOKEN
           requires:
@@ -180,6 +180,7 @@ jobs:
           paths:
             - ~/gammaprotocol/gasReporterOutput.json
 
+
   #integration-test:
   #  working_directory: ~/gammaprotocol
   #  docker:
@@ -196,6 +197,7 @@ jobs:
   #        key: gas-{{ .Environment.CIRCLE_SHA1 }}
   #        paths:
   #          - ~/gammaprotocol/gasReporterOutput.json
+
 
   e2e-test:
     working_directory: ~/gammaprotocol
