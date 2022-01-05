@@ -180,23 +180,6 @@ jobs:
           paths:
             - ~/gammaprotocol/gasReporterOutput.json
 
-  // integration-test:
-  //   working_directory: ~/gammaprotocol
-  //   docker:
-  //     - image: circleci/node:10.18.0
-  //     - image: trufflesuite/ganache-cli:v6.10.1
-  //       command: ganache-cli -d --port 8545 --defaultBalanceEther 500
-  //   steps:
-  //     - restore_cache:
-  //         key: gamma-contracts-build-{{ .Environment.CIRCLE_SHA1 }}
-  //     - run:
-  //         name: Contracts Integration Tests 
-  //         command: npm run ci:test:integration
-  //     - save_cache:
-  //         key: gas-{{ .Environment.CIRCLE_SHA1 }}
-  //         paths:
-  //           - ~/gammaprotocol/gasReporterOutput.json
-
   e2e-test:
     working_directory: ~/gammaprotocol
     docker:
