@@ -22,6 +22,9 @@ contract YearnPricer is OpynPricerInterface {
     /// @notice underlying asset for this yToken
     ERC20Interface public underlying;
 
+    /// @notice bot address that is allowed to call setExpiryPriceInOracle
+    address public bot;
+
     /**
      * @param _yToken yToken asset
      * @param _underlying underlying asset for this yToken
@@ -53,11 +56,20 @@ contract YearnPricer is OpynPricerInterface {
     }
 
     /**
+     * @notice modifier to check if sender address is equal to bot address
+     */
+    modifier onlyBot() {
+        require(msg.sender == bot, "YearnPricer: unauthorized sender");
+
+        _;
+    }
+
+    /**
      * @notice set the expiry price in the oracle
      * @dev requires that the underlying price has been set before setting a yToken price
      * @param _expiryTimestamp expiry to set a price for
      */
-    function setExpiryPriceInOracle(uint256 _expiryTimestamp) external {
+    function setExpiryPriceInOracle(uint256 _expiryTimestamp) external onlyBot {
         (uint256 underlyingPriceExpiry, ) = oracle.getExpiryPrice(address(underlying), _expiryTimestamp);
         require(underlyingPriceExpiry > 0, "YearnPricer: underlying price not set yet");
         uint256 yTokenPrice = _underlyingPriceToYtokenPrice(underlyingPriceExpiry);
@@ -76,7 +88,7 @@ contract YearnPricer is OpynPricerInterface {
         return pricePerShare.mul(_underlyingPrice).div(10**uint256(underlyingDecimals));
     }
 
-    function getHistoricalPrice(uint80 _roundId) external view override returns (uint256, uint256) {
+    function getHistoricalPrice(uint80) external view override returns (uint256, uint256) {
         revert("YearnPricer: Deprecated");
     }
 }

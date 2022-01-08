@@ -33,6 +33,9 @@ contract WstethPricer is OpynPricerInterface {
     /// @notice underlying asset (WETH)
     address public underlying;
 
+    /// @notice bot address that is allowed to call setExpiryPriceInOracle
+    address public bot;
+
     /**
      * @param _wstETH wstETH
      * @param _underlying underlying asset for wstETH
@@ -64,11 +67,20 @@ contract WstethPricer is OpynPricerInterface {
     }
 
     /**
+     * @notice modifier to check if sender address is equal to bot address
+     */
+    modifier onlyBot() {
+        require(msg.sender == bot, "WstethPricer: unauthorized sender");
+
+        _;
+    }
+
+    /**
      * @notice set the expiry price in the oracle
      * @dev requires that the underlying price has been set before setting a wstETH price
      * @param _expiryTimestamp expiry to set a price for
      */
-    function setExpiryPriceInOracle(uint256 _expiryTimestamp) external {
+    function setExpiryPriceInOracle(uint256 _expiryTimestamp) external onlyBot {
         (uint256 underlyingPriceExpiry, ) = oracle.getExpiryPrice(underlying, _expiryTimestamp);
         require(underlyingPriceExpiry > 0, "W5");
         uint256 wstEthPrice = _underlyingPriceToWstethPrice(underlyingPriceExpiry);
