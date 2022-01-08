@@ -33,7 +33,8 @@ contract YearnPricer is OpynPricerInterface {
     constructor(
         address _yToken,
         address _underlying,
-        address _oracle
+        address _oracle,
+        address _bot
     ) public {
         require(_yToken != address(0), "YearnPricer: yToken address can not be 0");
         require(_underlying != address(0), "YearnPricer: underlying address can not be 0");
@@ -42,6 +43,7 @@ contract YearnPricer is OpynPricerInterface {
         yToken = YearnVaultInterface(_yToken);
         underlying = ERC20Interface(_underlying);
         oracle = OracleInterface(_oracle);
+        bot = _bot;
     }
 
     /**

@@ -14,6 +14,7 @@ import {SafeMath} from "../packages/oz/SafeMath.sol";
  * W4: cannot retrieve price, underlying price is 0
  * W5: cannot set expiry price in oracle, underlying price is 0 and has not been set
  * W6: cannot retrieve historical prices, getHistoricalPrice has been deprecated
+ * W7: cannot deploy pricer, bot is 0
  */
 
 /**
@@ -44,15 +45,18 @@ contract WstethPricer is OpynPricerInterface {
     constructor(
         address _wstETH,
         address _underlying,
-        address _oracle
+        address _oracle,
+        address _bot
     ) public {
         require(_wstETH != address(0), "W1");
         require(_underlying != address(0), "W2");
         require(_oracle != address(0), "W3");
+        require(_bot != address(0), "W7");
 
         wstETH = WSTETHInterface(_wstETH);
         oracle = OracleInterface(_oracle);
         underlying = _underlying;
+        bot = _bot;
     }
 
     /**
