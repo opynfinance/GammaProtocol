@@ -1,0 +1,180 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "MarginCalculatorInterface",
+  "sourceName": "contracts/interfaces/MarginCalculatorInterface.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "addressBook",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address[]",
+              "name": "shortOtokens",
+              "type": "address[]"
+            },
+            {
+              "internalType": "address[]",
+              "name": "longOtokens",
+              "type": "address[]"
+            },
+            {
+              "internalType": "address[]",
+              "name": "collateralAssets",
+              "type": "address[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "shortAmounts",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "longAmounts",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "collateralAmounts",
+              "type": "uint256[]"
+            }
+          ],
+          "internalType": "struct MarginVault.Vault",
+          "name": "_vault",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_vaultType",
+          "type": "uint256"
+        }
+      ],
+      "name": "getExcessCollateral",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "netValue",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "isExcess",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_otoken",
+          "type": "address"
+        }
+      ],
+      "name": "getExpiredPayoutRate",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address[]",
+              "name": "shortOtokens",
+              "type": "address[]"
+            },
+            {
+              "internalType": "address[]",
+              "name": "longOtokens",
+              "type": "address[]"
+            },
+            {
+              "internalType": "address[]",
+              "name": "collateralAssets",
+              "type": "address[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "shortAmounts",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "longAmounts",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "collateralAmounts",
+              "type": "uint256[]"
+            }
+          ],
+          "internalType": "struct MarginVault.Vault",
+          "name": "_vault",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_vaultType",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_vaultLatestUpdate",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_roundId",
+          "type": "uint256"
+        }
+      ],
+      "name": "isLiquidatable",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

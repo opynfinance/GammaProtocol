@@ -1,0 +1,10 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "EIP712Upgradeable",
+  "sourceName": "contracts/packages/oz/upgradeability/erc20-permit/EIP712Upgradeable.sol",
+  "abi": [],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

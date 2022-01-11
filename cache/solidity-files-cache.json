@@ -1,0 +1,3346 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/core/AddressBook.sol": {
+      "lastModificationDate": 1641867006852,
+      "contentHash": "ecd996e9e1bd9a6bc83d7ea8ca987bd1",
+      "sourceName": "contracts/core/AddressBook.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../packages/oz/Ownable.sol",
+        "../packages/oz/upgradeability/OwnedUpgradeabilityProxy.sol"
+      ],
+      "versionPragmas": [
+        "=0.6.10"
+      ],
+      "artifacts": [
+        "AddressBook"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/packages/oz/Ownable.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "f96d35d962a5cbeac2188122e05b0633",
+      "sourceName": "contracts/packages/oz/Ownable.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./Context.sol"
+      ],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "Ownable"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/packages/oz/upgradeability/OwnedUpgradeabilityProxy.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "2f40bb143ba4585c86d95febbdb189cd",
+      "sourceName": "contracts/packages/oz/upgradeability/OwnedUpgradeabilityProxy.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./UpgradeabilityProxy.sol"
+      ],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "OwnedUpgradeabilityProxy"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/packages/oz/Context.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "d775ddee12f7315c1328c4a56c637a5a",
+      "sourceName": "contracts/packages/oz/Context.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "Context"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/packages/oz/upgradeability/UpgradeabilityProxy.sol": {
+      "lastModificationDate": 1641867006872,
+      "contentHash": "938c0546fe1df8e4741296a95abfc138",
+      "sourceName": "contracts/packages/oz/upgradeability/UpgradeabilityProxy.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./Proxy.sol"
+      ],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "UpgradeabilityProxy"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/packages/oz/upgradeability/Proxy.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "1b8eb725b085cc445162334c49ac469f",
+      "sourceName": "contracts/packages/oz/upgradeability/Proxy.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "Proxy"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/core/Whitelist.sol": {
+      "lastModificationDate": 1641867006856,
+      "contentHash": "6af960027910d18f91bce22175126364",
+      "sourceName": "contracts/core/Whitelist.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../interfaces/AddressBookInterface.sol",
+        "../packages/oz/Ownable.sol"
+      ],
+      "versionPragmas": [
+        "=0.6.10"
+      ],
+      "artifacts": [
+        "Whitelist"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/interfaces/AddressBookInterface.sol": {
+      "lastModificationDate": 1641867006856,
+      "contentHash": "4589359b095cba064eeb90dcce45ced5",
+      "sourceName": "contracts/interfaces/AddressBookInterface.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "AddressBookInterface"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/tests/OtokenImplV1.sol": {
+      "lastModificationDate": 1641867006876,
+      "contentHash": "b8128cfcdf235f1b5ebe33cc422a43f1",
+      "sourceName": "contracts/tests/OtokenImplV1.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../packages/oz/upgradeability/erc20-permit/ERC20PermitUpgradeable.sol",
+        "../interfaces/AddressBookInterface.sol"
+      ],
+      "versionPragmas": [
+        "=0.6.10"
+      ],
+      "artifacts": [
+        "OtokenImplV1"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/packages/oz/upgradeability/erc20-permit/ERC20PermitUpgradeable.sol": {
+      "lastModificationDate": 1641867006872,
+      "contentHash": "5161a64d82ffde1bad11b6d25f34a8e3",
+      "sourceName": "contracts/packages/oz/upgradeability/erc20-permit/ERC20PermitUpgradeable.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../ERC20Upgradeable.sol",
+        "./IERC20PermitUpgradeable.sol",
+        "../cryptography/ECDSAUpgradeable.sol",
+        "../utils/CountersUpgradeable.sol",
+        "./EIP712Upgradeable.sol",
+        "../Initializable.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.5 <0.8.0"
+      ],
+      "artifacts": [
+        "ERC20PermitUpgradeable"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/packages/oz/upgradeability/ERC20Upgradeable.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "7d9f678b3794640db68c2bbb7e374db6",
+      "sourceName": "contracts/packages/oz/upgradeability/ERC20Upgradeable.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./GSN/ContextUpgradeable.sol",
+        "./IERC20Upgradeable.sol",
+        "./math/SafeMathUpgradeable.sol",
+        "./Initializable.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "ERC20Upgradeable"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/packages/oz/upgradeability/erc20-permit/IERC20PermitUpgradeable.sol": {
+      "lastModificationDate": 1641867006872,
+      "contentHash": "c34d26f23beb39f4e298c3c538940a21",
+      "sourceName": "contracts/packages/oz/upgradeability/erc20-permit/IERC20PermitUpgradeable.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "IERC20PermitUpgradeable"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/packages/oz/upgradeability/cryptography/ECDSAUpgradeable.sol": {
+      "lastModificationDate": 1641867006872,
+      "contentHash": "b20a07d6135acea10c3ba53163565b46",
+      "sourceName": "contracts/packages/oz/upgradeability/cryptography/ECDSAUpgradeable.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "ECDSAUpgradeable"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/packages/oz/upgradeability/utils/CountersUpgradeable.sol": {
+      "lastModificationDate": 1641867006872,
+      "contentHash": "d71876798c4d5867e64035101d4ec835",
+      "sourceName": "contracts/packages/oz/upgradeability/utils/CountersUpgradeable.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../math/SafeMathUpgradeable.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "CountersUpgradeable"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/packages/oz/upgradeability/erc20-permit/EIP712Upgradeable.sol": {
+      "lastModificationDate": 1641867006872,
+      "contentHash": "019a015997dfa474b228b10fa27540ec",
+      "sourceName": "contracts/packages/oz/upgradeability/erc20-permit/EIP712Upgradeable.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../Initializable.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "EIP712Upgradeable"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/packages/oz/upgradeability/Initializable.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "5d94e80ee287cccac94aaa4d336b5c96",
+      "sourceName": "contracts/packages/oz/upgradeability/Initializable.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.4.24 <0.7.0"
+      ],
+      "artifacts": [
+        "Initializable"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/packages/oz/upgradeability/GSN/ContextUpgradeable.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "8bff43eae85259e43ea0e9d56ba801fa",
+      "sourceName": "contracts/packages/oz/upgradeability/GSN/ContextUpgradeable.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../Initializable.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "ContextUpgradeable"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/packages/oz/upgradeability/IERC20Upgradeable.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "8cdb0e285a0539100f48d0fde517396a",
+      "sourceName": "contracts/packages/oz/upgradeability/IERC20Upgradeable.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "IERC20Upgradeable"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/packages/oz/upgradeability/math/SafeMathUpgradeable.sol": {
+      "lastModificationDate": 1641867006872,
+      "contentHash": "131ac92073426e62c30085cce7ed1260",
+      "sourceName": "contracts/packages/oz/upgradeability/math/SafeMathUpgradeable.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "SafeMathUpgradeable"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/mocks/MockPermitERC20.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "8d308c30ead8590cbc0c52aaf504aa03",
+      "sourceName": "contracts/mocks/MockPermitERC20.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../packages/oz/upgradeability/erc20-permit/ERC20PermitUpgradeable.sol"
+      ],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "MockPermitERC20"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/mocks/MockOtoken.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "4721adc821dbe650438f2b12213963e6",
+      "sourceName": "contracts/mocks/MockOtoken.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../packages/oz/upgradeability/erc20-permit/ERC20PermitUpgradeable.sol",
+        "../interfaces/AddressBookInterface.sol"
+      ],
+      "versionPragmas": [
+        "=0.6.10"
+      ],
+      "artifacts": [
+        "MockOtoken"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/tests/UpgradeableContractV1.sol": {
+      "lastModificationDate": 1641867006876,
+      "contentHash": "9dfb07d562be822d3957aef51279ac86",
+      "sourceName": "contracts/tests/UpgradeableContractV1.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../packages/oz/upgradeability/Initializable.sol"
+      ],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "UpgradeableContractV1"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/tests/UpgradeableContractV2.sol": {
+      "lastModificationDate": 1641867006876,
+      "contentHash": "4b64a47d85da6946173c4e3785309d96",
+      "sourceName": "contracts/tests/UpgradeableContractV2.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./UpgradeableContractV1.sol"
+      ],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "UpgradeableContractV2"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/mocks/MockYToken.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "eaf70976db2c7a6d36e0d05f894e8944",
+      "sourceName": "contracts/mocks/MockYToken.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../packages/oz/upgradeability/ERC20Upgradeable.sol"
+      ],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "MockYToken"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/mocks/MockWSTETHToken.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "8bf2544b30152d68554849a18d5c16f9",
+      "sourceName": "contracts/mocks/MockWSTETHToken.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../packages/oz/upgradeability/ERC20Upgradeable.sol"
+      ],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "MockWSTETHToken"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/mocks/MockERC20.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "10e82469547ade06bb2b570dacdea3ed",
+      "sourceName": "contracts/mocks/MockERC20.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../packages/oz/upgradeability/ERC20Upgradeable.sol"
+      ],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "MockERC20"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/mocks/MockCUSDC.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "21ddc6849f9d2ed5f2599a00d3631c72",
+      "sourceName": "contracts/mocks/MockCUSDC.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../packages/oz/upgradeability/ERC20Upgradeable.sol",
+        "../interfaces/ERC20Interface.sol",
+        "../packages/oz/SafeMath.sol"
+      ],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "MockCUSDC"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/interfaces/ERC20Interface.sol": {
+      "lastModificationDate": 1641867006856,
+      "contentHash": "443489926eb007b56ee3c0bb1f4b7e28",
+      "sourceName": "contracts/interfaces/ERC20Interface.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "ERC20Interface"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/packages/oz/SafeMath.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "cbe366de3fa41e96091887075557b535",
+      "sourceName": "contracts/packages/oz/SafeMath.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.6.0"
+      ],
+      "artifacts": [
+        "SafeMath"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/pricers/YearnPricer.sol": {
+      "lastModificationDate": 1641867006872,
+      "contentHash": "2328e1ab382c051cae53a3cfcd539806",
+      "sourceName": "contracts/pricers/YearnPricer.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../interfaces/OracleInterface.sol",
+        "../interfaces/OpynPricerInterface.sol",
+        "../interfaces/YearnVaultInterface.sol",
+        "../interfaces/ERC20Interface.sol",
+        "../packages/oz/SafeMath.sol"
+      ],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "YearnPricer"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/interfaces/OracleInterface.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "ee525dc14a2630403f9f9db84e85282d",
+      "sourceName": "contracts/interfaces/OracleInterface.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "OracleInterface"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/interfaces/OpynPricerInterface.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "e9f4e1dd7d6cff3a06ab57a8b38899a7",
+      "sourceName": "contracts/interfaces/OpynPricerInterface.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "OpynPricerInterface"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/interfaces/YearnVaultInterface.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "74b3d1a41e9fddbcc94d20f3a4008843",
+      "sourceName": "contracts/interfaces/YearnVaultInterface.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "YearnVaultInterface"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/tests/FlashUnwrap.sol": {
+      "lastModificationDate": 1641867006876,
+      "contentHash": "9aecf852cb01a78ddcf4522c6756d375",
+      "sourceName": "contracts/tests/FlashUnwrap.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../interfaces/CalleeInterface.sol",
+        "../interfaces/ERC20Interface.sol",
+        "../packages/oz/SafeERC20.sol",
+        "../external/canonical-weth/WETH9.sol"
+      ],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "FlashUnwrap"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/interfaces/CalleeInterface.sol": {
+      "lastModificationDate": 1641867006856,
+      "contentHash": "7c5304985c63828b7ee3097fb63e2a60",
+      "sourceName": "contracts/interfaces/CalleeInterface.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "CalleeInterface"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/packages/oz/SafeERC20.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "f34173544399fe9a4266979c8f3aca73",
+      "sourceName": "contracts/packages/oz/SafeERC20.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../../interfaces/ERC20Interface.sol",
+        "./SafeMath.sol",
+        "./Address.sol"
+      ],
+      "versionPragmas": [
+        "^0.6.0"
+      ],
+      "artifacts": [
+        "SafeERC20"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/external/canonical-weth/WETH9.sol": {
+      "lastModificationDate": 1641867006856,
+      "contentHash": "ff35ab7c3cfb887c93a617e13bd65801",
+      "sourceName": "contracts/external/canonical-weth/WETH9.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "WETH9"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/packages/oz/Address.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "63f11e4b45d94de59703499e084fd533",
+      "sourceName": "contracts/packages/oz/Address.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.6.2"
+      ],
+      "artifacts": [
+        "Address"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/external/proxies/PayableProxyController.sol": {
+      "lastModificationDate": 1641867006856,
+      "contentHash": "2104b9ad9db172ef8abcafef4341a4ba",
+      "sourceName": "contracts/external/proxies/PayableProxyController.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../canonical-weth/WETH9.sol",
+        "../../packages/oz/ReentrancyGuard.sol",
+        "../../packages/oz/SafeERC20.sol",
+        "../../interfaces/ERC20Interface.sol",
+        "../../libs/Actions.sol",
+        "../../core/Controller.sol",
+        "../../packages/oz/Address.sol"
+      ],
+      "versionPragmas": [
+        "=0.6.10"
+      ],
+      "artifacts": [
+        "PayableProxyController"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/packages/oz/ReentrancyGuard.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "7c820448708049c48b69c61ff6bd75de",
+      "sourceName": "contracts/packages/oz/ReentrancyGuard.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "=0.6.10"
+      ],
+      "artifacts": [
+        "ReentrancyGuard"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/libs/Actions.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "b6b1567e935b7e835ce35af0f2241d95",
+      "sourceName": "contracts/libs/Actions.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./MarginVault.sol"
+      ],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "Actions"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/core/Controller.sol": {
+      "lastModificationDate": 1641867006852,
+      "contentHash": "227329f34a03a43791db185ca92f811e",
+      "sourceName": "contracts/core/Controller.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../packages/oz/upgradeability/OwnableUpgradeSafe.sol",
+        "../packages/oz/upgradeability/ReentrancyGuardUpgradeSafe.sol",
+        "../packages/oz/upgradeability/Initializable.sol",
+        "../packages/oz/SafeMath.sol",
+        "../libs/MarginVault.sol",
+        "../libs/Actions.sol",
+        "../interfaces/AddressBookInterface.sol",
+        "../interfaces/OtokenInterface.sol",
+        "../interfaces/MarginCalculatorInterface.sol",
+        "../interfaces/OracleInterface.sol",
+        "../interfaces/WhitelistInterface.sol",
+        "../interfaces/MarginPoolInterface.sol",
+        "../interfaces/CalleeInterface.sol"
+      ],
+      "versionPragmas": [
+        "=0.6.10"
+      ],
+      "artifacts": [
+        "Controller"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/libs/MarginVault.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "2249593291edcdcd82f84f6868e9512d",
+      "sourceName": "contracts/libs/MarginVault.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../packages/oz/SafeMath.sol"
+      ],
+      "versionPragmas": [
+        "=0.6.10"
+      ],
+      "artifacts": [
+        "MarginVault"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/packages/oz/upgradeability/OwnableUpgradeSafe.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "4ed84a0b17146a52c8612d8f9f76c2cd",
+      "sourceName": "contracts/packages/oz/upgradeability/OwnableUpgradeSafe.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./GSN/ContextUpgradeable.sol",
+        "./Initializable.sol"
+      ],
+      "versionPragmas": [
+        "^0.6.0"
+      ],
+      "artifacts": [
+        "OwnableUpgradeSafe"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/packages/oz/upgradeability/ReentrancyGuardUpgradeSafe.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "57f7dc8f60593a1dc183bf16cba65b74",
+      "sourceName": "contracts/packages/oz/upgradeability/ReentrancyGuardUpgradeSafe.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./Initializable.sol"
+      ],
+      "versionPragmas": [
+        "^0.6.0"
+      ],
+      "artifacts": [
+        "ReentrancyGuardUpgradeSafe"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/interfaces/OtokenInterface.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "d80982691b67ff8d528ec416e05eff40",
+      "sourceName": "contracts/interfaces/OtokenInterface.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "OtokenInterface"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/interfaces/MarginCalculatorInterface.sol": {
+      "lastModificationDate": 1641867006856,
+      "contentHash": "204dad905a3b958acec98673cbfd4c9a",
+      "sourceName": "contracts/interfaces/MarginCalculatorInterface.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../libs/MarginVault.sol"
+      ],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "MarginCalculatorInterface"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/interfaces/WhitelistInterface.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "f197b3d6309e58691dca8340e6d15a24",
+      "sourceName": "contracts/interfaces/WhitelistInterface.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "WhitelistInterface"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/interfaces/MarginPoolInterface.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "a5da0156226d0425104b67b774df1c79",
+      "sourceName": "contracts/interfaces/MarginPoolInterface.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "MarginPoolInterface"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/tests/CalleeAllowanceTester.sol": {
+      "lastModificationDate": 1641867006872,
+      "contentHash": "6907c3f481f9e96c9b7f107e1c727432",
+      "sourceName": "contracts/tests/CalleeAllowanceTester.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../interfaces/CalleeInterface.sol",
+        "../interfaces/ERC20Interface.sol",
+        "../packages/oz/SafeERC20.sol"
+      ],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "CalleeAllowanceTester"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/mocks/MockController.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "a901de707cc49af0ee592d7ec99776e0",
+      "sourceName": "contracts/mocks/MockController.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../interfaces/OtokenInterface.sol",
+        "../interfaces/CalleeInterface.sol",
+        "../interfaces/ERC20Interface.sol"
+      ],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "MockController"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/core/OtokenFactory.sol": {
+      "lastModificationDate": 1641867006856,
+      "contentHash": "4fc629668225af57b8b8401255834c99",
+      "sourceName": "contracts/core/OtokenFactory.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./OtokenSpawner.sol",
+        "../packages/oz/SafeMath.sol",
+        "../interfaces/AddressBookInterface.sol",
+        "../interfaces/OtokenInterface.sol",
+        "../interfaces/WhitelistInterface.sol"
+      ],
+      "versionPragmas": [
+        "=0.6.10"
+      ],
+      "artifacts": [
+        "OtokenFactory"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/core/OtokenSpawner.sol": {
+      "lastModificationDate": 1641867006856,
+      "contentHash": "97446d6e2dd70df4cdd60ec529134195",
+      "sourceName": "contracts/core/OtokenSpawner.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../packages/Spawn.sol",
+        "../packages/oz/Create2.sol"
+      ],
+      "versionPragmas": [
+        "=0.6.10"
+      ],
+      "artifacts": [
+        "OtokenSpawner"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/packages/Spawn.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "1df06a112666cd35d3b8175a756d40f9",
+      "sourceName": "contracts/packages/Spawn.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "=0.6.10"
+      ],
+      "artifacts": [
+        "Spawn"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/packages/oz/Create2.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "4b3d96d37d12b638273f8430018dc09b",
+      "sourceName": "contracts/packages/oz/Create2.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "=0.6.10"
+      ],
+      "artifacts": [
+        "Create2"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/pricers/WstethPricer.sol": {
+      "lastModificationDate": 1641867006872,
+      "contentHash": "8a81a6bbd28082374ef301a75f657d9f",
+      "sourceName": "contracts/pricers/WstethPricer.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../interfaces/OracleInterface.sol",
+        "../interfaces/OpynPricerInterface.sol",
+        "../interfaces/WSTETHInterface.sol",
+        "../packages/oz/SafeMath.sol"
+      ],
+      "versionPragmas": [
+        "=0.6.10"
+      ],
+      "artifacts": [
+        "WstethPricer"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/interfaces/WSTETHInterface.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "11d4d0773277b77a36f8081e360530e3",
+      "sourceName": "contracts/interfaces/WSTETHInterface.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "=0.6.10"
+      ],
+      "artifacts": [
+        "WSTETHInterface"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/pricers/ChainlinkPricer.sol": {
+      "lastModificationDate": 1641867006872,
+      "contentHash": "377e3b8e036e7c18a2051eebccd03136",
+      "sourceName": "contracts/pricers/ChainlinkPricer.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../interfaces/AggregatorInterface.sol",
+        "../interfaces/OracleInterface.sol",
+        "../interfaces/OpynPricerInterface.sol",
+        "../packages/oz/SafeMath.sol"
+      ],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "ChainLinkPricer"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/interfaces/AggregatorInterface.sol": {
+      "lastModificationDate": 1641867006856,
+      "contentHash": "5288b469b6f552d5706dd477697ccfab",
+      "sourceName": "contracts/interfaces/AggregatorInterface.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "AggregatorInterface"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/mocks/MockOracle.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "73ff8d36fa23fb1f1466740253ededeb",
+      "sourceName": "contracts/mocks/MockOracle.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../packages/oz/SafeMath.sol",
+        "../interfaces/OpynPricerInterface.sol"
+      ],
+      "versionPragmas": [
+        "=0.6.10"
+      ],
+      "artifacts": [
+        "MockOracle"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/core/Oracle.sol": {
+      "lastModificationDate": 1641867006856,
+      "contentHash": "46dabecba810c0de684d750626c155e5",
+      "sourceName": "contracts/core/Oracle.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../interfaces/OpynPricerInterface.sol",
+        "../packages/oz/Ownable.sol",
+        "../packages/oz/SafeMath.sol"
+      ],
+      "versionPragmas": [
+        "=0.6.10"
+      ],
+      "artifacts": [
+        "Oracle"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/pricers/CompoundPricer.sol": {
+      "lastModificationDate": 1641867006872,
+      "contentHash": "5665639d67c5abc16a93f34e06ed5652",
+      "sourceName": "contracts/pricers/CompoundPricer.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../interfaces/OracleInterface.sol",
+        "../interfaces/CTokenInterface.sol",
+        "../interfaces/ERC20Interface.sol",
+        "../packages/oz/SafeMath.sol"
+      ],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "CompoundPricer"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/interfaces/CTokenInterface.sol": {
+      "lastModificationDate": 1641867006856,
+      "contentHash": "900ae7c3bd1a25523bae4e6b55eba665",
+      "sourceName": "contracts/interfaces/CTokenInterface.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "CTokenInterface"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/mocks/MockPricer.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "182d0bb5ffa37f50bda55c18e897b47b",
+      "sourceName": "contracts/mocks/MockPricer.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../interfaces/OracleInterface.sol"
+      ],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "MockPricer"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/core/MarginCalculator.sol": {
+      "lastModificationDate": 1641867006856,
+      "contentHash": "74739eae2921f9221ba8c05c0996dc20",
+      "sourceName": "contracts/core/MarginCalculator.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../packages/oz/SafeMath.sol",
+        "../packages/oz/Ownable.sol",
+        "../interfaces/OtokenInterface.sol",
+        "../interfaces/OracleInterface.sol",
+        "../interfaces/ERC20Interface.sol",
+        "../libs/FixedPointInt256.sol",
+        "../libs/MarginVault.sol"
+      ],
+      "versionPragmas": [
+        "=0.6.10"
+      ],
+      "artifacts": [
+        "MarginCalculator"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/libs/FixedPointInt256.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "0bc5d1a5ff90e23fda0d283d7fafec3c",
+      "sourceName": "contracts/libs/FixedPointInt256.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../packages/oz/SignedSafeMath.sol",
+        "../libs/SignedConverter.sol",
+        "../packages/oz/SafeMath.sol"
+      ],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "FixedPointInt256"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/packages/oz/SignedSafeMath.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "2ad3f46a1a18b8558987589ecb2db51e",
+      "sourceName": "contracts/packages/oz/SignedSafeMath.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.6.0"
+      ],
+      "artifacts": [
+        "SignedSafeMath"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/libs/SignedConverter.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "820433c2e42227f40ecb4f3db7b919d0",
+      "sourceName": "contracts/libs/SignedConverter.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "SignedConverter"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/tests/CalculatorTester.sol": {
+      "lastModificationDate": 1641867006872,
+      "contentHash": "49c8c81758abeaf661ee998f98c6fb74",
+      "sourceName": "contracts/tests/CalculatorTester.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../core/MarginCalculator.sol",
+        "../libs/FixedPointInt256.sol"
+      ],
+      "versionPragmas": [
+        "=0.6.10"
+      ],
+      "artifacts": [
+        "CalculatorTester"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/tests/FixedPointInt256Tester.sol": {
+      "lastModificationDate": 1641867006876,
+      "contentHash": "5081eb7d9a5f3273fc165828d68cceef",
+      "sourceName": "contracts/tests/FixedPointInt256Tester.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../libs/FixedPointInt256.sol"
+      ],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "FixedPointInt256Tester"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/tests/SignedConverterTester.sol": {
+      "lastModificationDate": 1641867006876,
+      "contentHash": "334a2a6ce6fe9309410edbeea8e5e38c",
+      "sourceName": "contracts/tests/SignedConverterTester.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../libs/SignedConverter.sol"
+      ],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "SignedConverterTester"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/tests/MarginVaultTester.sol": {
+      "lastModificationDate": 1641867006876,
+      "contentHash": "acb46c66999be66c03ad92c7ec1f1f3e",
+      "sourceName": "contracts/tests/MarginVaultTester.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../libs/MarginVault.sol"
+      ],
+      "versionPragmas": [
+        "=0.6.10"
+      ],
+      "artifacts": [
+        "MarginVaultTester"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/tests/ActionTester.sol": {
+      "lastModificationDate": 1641867006872,
+      "contentHash": "7a6687f865e1a760d5325d2a0ecc7424",
+      "sourceName": "contracts/tests/ActionTester.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../libs/Actions.sol"
+      ],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "ActionTester"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/external/callees/PermitCallee.sol": {
+      "lastModificationDate": 1641867006856,
+      "contentHash": "cf6bee246c9feb5357ba91fb07da8273",
+      "sourceName": "contracts/external/callees/PermitCallee.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../../interfaces/CalleeInterface.sol",
+        "../../packages/oz/upgradeability/erc20-permit/IERC20PermitUpgradeable.sol"
+      ],
+      "versionPragmas": [
+        "=0.6.10"
+      ],
+      "artifacts": [
+        "PermitCallee"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/mocks/Mock0xExchange.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "667967c9107a96a3afd0aba4216f10da",
+      "sourceName": "contracts/mocks/Mock0xExchange.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../interfaces/ZeroXExchangeInterface.sol",
+        "../interfaces/ERC20Interface.sol",
+        "../packages/oz/SafeERC20.sol",
+        "./Mock0xERC20Proxy.sol"
+      ],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "Mock0xExchange"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/interfaces/ZeroXExchangeInterface.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "2ee021c5465e594c4022e17d3e64ba8d",
+      "sourceName": "contracts/interfaces/ZeroXExchangeInterface.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "ZeroXExchangeInterface"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/mocks/Mock0xERC20Proxy.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "79e680877fa918f0d515192f0de1def8",
+      "sourceName": "contracts/mocks/Mock0xERC20Proxy.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../interfaces/ERC20Interface.sol",
+        "../packages/oz/SafeERC20.sol"
+      ],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "Mock0xERC20Proxy"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/core/MarginPool.sol": {
+      "lastModificationDate": 1641867006856,
+      "contentHash": "8f0dfd4b4318bd534c497fb35331b6a9",
+      "sourceName": "contracts/core/MarginPool.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../interfaces/ERC20Interface.sol",
+        "../interfaces/AddressBookInterface.sol",
+        "../packages/oz/SafeMath.sol",
+        "../packages/oz/SafeERC20.sol",
+        "../packages/oz/Ownable.sol"
+      ],
+      "versionPragmas": [
+        "=0.6.10"
+      ],
+      "artifacts": [
+        "MarginPool"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/mocks/MockDumbERC20.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "1ab3c1fb779bae7a9fa9d3ed2a50c632",
+      "sourceName": "contracts/mocks/MockDumbERC20.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../packages/oz/SafeMath.sol"
+      ],
+      "versionPragmas": [
+        "^0.6.0"
+      ],
+      "artifacts": [
+        "MockDumbERC20"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/mocks/MockCToken.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "793ed798b548df20d0346dd482f3179d",
+      "sourceName": "contracts/mocks/MockCToken.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../packages/oz/upgradeability/ERC20Upgradeable.sol"
+      ],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "MockCToken"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/core/Otoken.sol": {
+      "lastModificationDate": 1641867006856,
+      "contentHash": "bf90ba794a6e7872af11b82f77162eea",
+      "sourceName": "contracts/core/Otoken.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../packages/oz/upgradeability/ERC20Upgradeable.sol",
+        "../packages/oz/upgradeability/erc20-permit/ERC20PermitUpgradeable.sol",
+        "../packages/oz/Strings.sol",
+        "../packages/BokkyPooBahsDateTimeLibrary.sol",
+        "../interfaces/AddressBookInterface.sol"
+      ],
+      "versionPragmas": [
+        "=0.6.10"
+      ],
+      "artifacts": [
+        "Otoken"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/packages/oz/Strings.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "541da2e4305de1df3a8d97f4870cab23",
+      "sourceName": "contracts/packages/oz/Strings.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "=0.6.10"
+      ],
+      "artifacts": [
+        "Strings"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/packages/BokkyPooBahsDateTimeLibrary.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "b0899719f07dd9e03e2b0a6bc38d9dcc",
+      "sourceName": "contracts/packages/BokkyPooBahsDateTimeLibrary.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.6.0"
+      ],
+      "artifacts": [
+        "BokkyPooBahsDateTimeLibrary"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/interfaces/WETH9Interface.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "d55bb7a4ee5a90a882ad486c977cb8c5",
+      "sourceName": "contracts/interfaces/WETH9Interface.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "WETH9Interface"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/Migrations.sol": {
+      "lastModificationDate": 1641867006852,
+      "contentHash": "c246ea42fc7b6a01f52e2fd5233523a5",
+      "sourceName": "contracts/Migrations.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "Migrations"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/mocks/MockAddressBook.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "b45f93dab1e2c3f2cb9701661bb80a31",
+      "sourceName": "contracts/mocks/MockAddressBook.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "MockAddressBook"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/mocks/MockChainlinkAggregator.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "ad2f4d14d8f9704f8f29437630ec05ee",
+      "sourceName": "contracts/mocks/MockChainlinkAggregator.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "MockChainlinkAggregator"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/mocks/MockWhitelistModule.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "a05abe492a4a8140c5a111b21cfc9352",
+      "sourceName": "contracts/mocks/MockWhitelistModule.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "MockWhitelistModule"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/packages/oz/IERC20.sol": {
+      "lastModificationDate": 1641867006864,
+      "contentHash": "b08e2f6722f0596b8a2d234fa05242dd",
+      "sourceName": "contracts/packages/oz/IERC20.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.6.0"
+      ],
+      "artifacts": [
+        "IERC20"
+      ]
+    },
+    "/home/jamiebones/CODING_DIRECTORY FILES/Opyn_Folder/GammaProtocol/contracts/tests/CallTester.sol": {
+      "lastModificationDate": 1641867006872,
+      "contentHash": "120d19b54003dea2e14ae1bce0dc1a0e",
+      "sourceName": "contracts/tests/CallTester.sol",
+      "solcConfig": {
+        "version": "0.6.10",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.6.10"
+      ],
+      "artifacts": [
+        "CallTester"
+      ]
+    }
+  }
+}

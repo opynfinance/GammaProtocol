@@ -1,20 +1,16 @@
 {
-    "compilerOptions": {
-      "strict": true,
-      "noImplicitThis": true,
-      "noImplicitAny": true,
-      "noImplicitReturns": true,
-      "alwaysStrict": true,
-      "typeRoots": [
-        "./node_modules/@types",
-        "./build/types",
-        "./node_modules/truffle-typings"
-      ]
-    },
-    "include": [
-      "test/**/*.ts"
-    ],
-    "exclude": [
-      "node_modules"
-    ]
-  }
+  "compilerOptions": {
+    "target": "es2018",
+    "module": "commonjs",
+    "strict": true,
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "dist"
+  },
+  "include": [
+    "hardhat.config.ts",
+    "./deploy",
+    "./test",
+  ]
+}

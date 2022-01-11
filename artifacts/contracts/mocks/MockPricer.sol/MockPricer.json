@@ -1,0 +1,121 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "MockPricer",
+  "sourceName": "contracts/mocks/MockPricer.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_asset",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_oracle",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "asset",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint80",
+          "name": "_roundId",
+          "type": "uint80"
+        }
+      ],
+      "name": "getHistoricalPrice",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getPrice",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "oracle",
+      "outputs": [
+        {
+          "internalType": "contract OracleInterface",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_expiryTimestamp",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_price",
+          "type": "uint256"
+        }
+      ],
+      "name": "setExpiryPriceInOracle",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_price",
+          "type": "uint256"
+        }
+      ],
+      "name": "setPrice",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b5060405161028b38038061028b8339818101604052604081101561003357600080fd5b508051602090910151600280546001600160a01b039384166001600160a01b031991821617909155600080549390921692169190911790556102118061007a6000396000f3fe608060405234801561001057600080fd5b50600436106100625760003560e01c806338d52e0f146100675780635c5ebfaf1461008b5780637dc0d1d0146100b057806391b7f5ed146100b857806398d5fdca146100d5578063eec377c0146100ef575b600080fd5b61006f610131565b604080516001600160a01b039092168252519081900360200190f35b6100ae600480360360408110156100a157600080fd5b5080359060200135610140565b005b61006f6101b8565b6100ae600480360360208110156100ce57600080fd5b50356101c7565b6100dd6101cc565b60408051918252519081900360200190f35b6101186004803603602081101561010557600080fd5b503569ffffffffffffffffffff166101d2565b6040805192835260208301919091528051918290030190f35b6002546001600160a01b031681565b600080546002546040805163ee53140960e01b81526001600160a01b03928316600482015260248101879052604481018690529051919092169263ee531409926064808201939182900301818387803b15801561019c57600080fd5b505af11580156101b0573d6000803e3d6000fd5b505050505050565b6000546001600160a01b031681565b600155565b60015490565b6001544291509156fea26469706673582212201d8f87cbfdc8b057bbfdb9ff1f6735ee06f9cce6527713892bbf4eaedf4d302b64736f6c634300060a0033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100625760003560e01c806338d52e0f146100675780635c5ebfaf1461008b5780637dc0d1d0146100b057806391b7f5ed146100b857806398d5fdca146100d5578063eec377c0146100ef575b600080fd5b61006f610131565b604080516001600160a01b039092168252519081900360200190f35b6100ae600480360360408110156100a157600080fd5b5080359060200135610140565b005b61006f6101b8565b6100ae600480360360208110156100ce57600080fd5b50356101c7565b6100dd6101cc565b60408051918252519081900360200190f35b6101186004803603602081101561010557600080fd5b503569ffffffffffffffffffff166101d2565b6040805192835260208301919091528051918290030190f35b6002546001600160a01b031681565b600080546002546040805163ee53140960e01b81526001600160a01b03928316600482015260248101879052604481018690529051919092169263ee531409926064808201939182900301818387803b15801561019c57600080fd5b505af11580156101b0573d6000803e3d6000fd5b505050505050565b6000546001600160a01b031681565b600155565b60015490565b6001544291509156fea26469706673582212201d8f87cbfdc8b057bbfdb9ff1f6735ee06f9cce6527713892bbf4eaedf4d302b64736f6c634300060a0033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
