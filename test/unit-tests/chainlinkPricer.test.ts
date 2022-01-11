@@ -5,8 +5,8 @@ import {
   MockERC20Instance,
 } from '../../build/types/truffle-types'
 
-import {createTokenAmount} from '../utils'
-const {expectRevert, time} = require('@openzeppelin/test-helpers')
+import { createTokenAmount } from '../utils'
+const { expectRevert, time } = require('@openzeppelin/test-helpers')
 
 const ChainlinkPricer = artifacts.require('ChainLinkPricer.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
@@ -25,7 +25,7 @@ contract('ChainlinkPricer', ([owner, bot, random]) => {
 
   before('Deployment', async () => {
     // deploy mock contracts
-    oracle = await MockOracle.new({from: owner})
+    oracle = await MockOracle.new({ from: owner })
     wethAggregator = await MockChainlinkAggregator.new()
     weth = await MockERC20.new('WETH', 'WETH', 18)
     // deploy pricer
@@ -123,7 +123,7 @@ contract('ChainlinkPricer', ([owner, bot, random]) => {
       const expiryTimestamp = (t0 + t1) / 2 // between t0 and t1
       const roundId = 1
 
-      await pricer.setExpiryPriceInOracle(expiryTimestamp, roundId, {from: bot})
+      await pricer.setExpiryPriceInOracle(expiryTimestamp, roundId, { from: bot })
       const priceFromOracle = await oracle.getExpiryPrice(weth.address, expiryTimestamp)
       assert.equal(p1.toString(), priceFromOracle[0].toString())
     })
@@ -132,7 +132,7 @@ contract('ChainlinkPricer', ([owner, bot, random]) => {
       const expiryTimestamp = (t1 + t2) / 2 // between t1 and t2
       const roundId = 1
       await expectRevert(
-        pricer.setExpiryPriceInOracle(expiryTimestamp, roundId, {from: random}),
+        pricer.setExpiryPriceInOracle(expiryTimestamp, roundId, { from: random }),
         'ChainLinkPricer: roundId not first after expiry',
       )
     })
@@ -141,7 +141,7 @@ contract('ChainlinkPricer', ([owner, bot, random]) => {
       const expiryTimestamp = (t1 + t2) / 2 // between t1 and t2
       const roundId = 3
       await expectRevert(
-        pricer.setExpiryPriceInOracle(expiryTimestamp, roundId, {from: random}),
+        pricer.setExpiryPriceInOracle(expiryTimestamp, roundId, { from: random }),
         'ChainLinkPricer: previousRoundId not last before expiry',
       )
     })
@@ -149,7 +149,7 @@ contract('ChainlinkPricer', ([owner, bot, random]) => {
     it('anyone should be able to set prices', async () => {
       const expiryTimestamp = (t1 + t2) / 2 // between t1 and t2
       const roundId = 2
-      await pricer.setExpiryPriceInOracle(expiryTimestamp, roundId, {from: random})
+      await pricer.setExpiryPriceInOracle(expiryTimestamp, roundId, { from: random })
       const priceFromOracle = await oracle.getExpiryPrice(weth.address, expiryTimestamp)
       assert.equal(p2.toString(), priceFromOracle[0].toString())
     })
@@ -158,7 +158,7 @@ contract('ChainlinkPricer', ([owner, bot, random]) => {
       const expiryTimestamp = (t1 + t2) / 2 // between t1 and t2
       const roundId = 1
       await expectRevert(
-        pricer.setExpiryPriceInOracle(expiryTimestamp, roundId, {from: bot}),
+        pricer.setExpiryPriceInOracle(expiryTimestamp, roundId, { from: bot }),
         'ChainLinkPricer: roundId not first after expiry',
       )
     })

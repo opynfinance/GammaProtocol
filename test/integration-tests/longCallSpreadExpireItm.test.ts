@@ -9,10 +9,10 @@ import {
   MarginPoolInstance,
   OtokenFactoryInstance,
 } from '../../build/types/truffle-types'
-import {createTokenAmount, createValidExpiry} from '../utils'
+import { createTokenAmount, createValidExpiry } from '../utils'
 import BigNumber from 'bignumber.js'
 
-const {time} = require('@openzeppelin/test-helpers')
+const { time } = require('@openzeppelin/test-helpers')
 const AddressBook = artifacts.require('AddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const Otoken = artifacts.require('Otoken.sol')
@@ -164,9 +164,9 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
     await weth.mint(nakedBuyer, nakedBuyerWeth)
 
     // have the user approve all the weth transfers
-    await weth.approve(marginPool.address, accountOwner1Weth, {from: accountOwner1})
-    await weth.approve(marginPool.address, accountOwner2Weth, {from: accountOwner2})
-    await weth.approve(marginPool.address, nakedBuyerWeth, {from: nakedBuyer})
+    await weth.approve(marginPool.address, accountOwner1Weth, { from: accountOwner1 })
+    await weth.approve(marginPool.address, accountOwner2Weth, { from: accountOwner2 })
+    await weth.approve(marginPool.address, nakedBuyerWeth, { from: nakedBuyer })
 
     const vaultCounter1Before = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
     vaultCounter1 = vaultCounter1Before.toNumber() + 1
@@ -215,10 +215,10 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
           },
         ]
 
-        await controllerProxy.operate(actionArgsAccountOwner2, {from: accountOwner2})
+        await controllerProxy.operate(actionArgsAccountOwner2, { from: accountOwner2 })
 
         // accountOwner2 transfers their lower strike Call option to accountOwner1
-        await lowerStrikeCall.transfer(accountOwner1, scaledOptionsAmount, {from: accountOwner2})
+        await lowerStrikeCall.transfer(accountOwner1, scaledOptionsAmount, { from: accountOwner2 })
 
         const actionArgsAccountOwner1 = [
           {
@@ -253,8 +253,8 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
           },
         ]
 
-        await lowerStrikeCall.approve(marginPool.address, scaledOptionsAmount, {from: accountOwner1})
-        await controllerProxy.operate(actionArgsAccountOwner1, {from: accountOwner1})
+        await lowerStrikeCall.approve(marginPool.address, scaledOptionsAmount, { from: accountOwner1 })
+        await controllerProxy.operate(actionArgsAccountOwner1, { from: accountOwner1 })
       },
     )
 
@@ -307,7 +307,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
         },
       ]
 
-      await controllerProxy.operate(actionArgs, {from: accountOwner1})
+      await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
       // keep track of balances after
       const ownerWethBalanceAfter = new BigNumber(await weth.balanceOf(accountOwner1))
@@ -357,7 +357,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
 
     it('nakedBuyer: redeem the higher strike ITM call option after expiry', async () => {
       // accountOwner1 transfers their higher strike call option to the nakedBuyer
-      await higherStrikeCall.transfer(nakedBuyer, scaledOptionsAmount, {from: accountOwner1})
+      await higherStrikeCall.transfer(nakedBuyer, scaledOptionsAmount, { from: accountOwner1 })
       // oracle orice increases
       const strikePriceChange = Math.max(0, expirySpotPrice - higherStrike)
 
@@ -380,7 +380,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
         },
       ]
 
-      await controllerProxy.operate(actionArgs, {from: nakedBuyer})
+      await controllerProxy.operate(actionArgs, { from: nakedBuyer })
 
       // keep track of balances after
       const nakedBuyerWethBalanceAfter = new BigNumber(await weth.balanceOf(nakedBuyer))
@@ -448,7 +448,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
         },
       ]
 
-      await controllerProxy.operate(actionArgs, {from: accountOwner2})
+      await controllerProxy.operate(actionArgs, { from: accountOwner2 })
 
       // keep track of balances after
       const ownerWethBalanceAfter = new BigNumber(await weth.balanceOf(accountOwner2))

@@ -1,6 +1,6 @@
-import {WETH9Instance} from '../../build/types/truffle-types'
+import { WETH9Instance } from '../../build/types/truffle-types'
 const BigNumber = require('bignumber.js')
-const {expectEvent} = require('@openzeppelin/test-helpers')
+const { expectEvent } = require('@openzeppelin/test-helpers')
 const WETH9 = artifacts.require('WETH9.sol')
 
 contract('WETH9', ([sender]) => {
@@ -45,7 +45,7 @@ contract('WETH9', ([sender]) => {
 
       const value = new BigNumber(web3.utils.toWei('1', 'ether'))
 
-      await weth.deposit({from: sender, value: value})
+      await weth.deposit({ from: sender, value: value })
 
       const balanceAfter = new BigNumber(await weth.balanceOf(sender))
       const totalSupplyAfter = new BigNumber(await weth.totalSupply())
@@ -70,7 +70,7 @@ contract('WETH9', ([sender]) => {
 
       const value = new BigNumber(web3.utils.toWei('1', 'ether'))
 
-      const tx = await weth.withdraw(value, {from: sender})
+      const tx = await weth.withdraw(value, { from: sender })
 
       expectEvent(tx, 'Withdrawal', {
         src: sender,

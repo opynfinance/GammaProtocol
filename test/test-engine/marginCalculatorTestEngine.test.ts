@@ -5,11 +5,11 @@ import {
   MockOracleInstance,
   MockOtokenInstance,
 } from '../../build/types/truffle-types'
-import {createVault, createTokenAmount} from '../utils'
-import {testCaseGenerator, Tests, Test, testToString, callMarginRequiredBeforeExpiry} from './testCaseGenerator'
+import { createVault, createTokenAmount } from '../utils'
+import { testCaseGenerator, Tests, Test, testToString, callMarginRequiredBeforeExpiry } from './testCaseGenerator'
 import BigNumber from 'bignumber.js'
 
-const {time} = require('@openzeppelin/test-helpers')
+const { time } = require('@openzeppelin/test-helpers')
 const MockAddressBook = artifacts.require('MockAddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const MockOtoken = artifacts.require('MockOtoken.sol')
