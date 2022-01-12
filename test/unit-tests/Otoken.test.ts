@@ -139,7 +139,7 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
     it('should revert when init asset with non-erc20 address', async () => {
       /* This behavior should've been banned by factory) */
       const put = await Otoken.new()
-      await expectRevert(
+      await expectRevert.unspecified(
         put.init(addressBookAddr, random, usdc.address, usdc.address, strikePrice, expiry, isPut, {
           from: deployer,
         }),

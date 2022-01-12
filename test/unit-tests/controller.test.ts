@@ -3703,12 +3703,12 @@ contract(
 
           assert.equal(
             marginPoolBalanceBefore.minus(marginPoolBalanceAfter).toString(),
-            payout,
+            payout.toString(),
             'Margin pool collateral asset balance mismatch',
           )
           assert.equal(
             senderBalanceAfter.minus(senderBalanceBefore).toString(),
-            payout,
+            payout.toString(),
             'Sender collateral asset balance mismatch',
           )
         })
