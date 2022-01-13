@@ -115,7 +115,7 @@ describe('CompoundPricer', function () {
     })
     it('should return the price in 1e8', async () => {
       // how much 1e8 cToken worth in USD
-      const cTokenprice = await cethPricer.getPrice()
+      const cTokenprice = await cethPricer.getPrice();
       const expectResult = await underlyingPriceToCtokenPrice(new BigNumber(ethPrice), exchangeRate, weth)
       assert.equal(cTokenprice.toString(), expectResult.toString())
       // hard coded answer

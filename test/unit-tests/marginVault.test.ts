@@ -23,7 +23,7 @@ describe('MarginVault', function () {
   const isPut = true
 
   //accounts
-  let deployer: SignerWithAddress
+  let deployer: SignerWithAddress;
   let controller: SignerWithAddress
 
   let accounts: SignerWithAddress[] = []

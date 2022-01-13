@@ -257,7 +257,7 @@ describe('AddressBook', function () {
   })
 
   describe('Set arbitrary address', () => {
-    const modulekey = web3.utils.soliditySha3('newModule')
+    const modulekey = web3.utils.soliditySha3('newModule');
     let module: UpgradeableContractV1
 
     before(async () => {

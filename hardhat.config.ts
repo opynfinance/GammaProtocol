@@ -9,7 +9,7 @@ import "hardhat-gas-reporter"
 import { HardhatUserConfig } from 'hardhat/config';
 import 'solidity-coverage';
 import "@nomiclabs/hardhat-web3";
-import BigNumber from 'bignumber.js';
+
 
 const mnemonic = fs.existsSync('.secret')
   ? fs

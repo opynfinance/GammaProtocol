@@ -581,7 +581,7 @@ describe('Deployment', function () {
 
       await actionTester.testParseBurnAction(data)
 
-      const burnArgs = await actionTester.getBurnArgs()
+      const burnArgs = await actionTester.getBurnArgs();
       assert.equal(burnArgs.owner, owner.address)
       assert.equal(burnArgs.amount.toString(), ethers.BigNumber.from(amount).toString())
       assert.equal(burnArgs.otoken, asset)

@@ -206,7 +206,7 @@ describe('ChainlinkPricer', function () {
     it('should revert when no data round available', async () => {
       const invalidRoundId = 1050
 
-      await expectRevert(pricer.getHistoricalPrice(invalidRoundId), 'No data present')
+      await expectRevert(pricer.getHistoricalPrice(invalidRoundId), 'No data present');
     })
   })
 })
