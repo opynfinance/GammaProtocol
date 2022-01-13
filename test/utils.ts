@@ -1,5 +1,6 @@
-import { MockERC20Instance } from '../build/types/truffle-types'
+import { MockERC20 } from '../typechain'
 import BigNumber from 'bignumber.js'
+import { web3 } from 'hardhat'
 
 const util = require('@0x/protocol-utils')
 const ethSigUtil = require('eth-sig-util')
@@ -74,7 +75,7 @@ export const createScaledBigNumber = (num: number, decimals = 8): BigNumber => {
 export const underlyingPriceToCtokenPrice = async (
   underlyingPrice: BigNumber,
   exchangeRate: BigNumber,
-  underlying: MockERC20Instance,
+  underlying: MockERC20,
 ) => {
   const underlyingDecimals = new BigNumber(await underlying.decimals())
   const cTokenDecimals = new BigNumber(8)
@@ -88,7 +89,7 @@ export const underlyingPriceToCtokenPrice = async (
 export const underlyingPriceToYTokenPrice = async (
   underlyingPrice: BigNumber,
   pricePerShare: BigNumber,
-  underlying: MockERC20Instance,
+  underlying: MockERC20,
 ) => {
   const underlyingDecimals = new BigNumber(await underlying.decimals())
   return pricePerShare
@@ -194,4 +195,11 @@ export const expectedLiqudidationPrice = (
 
 export const calcRelativeDiff = (expected: BigNumber, actual: BigNumber): BigNumber => {
   return actual.minus(expected).abs()
+}
+
+export const getLatestTime = async () => {
+  const blockNumber = await web3.eth.getBlockNumber()
+  const block = await web3.eth.getBlock(blockNumber)
+  const value = block['timestamp']
+  return parseInt(value.toString())
 }

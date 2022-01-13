@@ -1,72 +1,104 @@
-import {
-  MockPricerInstance,
-  MockOracleInstance,
-  MockERC20Instance,
-  MockCTokenInstance,
-  CompoundPricerInstance,
-} from '../../build/types/truffle-types'
+import { ethers } from 'hardhat'
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
+import '@nomiclabs/hardhat-web3'
+import { assert } from 'chai'
+
+import { MockPricer, MockOracle, MockERC20, MockCToken, CompoundPricer } from '../../typechain'
 
 import { underlyingPriceToCtokenPrice } from '../utils'
-
 import BigNumber from 'bignumber.js'
+
 import { createScaledNumber } from '../utils'
+import { ContractFactory } from 'ethers'
 const { expectRevert, time } = require('@openzeppelin/test-helpers')
-
-const MockPricer = artifacts.require('MockPricer.sol')
-const MockOracle = artifacts.require('MockOracle.sol')
-
-const MockERC20 = artifacts.require('MockERC20.sol')
-const MockCToken = artifacts.require('MockCToken.sol')
-const CompoundPricer = artifacts.require('CompoundPricer.sol')
 
 // address(0)
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
-contract('CompoundPricer', ([owner, random]) => {
-  let oracle: MockOracleInstance
-  let weth: MockERC20Instance
-  let usdc: MockERC20Instance
-  let cETH: MockCTokenInstance
-  let cUSDC: MockCTokenInstance
-  // old pricer
-  let wethPricer: MockPricerInstance
-  // compound pricer
-  let cethPricer: CompoundPricerInstance
-  let cusdcPricer: CompoundPricerInstance
+describe('CompoundPricer', function () {
+  let accounts: SignerWithAddress[] = []
 
-  before('Deployment', async () => {
+  let MockPricer: ContractFactory
+  let MockOracle: ContractFactory
+
+  let MockERC20: ContractFactory
+  let MockCToken: ContractFactory
+  let CompoundPricer: ContractFactory
+
+  let owner: SignerWithAddress
+  let random: SignerWithAddress
+
+  let oracle: MockOracle
+  let weth: MockERC20
+  let usdc: MockERC20
+  let cETH: MockCToken
+  let cUSDC: MockCToken
+  // old pricer
+  let wethPricer: MockPricer
+  // compound pricer
+  let cethPricer: CompoundPricer
+  let cusdcPricer: CompoundPricer
+
+  this.beforeAll('Set accounts', async () => {
+    accounts = await ethers.getSigners()
+    const [_owner, _random] = accounts
+
+    owner = _owner
+    random = _random
+  })
+
+  this.beforeAll('Initialize Contract Factory', async () => {
+    MockPricer = await ethers.getContractFactory('MockPricer')
+    MockOracle = await ethers.getContractFactory('MockOracle')
+
+    MockERC20 = await ethers.getContractFactory('MockERC20')
+    MockCToken = await ethers.getContractFactory('MockCToken')
+    CompoundPricer = await ethers.getContractFactory('CompoundPricer')
+  })
+
+  this.beforeAll('Deployment', async () => {
     // deploy mock contracts
-    oracle = await MockOracle.new({ from: owner })
-    weth = await MockERC20.new('WETH', 'WETH', 18)
-    usdc = await MockERC20.new('USDC', 'USDC', 6)
-    cETH = await MockCToken.new('CETH', 'CETH')
-    cUSDC = await MockCToken.new('cUSDC', 'cUSDC')
+    const oracleDeployed = (await MockOracle.deploy()) as MockOracle
+    oracle = await oracleDeployed.deployed()
+
+    const wethDeployed = (await MockERC20.deploy('WETH', 'WETH', 18)) as MockERC20
+    weth = await wethDeployed.deployed()
+
+    const usdcDeployed = (await MockERC20.deploy('USDC', 'USDC', 6)) as MockERC20
+    usdc = await usdcDeployed.deployed()
+
+    const cETHDeployed = (await MockCToken.deploy('CETH', 'CETH')) as MockCToken
+    cETH = await cETHDeployed.deployed()
+
+    const cUSDCDeployed = (await MockCToken.deploy('cUSDC', 'cUSDC')) as MockCToken
+    cUSDC = await cUSDCDeployed.deployed()
     // mock underlying pricers
-    wethPricer = await MockPricer.new(weth.address, oracle.address)
+    const wethPricerDeployed = (await MockPricer.deploy(weth.address, oracle.address)) as MockPricer
+    wethPricer = await wethPricerDeployed.deployed()
 
     await oracle.setAssetPricer(weth.address, wethPricer.address)
   })
 
   describe('constructor', () => {
     it('should deploy the contract successfully', async () => {
-      cethPricer = await CompoundPricer.new(cETH.address, weth.address, oracle.address)
-      cusdcPricer = await CompoundPricer.new(cUSDC.address, usdc.address, oracle.address)
+      cethPricer = (await CompoundPricer.deploy(cETH.address, weth.address, oracle.address)) as CompoundPricer
+      cusdcPricer = (await CompoundPricer.deploy(cUSDC.address, usdc.address, oracle.address)) as CompoundPricer
     })
     it('should revert if initializing with cToken = 0', async () => {
       await expectRevert(
-        CompoundPricer.new(ZERO_ADDR, weth.address, oracle.address),
+        CompoundPricer.deploy(ZERO_ADDR, weth.address, oracle.address),
         'CompoundPricer: cToken address can not be 0',
       )
     })
     it('should revert if initializing with underlying = 0 address', async () => {
       await expectRevert(
-        CompoundPricer.new(cETH.address, ZERO_ADDR, oracle.address),
+        CompoundPricer.deploy(cETH.address, ZERO_ADDR, oracle.address),
         'CompoundPricer: underlying address can not be 0',
       )
     })
     it('should revert if initializing with oracle = 0 address', async () => {
       await expectRevert(
-        CompoundPricer.new(cETH.address, weth.address, ZERO_ADDR),
+        CompoundPricer.deploy(cETH.address, weth.address, ZERO_ADDR),
         'CompoundPricer: oracle address can not be 0',
       )
     })
@@ -79,11 +111,11 @@ contract('CompoundPricer', ([owner, random]) => {
       await oracle.setRealTimePrice(usdc.address, '100000000')
       await oracle.setRealTimePrice(weth.address, ethPrice)
       // await wethPricer.setPrice(ethPrice)
-      await cETH.setExchangeRate(exchangeRate)
+      await cETH.setExchangeRate(exchangeRate.toString())
     })
     it('should return the price in 1e8', async () => {
       // how much 1e8 cToken worth in USD
-      const cTokenprice = await cethPricer.getPrice()
+      const cTokenprice = await cethPricer.getPrice();
       const expectResult = await underlyingPriceToCtokenPrice(new BigNumber(ethPrice), exchangeRate, weth)
       assert.equal(cTokenprice.toString(), expectResult.toString())
       // hard coded answer
@@ -111,7 +143,7 @@ contract('CompoundPricer', ([owner, random]) => {
 
     before('mock data in chainlink pricer and cToken', async () => {
       await oracle.setStablePrice(usdc.address, '100000000')
-      await cUSDC.setExchangeRate(exchangeRate)
+      await cUSDC.setExchangeRate(exchangeRate.toString())
     })
 
     it('should return the price in 1e8', async () => {
@@ -146,8 +178,8 @@ contract('CompoundPricer', ([owner, random]) => {
     })
 
     it('should set price successfully by arbitrary address', async () => {
-      await oracle.setExpiryPrice(weth.address, expiry, ethPrice)
-      await cethPricer.setExpiryPriceInOracle(expiry, { from: random })
+      await oracle.setExpiryPrice(weth.address, expiry, ethPrice.toString())
+      await cethPricer.connect(random).setExpiryPriceInOracle(expiry)
       const [price] = await oracle.getExpiryPrice(cETH.address, expiry)
       const expectedResult = await underlyingPriceToCtokenPrice(ethPrice, exchangeRate, weth)
       assert.equal(price.toString(), expectedResult.toString())

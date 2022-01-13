@@ -1,35 +1,69 @@
-import {
-  ChainLinkPricerInstance,
-  MockOracleInstance,
-  MockChainlinkAggregatorInstance,
-  MockERC20Instance,
-} from '../../build/types/truffle-types'
+import { ethers } from 'hardhat'
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
+import '@nomiclabs/hardhat-web3'
+import { assert } from 'chai'
+
+import { ChainLinkPricer, MockOracle, MockChainlinkAggregator, MockERC20 } from '../../typechain'
 
 import { createTokenAmount } from '../utils'
+import { ContractFactory } from 'ethers'
 const { expectRevert, time } = require('@openzeppelin/test-helpers')
 
-const ChainlinkPricer = artifacts.require('ChainLinkPricer.sol')
-const MockOracle = artifacts.require('MockOracle.sol')
-const MockChainlinkAggregator = artifacts.require('MockChainlinkAggregator.sol')
-const MockERC20 = artifacts.require('MockERC20.sol')
-
-// address(0)
+// // address(0)
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
-contract('ChainlinkPricer', ([owner, bot, random]) => {
-  let wethAggregator: MockChainlinkAggregatorInstance
-  let oracle: MockOracleInstance
-  let weth: MockERC20Instance
-  // otoken
-  let pricer: ChainLinkPricerInstance
+describe('ChainlinkPricer', function () {
+  let accounts: SignerWithAddress[] = []
+  let owner: SignerWithAddress
+  let bot: SignerWithAddress
+  let random: SignerWithAddress
 
-  before('Deployment', async () => {
+  let wethAggregator: MockChainlinkAggregator
+  let oracle: MockOracle
+  let weth: MockERC20
+  //otoken
+  let pricer: ChainLinkPricer
+
+  //Contract Factory
+  let ChainlinkPricer: ContractFactory
+  let MockOracle: ContractFactory
+  let MockChainlinkAggregator: ContractFactory
+  let MockERC20: ContractFactory
+
+  this.beforeAll('Set accounts', async () => {
+    accounts = await ethers.getSigners()
+    const [_owner, _bot, _random] = accounts
+
+    owner = _owner
+    random = _random
+    bot = _bot
+  })
+
+  this.beforeAll('Deploy contract ', async () => {
+    ChainlinkPricer = await ethers.getContractFactory('ChainLinkPricer')
+    MockOracle = await ethers.getContractFactory('MockOracle')
+    MockChainlinkAggregator = await ethers.getContractFactory('MockChainlinkAggregator')
+    MockERC20 = await ethers.getContractFactory('MockERC20')
+  })
+
+  this.beforeAll('Deployment of pricer', async () => {
     // deploy mock contracts
-    oracle = await MockOracle.new({ from: owner })
-    wethAggregator = await MockChainlinkAggregator.new()
-    weth = await MockERC20.new('WETH', 'WETH', 18)
+    const oracleDeployed = (await MockOracle.deploy()) as MockOracle
+    oracle = await oracleDeployed.deployed()
+
+    const wethAggregatorDeployed = (await MockChainlinkAggregator.deploy()) as MockChainlinkAggregator
+    wethAggregator = await wethAggregatorDeployed.deployed()
+
+    const wethDeployed = (await MockERC20.deploy('WETH', 'WETH', 18)) as MockERC20
+    weth = await wethDeployed.deployed()
     // deploy pricer
-    pricer = await ChainlinkPricer.new(bot, weth.address, wethAggregator.address, oracle.address)
+    const pricerDeployed = (await ChainlinkPricer.deploy(
+      bot.address,
+      weth.address,
+      wethAggregator.address,
+      oracle.address,
+    )) as ChainLinkPricer
+    pricer = await pricerDeployed.deployed()
   })
 
   describe('constructor', () => {
@@ -45,19 +79,19 @@ contract('ChainlinkPricer', ([owner, bot, random]) => {
     })
     it('should revert if initializing aggregator with 0 address', async () => {
       await expectRevert(
-        ChainlinkPricer.new(bot, weth.address, ZERO_ADDR, wethAggregator.address),
+        ChainlinkPricer.deploy(bot.address, weth.address, ZERO_ADDR, wethAggregator.address),
         'ChainLinkPricer: Cannot set 0 address as aggregator',
       )
     })
     it('should revert if initializing oracle with 0 address', async () => {
       await expectRevert(
-        ChainlinkPricer.new(bot, weth.address, oracle.address, ZERO_ADDR),
+        ChainlinkPricer.deploy(bot.address, weth.address, oracle.address, ZERO_ADDR),
         'ChainLinkPricer: Cannot set 0 address as oracle',
       )
     })
     it('should revert if initializing bot with 0 address', async () => {
       await expectRevert(
-        ChainlinkPricer.new(ZERO_ADDR, weth.address, oracle.address, wethAggregator.address),
+        ChainlinkPricer.deploy(ZERO_ADDR, weth.address, oracle.address, wethAggregator.address),
         'ChainLinkPricer: Cannot set 0 address as bot',
       )
     })
@@ -123,8 +157,8 @@ contract('ChainlinkPricer', ([owner, bot, random]) => {
       const expiryTimestamp = (t0 + t1) / 2 // between t0 and t1
       const roundId = 1
 
-      await pricer.setExpiryPriceInOracle(expiryTimestamp, roundId, { from: bot })
-      const priceFromOracle = await oracle.getExpiryPrice(weth.address, expiryTimestamp)
+      await pricer.connect(bot).setExpiryPriceInOracle(expiryTimestamp, roundId)
+      const priceFromOracle = await oracle.connect(owner).getExpiryPrice(weth.address, expiryTimestamp)
       assert.equal(p1.toString(), priceFromOracle[0].toString())
     })
 
@@ -132,7 +166,7 @@ contract('ChainlinkPricer', ([owner, bot, random]) => {
       const expiryTimestamp = (t1 + t2) / 2 // between t0 and t1
       const roundId = 1
       await expectRevert(
-        pricer.setExpiryPriceInOracle(expiryTimestamp, roundId, { from: random }),
+        pricer.connect(random).setExpiryPriceInOracle(expiryTimestamp, roundId),
         'ChainLinkPricer: unauthorized sender',
       )
     })
@@ -141,7 +175,7 @@ contract('ChainlinkPricer', ([owner, bot, random]) => {
       const expiryTimestamp = (t1 + t2) / 2 // between t0 and t1
       const roundId = 1
       await expectRevert(
-        pricer.setExpiryPriceInOracle(expiryTimestamp, roundId, { from: bot }),
+        pricer.connect(bot).setExpiryPriceInOracle(expiryTimestamp, roundId),
         'ChainLinkPricer: invalid roundId',
       )
     })
@@ -172,7 +206,7 @@ contract('ChainlinkPricer', ([owner, bot, random]) => {
     it('should revert when no data round available', async () => {
       const invalidRoundId = 1050
 
-      await expectRevert(pricer.getHistoricalPrice(invalidRoundId), 'No data present')
+      await expectRevert(pricer.getHistoricalPrice(invalidRoundId), 'No data present');
     })
   })
 })
