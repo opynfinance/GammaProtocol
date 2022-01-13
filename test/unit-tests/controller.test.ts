@@ -3851,6 +3851,8 @@ describe('Controller', function () {
           ethers.provider.send('evm_increaseTime',[timeToAdd])
           ethers.provider.send("evm_mine", []);
           const expiry = BigNumber.from(await firstShortOtoken.expiryTimestamp())
+
+
           const expiry2 = BigNumber.from(await secondShortOtoken.expiryTimestamp())
           await oracle.setExpiryPriceFinalizedAllPeiodOver(
             weth.address,
@@ -4241,9 +4243,9 @@ describe('Controller', function () {
         // increase time with one hour in seconds
 
         const expiry = await shortOtokenV1.expiryTimestamp()
-        await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(150), true)
-        await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1), true)
-        const vaultCounter = ethers.BigNumber.from(await controllerProxy.getAccountVaultCounter(accountOwner1.address))
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, BigNumber.from(createTokenAmount(150)), true)
+        await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, BigNumber.from(createTokenAmount(1)), true)
+        const vaultCounter = BigNumber.from(await controllerProxy.getAccountVaultCounter(accountOwner1.address))
         const actionArgs = [
           {
             actionType: ActionType.SettleVault,
@@ -4257,25 +4259,27 @@ describe('Controller', function () {
           },
         ]
 
-        const payout = createTokenAmount(150, usdcDecimals)
-        const marginPoolBalanceBefore = ethers.BigNumber.from(await usdc.balanceOf(marginPool.address))
-        const senderBalanceBefore = ethers.BigNumber.from(await usdc.balanceOf(accountOwner1.address))
-        const proceed = await controllerProxy.getProceed(accountOwner1.address, vaultCounter.toString())
+        const payout = BigNumber.from(createTokenAmount(150, usdcDecimals))
+        const marginPoolBalanceBefore = BigNumber.from(await usdc.balanceOf(marginPool.address))
+        const senderBalanceBefore = BigNumber.from(await usdc.balanceOf(accountOwner1.address))
+        const proceed = await controllerProxy.getProceed(accountOwner1.address, vaultCounter)
 
-        assert.equal(payout, proceed.toString())
+        
+
+        assert.equal(payout.toString(), proceed.toString())
 
         await controllerProxy.connect(accountOwner1).operate(actionArgs)
 
-        const marginPoolBalanceAfter = ethers.BigNumber.from(await usdc.balanceOf(marginPool.address))
-        const senderBalanceAfter = ethers.BigNumber.from(await usdc.balanceOf(accountOwner1.address))
+        const marginPoolBalanceAfter = BigNumber.from(await usdc.balanceOf(marginPool.address))
+        const senderBalanceAfter = BigNumber.from(await usdc.balanceOf(accountOwner1.address))
 
         assert.equal(
-          marginPoolBalanceBefore.sub(marginPoolBalanceAfter).toString(),
+          (marginPoolBalanceBefore.sub(marginPoolBalanceAfter)).toString(),
           payout.toString(),
           'Margin pool collateral asset balance mismatch',
         )
         assert.equal(
-          senderBalanceAfter.sub(senderBalanceBefore).toString(),
+          (senderBalanceAfter.sub(senderBalanceBefore)).toString(),
           payout.toString(),
           'Sender collateral asset balance mismatch',
         )
@@ -4295,12 +4299,12 @@ describe('Controller', function () {
           },
         ]
 
-        const expectedPayout = createTokenAmount(50, usdcDecimals)
+        const expectedPayout = BigNumber.from(createTokenAmount(50, usdcDecimals))
 
         const userBalanceBefore = BigNumber.from(await usdc.balanceOf(holder1.address))
         await controllerProxy.connect(holder1).operate(redeemArgs)
         const userBalanceAfter = BigNumber.from(await usdc.balanceOf(holder1.address))
-        assert.equal(userBalanceAfter.sub(userBalanceBefore).toString(), expectedPayout)
+        assert.equal((userBalanceAfter.sub(userBalanceBefore)).toString(), expectedPayout.toString())
       })
     })
 
@@ -4528,6 +4532,8 @@ describe('Controller', function () {
           data: ZERO_ADDR,
         },
       ]
+
+      
 
       const payout = BigNumber.from(createTokenAmount(150, usdcDecimals))
       const marginPoolBalanceBefore = BigNumber.from(await usdc.balanceOf(marginPool.address))
