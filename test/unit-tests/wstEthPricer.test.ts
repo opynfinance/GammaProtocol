@@ -6,11 +6,11 @@ import {
   WstethPricerInstance,
 } from '../../build/types/truffle-types'
 
-import {underlyingPriceToYTokenPrice} from '../utils'
+import { underlyingPriceToYTokenPrice } from '../utils'
 
 import BigNumber from 'bignumber.js'
-import {createScaledNumber} from '../utils'
-const {expectRevert, time} = require('@openzeppelin/test-helpers')
+import { createScaledNumber } from '../utils'
+const { expectRevert, time } = require('@openzeppelin/test-helpers')
 
 const MockPricer = artifacts.require('MockPricer.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
@@ -33,7 +33,7 @@ contract('WstethPricer', ([owner, random]) => {
 
   before('Deployment', async () => {
     // deploy mock contracts
-    oracle = await MockOracle.new({from: owner})
+    oracle = await MockOracle.new({ from: owner })
     weth = await MockERC20.new('WETH', 'WETH', 18)
     wstETH = await MockWSTETHToken.new('wstETH', 'wstETH')
     // mock underlying pricers
@@ -113,7 +113,7 @@ contract('WstethPricer', ([owner, random]) => {
 
     it('should set price successfully by arbitrary address', async () => {
       await oracle.setExpiryPrice(weth.address, expiry, ethPrice)
-      await wstethPricer.setExpiryPriceInOracle(expiry, {from: random})
+      await wstethPricer.setExpiryPriceInOracle(expiry, { from: random })
       const [price] = await oracle.getExpiryPrice(wstETH.address, expiry)
       const expectedResult = await underlyingPriceToYTokenPrice(ethPrice, pricePerShare, weth)
       assert.equal(price.toString(), expectedResult.toString())

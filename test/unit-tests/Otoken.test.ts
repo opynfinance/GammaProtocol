@@ -1,7 +1,7 @@
-import {OtokenInstance, MockERC20Instance, MockAddressBookInstance} from '../../build/types/truffle-types'
-import {createTokenAmount} from '../utils'
+import { OtokenInstance, MockERC20Instance, MockAddressBookInstance } from '../../build/types/truffle-types'
+import { createTokenAmount } from '../utils'
 
-const {expectRevert} = require('@openzeppelin/test-helpers')
+const { expectRevert } = require('@openzeppelin/test-helpers')
 
 const Otoken = artifacts.require('Otoken.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
@@ -278,21 +278,21 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
   describe('Token operations: Mint', () => {
     const amountToMint = createTokenAmount(10)
     it('should be able to mint tokens from controller address', async () => {
-      await otoken.mintOtoken(user1, amountToMint, {from: controller})
+      await otoken.mintOtoken(user1, amountToMint, { from: controller })
       const balance = await otoken.balanceOf(user1)
       assert.equal(balance.toString(), amountToMint.toString())
     })
 
     it('should revert when minting from random address', async () => {
       await expectRevert(
-        otoken.mintOtoken(user1, amountToMint, {from: random}),
+        otoken.mintOtoken(user1, amountToMint, { from: random }),
         'Otoken: Only Controller can mint Otokens',
       )
     })
 
     it('should revert when someone try to mint for himself.', async () => {
       await expectRevert(
-        otoken.mintOtoken(user1, amountToMint, {from: user1}),
+        otoken.mintOtoken(user1, amountToMint, { from: user1 }),
         'Otoken: Only Controller can mint Otokens',
       )
     })
@@ -301,28 +301,28 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
   describe('Token operations: Transfer', () => {
     const amountToMint = createTokenAmount(10)
     it('should be able to transfer tokens from user 1 to user 2', async () => {
-      await otoken.transfer(user2, amountToMint, {from: user1})
+      await otoken.transfer(user2, amountToMint, { from: user1 })
       const balance = await otoken.balanceOf(user2)
       assert.equal(balance.toString(), amountToMint.toString())
     })
 
     it('should revert when calling transferFrom with no allownace', async () => {
       await expectRevert(
-        otoken.transferFrom(user2, user1, amountToMint, {from: random}),
+        otoken.transferFrom(user2, user1, amountToMint, { from: random }),
         'ERC20: transfer amount exceeds allowance',
       )
     })
 
     it('should revert when controller call transferFrom with no allownace', async () => {
       await expectRevert(
-        otoken.transferFrom(user2, user1, amountToMint, {from: controller}),
+        otoken.transferFrom(user2, user1, amountToMint, { from: controller }),
         'ERC20: transfer amount exceeds allowance',
       )
     })
 
     it('should be able to use transferFrom to transfer token from user2 to user1.', async () => {
-      await otoken.approve(random, amountToMint, {from: user2})
-      await otoken.transferFrom(user2, user1, amountToMint, {from: random})
+      await otoken.approve(random, amountToMint, { from: user2 })
+      await otoken.transferFrom(user2, user1, amountToMint, { from: random })
       const user2Remaining = await otoken.balanceOf(user2)
       assert.equal(user2Remaining.toString(), '0')
     })
@@ -332,20 +332,20 @@ contract('Otoken', ([deployer, controller, user1, user2, random]) => {
     const amountToMint = createTokenAmount(10)
     it('should revert when burning from random address', async () => {
       await expectRevert(
-        otoken.burnOtoken(user1, amountToMint, {from: random}),
+        otoken.burnOtoken(user1, amountToMint, { from: random }),
         'Otoken: Only Controller can burn Otokens',
       )
     })
 
     it('should revert when someone trys to burn for himeself', async () => {
       await expectRevert(
-        otoken.burnOtoken(user1, amountToMint, {from: user1}),
+        otoken.burnOtoken(user1, amountToMint, { from: user1 }),
         'Otoken: Only Controller can burn Otokens',
       )
     })
 
     it('should be able to burn tokens from controller address', async () => {
-      await otoken.burnOtoken(user1, amountToMint, {from: controller})
+      await otoken.burnOtoken(user1, amountToMint, { from: controller })
       const balance = await otoken.balanceOf(user1)
       assert.equal(balance.toString(), '0')
     })
