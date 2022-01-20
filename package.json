@@ -89,6 +89,7 @@
   },
   "dependencies": {
     "@truffle/hdwallet-provider": "^1.6.0",
+    "eth-sig-util": "^3.0.1",
     "solc-0.6.10": "npm:solc@0.6.10",
     "solidity-docgen": "^0.5.6",
     "yargs": "^13.2.4"
@@ -96,6 +97,7 @@
   "devDependencies": {
     "@0x/protocol-utils": "^1.4.0",
     "@codechecks/client": "^0.1.10",
+    "@metamask/eth-sig-util": "^4.0.0",
     "@openzeppelin/cli": "^2.8.2",
     "@openzeppelin/test-helpers": "^0.5.4",
     "@types/chai": "4.2.5",
@@ -111,7 +113,6 @@
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-prettier": "^3.1.1",
     "eth-gas-reporter": "^0.2.17",
-    "eth-sig-util": "^3.0.0",
     "ethereumjs-util": "^7.0.7",
     "ethereumjs-wallet": "^1.0.1",
     "ethers": "^5.0.26",

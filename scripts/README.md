@@ -26,7 +26,7 @@ To deploy a new `ChainlinkPricer.sol`, it is recommended to use the `deployChain
 **Input**
 
 ```sh
-truffle exec scripts/deployChainlinkPricer.js --network mainnet --controller 0x7d78c401c69c56cb21f4bf80c53afd92be0BBBBB --pool 0xc02aaa39b223fe8d0a0e5c4f27ead9083c7AAaaa --weth 0x5f4eC3Df9cbd43714FE2740f5E3616155cAGAGAG --oracle 0xef196aA0e3Cb8EA6d5720557C3B611Eff6OOOOOO --gasPrice 50000000000
+truffle exec scripts/deployChainlinkPricer.js --network mainnet --bot 0xfacb407914655562d6619b0048a612B1795dF783 --asset 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599 --aggregator 0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c --oracle 0x789cD7AB3742e23Ce0952F6Bc3Eb3A73A0E08833 --gasPrice 100000000000
 ```
 
 **Output**
@@ -104,4 +104,9 @@ Deploying mock pricer contract on mainnet 🍕
 Mock pricer deployed! 🎉
 Transaction hash: 0xebf12fc6603ee857bcabe1c0c6194XX82639a9888776f7ff6e83a409XXXXXXXX
 Deployed contract address: 0x669cC97687c792fc5369d7bdd38cXXXXXXXXXX
+```
+
+## Verification of Contracts 
+```sh
+truffle run verify ChainlinkPricer@0x17FDF6cE88517bf0Cff19e014E509B543DD78432  --network mainnet
 ```

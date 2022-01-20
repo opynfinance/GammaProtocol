@@ -162,18 +162,6 @@ contract('Pricer + Oracle', ([owner, bot, disputer, random]) => {
       )
     })
 
-    it('should revert set weth price if sender is not bot address', async () => {
-      const expiryTimestamp = (t0 + t1) / 2 // between t0 and t1
-      if ((await time.latest()) < expiryTimestamp + lockingPeriod) {
-        await time.increaseTo(expiryTimestamp + lockingPeriod + 10)
-      }
-      const roundId = 1
-      await expectRevert(
-        wethPricer.setExpiryPriceInOracle(expiryTimestamp, roundId, { from: random }),
-        'ChainLinkPricer: unauthorized sender',
-      )
-    })
-
     it('should set weth price when sender is bot address', async () => {
       const expiryTimestamp = (t0 + t1) / 2 // between t0 and t1
       if ((await time.latest()) < expiryTimestamp + lockingPeriod) {
