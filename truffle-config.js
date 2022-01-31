@@ -67,13 +67,6 @@ module.exports = {
       gasPrice: 250000000000,
       skipDryRun: true,
     },
-    // polygon: {
-    //   provider: () => new HDWalletProvider(mnemonic, `https://rpc-mumbai.maticvigil.com`),
-    //   network_id: 80001,
-    //   confirmations: 2,
-    //   timeoutBlocks: 200,
-    //   skipDryRun: true,
-    // },
     polygon: {
       provider: () => new HDWalletProvider(mnemonic, `https://polygon-mainnet.infura.io/v3/${key}`),
       network_id: 137,
@@ -100,6 +93,7 @@ module.exports = {
   plugins: ['solidity-coverage', 'truffle-contract-size', 'truffle-plugin-verify'],
 
   api_keys: {
+    etherscan: process.env.ETHERSCAN_API,
     polygonscan: process.env.POLYGONSCAN_API,
   },
 

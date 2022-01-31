@@ -22,7 +22,8 @@
     "build"
   ],
   "scripts": {
-    "ganache": "ganache-cli -d --port 8545 --defaultBalanceEther 500 -f https://polygon-mainnet.infura.io/v3/128da609d4284200abfb61efc6ebc545",
+    "ganache": "ganache-cli -d --port 8545 --defaultBalanceEther 500",
+    "ganache:polygon": "ganache-cli -d --port 8545 --defaultBalanceEther 500 -f https://polygon-mainnet.infura.io/v3/128da609d4284200abfb61efc6ebc545",
     "migrate": "truffle migrate",
     "build": "npm run compile:contracts && npm run compile:types",
     "compile:contracts": "truffle compile",
