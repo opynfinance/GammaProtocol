@@ -22,7 +22,7 @@
     "build"
   ],
   "scripts": {
-    "ganache": "ganache-cli -d --port 8545 --defaultBalanceEther 500",
+    "ganache": "ganache-cli -d --port 8545 --defaultBalanceEther 500 -f https://polygon-mainnet.infura.io/v3/128da609d4284200abfb61efc6ebc545",
     "migrate": "truffle migrate",
     "build": "npm run compile:contracts && npm run compile:types",
     "compile:contracts": "truffle compile",
@@ -33,6 +33,7 @@
     "deploy:kovan": "npm run build && npm run migrate -- --network kovan",
     "deploy:avax": "npm run build && npm run migrate -- --network avax",
     "deploy:fuji": "npm run build && npm run migrate -- --network fuji",
+    "deploy:polygon": "npm run build && npm run migrate -- --network polygon",
     "lint:tests": "eslint 'test/**/*.ts'",
     "lint:tests:fix": "npm run lint:tests -- --fix",
     "lint:sol": "solhint -f table contracts/**/*.sol",
@@ -70,7 +71,8 @@
     "doc:uml:addressbook": "sol2uml ./contracts/core/AddressBook.sol -f png -o ./docs/uml/GammaAddressbook.png",
     "docify": "node scripts/docs/docify.js",
     "ci:test:unit": "CI=true truffle test ./test/unit-tests/*.ts",
-    "ci:test:integration": "CI=true truffle test ./test/integration-tests/*.ts"
+    "ci:test:integration": "CI=true truffle test ./test/integration-tests/*.ts",
+    "build-contracts": "sol-merger --export-plugin SPDXLicenseRemovePlugin \"./contracts/packages/oz/upgradeability/OwnedUpgradeabilityProxy.sol\" ./flattenedContracts"
   },
   "husky": {
     "hooks": {
@@ -89,6 +91,7 @@
   },
   "dependencies": {
     "@truffle/hdwallet-provider": "^1.6.0",
+    "minimist": "^1.2.5",
     "solc-0.6.10": "npm:solc@0.6.10",
     "solidity-docgen": "^0.5.6",
     "yargs": "^13.2.4"
@@ -96,6 +99,7 @@
   "devDependencies": {
     "@0x/protocol-utils": "^1.4.0",
     "@codechecks/client": "^0.1.10",
+    "@nomiclabs/hardhat-etherscan": "^3.0.0",
     "@openzeppelin/cli": "^2.8.2",
     "@openzeppelin/test-helpers": "^0.5.4",
     "@types/chai": "4.2.5",
@@ -115,10 +119,12 @@
     "ethereumjs-util": "^7.0.7",
     "ethereumjs-wallet": "^1.0.1",
     "ethers": "^5.0.26",
+    "hardhat": "^2.8.2",
     "husky": "^3.1.0",
     "lint-staged": "^9.5.0",
     "prettier": "2.3.2",
     "prettier-plugin-solidity": "1.0.0-beta.17",
+    "sol-merger": "^3.1.0",
     "sol2uml": "^1.1.25",
     "solhint": "3.0.0",
     "solhint-plugin-prettier": "0.0.4",

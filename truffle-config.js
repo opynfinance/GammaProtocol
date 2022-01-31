@@ -5,16 +5,10 @@ const HDWalletProvider = require('@truffle/hdwallet-provider')
 
 const fs = require('fs')
 const mnemonic = fs.existsSync('.secret')
-  ? fs
-      .readFileSync('.secret')
-      .toString()
-      .trim()
+  ? fs.readFileSync('.secret').toString().trim()
   : "put mnemonic into .secret file, don't paste it here" // deployer wallet mnemonic
 const key = fs.existsSync('.infuraKey')
-  ? fs
-      .readFileSync('.infuraKey')
-      .toString()
-      .trim()
+  ? fs.readFileSync('.infuraKey').toString().trim()
   : "put infura key inside a .infuraKey file, don't paste it here" // infura key
 
 module.exports = {
@@ -72,7 +66,24 @@ module.exports = {
       gas: 8000000,
       gasPrice: 250000000000,
       skipDryRun: true,
-    }
+    },
+    // polygon: {
+    //   provider: () => new HDWalletProvider(mnemonic, `https://rpc-mumbai.maticvigil.com`),
+    //   network_id: 80001,
+    //   confirmations: 2,
+    //   timeoutBlocks: 200,
+    //   skipDryRun: true,
+    // },
+    polygon: {
+      provider: () => new HDWalletProvider(mnemonic, `https://polygon-mainnet.infura.io/v3/${key}`),
+      network_id: 137,
+      chain_id: 137,
+      gasPrice: 32000000000, // 32 GWei
+      confirmations: 2,
+      timeoutBlocks: 90000,
+      skipDryRun: true,
+      networkCheckTimeout: 90000,
+    },
   },
 
   mocha: {
@@ -89,7 +100,7 @@ module.exports = {
   plugins: ['solidity-coverage', 'truffle-contract-size', 'truffle-plugin-verify'],
 
   api_keys: {
-    etherscan: process.env.ETHERSCAN_API,
+    polygonscan: process.env.POLYGONSCAN_API,
   },
 
   compilers: {
