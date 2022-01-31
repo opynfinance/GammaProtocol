@@ -17,3 +17,4 @@ specs/.certora_verify
 .coverage_contracts/
 .coverage_artifacts/
 artifacts
+package-lock.json
