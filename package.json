@@ -89,7 +89,6 @@
   },
   "dependencies": {
     "@truffle/hdwallet-provider": "^1.6.0",
-    "node-fetch": "^2.6.1",
     "eth-sig-util": "^3.0.1",
     "solc-0.6.10": "npm:solc@0.6.10",
     "solidity-docgen": "^0.5.6",
