@@ -60,7 +60,7 @@ module.exports = {
       confirmations: 2,
       timeoutBlocks: 50,
       skipDryRun: false,
-      gasPrice: 100000000000,
+      gasPrice: 25000000000,
     },
     avax: {
       provider: () => new HDWalletProvider(mnemonic, 'https://api.avax.network/ext/bc/C/rpc'),
