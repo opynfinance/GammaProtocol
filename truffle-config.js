@@ -64,11 +64,11 @@ module.exports = {
     },
     avax: {
       provider: () => new HDWalletProvider(mnemonic, 'https://api.avax.network/ext/bc/C/rpc'),
-      network_id: 1,
+      network_id: 43114,
     },
     fuji: {
       provider: () => new HDWalletProvider(mnemonic, 'https://api.avax-test.network/ext/bc/C/rpc'),
-      network_id: 1,
+      network_id: 43113,
       gas: 8000000,
       gasPrice: 250000000000,
       skipDryRun: true,
