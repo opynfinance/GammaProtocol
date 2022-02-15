@@ -17,7 +17,7 @@ import {SafeMath} from "../packages/oz/SafeMath.sol";
 
 /**
  * @title SAvaxPricer
- * @author Opyn Team
+ * @author Ben Burns (abwburns@gmail.com)
  * @notice A Pricer contract for a sAVAX token
  */
 contract SAvaxPricer is OpynPricerInterface {
@@ -80,7 +80,7 @@ contract SAvaxPricer is OpynPricerInterface {
      * @return price of 1 sAVAX in USD, scaled by 1e8
      */
     function _underlyingPriceToSAvaxPrice(uint256 _underlyingPrice) private view returns (uint256) {
-        // Passing 1e18 to getPooledAvaxByShares() gives us the sAVAX price per AVAX
+        // Passing 1e18 to getPooledAvaxByShares() gives us the number of AVAX per sAVAX.
         uint256 sAvaxPerAvax = sAVAX.getPooledAvaxByShares(1e18);
         return sAvaxPerAvax.mul(_underlyingPrice).div(1e18);
     }
