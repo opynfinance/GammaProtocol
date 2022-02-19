@@ -50,12 +50,20 @@ async function removeExistingAsset (){
 
 async function updateBotAsset (){
 
-    // accepts 2 inputs - AssetAddress and BotKey 
-
+    // accepts 2 important inputs - AssetAddress and BotKey 
+    // - AssetAddress 
+    // - BotKey 
+    // - CollateralAddress (optional)
+    // - StrikeAddress (optional)
+    // - isPut (true or false) - (optional)
+    
     // get new asset entry and the bot to be updated
     let assetAddress = process.env.npm_config_asset;
     let botKey = process.env.npm_config_bot;
     let forceOption = process.env.npm_config_force;
+    let collateralAddress = process.env.npm_config_collateral;
+    let strikeAddress = process.env.npm_config_strike;
+    let isPut = process.env.npm_config_isPut;
     
     //validate bot
     let botKeyExists = config.bots.hasOwnProperty(botKey);
@@ -65,7 +73,7 @@ async function updateBotAsset (){
     let connInfo = getConnectionInfoForBot(botKey);
 
   
-    await _newDerivedAsset(connInfo,assetAddress,forceOption)
+    await _newDerivedAsset(connInfo,assetAddress,collateralAddress, strikeAddress, isPut, forceOption)
     
 }
 
@@ -87,7 +95,7 @@ function viewBot(){
     // get existing assets
     var assetsInfo = _getAssetsFromFile(directoryPath);
     console.log("-------------------------- "+connInfo.name+" ------------------------------------");
-    console.log(assetsInfo);
+    console.log(assetsInfo.filter(obj => { return obj.BotKey == botKey } ));
     console.log("-------------------------- "+connInfo.name+" ------------------------------------");
 }
 
@@ -239,6 +247,13 @@ async function _getUnderlyingInformationFromPricer(connInfo,pricerAddress){
     const abi = JSON.parse(pricerAbi);
     const web3 = new Web3(connInfo.nodeUrl);
     const contractInstance = new web3.eth.Contract(abi, pricerAddress);
+
+    console.log();
+
+    if(!contractInstance.methods.hasOwnProperty('underlying')){
+        console.log("Fetch underlying error: Seems the asset you are trying to add is not a Derived asset...")
+        return
+    }
 
     await contractInstance.methods.underlying().call(function (err, res) {
         if (err) {
@@ -405,7 +420,7 @@ async function _newBaseAsset(connInfo, assetAddress,collateralAddress){
 
 }
 
-async function _newDerivedAsset(connInfo,assetAddress,forceOption) {
+async function _newDerivedAsset(connInfo,assetAddress, underlyingAddress, strikeAddress ,isPut ,forceOption) {
 
           //get pricer for asset
           var pricerAddress = await _getPricerForAsset(connInfo,assetAddress);
