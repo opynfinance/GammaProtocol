@@ -24,6 +24,16 @@ module.exports = {
               blockchainExplorerApiKey: process.env.ETHERSCAN_API,
               nodeUrl:`https://mainnet.infura.io/v3/${infuraKey}`
           },
+          avalanche_mainnet:  {
+              oracleAddress: '0x108abfba5ad61bd61a930bfe73394558d60f0b10',
+              addressBookAddress: '0xBCa124824326CF8aBc5E2E569FFf3A6f17110510',
+              whitelistAddress: '0xe9963AFfc9a53e293c9bB547c52902071e6087c9',
+              strikeAddress: '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664',
+              baseAssetDefaultBotAddress: '0x0ca7562e993341db1e435a27c9f56931306290a7',
+              blockchainExplorerApiUrl: `https://api.etherscan.io/api?`,
+              blockchainExplorerApiKey: process.env.ETHERSCAN_API,
+              nodeUrl:`https://mainnet.infura.io/v3/${infuraKey}`
+          },
           kovan:  {
             oracleAddress: '0x32724C61e948892A906f5EB8892B1E7e6583ba1f',
             addressBookAddress: '0x8812f219f507e8cfe9d2f1e790164714c5e06a73',
@@ -101,6 +111,15 @@ module.exports = {
       resourcePath: 'chains/mainnet',
       autoTaskId:'85bded19-a1ea-46ce-b24a-655acb495f4c',
       botKey: 8
+    },
+    9: {
+      name: 'Chainlink Pricer bot : Avalanche Mainnet code',
+      chain: 'avalanche_mainnet',
+      type: enums.BaseAsset,
+      resourcePath: 'chains/avalanche_mainnet',
+      autoTaskId:'5d4312cc-6424-40cb-a1f7-67f94f36bab3',
+      botKey: 9
+      
     }
   },
 
