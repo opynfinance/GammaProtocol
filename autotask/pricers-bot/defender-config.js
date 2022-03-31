@@ -30,9 +30,9 @@ module.exports = {
               whitelistAddress: '0xe9963AFfc9a53e293c9bB547c52902071e6087c9',
               strikeAddress: '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664',
               baseAssetDefaultBotAddress: '0x0ca7562e993341db1e435a27c9f56931306290a7',
-              blockchainExplorerApiUrl: `https://api.etherscan.io/api?`,
-              blockchainExplorerApiKey: process.env.ETHERSCAN_API,
-              nodeUrl:`https://mainnet.infura.io/v3/${infuraKey}`
+              blockchainExplorerApiUrl: `https://api.snowtrace.io/api?`,
+              blockchainExplorerApiKey: process.env.SNOWTRACE_API,
+              nodeUrl:`https://api.avax.network/ext/bc/C/rpc`
           },
           kovan:  {
             oracleAddress: '0x32724C61e948892A906f5EB8892B1E7e6583ba1f',
