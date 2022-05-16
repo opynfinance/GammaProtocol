@@ -81,7 +81,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
     whitelist = await Whitelist.new(addressBook.address, { from: owner })
     otokenFactory = await OTokenFactory.new(addressBook.address, { from: owner })
     marginPool = await MarginPool.new(addressBook.address)
-    const calculator = await Calculator.new(addressBook.address, { from: owner })
+    const calculator = await Calculator.new(oracle.address, addressBook.address, { from: owner })
 
     // setup addressBook
     await addressBook.setOtokenImpl(otokenImpl.address, { from: owner })
@@ -117,6 +117,8 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
     before('Whitelist product from admin', async () => {
       await whitelist.whitelistCollateral(usdc.address, { from: owner })
       await whitelist.whitelistCollateral(dai.address, { from: owner })
+      await whitelist.whitelistCoveredCollateral(dai.address, weth.address, isPut, { from: owner })
+      await whitelist.whitelistCoveredCollateral(usdc.address, weth.address, isPut, { from: owner })
       await whitelist.whitelistProduct(weth.address, usdc.address, usdc.address, isPut, { from: owner })
       await whitelist.whitelistProduct(weth.address, dai.address, dai.address, isPut, { from: owner })
     })

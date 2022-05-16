@@ -15,6 +15,18 @@ interface WhitelistInterface {
 
     function isWhitelistedCollateral(address _collateral) external view returns (bool);
 
+    function isCoveredWhitelistedCollateral(
+        address _collateral,
+        address _underlying,
+        bool _isPut
+    ) external view returns (bool);
+
+    function isNakedWhitelistedCollateral(
+        address _collateral,
+        address _underlying,
+        bool _isPut
+    ) external view returns (bool);
+
     function isWhitelistedOtoken(address _otoken) external view returns (bool);
 
     function isWhitelistedCallee(address _callee) external view returns (bool);
@@ -37,6 +49,18 @@ interface WhitelistInterface {
     function whitelistCollateral(address _collateral) external;
 
     function blacklistCollateral(address _collateral) external;
+
+    function whitelistCoveredCollateral(
+        address _collateral,
+        address _underlying,
+        bool _isPut
+    ) external;
+
+    function whitelistNakedCollateral(
+        address _collateral,
+        address _underlying,
+        bool _isPut
+    ) external;
 
     function whitelistOtoken(address _otoken) external;
 

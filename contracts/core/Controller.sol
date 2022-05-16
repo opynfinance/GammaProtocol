@@ -114,6 +114,9 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /// @dev mapping to store amount of naked margin vaults in pool
     mapping(address => uint256) internal nakedPoolBalance;
 
+    ///@dev mapping to store liquidation states of a naked margin vault
+    mapping(address => mapping(uint256 => MarginVault.VaultLiquidationDetails)) internal vaultLiquidationDetails;
+
     /// @notice emits an event when an account operator is updated for a specific account owner
     event AccountOperatorUpdated(address indexed accountOwner, address indexed operator, bool isSet);
     /// @notice emits an event when a new vault is opened
@@ -187,13 +190,13 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /// @notice emits an event when a vault is liquidated
     event VaultLiquidated(
         address indexed liquidator,
-        address indexed receiver,
+        address receiver,
         address indexed vaultOwner,
         uint256 auctionPrice,
-        uint256 auctionStartingRound,
         uint256 collateralPayout,
         uint256 debtAmount,
-        uint256 vaultId
+        uint256 vaultId,
+        address indexed series
     );
     /// @notice emits an event when a call action is executed
     event CallExecuted(address indexed from, address indexed to, bytes data);
@@ -449,6 +452,14 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
+     * @notice clear a vaults liquidation details
+     * @param _vaultId vaultId to return balances for
+     */
+    function clearVaultLiquidationDetails(uint256 _vaultId) external {
+        delete vaultLiquidationDetails[msg.sender][_vaultId];
+    }
+
+    /**
      * @notice check if a specific address is an operator for an owner account
      * @param _owner account owner address
      * @param _operator account operator address
@@ -495,17 +506,33 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
+     * @notice return a vault's past liquidation details
+     * @param _owner account owner of the vault
+     * @param _vaultId vaultId to return balances for
+     * @return series address liquidated
+     * @return amount of shorts liquidated
+     * @return amount of collateral transferred for liquidation
+     */
+    function getVaultLiquidationDetails(address _owner, uint256 _vaultId)
+        external
+        view
+        returns (
+            address,
+            uint256,
+            uint256
+        )
+    {
+        MarginVault.VaultLiquidationDetails memory vault = vaultLiquidationDetails[_owner][_vaultId];
+        return (vault.series, vault.shortAmount, vault.collateralAmount);
+    }
+
+    /**
      * @notice check if a vault is liquidatable in a specific round id
      * @param _owner vault owner address
      * @param _vaultId vault id to check
-     * @param _roundId chainlink round id to check vault status at
      * @return isUnderCollat, true if vault is undercollateralized, the price of 1 repaid otoken and the otoken collateral dust amount
      */
-    function isLiquidatable(
-        address _owner,
-        uint256 _vaultId,
-        uint256 _roundId
-    )
+    function isLiquidatable(address _owner, uint256 _vaultId)
         external
         view
         returns (
@@ -514,7 +541,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             uint256
         )
     {
-        (, bool isUnderCollat, uint256 price, uint256 dust) = _isLiquidatable(_owner, _vaultId, _roundId);
+        (, bool isUnderCollat, uint256 price, uint256 dust) = _isLiquidatable(_owner, _vaultId);
         return (isUnderCollat, price, dust);
     }
 
@@ -986,8 +1013,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         // collateralDust is the minimum amount of collateral that can be left in the vault when a partial liquidation occurs
         (MarginVault.Vault memory vault, bool isUnderCollat, uint256 price, uint256 collateralDust) = _isLiquidatable(
             _args.owner,
-            _args.vaultId,
-            _args.roundId
+            _args.vaultId
         );
 
         require(isUnderCollat, "C33");
@@ -1004,7 +1030,21 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         // burn short otoken from liquidator address, index of short otoken hardcoded at 0
         // this should always work, if vault have no short otoken, it will not reach this step
         OtokenInterface(vault.shortOtokens[0]).burnOtoken(msg.sender, _args.amount);
-
+        // increment the vault liquidation details to store the fact that this vault was liquidated
+        MarginVault.VaultLiquidationDetails storage vaultLiqDetails = vaultLiquidationDetails[_args.owner][
+            _args.vaultId
+        ];
+        address series = vault.shortOtokens[0];
+        if (vaultLiqDetails.series == vault.shortOtokens[0]) {
+            vaultLiqDetails.shortAmount = uint128(uint256(vaultLiqDetails.shortAmount).add(_args.amount));
+            vaultLiqDetails.collateralAmount += uint128(
+                uint256(vaultLiqDetails.collateralAmount).add(collateralToSell)
+            );
+        } else {
+            vaultLiqDetails.series = vault.shortOtokens[0];
+            vaultLiqDetails.shortAmount = uint128(_args.amount);
+            vaultLiqDetails.collateralAmount = uint128(collateralToSell);
+        }
         // decrease amount of collateral in liquidated vault, index of collateral to decrease is hardcoded at 0
         vaults[_args.owner][_args.vaultId].removeCollateral(vault.collateralAssets[0], collateralToSell, 0);
 
@@ -1021,10 +1061,10 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             _args.receiver,
             _args.owner,
             price,
-            _args.roundId,
             collateralToSell,
             _args.amount,
-            _args.vaultId
+            _args.vaultId,
+            series
         );
     }
 
@@ -1066,14 +1106,9 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @notice check if a vault is liquidatable in a specific round id
      * @param _owner vault owner address
      * @param _vaultId vault id to check
-     * @param _roundId chainlink round id to check vault status at
      * @return vault struct, isLiquidatable, true if vault is undercollateralized, the price of 1 repaid otoken and the otoken collateral dust amount
      */
-    function _isLiquidatable(
-        address _owner,
-        uint256 _vaultId,
-        uint256 _roundId
-    )
+    function _isLiquidatable(address _owner, uint256 _vaultId)
         internal
         view
         returns (
@@ -1087,12 +1122,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             _owner,
             _vaultId
         );
-        (bool isUnderCollat, uint256 price, uint256 collateralDust) = calculator.isLiquidatable(
-            vault,
-            typeVault,
-            latestUpdateTimestamp,
-            _roundId
-        );
+        (bool isUnderCollat, uint256 price, uint256 collateralDust) = calculator.isLiquidatable(vault, typeVault);
 
         return (vault, isUnderCollat, price, collateralDust);
     }

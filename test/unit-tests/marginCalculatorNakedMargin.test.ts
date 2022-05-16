@@ -4,6 +4,7 @@ import {
   MockAddressBookInstance,
   MockOracleInstance,
   MockOtokenInstance,
+  MockWhitelistModuleInstance,
 } from '../../build/types/truffle-types'
 import {
   createScaledNumber as scaleNum,
@@ -21,6 +22,7 @@ const MockOracle = artifacts.require('MockOracle.sol')
 const MockOtoken = artifacts.require('MockOtoken.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
 const MarginCalculator = artifacts.require('CalculatorTester.sol')
+const MockWhitelistModule = artifacts.require('MockWhitelistModule.sol')
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
 const expectedRequiredMargin = (
@@ -30,17 +32,27 @@ const expectedRequiredMargin = (
   isPut: boolean,
   upperBoundValue: number,
   spotShockValue: number,
+  collateralAsset: string,
+  underlyingAsset: string,
 ) => {
   let a, b, marginRequired
 
-  if (isPut) {
+  if (isPut && collateralAsset == underlyingAsset) {
+    a = Math.min(strikePrice / underlyingPrice, spotShockValue)
+    b = Math.max(strikePrice / underlyingPrice - spotShockValue, 0)
+    marginRequired = (1 + spotShockValue) * (upperBoundValue * a + b) * shortAmount
+  } else if (isPut && collateralAsset != underlyingAsset) {
     a = Math.min(strikePrice, spotShockValue * underlyingPrice)
     b = Math.max(strikePrice - spotShockValue * underlyingPrice, 0)
     marginRequired = (upperBoundValue * a + b) * shortAmount
-  } else {
+  } else if (!isPut && collateralAsset == underlyingAsset) {
     a = Math.min(1, strikePrice / (underlyingPrice / spotShockValue))
     b = Math.max(1 - strikePrice / (underlyingPrice / spotShockValue), 0)
     marginRequired = (upperBoundValue * a + b) * shortAmount
+  } else {
+    a = Math.min(underlyingPrice, strikePrice * spotShockValue)
+    b = Math.max(underlyingPrice - strikePrice * spotShockValue, 0)
+    marginRequired = (1 + spotShockValue) * (upperBoundValue * a + b) * shortAmount
   }
 
   return marginRequired
@@ -62,6 +74,7 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
 
   let calculator: CalculatorTesterInstance
   let addressBook: MockAddressBookInstance
+  let whitelist: MockWhitelistModuleInstance
   let oracle: MockOracleInstance
 
   let usdc: MockERC20Instance
@@ -90,7 +103,15 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
     oracle = await MockOracle.new()
     await addressBook.setOracle(oracle.address)
     // setup calculator
-    calculator = await MarginCalculator.new(oracle.address, { from: owner })
+    calculator = await MarginCalculator.new(oracle.address, addressBook.address, { from: owner })
+    whitelist = await MockWhitelistModule.new(addressBook.address, { from: owner })
+    await whitelist.whitelistCollateral(usdc.address)
+    await whitelist.whitelistCollateral(weth.address)
+    await whitelist.whitelistCoveredCollateral(usdc.address, weth.address, true)
+    await whitelist.whitelistCoveredCollateral(weth.address, weth.address, false)
+    await whitelist.whitelistNakedCollateral(usdc.address, weth.address, false)
+    await whitelist.whitelistNakedCollateral(weth.address, weth.address, true)
+    await addressBook.setWhitelist(whitelist.address)
   })
 
   describe('Collateral dust', async () => {
@@ -370,11 +391,13 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
 
     before(async () => {
       // setup new calculator
-      calculator = await MarginCalculator.new(oracle.address, { from: owner })
+      calculator = await MarginCalculator.new(oracle.address, addressBook.address, { from: owner })
 
       // set product spot shock value
       await calculator.setSpotShock(weth.address, usdc.address, usdc.address, true, productSpotShockValue)
+      await calculator.setSpotShock(weth.address, usdc.address, weth.address, true, productSpotShockValue)
       await calculator.setSpotShock(weth.address, usdc.address, weth.address, false, productSpotShockValue)
+      await calculator.setSpotShock(weth.address, usdc.address, usdc.address, false, productSpotShockValue)
 
       // set product upper bound values
       await calculator.setUpperBoundValues(
@@ -399,7 +422,28 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
           from: owner,
         },
       )
-
+      await calculator.setUpperBoundValues(
+        weth.address,
+        usdc.address,
+        weth.address,
+        true,
+        timeToExpiry,
+        expiryToValue,
+        {
+          from: owner,
+        },
+      )
+      await calculator.setUpperBoundValues(
+        weth.address,
+        usdc.address,
+        usdc.address,
+        false,
+        timeToExpiry,
+        expiryToValue,
+        {
+          from: owner,
+        },
+      )
       await calculator.setCollateralDust(usdc.address, scaleNum(10, usdcDecimals))
       await calculator.setCollateralDust(weth.address, scaleNum(0.01, wethDecimals))
     })
@@ -428,6 +472,8 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
         isPut,
         upperBoundValue,
         productSpotShockValue.dividedBy(1e27).toNumber(),
+        usdc.address,
+        weth.address,
       )
 
       const requiredMargin = new BigNumber(
@@ -452,6 +498,61 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
 
       assert.isAtMost(
         calcRelativeDiff(new BigNumber('16.77778677'), requiredMargin.dividedBy(10 ** usdcDecimals)).toNumber(),
+        errorDelta,
+        'big error delta',
+      )
+    })
+
+    it('should return required margin for naked margin vault: 100$ WETH put option ETH collateralised with 150 spot price and 1 week to expiry', async () => {
+      const shortAmount = 1
+      const shortStrike = 100
+      const underlyingPrice = 150
+      const scaledShortAmount = scaleBigNum(shortAmount, 8)
+      const scaledShortStrike = scaleBigNum(shortStrike, 8)
+      const scaledUnderlyingPrice = scaleBigNum(underlyingPrice, 8)
+      const isPut = true
+      const optionExpiry = new BigNumber(await time.latest()).plus(timeToExpiry[0])
+      // get option upper bound value
+      const upperBoundValue = new BigNumber(
+        await calculator.findUpperBoundValue(weth.address, usdc.address, weth.address, true, optionExpiry),
+      )
+        .dividedBy(1e27)
+        .toNumber()
+
+      // expected required margin
+      const expectedRequiredNakedMargin = expectedRequiredMargin(
+        shortAmount,
+        shortStrike,
+        underlyingPrice,
+        isPut,
+        upperBoundValue,
+        productSpotShockValue.dividedBy(1e27).toNumber(),
+        weth.address,
+        weth.address,
+      )
+
+      const requiredMargin = new BigNumber(
+        await calculator.getNakedMarginRequired(
+          weth.address,
+          usdc.address,
+          weth.address,
+          scaledShortAmount,
+          scaledShortStrike,
+          scaledUnderlyingPrice,
+          optionExpiry,
+          wethDecimals,
+          isPut,
+        ),
+      )
+
+      assert.equal(
+        requiredMargin.dividedBy(10 ** wethDecimals).toNumber(),
+        expectedRequiredNakedMargin,
+        'Required naked margin for put mismatch',
+      )
+
+      assert.isAtMost(
+        calcRelativeDiff(new BigNumber('0.111867'), requiredMargin.dividedBy(10 ** wethDecimals)).toNumber(),
         errorDelta,
         'big error delta',
       )
@@ -485,6 +586,8 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
         isPut,
         upperBoundValue,
         productSpotShockValue.dividedBy(1e27).toNumber(),
+        weth.address,
+        weth.address,
       )
 
       const requiredMargin = new BigNumber(
@@ -542,6 +645,8 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
         isPut,
         upperBoundValue,
         productSpotShockValue.dividedBy(1e27).toNumber(),
+        weth.address,
+        weth.address,
       )
 
       const requiredMargin = new BigNumber(
@@ -561,6 +666,59 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
       assert.equal(
         requiredMargin.dividedBy(10 ** wethDecimals).toNumber(),
         expectedRequiredNakedMargin,
+        'Required naked margin for put mismatch',
+      )
+    })
+
+    it('should return required margin for naked margin vault: 100k options 2500$ WETH call option with USDC collateral with 1800 spot price and 1 week to expiry', async () => {
+      // set product shock value
+      const spotShockValue = scaleNum(0.75, 27)
+      await calculator.setSpotShock(weth.address, usdc.address, usdc.address, false, spotShockValue, { from: owner })
+
+      const shortAmount = 100000
+      const shortStrike = 2500
+      const underlyingPrice = 1800
+      const scaledShortAmount = scaleBigNum(shortAmount, 8)
+      const scaledShortStrike = scaleBigNum(shortStrike, 8)
+      const scaledUnderlyingPrice = scaleBigNum(underlyingPrice, 8)
+      const isPut = false
+      const optionExpiry = new BigNumber(await time.latest()).plus(timeToExpiry[0])
+      // get option upper bound value
+      const upperBoundValue = new BigNumber(
+        await calculator.findUpperBoundValue(weth.address, usdc.address, usdc.address, false, optionExpiry),
+      )
+        .dividedBy(1e27)
+        .toNumber()
+
+      // expected required margin
+      const expectedRequiredNakedMargin = expectedRequiredMargin(
+        shortAmount,
+        shortStrike,
+        underlyingPrice,
+        isPut,
+        upperBoundValue,
+        productSpotShockValue.dividedBy(1e27).toNumber(),
+        usdc.address,
+        weth.address,
+      )
+
+      const requiredMargin = new BigNumber(
+        await calculator.getNakedMarginRequired(
+          weth.address,
+          usdc.address,
+          usdc.address,
+          scaledShortAmount,
+          scaledShortStrike,
+          scaledUnderlyingPrice,
+          optionExpiry,
+          usdcDecimals,
+          isPut,
+        ),
+      )
+      console.log(requiredMargin.dividedBy(10 ** usdcDecimals).toNumber(), expectedRequiredNakedMargin.toString())
+      assert.equal(
+        requiredMargin.dividedBy(10 ** usdcDecimals).toNumber(),
+        Math.round(expectedRequiredNakedMargin),
         'Required naked margin for put mismatch',
       )
     })
@@ -589,6 +747,8 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
         isPut,
         upperBoundValue,
         productSpotShockValue.dividedBy(1e27).toNumber(),
+        usdc.address,
+        weth.address,
       )
 
       const requiredMargin = new BigNumber(
@@ -697,6 +857,8 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
         isPut,
         upperBoundValue,
         productSpotShockValue.dividedBy(1e27).toNumber(),
+        usdc.address,
+        weth.address,
       )
 
       assert.isAtMost(
@@ -754,6 +916,8 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
         isPut,
         upperBoundValue,
         productSpotShockValue.dividedBy(1e27).toNumber(),
+        usdc.address,
+        weth.address,
       )
 
       assert.isAtMost(
@@ -789,6 +953,64 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
       assert.equal(getExcessCollateralResult[1], true, 'isValid vault result mismatch')
     })
 
+    it('should return correct excess value for naked margin vault: 100$ WETH call option usdc collat with 50 spot, 1 week to expiry, 30 USDC collateral and 13.22 USDC excess', async () => {
+      const shortAmount = 1
+      const shortStrike = 100
+      const underlyingPrice = 50
+      const scaledUnderlyingPrice = scaleBigNum(underlyingPrice, 8)
+      const isPut = false
+      const optionExpiry = new BigNumber(await time.latest()).plus(timeToExpiry[0])
+      // get option upper bound value
+      const upperBoundValue = new BigNumber(
+        await calculator.findUpperBoundValue(weth.address, usdc.address, usdc.address, false, optionExpiry),
+      )
+        .dividedBy(1e27)
+        .toNumber()
+
+      // expected required margin
+      const expectedRequiredNakedMargin = expectedRequiredMargin(
+        shortAmount,
+        shortStrike,
+        underlyingPrice,
+        isPut,
+        upperBoundValue,
+        productSpotShockValue.dividedBy(1e27).toNumber(),
+        usdc.address,
+        weth.address,
+      )
+      assert.isAtMost(
+        calcRelativeDiff(new BigNumber('14.6825'), new BigNumber(expectedRequiredNakedMargin)).toNumber(),
+        errorDelta,
+        'big error delta',
+      )
+
+      const shortOtoken = await MockOtoken.new()
+      await shortOtoken.init(
+        addressBook.address,
+        weth.address,
+        usdc.address,
+        usdc.address,
+        scaleNum(100),
+        optionExpiry,
+        false,
+      )
+
+      // set underlying price in oracle
+      await oracle.setRealTimePrice(weth.address, scaledUnderlyingPrice)
+
+      const collateralAmount = scaleNum(30, usdcDecimals)
+      const vault = createVault(shortOtoken.address, undefined, usdc.address, scaleNum(1), undefined, collateralAmount)
+
+      const getExcessCollateralResult = await calculator.getExcessCollateral(vault, vaultType)
+      assert.approximately(
+        getExcessCollateralResult[0].toNumber(),
+        new BigNumber(collateralAmount).minus(expectedRequiredNakedMargin * 10 ** usdcDecimals).toNumber(),
+        errorDelta,
+        'Excess collateral value mismatch',
+      )
+      assert.equal(getExcessCollateralResult[1], true, 'isValid vault result mismatch')
+    })
+
     it('should return false and the needed collateral amount for undercollateralized naked margin vault: 1 options 2500$ WETH call option with 1800 spot price and 1 week to expiry,', async () => {
       const shortAmount = 1
       const shortStrike = 2500
@@ -811,6 +1033,8 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
         isPut,
         upperBoundValue,
         productSpotShockValue.dividedBy(1e27).toNumber(),
+        weth.address,
+        weth.address,
       )
 
       assert.isAtMost(

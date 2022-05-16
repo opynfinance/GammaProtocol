@@ -63,7 +63,7 @@ contract('FlashUnwrap', ([owner, accountOwner1]) => {
     // deploy Oracle module
     oracle = await MockOracle.new(addressBook.address, { from: owner })
     // calculator deployment
-    calculator = await MarginCalculator.new(oracle.address)
+    calculator = await MarginCalculator.new(oracle.address, addressBook.address)
     // margin pool deployment
     marginPool = await MarginPool.new(addressBook.address)
     // whitelist module

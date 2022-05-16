@@ -90,11 +90,13 @@ contract('Short Call Spread Option closed before expiry flow', ([accountOwner1, 
     // setup mock Oracle module
     oracle = await MockOracle.new(addressBook.address)
     // setup calculator
-    calculator = await MarginCalculator.new(oracle.address)
+    calculator = await MarginCalculator.new(oracle.address, addressBook.address)
     // setup whitelist module
     whitelist = await Whitelist.new(addressBook.address)
     await whitelist.whitelistCollateral(weth.address)
     await whitelist.whitelistCollateral(usdc.address)
+    await whitelist.whitelistCoveredCollateral(weth.address, weth.address, false)
+    await whitelist.whitelistCoveredCollateral(usdc.address, weth.address, true)
     whitelist.whitelistProduct(weth.address, usdc.address, usdc.address, true)
     whitelist.whitelistProduct(weth.address, usdc.address, weth.address, false)
     // setup otoken

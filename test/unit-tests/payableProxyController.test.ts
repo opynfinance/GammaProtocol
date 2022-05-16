@@ -81,7 +81,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
     // deploy Oracle module
     oracle = await MockOracle.new(addressBook.address, { from: owner })
     // calculator deployment
-    calculator = await MarginCalculator.new(oracle.address)
+    calculator = await MarginCalculator.new(oracle.address, addressBook.address)
     // margin pool deployment
     marginPool = await MarginPool.new(addressBook.address)
     // whitelist module
@@ -125,6 +125,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
       await controllerProxy.setOperator(payableProxyController.address, true, { from: accountOwner1 })
       // whitelist weth
       await whitelist.whitelistCollateral(weth.address)
+      await whitelist.whitelistCoveredCollateral(weth.address, weth.address, false)
 
       const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
       const collateralToDeposit = new BigNumber('5')
@@ -392,6 +393,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
       await whitelist.whitelistOtoken(shortOtoken.address, { from: owner })
       // whitelist collateral
       await whitelist.whitelistCollateral(usdc.address, { from: owner })
+      await whitelist.whitelistCoveredCollateral(usdc.address, weth.address, true)
       // open new vault, mintnaked short, sell it to holder 1
       const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
       const collateralToDeposit = createTokenAmount(strikePrice, 6)

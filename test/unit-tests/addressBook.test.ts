@@ -177,7 +177,7 @@ contract('AddressBook', ([owner, otokenImplAdd, marginPoolAdd, liquidationManage
 
     before(async () => {
       const oracleAddress = await addressBook.getOracle()
-      marginCalculator = await MarginCalculator.new(oracleAddress)
+      marginCalculator = await MarginCalculator.new(oracleAddress, addressBook.address)
     })
 
     it('should revert adding margin calculator address from non-owner address', async () => {

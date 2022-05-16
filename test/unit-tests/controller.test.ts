@@ -80,7 +80,7 @@ contract(
       // deploy Oracle module
       oracle = await MockOracle.new(addressBook.address, { from: owner })
       // calculator deployment
-      calculator = await MarginCalculator.new(oracle.address)
+      calculator = await MarginCalculator.new(oracle.address, addressBook.address)
       // margin pool deployment
       marginPool = await MarginPool.new(addressBook.address)
       // whitelist module
@@ -1102,6 +1102,7 @@ contract(
         it('should deposit a whitelisted collateral asset from account owner', async () => {
           // whitelist usdc
           await whitelist.whitelistCollateral(usdc.address)
+          await whitelist.whitelistCoveredCollateral(usdc.address, weth.address, true)
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
 
@@ -1364,6 +1365,7 @@ contract(
           const collateralToDeposit = createTokenAmount(10, wethDecimals)
           //whitelist weth to use in this test
           await whitelist.whitelistCollateral(weth.address)
+          await whitelist.whitelistCoveredCollateral(weth.address, weth.address, false)
           await weth.mint(accountOwner1, collateralToDeposit)
 
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
@@ -1768,7 +1770,111 @@ contract(
             'MarginCalculator: collateral asset not marginable for short asset',
           )
         })
+        it('should revert minting a call when not using underlying as collateral asset for vaultType 0', async () => {
+          const expiryTime = new BigNumber(60 * 60 * 24) // after 1 day
+          const _shortOtoken = await MockOtoken.new()
+          await _shortOtoken.init(
+            addressBook.address,
+            weth.address,
+            usdc.address,
+            usdc.address,
+            createTokenAmount(200),
+            new BigNumber(await time.latest()).plus(expiryTime),
+            false,
+          )
+          // whitelist short otoken to be used in the protocol
+          await whitelist.whitelistOtoken(_shortOtoken.address, { from: owner })
 
+          const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
+          assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+          const collateralToDeposit = new BigNumber(await _shortOtoken.strikePrice()).dividedBy(1e8)
+          console.log(collateralToDeposit)
+          const amountToMint = createTokenAmount(1, wethDecimals)
+          const actionArgs = [
+            {
+              actionType: ActionType.MintShortOption,
+              owner: accountOwner1,
+              secondAddress: accountOwner1,
+              asset: _shortOtoken.address,
+              vaultId: vaultCounter.toNumber(),
+              amount: amountToMint,
+              index: '0',
+              data: ZERO_ADDR,
+            },
+            {
+              actionType: ActionType.DepositCollateral,
+              owner: accountOwner1,
+              secondAddress: accountOwner1,
+              asset: usdc.address,
+              vaultId: vaultCounter.toNumber(),
+              amount: collateralToDeposit.toString(),
+              index: '0',
+              data: ZERO_ADDR,
+            },
+          ]
+
+          // free money
+          await usdc.mint(accountOwner1, collateralToDeposit)
+
+          await usdc.approve(marginPool.address, collateralToDeposit, { from: accountOwner1 })
+          await expectRevert(
+            controllerProxy.operate(actionArgs, { from: accountOwner1 }),
+            'MarginCalculator: collateral asset not marginable for short asset',
+          )
+        })
+        it('should revert minting a put when not using strike as collateral asset for vaultType 0', async () => {
+          const expiryTime = new BigNumber(60 * 60 * 24) // after 1 day
+          const _shortOtoken = await MockOtoken.new()
+          await _shortOtoken.init(
+            addressBook.address,
+            weth.address,
+            usdc.address,
+            weth.address,
+            createTokenAmount(200),
+            new BigNumber(await time.latest()).plus(expiryTime),
+            true,
+          )
+          // whitelist short otoken to be used in the protocol
+          await whitelist.whitelistOtoken(_shortOtoken.address, { from: owner })
+          const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
+          assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
+
+          const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e8)
+          console.log(collateralToDeposit)
+          const amountToMint = createTokenAmount(1, wethDecimals)
+          const actionArgs = [
+            {
+              actionType: ActionType.MintShortOption,
+              owner: accountOwner1,
+              secondAddress: accountOwner1,
+              asset: shortOtoken.address,
+              vaultId: vaultCounter.toNumber(),
+              amount: amountToMint,
+              index: '0',
+              data: ZERO_ADDR,
+            },
+            {
+              actionType: ActionType.DepositCollateral,
+              owner: accountOwner1,
+              secondAddress: accountOwner1,
+              asset: weth.address,
+              vaultId: vaultCounter.toNumber(),
+              amount: collateralToDeposit.toString(),
+              index: '0',
+              data: ZERO_ADDR,
+            },
+          ]
+
+          // free money
+          await weth.mint(accountOwner1, collateralToDeposit)
+
+          await weth.approve(marginPool.address, collateralToDeposit, { from: accountOwner1 })
+          await expectRevert(
+            controllerProxy.operate(actionArgs, { from: accountOwner1 }),
+            'MarginCalculator: collateral asset not marginable for short asset',
+          )
+        })
         it('should revert minting short with invalid vault id', async () => {
           const vaultCounter = new BigNumber('100')
 
@@ -2947,6 +3053,7 @@ contract(
         const expiry = new BigNumber(await time.latest()).plus(new BigNumber(60 * 60)).toNumber()
 
         await whitelist.whitelistCollateral(weth2.address)
+        await whitelist.whitelistCoveredCollateral(weth2.address, weth.address, false)
         const call: MockOtokenInstance = await MockOtoken.new()
         await call.init(
           addressBook.address,
@@ -4658,7 +4765,7 @@ contract(
       it('should refresh configuratiom', async () => {
         // update modules
         const oracle = await MockOracle.new(addressBook.address, { from: owner })
-        const calculator = await MarginCalculator.new(addressBook.address, { from: owner })
+        const calculator = await MarginCalculator.new(oracle.address, addressBook.address, { from: owner })
         const marginPool = await MarginPool.new(addressBook.address, { from: owner })
         const whitelist = await MockWhitelistModule.new({ from: owner })
 

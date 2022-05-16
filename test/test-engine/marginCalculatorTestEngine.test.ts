@@ -4,6 +4,7 @@ import {
   MockAddressBookInstance,
   MockOracleInstance,
   MockOtokenInstance,
+  MockWhitelistModuleInstance,
 } from '../../build/types/truffle-types'
 import { createVault, createTokenAmount } from '../utils'
 import { testCaseGenerator, Tests, Test, testToString, callMarginRequiredBeforeExpiry } from './testCaseGenerator'
@@ -15,6 +16,7 @@ const MockOracle = artifacts.require('MockOracle.sol')
 const MockOtoken = artifacts.require('MockOtoken.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
 const MarginCalculator = artifacts.require('MarginCalculator.sol')
+const MockWhitelistModule = artifacts.require('MockWhitelistModule.sol')
 
 contract('MarginCalculator Test Engine', () => {
   let expiry: number
@@ -26,7 +28,7 @@ contract('MarginCalculator Test Engine', () => {
   let shortOption: MockOtokenInstance
   let usdc: MockERC20Instance
   let weth: MockERC20Instance
-
+  let whitelist: MockWhitelistModuleInstance
   const usdcDecimals = 6
   const wethDecimals = 18
 
@@ -37,12 +39,17 @@ contract('MarginCalculator Test Engine', () => {
     addressBook = await MockAddressBook.new()
     // setup oracle
     oracle = await MockOracle.new()
+    // setup whitelist module
+    whitelist = await MockWhitelistModule.new(addressBook.address)
     // setup calculator
-    calculator = await MarginCalculator.new(oracle.address)
+    calculator = await MarginCalculator.new(oracle.address, addressBook.address)
     await addressBook.setOracle(oracle.address)
+    await addressBook.setWhitelist(whitelist.address)
     // setup usdc and weth
     usdc = await MockERC20.new('USDC', 'USDC', usdcDecimals)
     weth = await MockERC20.new('WETH', 'WETH', wethDecimals)
+    await whitelist.whitelistCoveredCollateral(weth.address, weth.address, false)
+    await whitelist.whitelistCoveredCollateral(usdc.address, weth.address, true)
   })
 
   describe('Excess Margin Test', () => {

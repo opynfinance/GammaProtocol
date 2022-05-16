@@ -47,6 +47,14 @@ library MarginVault {
         uint256[] collateralAmounts;
     }
 
+    // vaultLiquidationDetails is a struct of 3 variables that store the series address, short amount liquidated and collateral transferred for
+    // a given liquidation
+    struct VaultLiquidationDetails {
+        address series;
+        uint128 shortAmount;
+        uint128 collateralAmount;
+    }
+
     /**
      * @dev increase the short oToken balance in a vault when a new oToken is minted
      * @param _vault vault to add or increase the short position in

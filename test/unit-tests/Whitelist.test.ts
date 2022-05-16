@@ -119,17 +119,17 @@ contract('Whitelist', ([owner, otokenFactoryAddress, random, newOwner, callee]) 
       assert.equal(isWhitelistedProduct, true, 'fail: product not whitelisted')
     })
 
-    it('should not be able to whitelist a product which is not fully collateralized', async () => {
-      await expectRevert(
-        whitelist.whitelistProduct(underlyingAsset, underlyingAsset, usdc.address, isPut, { from: owner }),
-        'Whitelist: Only allow fully collateralized products',
-      )
+    // it('should not be able to whitelist a product which is not fully collateralized', async () => {
+    //   await expectRevert(
+    //     whitelist.whitelistProduct(underlyingAsset, underlyingAsset, usdc.address, isPut, { from: owner }),
+    //     'Whitelist: Only allow fully collateralized products',
+    //   )
 
-      await expectRevert(
-        whitelist.whitelistProduct(underlyingAsset, usdc.address, usdc.address, !isPut, { from: owner }),
-        'Whitelist: Only allow fully collateralized products',
-      )
-    })
+    //   await expectRevert(
+    //     whitelist.whitelistProduct(underlyingAsset, usdc.address, usdc.address, !isPut, { from: owner }),
+    //     'Whitelist: Only allow fully collateralized products',
+    //   )
+    // })
   })
 
   describe('Blacklist product', () => {

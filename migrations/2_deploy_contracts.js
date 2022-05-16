@@ -43,7 +43,7 @@ module.exports = async function(deployer, network, accounts) {
   await addressbook.setMarginPool(pool.address, {from: deployerAddress})
 
   // deploy Calculator module & set address
-  await deployer.deploy(MarginCalculator, oracle.address, {from: deployerAddress})
+  await deployer.deploy(MarginCalculator, oracle.address, addressbook.address, {from: deployerAddress})
   const calculator = await MarginCalculator.deployed()
   await addressbook.setMarginCalculator(calculator.address, {from: deployerAddress})
 

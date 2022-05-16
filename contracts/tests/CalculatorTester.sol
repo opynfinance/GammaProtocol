@@ -8,7 +8,7 @@ import {MarginCalculator} from "../core/MarginCalculator.sol";
 import {FixedPointInt256} from "../libs/FixedPointInt256.sol";
 
 contract CalculatorTester is MarginCalculator {
-    constructor(address _addressBook) public MarginCalculator(_addressBook) {}
+    constructor(address _oracle, address _addressBook) public MarginCalculator(_oracle, _addressBook) {}
 
     function getExpiredCashValue(
         address _underlying,
@@ -40,21 +40,13 @@ contract CalculatorTester is MarginCalculator {
     function price(
         uint256 _vaultCollateral,
         uint256 _vaultDebt,
-        uint256 _cv,
-        uint256 _spotPrice,
-        uint256 _auctionStartingTime,
-        uint256 _collateralDecimals,
-        bool _isPut
+        uint256 _collateralDecimals
     ) external view returns (uint256) {
         FixedPointInt256.FixedPointInt memory vaultCollateral = FixedPointInt256.fromScaledUint(
             _vaultCollateral,
             _collateralDecimals
         );
         FixedPointInt256.FixedPointInt memory vaultDebt = FixedPointInt256.fromScaledUint(_vaultDebt, BASE);
-        FixedPointInt256.FixedPointInt memory cv = FixedPointInt256.fromScaledUint(_cv, BASE);
-        FixedPointInt256.FixedPointInt memory spotPrice = FixedPointInt256.fromScaledUint(_spotPrice, BASE);
-
-        return
-            _getDebtPrice(vaultCollateral, vaultDebt, cv, spotPrice, _auctionStartingTime, _collateralDecimals, _isPut);
+        return _getDebtPrice(vaultCollateral, vaultDebt, _collateralDecimals);
     }
 }
