@@ -1037,7 +1037,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         address series = vault.shortOtokens[0];
         if (vaultLiqDetails.series == vault.shortOtokens[0]) {
             vaultLiqDetails.shortAmount = uint128(uint256(vaultLiqDetails.shortAmount).add(_args.amount));
-            vaultLiqDetails.collateralAmount += uint128(
+            vaultLiqDetails.collateralAmount = uint128(
                 uint256(vaultLiqDetails.collateralAmount).add(collateralToSell)
             );
         } else {
