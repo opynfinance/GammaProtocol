@@ -18,4 +18,8 @@ contract MockRETHToken is ERC20Upgradeable {
     function setEthPerToken(uint256 _ethPerToken) external {
         ethPerToken = _ethPerToken;
     }
+
+    function getExchangeRate() external returns (uint256) {
+        return ethPerToken;
+    }
 }
