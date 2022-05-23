@@ -3,7 +3,7 @@ import {
   MockOracleInstance,
   MockERC20Instance,
   MockRETHTokenInstance,
-  RETHPricerInstance,
+  RethPricerInstance,
 } from '../../build/types/truffle-types'
 
 import { underlyingPriceToYTokenPrice } from '../utils'
@@ -29,7 +29,7 @@ contract('RethPricer', ([owner, random]) => {
   // old pricer
   let wethPricer: MockPricerInstance
   // steth pricer
-  let rethPricer: RETHPricerInstance
+  let rethPricer: RethPricerInstance
 
   before('Deployment', async () => {
     // deploy mock contracts
