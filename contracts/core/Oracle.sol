@@ -67,7 +67,7 @@ contract Oracle is Ownable {
     event StablePriceUpdated(address indexed asset, uint256 price);
 
     /**
-     * @notice function to mgirate asset prices from old oracle to new deployed oracle
+     * @notice function to migrate asset prices from old oracle to new deployed oracle
      * @dev this can only be called by owner, should be used at the deployment time before setting Oracle module into AddressBook
      * @param _asset asset address
      * @param _expiries array of expiries timestamps

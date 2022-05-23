@@ -53,24 +53,34 @@ contract ChainLinkPricer is OpynPricerInterface {
     }
 
     /**
-     * @notice modifier to check if sender address is equal to bot address
-     */
-    modifier onlyBot() {
-        require(msg.sender == bot, "ChainLinkPricer: unauthorized sender");
-
-        _;
-    }
-
-    /**
      * @notice set the expiry price in the oracle, can only be called by Bot address
      * @dev a roundId must be provided to confirm price validity, which is the first Chainlink price provided after the expiryTimestamp
      * @param _expiryTimestamp expiry to set a price for
      * @param _roundId the first roundId after expiryTimestamp
      */
-    function setExpiryPriceInOracle(uint256 _expiryTimestamp, uint80 _roundId) external onlyBot {
+    function setExpiryPriceInOracle(uint256 _expiryTimestamp, uint80 _roundId) external {
         (, int256 price, , uint256 roundTimestamp, ) = aggregator.getRoundData(_roundId);
 
-        require(_expiryTimestamp <= roundTimestamp, "ChainLinkPricer: invalid roundId");
+        require(_expiryTimestamp <= roundTimestamp, "ChainLinkPricer: roundId not first after expiry");
+        require(price >= 0, "ChainLinkPricer: invalid price");
+
+        if (msg.sender != bot) {
+            bool isCorrectRoundId;
+            uint80 previousRoundId = uint80(uint256(_roundId).sub(1));
+
+            while (!isCorrectRoundId) {
+                (, , , uint256 previousRoundTimestamp, ) = aggregator.getRoundData(previousRoundId);
+
+                if (previousRoundTimestamp == 0) {
+                    require(previousRoundId > 0, "ChainLinkPricer: Invalid previousRoundId");
+                    previousRoundId = previousRoundId - 1;
+                } else if (previousRoundTimestamp > _expiryTimestamp) {
+                    revert("ChainLinkPricer: previousRoundId not last before expiry");
+                } else {
+                    isCorrectRoundId = true;
+                }
+            }
+        }
 
         oracle.setExpiryPrice(asset, _expiryTimestamp, uint256(price));
     }
@@ -80,7 +90,7 @@ contract ChainLinkPricer is OpynPricerInterface {
      * @dev overides the getPrice function in OpynPricerInterface
      * @return price of the asset in USD, scaled by 1e8
      */
-    function getPrice() external override view returns (uint256) {
+    function getPrice() external view override returns (uint256) {
         (, int256 answer, , , ) = aggregator.latestRoundData();
         require(answer > 0, "ChainLinkPricer: price is lower than 0");
         // chainlink's answer is already 1e8
@@ -92,7 +102,7 @@ contract ChainLinkPricer is OpynPricerInterface {
      * @param _roundId chainlink round id
      * @return round price and timestamp
      */
-    function getHistoricalPrice(uint80 _roundId) external override view returns (uint256, uint256) {
+    function getHistoricalPrice(uint80 _roundId) external view override returns (uint256, uint256) {
         (, int256 price, , uint256 roundTimestamp, ) = aggregator.getRoundData(_roundId);
         return (_scaleToBase(uint256(price)), roundTimestamp);
     }

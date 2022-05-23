@@ -62,7 +62,7 @@ contract MockDumbERC20 {
         return true;
     }
 
-    function allowance(address owner, address spender) public virtual view returns (uint256) {
+    function allowance(address owner, address spender) public view virtual returns (uint256) {
         return _allowances[owner][spender];
     }
 

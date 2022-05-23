@@ -215,7 +215,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /**
      * @notice modifier to check if the system is not partially paused, where only redeem and settleVault is allowed
      */
-    modifier notPartiallyPaused {
+    modifier notPartiallyPaused() {
         _isNotPartiallyPaused();
 
         _;
@@ -224,7 +224,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /**
      * @notice modifier to check if the system is not fully paused, where no functionality is allowed
      */
-    modifier notFullyPaused {
+    modifier notFullyPaused() {
         _isNotFullyPaused();
 
         _;
@@ -233,7 +233,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /**
      * @notice modifier to check if sender is the fullPauser address
      */
-    modifier onlyFullPauser {
+    modifier onlyFullPauser() {
         require(msg.sender == fullPauser, "C1");
 
         _;
@@ -242,7 +242,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /**
      * @notice modifier to check if the sender is the partialPauser address
      */
-    modifier onlyPartialPauser {
+    modifier onlyPartialPauser() {
         require(msg.sender == partialPauser, "C2");
 
         _;

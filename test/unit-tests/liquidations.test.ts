@@ -12,10 +12,10 @@ import {
   createTokenAmount,
   expectedLiqudidationPrice,
 } from '../utils'
-import {assert} from 'chai'
+import { assert } from 'chai'
 import BigNumber from 'bignumber.js'
 
-const {expectRevert, time} = require('@openzeppelin/test-helpers')
+const { expectRevert, time } = require('@openzeppelin/test-helpers')
 const MockAddressBook = artifacts.require('MockAddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const MockOtoken = artifacts.require('MockOtoken.sol')
@@ -73,10 +73,10 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
     oracle = await MockOracle.new()
     await addressBook.setOracle(oracle.address)
     // setup calculator
-    calculator = await MarginCalculator.new(oracle.address, {from: owner})
+    calculator = await MarginCalculator.new(oracle.address, { from: owner })
     // set collateral dust
-    await calculator.setCollateralDust(weth.address, wethDust, {from: owner})
-    await calculator.setCollateralDust(usdc.address, usdcDust, {from: owner})
+    await calculator.setCollateralDust(weth.address, wethDust, { from: owner })
+    await calculator.setCollateralDust(usdc.address, usdcDust, { from: owner })
     // set product spot shock value
     await calculator.setSpotShock(weth.address, usdc.address, usdc.address, true, productSpotShockValue)
     await calculator.setSpotShock(weth.address, usdc.address, weth.address, false, productSpotShockValue)
@@ -98,7 +98,7 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
 
     beforeEach(async () => {
       const oracleDeviationValue = scaleNum(oracleDeviation, 27)
-      await calculator.setOracleDeviation(oracleDeviationValue, {from: owner})
+      await calculator.setOracleDeviation(oracleDeviationValue, { from: owner })
 
       optionExpiry = new BigNumber(await time.latest()).plus(timeToExpiry[1])
 
@@ -255,11 +255,8 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
       )
 
       assert.equal(isLiquidatable[0], true, 'isLiquidatable boolean value mismatch')
-      assert.equal(
-        new BigNumber(isLiquidatable[1].toString()).toString(),
-        new BigNumber(expectedLiquidationPrice).toString(),
-        'debt price value mismatch',
-      )
+
+      assert.equal(new BigNumber(isLiquidatable[1]).toNumber(), expectedLiquidationPrice, 'debt price value mismatch')
       assert.equal(isLiquidatable[2].toString(), usdcDust, 'collateral dust value mismatch')
     })
 
@@ -330,7 +327,7 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
     before(async () => {
       const oracleDeviationValue = scaleNum(oracleDeviation, 27)
 
-      await calculator.setOracleDeviation(oracleDeviationValue, {from: owner})
+      await calculator.setOracleDeviation(oracleDeviationValue, { from: owner })
     })
 
     it('should return correct liquidation price for undercollateralized put option', async () => {

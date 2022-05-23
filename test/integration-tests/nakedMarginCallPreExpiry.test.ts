@@ -18,7 +18,7 @@ import {
 } from '../utils'
 import BigNumber from 'bignumber.js'
 
-const {expectRevert, time} = require('@openzeppelin/test-helpers')
+const { expectRevert, time } = require('@openzeppelin/test-helpers')
 
 const AddressBook = artifacts.require('AddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
@@ -129,12 +129,12 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
     controllerProxy = await Controller.at(controllerProxyAddress)
 
     // configure controller
-    await controllerProxy.setNakedCap(weth.address, wethCap, {from: owner})
+    await controllerProxy.setNakedCap(weth.address, wethCap, { from: owner })
 
     // config calculator
     await calculator.setSpotShock(weth.address, usdc.address, weth.address, isPut, productSpotShockValue)
-    await calculator.setOracleDeviation(oracleDeviationValue, {from: owner})
-    await calculator.setCollateralDust(weth.address, wethDust, {from: owner})
+    await calculator.setOracleDeviation(oracleDeviationValue, { from: owner })
+    await calculator.setCollateralDust(weth.address, wethDust, { from: owner })
     // set product upper bound values
     await calculator.setUpperBoundValues(weth.address, usdc.address, weth.address, isPut, timeToExpiry, expiryToValue, {
       from: owner,
@@ -228,8 +228,8 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
       const userWethBefore = new BigNumber(await weth.balanceOf(accountOwner1))
       const poolWethBefore = new BigNumber(await weth.balanceOf(marginPool.address))
 
-      await weth.approve(marginPool.address, collateralToDeposit.toString(), {from: accountOwner1})
-      await controllerProxy.operate(mintArgs, {from: accountOwner1})
+      await weth.approve(marginPool.address, collateralToDeposit.toString(), { from: accountOwner1 })
+      await controllerProxy.operate(mintArgs, { from: accountOwner1 })
 
       const userWethAfter = new BigNumber(await weth.balanceOf(accountOwner1))
       const poolWethAfter = new BigNumber(await weth.balanceOf(marginPool.address))
@@ -295,7 +295,7 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
       ]
       const userCollateralBefore = new BigNumber(await weth.balanceOf(accountOwner1))
 
-      await controllerProxy.operate(withdrawArgs, {from: accountOwner1})
+      await controllerProxy.operate(withdrawArgs, { from: accountOwner1 })
 
       const userVaultAfter = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter)
       const userCollateralAfter = new BigNumber(await weth.balanceOf(accountOwner1))
@@ -317,20 +317,20 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
       scaledUnderlyingPrice = scaleBigNum(underlyingPrice, 8)
       await oracle.setRealTimePrice(weth.address, scaledUnderlyingPrice)
 
-      await expectRevert(controllerProxy.sync(accountOwner1, vaultCounter, {from: accountOwner1}), 'C14')
+      await expectRevert(controllerProxy.sync(accountOwner1, vaultCounter, { from: accountOwner1 }), 'C14')
 
       roundId = new BigNumber(10)
       await oracle.setChainlinkRoundData(weth.address, roundId, scaledUnderlyingPrice, (await time.latest()).toString())
     })
 
     it('update price, OTM position is overcollateralized again, user call sync, liquidation should revert with price timestamp T at underwater', async () => {
-      await shortOtoken.transfer(liquidator, createTokenAmount(shortAmount), {from: accountOwner1})
+      await shortOtoken.transfer(liquidator, createTokenAmount(shortAmount), { from: accountOwner1 })
 
       const underlyingPrice = 1400
       scaledUnderlyingPrice = scaleBigNum(underlyingPrice, 8)
       await oracle.setRealTimePrice(weth.address, scaledUnderlyingPrice)
 
-      await controllerProxy.sync(accountOwner1, vaultCounter, {from: accountOwner1})
+      await controllerProxy.sync(accountOwner1, vaultCounter, { from: accountOwner1 })
 
       const userVault = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter)
 
@@ -354,15 +354,15 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
       ]
 
       await expectRevert(
-        controllerProxy.operate(liquidateArgs, {from: liquidator}),
+        controllerProxy.operate(liquidateArgs, { from: liquidator }),
         'MarginCalculator: auction timestamp should be post vault latest update',
       )
 
-      await shortOtoken.transfer(accountOwner1, createTokenAmount(shortAmount), {from: liquidator})
+      await shortOtoken.transfer(accountOwner1, createTokenAmount(shortAmount), { from: liquidator })
     })
 
     it('update price, position near ATM, undercollateralized, liquidator should be able to liquidate', async () => {
-      await shortOtoken.transfer(liquidator, createTokenAmount(shortAmount), {from: accountOwner1})
+      await shortOtoken.transfer(liquidator, createTokenAmount(shortAmount), { from: accountOwner1 })
 
       // advance time
       await time.increase(1500)
@@ -399,7 +399,7 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
         await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter.toString())
       )[0]
 
-      await controllerProxy.operate(liquidateArgs, {from: liquidator})
+      await controllerProxy.operate(liquidateArgs, { from: liquidator })
 
       const liquidatorCollateralBalanceAfter = new BigNumber(await weth.balanceOf(liquidator))
       const vaultAfterLiquidation = (
@@ -511,8 +511,8 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
       const userWethBefore = new BigNumber(await weth.balanceOf(accountOwner1))
       const poolWethBefore = new BigNumber(await weth.balanceOf(marginPool.address))
 
-      await weth.approve(marginPool.address, collateralToDeposit.toString(), {from: accountOwner1})
-      await controllerProxy.operate(mintArgs, {from: accountOwner1})
+      await weth.approve(marginPool.address, collateralToDeposit.toString(), { from: accountOwner1 })
+      await controllerProxy.operate(mintArgs, { from: accountOwner1 })
 
       const userWethAfter = new BigNumber(await weth.balanceOf(accountOwner1))
       const poolWethAfter = new BigNumber(await weth.balanceOf(marginPool.address))
@@ -571,7 +571,7 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
         isPut,
       )
 
-      await weth.approve(marginPool.address, collateralToDeposit.toString(), {from: liquidator})
+      await weth.approve(marginPool.address, collateralToDeposit.toString(), { from: liquidator })
 
       const isLiquidatable = await controllerProxy.isLiquidatable(accountOwner1, vaultCounter.toString(), roundId)
 
@@ -628,7 +628,7 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
       const poolWethBefore = new BigNumber(await weth.balanceOf(marginPool.address))
       const userVaultBefore = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter)
 
-      await controllerProxy.operate(mintLiquidateArgs, {from: liquidator})
+      await controllerProxy.operate(mintLiquidateArgs, { from: liquidator })
 
       const liquidatorWethAfter = new BigNumber(await weth.balanceOf(liquidator))
       const poolWethAfter = new BigNumber(await weth.balanceOf(marginPool.address))
@@ -684,16 +684,22 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
         createTokenAmount(0),
         'Liquidator vault short amount mismatch',
       )
-      assert.equal(
-        new BigNumber(userVaultAfter[0].collateralAmounts[0].toString()).toString(),
-        new BigNumber(userVaultBefore[0].collateralAmounts[0]).minus(new BigNumber(isLiquidatable[1])).toString(),
+
+      assert.isAtMost(
+        calcRelativeDiff(
+          new BigNumber(userVaultAfter[0].collateralAmounts[0]),
+          new BigNumber(userVaultBefore[0].collateralAmounts[0]).minus(new BigNumber(isLiquidatable[1])),
+        )
+          .dividedBy(new BigNumber(10 ** wethDecimals))
+          .toNumber(),
+        new BigNumber(errorDelta).toNumber(),
         'User vault short amount mismatch after liquidation',
       )
     })
 
     it('advance time after option expiry, seller should withdraw remaining collateral, buyer should be able to redeem, liquiator should be able to settle', async () => {
       // transfer otoken to buyer
-      await shortOtoken.transfer(buyer1, createTokenAmount(shortAmount), {from: accountOwner1})
+      await shortOtoken.transfer(buyer1, createTokenAmount(shortAmount), { from: accountOwner1 })
       assert.equal(
         new BigNumber(await shortOtoken.balanceOf(buyer1)).toString(),
         createTokenAmount(shortAmount),
@@ -723,7 +729,7 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
       ]
       const userCollateralBefore = new BigNumber(await weth.balanceOf(accountOwner1))
 
-      await controllerProxy.operate(withdrawArgs, {from: accountOwner1})
+      await controllerProxy.operate(withdrawArgs, { from: accountOwner1 })
 
       const userVaultAfter = await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter)
       const userCollateralAfter = new BigNumber(await weth.balanceOf(accountOwner1))
@@ -755,7 +761,7 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
       const buyerWethAfter = new BigNumber(await weth.balanceOf(buyer1))
       const payout = new BigNumber(await controllerProxy.getPayout(shortOtoken.address, createTokenAmount(shortAmount)))
 
-      await controllerProxy.operate(redeemArgs, {from: buyer1})
+      await controllerProxy.operate(redeemArgs, { from: buyer1 })
 
       assert.equal(buyerWethAfter.minus(buyerWethBefore).toString(), payout.toString(), 'buyer payout amount mismatch')
 
@@ -774,7 +780,7 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
       const liquidatorWethBefore = new BigNumber(await weth.balanceOf(liquidator))
       const settleAmount = new BigNumber(await controllerProxy.getProceed(liquidator, liquidatorVaultCounter))
 
-      await controllerProxy.operate(settleArgs, {from: liquidator})
+      await controllerProxy.operate(settleArgs, { from: liquidator })
 
       const liquidatorWethAfter = new BigNumber(await weth.balanceOf(liquidator))
 

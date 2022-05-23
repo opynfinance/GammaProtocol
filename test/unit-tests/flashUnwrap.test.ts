@@ -10,7 +10,7 @@ import {
   FlashUnwrapInstance,
 } from '../../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
-const {expectRevert} = require('@openzeppelin/test-helpers')
+const { expectRevert } = require('@openzeppelin/test-helpers')
 const MockOracle = artifacts.require('MockOracle.sol')
 const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy.sol')
 const MarginCalculator = artifacts.require('MarginCalculator.sol')
@@ -61,7 +61,7 @@ contract('FlashUnwrap', ([owner, accountOwner1]) => {
     // addressbook deployment
     addressBook = await AddressBook.new()
     // deploy Oracle module
-    oracle = await MockOracle.new(addressBook.address, {from: owner})
+    oracle = await MockOracle.new(addressBook.address, { from: owner })
     // calculator deployment
     calculator = await MarginCalculator.new(oracle.address)
     // margin pool deployment
@@ -82,7 +82,7 @@ contract('FlashUnwrap', ([owner, accountOwner1]) => {
     controllerImplementation = await Controller.new()
 
     // set controller address in AddressBook
-    await addressBook.setController(controllerImplementation.address, {from: owner})
+    await addressBook.setController(controllerImplementation.address, { from: owner })
 
     // check controller deployment
     const controllerProxyAddress = await addressBook.getController()
@@ -101,11 +101,11 @@ contract('FlashUnwrap', ([owner, accountOwner1]) => {
 
   describe('Unwrap ETH', () => {
     before(async () => {
-      weth.deposit({value: web3.utils.toWei('5', 'ether'), from: accountOwner1})
+      await weth.deposit({ value: web3.utils.toWei('5', 'ether'), from: accountOwner1 })
 
       assert.equal(await weth.balanceOf(accountOwner1), web3.utils.toWei('5', 'ether'), 'WETH balance mismatch')
 
-      await whitelist.whitelistCallee(flashUnwrap.address, {from: owner})
+      await whitelist.whitelistCallee(flashUnwrap.address, { from: owner })
     })
 
     it('should swap WETH to receiver address', async () => {
@@ -137,8 +137,8 @@ contract('FlashUnwrap', ([owner, accountOwner1]) => {
       const senderWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner1))
       const contractWethBalanceBefore = new BigNumber(await weth.balanceOf(flashUnwrap.address))
 
-      await weth.approve(flashUnwrap.address, amountToUnwrap, {from: accountOwner1})
-      await controllerProxy.operate(actionArgs, {from: accountOwner1})
+      await weth.approve(flashUnwrap.address, amountToUnwrap, { from: accountOwner1 })
+      await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
       const senderWethBalanceAfter = new BigNumber(await weth.balanceOf(accountOwner1))
       const contractWethBalanceAfter = new BigNumber(await weth.balanceOf(flashUnwrap.address))
@@ -183,9 +183,9 @@ contract('FlashUnwrap', ([owner, accountOwner1]) => {
         },
       ]
 
-      await weth.approve(flashUnwrap.address, amountToUnwrap, {from: accountOwner1})
+      await weth.approve(flashUnwrap.address, amountToUnwrap, { from: accountOwner1 })
       await expectRevert(
-        controllerProxy.operate(actionArgs, {from: accountOwner1}),
+        controllerProxy.operate(actionArgs, { from: accountOwner1 }),
         'FlashUnwrap: cannot parse CallFunctionData',
       )
     })

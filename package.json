@@ -31,6 +31,8 @@
     "deploy:mainnet": "npm run build && npm run migrate -- --network mainnet",
     "deploy:ropsten": "npm run build && npm run migrate -- --network ropsten",
     "deploy:kovan": "npm run build && npm run migrate -- --network kovan",
+    "deploy:avax": "npm run build && npm run migrate -- --network avax",
+    "deploy:fuji": "npm run build && npm run migrate -- --network fuji",
     "lint:tests": "eslint 'test/**/*.ts'",
     "lint:tests:fix": "npm run lint:tests -- --fix",
     "lint:sol": "solhint -f table contracts/**/*.sol",
@@ -68,7 +70,13 @@
     "doc:uml:addressbook": "sol2uml ./contracts/core/AddressBook.sol -f png -o ./docs/uml/GammaAddressbook.png",
     "docify": "node scripts/docs/docify.js",
     "ci:test:unit": "CI=true truffle test ./test/unit-tests/*.ts",
-    "ci:test:integration": "CI=true truffle test ./test/integration-tests/*.ts"
+    "ci:test:integration": "CI=true truffle test ./test/integration-tests/*.ts",
+    "view-bots": "node autotask/pricers-bot/build-script.js bots",
+    "add-asset": "node autotask/pricers-bot/build-script.js new",
+    "update-asset": "node autotask/pricers-bot/build-script.js update",
+    "sync-bot": "node autotask/pricers-bot/build-script.js sync",
+    "remove-asset": "node autotask/pricers-bot/build-script.js remove",
+    "view-bot": "node autotask/pricers-bot/build-script.js botassets"
   },
   "husky": {
     "hooks": {
@@ -86,14 +94,21 @@
     ]
   },
   "dependencies": {
-    "@truffle/hdwallet-provider": "^1.0.44",
+    "@truffle/hdwallet-provider": "^1.6.0",
+    "eth-sig-util": "^3.0.1",
     "solc-0.6.10": "npm:solc@0.6.10",
     "solidity-docgen": "^0.5.6",
-    "yargs": "^13.2.4"
+    "yargs": "^13.2.4",
+    "cross-fetch": "^3.1.5",
+    "defender-autotask-client": "^1.12.1",
+    "git-user-email": "^0.2.2",
+    "replace": "^1.2.1",
+    "web3": "^1.7.0"
   },
   "devDependencies": {
     "@0x/protocol-utils": "^1.4.0",
     "@codechecks/client": "^0.1.10",
+    "@metamask/eth-sig-util": "^4.0.0",
     "@openzeppelin/cli": "^2.8.2",
     "@openzeppelin/test-helpers": "^0.5.4",
     "@types/chai": "4.2.5",
@@ -109,14 +124,13 @@
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-prettier": "^3.1.1",
     "eth-gas-reporter": "^0.2.17",
-    "eth-sig-util": "^3.0.0",
     "ethereumjs-util": "^7.0.7",
     "ethereumjs-wallet": "^1.0.1",
     "ethers": "^5.0.26",
     "husky": "^3.1.0",
     "lint-staged": "^9.5.0",
-    "prettier": "^1.19.1",
-    "prettier-plugin-solidity": "^1.0.0-alpha.54",
+    "prettier": "2.3.2",
+    "prettier-plugin-solidity": "1.0.0-beta.17",
     "sol2uml": "^1.1.25",
     "solhint": "3.0.0",
     "solhint-plugin-prettier": "0.0.4",
