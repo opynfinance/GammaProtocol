@@ -1,5 +1,8 @@
 node_modules/
 build/
+artifacts/
+types/
+cache/
 coverage
 coverage.json
 .env
