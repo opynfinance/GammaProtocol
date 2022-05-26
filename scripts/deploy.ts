@@ -3,7 +3,7 @@ import {ethers} from "hardhat";
 import {
     createScaledNumber as scaleNum,
   } from '../test/utils'
-  import { BigNumber, BigNumberish, utils } from "ethers"
+import { BigNumber, BigNumberish, utils } from "ethers"
 import {AddressBook} from "../types/AddressBook"
 import {Whitelist} from "../types/Whitelist"
 import {Oracle} from "../types/Oracle"
