@@ -128,6 +128,9 @@ calculator: 0xa91B46bDDB891fED2cEE626FB03E2929702951A6
 vault: 0x15887BD136Cdc8F170B8564e2E4568ee19C035F7
 controller: 0xb2923CAbbC7dd78e9573D1D6d755E75dCB49CE47
 
+
+pricer: 0xFfe61399050D2ACABa00419248B8616A4Bf56F9E
+
 ## Security And Bug Bounty Program
 
 The security of the Opyn protocol is our highest priority. Our team has created a protocol that we believe is safe and dependable, and has been audited by OpenZeppelin. All smart contract code is publicly verifiable and we have a bug bounty for undiscovered vulnerabilities. 
