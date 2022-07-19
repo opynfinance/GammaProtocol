@@ -7,12 +7,13 @@ import {
   ControllerInstance,
   WhitelistInstance,
   MarginPoolInstance,
+  MarginPoolV2Instance,
   OtokenFactoryInstance,
 } from '../../build/types/truffle-types'
-import {createTokenAmount, createValidExpiry} from '../utils'
+import { createTokenAmount, createValidExpiry } from '../utils'
 import BigNumber from 'bignumber.js'
 
-const {expectRevert, time} = require('@openzeppelin/test-helpers')
+const { expectRevert, time } = require('@openzeppelin/test-helpers')
 const AddressBook = artifacts.require('AddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const Otoken = artifacts.require('Otoken.sol')
@@ -20,6 +21,7 @@ const MockERC20 = artifacts.require('MockERC20.sol')
 const MarginCalculator = artifacts.require('MarginCalculator.sol')
 const Whitelist = artifacts.require('Whitelist.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
+const MarginPoolV2 = artifacts.require('MarginPoolV2.sol')
 const Controller = artifacts.require('Controller.sol')
 const MarginVault = artifacts.require('MarginVault.sol')
 const OTokenFactory = artifacts.require('OtokenFactory.sol')
@@ -47,6 +49,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
   let controllerImplementation: ControllerInstance
   let controllerProxy: ControllerInstance
   let marginPool: MarginPoolInstance
+  let marginPoolV2: MarginPoolInstance
   let whitelist: WhitelistInstance
   let otokenImplementation: OtokenInstance
   let otokenFactory: OtokenFactoryInstance
@@ -82,6 +85,8 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
     addressBook = await AddressBook.new()
     // setup margin pool
     marginPool = await MarginPool.new(addressBook.address)
+    // setup margin pool v2
+    marginPoolV2 = await MarginPoolV2.new(addressBook.address)
     // setup margin vault
     const lib = await MarginVault.new()
     // setup controller module
@@ -113,6 +118,8 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
 
     const controllerProxyAddress = await addressBook.getController()
     controllerProxy = await Controller.at(controllerProxyAddress)
+
+    await controllerProxy.setMarginPoolV2(marginPoolV2.address, { from: accountOwner1 })
 
     await otokenFactory.createOtoken(
       weth.address,
@@ -155,14 +162,14 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
 
     ethPut2 = await Otoken.at(ethPut2Address)
 
-    await controllerProxy.setOperator(accountOperator1, true, {from: accountOwner1})
+    await controllerProxy.setOperator(accountOperator1, true, { from: accountOwner1 })
 
     // mint usdc to user
     const accountOwner1Usdc = createTokenAmount(2 * collateralAmount1, usdcDecimals)
     await usdc.mint(accountOwner1, accountOwner1Usdc)
 
     // have the user approve all the usdc transfers
-    await usdc.approve(marginPool.address, accountOwner1Usdc, {from: accountOwner1})
+    await usdc.approve(marginPool.address, accountOwner1Usdc, { from: accountOwner1 })
 
     const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
     vaultCounter = vaultCounterBefore.toNumber() + 1
@@ -234,7 +241,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
         },
       ]
 
-      await controllerProxy.operate(actionArgs, {from: accountOperator1})
+      await controllerProxy.operate(actionArgs, { from: accountOperator1 })
 
       // keep track of balances after
       const ownerUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
@@ -340,7 +347,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
         },
       ]
 
-      await controllerProxy.operate(actionArgs, {from: accountOperator1})
+      await controllerProxy.operate(actionArgs, { from: accountOperator1 })
 
       // keep track of balances after
       const operatorUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(accountOperator1))
@@ -450,7 +457,7 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
           },
         ]
 
-        await controllerProxy.operate(actionArgs, {from: accountOperator1})
+        await controllerProxy.operate(actionArgs, { from: accountOperator1 })
       },
     )
 
@@ -520,8 +527,9 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
         },
       ]
 
-      await usdc.approve(marginPool.address, scaledCollateralAmount2, {from: accountOperator1})
-      await controllerProxy.operate(actionArgs, {from: accountOperator1})
+      await usdc.approve(marginPool.address, scaledCollateralAmount2, { from: accountOperator1 })
+
+      await controllerProxy.operate(actionArgs, { from: accountOperator1 })
 
       // keep track of balances after
       const operatorUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(accountOperator1))

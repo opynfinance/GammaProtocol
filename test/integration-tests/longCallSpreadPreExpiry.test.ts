@@ -7,12 +7,13 @@ import {
   ControllerInstance,
   WhitelistInstance,
   MarginPoolInstance,
+  MarginPoolV2Instance,
   OtokenFactoryInstance,
 } from '../../build/types/truffle-types'
-import {createTokenAmount, createValidExpiry} from '../utils'
+import { createTokenAmount, createValidExpiry } from '../utils'
 import BigNumber from 'bignumber.js'
 
-const {expectRevert, time} = require('@openzeppelin/test-helpers')
+const { expectRevert, time } = require('@openzeppelin/test-helpers')
 const AddressBook = artifacts.require('AddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const Otoken = artifacts.require('Otoken.sol')
@@ -20,6 +21,7 @@ const MockERC20 = artifacts.require('MockERC20.sol')
 const MarginCalculator = artifacts.require('MarginCalculator.sol')
 const Whitelist = artifacts.require('Whitelist.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
+const MarginPoolV2 = artifacts.require('MarginPoolV2.sol')
 const Controller = artifacts.require('Controller.sol')
 const MarginVault = artifacts.require('MarginVault.sol')
 const OTokenFactory = artifacts.require('OtokenFactory.sol')
@@ -46,6 +48,7 @@ contract('Long Call Spread Option closed before expiry flow', ([accountOwner1, n
   let controllerProxy: ControllerInstance
   let controllerImplementation: ControllerInstance
   let marginPool: MarginPoolInstance
+  let marginPoolV2: MarginPoolInstance
   let whitelist: WhitelistInstance
   let otokenImplementation: OtokenInstance
   let otokenFactory: OtokenFactoryInstance
@@ -82,6 +85,8 @@ contract('Long Call Spread Option closed before expiry flow', ([accountOwner1, n
     addressBook = await AddressBook.new()
     // setup margin pool
     marginPool = await MarginPool.new(addressBook.address)
+    // setup margin pool v2
+    marginPoolV2 = await MarginPoolV2.new(addressBook.address)
     // setup margin vault
     const lib = await MarginVault.new()
     // setup controllerProxy module
@@ -113,6 +118,8 @@ contract('Long Call Spread Option closed before expiry flow', ([accountOwner1, n
 
     const controllerProxyAddress = await addressBook.getController()
     controllerProxy = await Controller.at(controllerProxyAddress)
+
+    await controllerProxy.setMarginPoolV2(marginPoolV2.address, { from: accountOwner1 })
 
     await otokenFactory.createOtoken(
       weth.address,
@@ -163,9 +170,9 @@ contract('Long Call Spread Option closed before expiry flow', ([accountOwner1, n
     await weth.mint(nakedBuyer, nakedBuyerWeth)
 
     // have the user approve all the weth transfers
-    await weth.approve(marginPool.address, accountOwner1Weth, {from: accountOwner1})
-    await weth.approve(marginPool.address, accountOwner2Weth, {from: accountOwner2})
-    await weth.approve(marginPool.address, nakedBuyerWeth, {from: nakedBuyer})
+    await weth.approve(marginPool.address, accountOwner1Weth, { from: accountOwner1 })
+    await weth.approve(marginPool.address, accountOwner2Weth, { from: accountOwner2 })
+    await weth.approve(marginPool.address, nakedBuyerWeth, { from: nakedBuyer })
 
     const vaultCounter1Before = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
     vaultCounter1 = vaultCounter1Before.toNumber() + 1
@@ -212,10 +219,10 @@ contract('Long Call Spread Option closed before expiry flow', ([accountOwner1, n
         },
       ]
 
-      await controllerProxy.operate(actionArgs, {from: accountOwner2})
+      await controllerProxy.operate(actionArgs, { from: accountOwner2 })
 
       // accountOwner2 transfers their lower strike call option to accountOwner1
-      await lowerStrikeCall.transfer(accountOwner1, scaledOptionsAmount, {from: accountOwner2})
+      await lowerStrikeCall.transfer(accountOwner1, scaledOptionsAmount, { from: accountOwner2 })
     })
     it('accountOwner1 opens a long call spread', async () => {
       const scaledOptionsAmount = createTokenAmount(optionsAmount, 8)
@@ -287,8 +294,8 @@ contract('Long Call Spread Option closed before expiry flow', ([accountOwner1, n
         },
       ]
 
-      await lowerStrikeCall.approve(marginPool.address, scaledOptionsAmount, {from: accountOwner1})
-      await controllerProxy.operate(actionArgs, {from: accountOwner1})
+      await lowerStrikeCall.approve(marginPool.address, scaledOptionsAmount, { from: accountOwner1 })
+      await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
       // keep track of balances after
       const ownerWethBalanceAfter = new BigNumber(await weth.balanceOf(accountOwner1))
@@ -398,7 +405,7 @@ contract('Long Call Spread Option closed before expiry flow', ([accountOwner1, n
         },
       ]
 
-      await controllerProxy.operate(actionArgs, {from: accountOwner1})
+      await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
       // keep track of balances after
       const ownerWethBalanceAfter = new BigNumber(await weth.balanceOf(accountOwner1))
@@ -462,7 +469,7 @@ contract('Long Call Spread Option closed before expiry flow', ([accountOwner1, n
     it('accountOwner2 should be able to close out the naked call position before expiry', async () => {
       const scaledOptionsAmount = createTokenAmount(optionsAmount, 8)
       const scaledCollateralAmount = createTokenAmount(collateralAmount, wethDecimals)
-      await lowerStrikeCall.transfer(accountOwner2, scaledOptionsAmount, {from: accountOwner1})
+      await lowerStrikeCall.transfer(accountOwner2, scaledOptionsAmount, { from: accountOwner1 })
       // Keep track of balances before
       const ownerWethBalanceBefore = new BigNumber(await weth.balanceOf(accountOwner2))
       const marginPoolWethBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
@@ -500,7 +507,7 @@ contract('Long Call Spread Option closed before expiry flow', ([accountOwner1, n
         },
       ]
 
-      await controllerProxy.operate(actionArgs, {from: accountOwner2})
+      await controllerProxy.operate(actionArgs, { from: accountOwner2 })
 
       // keep track of balances after
       const ownerWethBalanceAfter = new BigNumber(await weth.balanceOf(accountOwner2))

@@ -7,12 +7,13 @@ import {
   ControllerInstance,
   WhitelistInstance,
   MarginPoolInstance,
+  MarginPoolV2Instance,
   OtokenFactoryInstance,
 } from '../../build/types/truffle-types'
-import {createTokenAmount, createValidExpiry} from '../utils'
+import { createTokenAmount, createValidExpiry } from '../utils'
 import BigNumber from 'bignumber.js'
 
-const {time} = require('@openzeppelin/test-helpers')
+const { time } = require('@openzeppelin/test-helpers')
 const AddressBook = artifacts.require('AddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const Otoken = artifacts.require('Otoken.sol')
@@ -20,6 +21,7 @@ const MockERC20 = artifacts.require('MockERC20.sol')
 const MarginCalculator = artifacts.require('MarginCalculator.sol')
 const Whitelist = artifacts.require('Whitelist.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
+const MarginPoolV2 = artifacts.require('MarginPoolV2.sol')
 const Controller = artifacts.require('Controller.sol')
 const MarginVault = artifacts.require('MarginVault.sol')
 const OTokenFactory = artifacts.require('OtokenFactory.sol')
@@ -46,6 +48,7 @@ contract('Naked Call Option expires Itm flow', ([accountOwner1, buyer]) => {
   let controllerProxy: ControllerInstance
   let controllerImplementation: ControllerInstance
   let marginPool: MarginPoolInstance
+  let marginPoolV2: MarginPoolInstance
   let whitelist: WhitelistInstance
   let otokenImplementation: OtokenInstance
   let otokenFactory: OtokenFactoryInstance
@@ -77,6 +80,8 @@ contract('Naked Call Option expires Itm flow', ([accountOwner1, buyer]) => {
     addressBook = await AddressBook.new()
     // setup margin pool
     marginPool = await MarginPool.new(addressBook.address)
+    // setup margin pool v2
+    marginPoolV2 = await MarginPoolV2.new(addressBook.address)
     // setup margin vault
     const lib = await MarginVault.new()
     // setup controllerProxy module
@@ -109,6 +114,8 @@ contract('Naked Call Option expires Itm flow', ([accountOwner1, buyer]) => {
     const controllerProxyAddress = await addressBook.getController()
     controllerProxy = await Controller.at(controllerProxyAddress)
 
+    await controllerProxy.setMarginPoolV2(marginPoolV2.address, { from: accountOwner1 })
+
     await otokenFactory.createOtoken(
       weth.address,
       usdc.address,
@@ -133,7 +140,7 @@ contract('Naked Call Option expires Itm flow', ([accountOwner1, buyer]) => {
     await weth.mint(accountOwner1, account1OwnerWeth)
 
     // have the user approve all the weth transfers
-    await weth.approve(marginPool.address, account1OwnerWeth, {from: accountOwner1})
+    await weth.approve(marginPool.address, account1OwnerWeth, { from: accountOwner1 })
 
     const vaultCounterBefore = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
     vaultCounter = vaultCounterBefore.toNumber() + 1
@@ -177,7 +184,7 @@ contract('Naked Call Option expires Itm flow', ([accountOwner1, buyer]) => {
         },
       ]
 
-      await controllerProxy.operate(actionArgs, {from: accountOwner1})
+      await controllerProxy.operate(actionArgs, { from: accountOwner1 })
     })
 
     it('Seller: close an ITM position after expiry', async () => {
@@ -227,7 +234,7 @@ contract('Naked Call Option expires Itm flow', ([accountOwner1, buyer]) => {
         },
       ]
 
-      await controllerProxy.operate(actionArgs, {from: accountOwner1})
+      await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
       // keep track of balances after
       const ownerWethBalanceAfter = new BigNumber(await weth.balanceOf(accountOwner1))
@@ -270,7 +277,7 @@ contract('Naked Call Option expires Itm flow', ([accountOwner1, buyer]) => {
 
     it('Buyer: redeem ITM call option after expiry', async () => {
       // owner sells their call option
-      await ethCall.transfer(buyer, scaledOptionsAmount, {from: accountOwner1})
+      await ethCall.transfer(buyer, scaledOptionsAmount, { from: accountOwner1 })
       // oracle orice increases
       const strikePriceChange = Math.max(expirySpotPrice - strikePrice, 0)
 
@@ -293,7 +300,7 @@ contract('Naked Call Option expires Itm flow', ([accountOwner1, buyer]) => {
         },
       ]
 
-      await controllerProxy.operate(actionArgs, {from: buyer})
+      await controllerProxy.operate(actionArgs, { from: buyer })
 
       // keep track of balances after
       const ownerWethBalanceAfter = new BigNumber(await weth.balanceOf(buyer))

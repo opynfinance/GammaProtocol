@@ -12,15 +12,16 @@ import {
   createTokenAmount,
   expectedLiqudidationPrice,
 } from '../utils'
-import {assert} from 'chai'
+import { assert } from 'chai'
 import BigNumber from 'bignumber.js'
 
-const {expectRevert, time} = require('@openzeppelin/test-helpers')
+const { expectRevert, time } = require('@openzeppelin/test-helpers')
 const MockAddressBook = artifacts.require('MockAddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const MockOtoken = artifacts.require('MockOtoken.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
 const MarginCalculator = artifacts.require('CalculatorTester.sol')
+const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
 contract('MarginCalculator: liquidation', ([owner, random]) => {
   let expiry: number
@@ -73,10 +74,10 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
     oracle = await MockOracle.new()
     await addressBook.setOracle(oracle.address)
     // setup calculator
-    calculator = await MarginCalculator.new(oracle.address, {from: owner})
+    calculator = await MarginCalculator.new(oracle.address, { from: owner })
     // set collateral dust
-    await calculator.setCollateralDust(weth.address, wethDust, {from: owner})
-    await calculator.setCollateralDust(usdc.address, usdcDust, {from: owner})
+    await calculator.setCollateralDust(weth.address, wethDust, { from: owner })
+    await calculator.setCollateralDust(usdc.address, usdcDust, { from: owner })
     // set product spot shock value
     await calculator.setSpotShock(weth.address, usdc.address, usdc.address, true, productSpotShockValue)
     await calculator.setSpotShock(weth.address, usdc.address, weth.address, false, productSpotShockValue)
@@ -98,7 +99,7 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
 
     beforeEach(async () => {
       const oracleDeviationValue = scaleNum(oracleDeviation, 27)
-      await calculator.setOracleDeviation(oracleDeviationValue, {from: owner})
+      await calculator.setOracleDeviation(oracleDeviationValue, { from: owner })
 
       optionExpiry = new BigNumber(await time.latest()).plus(timeToExpiry[1])
 
@@ -115,7 +116,7 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
     })
 
     it('should not be able to liquidate vault with type equal to 0', async () => {
-      const vault = createVault(shortOtoken.address, undefined, undefined, scaleNum(1), undefined, undefined)
+      const vault = createVault(ZERO_ADDR, shortOtoken.address, undefined, undefined, scaleNum(1), undefined, undefined)
       const randomVaultLatestUpdate = '11111111'
       const randomRoundId = '1'
       const vaultType = '0'
@@ -127,7 +128,7 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
     })
 
     it('should not be able to liquidate vault with an auction start timestamp less than latest vault update timestamp', async () => {
-      const vault = createVault(shortOtoken.address, undefined, undefined, scaleNum(1), undefined, undefined)
+      const vault = createVault(ZERO_ADDR, shortOtoken.address, undefined, undefined, scaleNum(1), undefined, undefined)
       const randomVaultLatestUpdate = '11111111'
       const randomRoundId = '1'
 
@@ -138,7 +139,7 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
     })
 
     it('should return not liquidatable with 0 value for dust and price amount when vault have no short Otoken', async () => {
-      const vault = createVault(undefined, undefined, undefined, scaleNum(0), undefined, undefined)
+      const vault = createVault(ZERO_ADDR, undefined, undefined, undefined, scaleNum(0), undefined, undefined)
       const randomVaultLatestUpdate = '0'
       const randomRoundId = '1'
 
@@ -153,7 +154,7 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
       // advance time to after option expiry
       await time.increaseTo(optionExpiry.toNumber() + 10)
 
-      const vault = createVault(shortOtoken.address, undefined, undefined, scaleNum(1), undefined, undefined)
+      const vault = createVault(ZERO_ADDR, shortOtoken.address, undefined, undefined, scaleNum(1), undefined, undefined)
       const randomVaultLatestUpdate = '0'
       const randomRoundId = '1'
 
@@ -187,6 +188,7 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
         ),
       )
       const vault = createVault(
+        ZERO_ADDR,
         shortOtoken.address,
         undefined,
         usdc.address,
@@ -225,6 +227,7 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
       )
 
       const vault = createVault(
+        ZERO_ADDR,
         shortOtoken.address,
         undefined,
         usdc.address,
@@ -289,6 +292,7 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
       await time.increase(3600)
 
       const vault = createVault(
+        ZERO_ADDR,
         shortOtoken.address,
         undefined,
         usdc.address,
@@ -330,7 +334,7 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
     before(async () => {
       const oracleDeviationValue = scaleNum(oracleDeviation, 27)
 
-      await calculator.setOracleDeviation(oracleDeviationValue, {from: owner})
+      await calculator.setOracleDeviation(oracleDeviationValue, { from: owner })
     })
 
     it('should return correct liquidation price for undercollateralized put option', async () => {

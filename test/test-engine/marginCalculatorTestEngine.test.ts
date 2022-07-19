@@ -5,11 +5,11 @@ import {
   MockOracleInstance,
   MockOtokenInstance,
 } from '../../build/types/truffle-types'
-import {createVault, createTokenAmount} from '../utils'
-import {testCaseGenerator, Tests, Test, testToString, callMarginRequiredBeforeExpiry} from './testCaseGenerator'
+import { createVault, createTokenAmount } from '../utils'
+import { testCaseGenerator, Tests, Test, testToString, callMarginRequiredBeforeExpiry } from './testCaseGenerator'
 import BigNumber from 'bignumber.js'
 
-const {time} = require('@openzeppelin/test-helpers')
+const { time } = require('@openzeppelin/test-helpers')
 const MockAddressBook = artifacts.require('MockAddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const MockOtoken = artifacts.require('MockOtoken.sol')
@@ -104,6 +104,7 @@ contract('MarginCalculator Test Engine', () => {
 
         // create the vault
         const vault = createVault(
+          '',
           shortAddress,
           longAddress,
           collateralAddress,
@@ -155,6 +156,7 @@ contract('MarginCalculator Test Engine', () => {
         )
 
         const vaultWithCollateral = createVault(
+          '',
           shortOption.address,
           longOption.address,
           weth.address,
@@ -221,6 +223,7 @@ contract('MarginCalculator Test Engine', () => {
         const collateralAddress = collateral.gt(0) ? usdc.address : undefined
         // create the vault
         const vault = createVault(
+          '',
           shortAddress,
           longAddress,
           collateralAddress,
@@ -289,6 +292,7 @@ contract('MarginCalculator Test Engine', () => {
         const collateralAddress = collateral.gt(0) ? weth.address : undefined
         // create the vault
         const vault = createVault(
+          '',
           shortAddress,
           longAddress,
           collateralAddress,

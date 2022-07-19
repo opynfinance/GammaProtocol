@@ -1,10 +1,11 @@
-import {MockERC20Instance} from '../build/types/truffle-types'
+import { MockERC20Instance } from '../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
 
 const util = require('@0x/protocol-utils')
 const ethSigUtil = require('eth-sig-util')
 
 export type vault = {
+  marginPool: string
   shortAmounts: (BigNumber | string | number)[]
   longAmounts: (BigNumber | string | number)[]
   collateralAmounts: (BigNumber | string | number)[]
@@ -25,6 +26,7 @@ export const createValidExpiry = (now: number, days: number) => {
 
 /**
  * Create a vault for testing
+ * @param marginPool
  * @param shortOtoken
  * @param longOtoken
  * @param collateralAsset
@@ -33,6 +35,7 @@ export const createValidExpiry = (now: number, days: number) => {
  * @param collateralAmount
  */
 export const createVault = (
+  marginPool: string | undefined,
   shortOtoken: string | undefined,
   longOtoken: string | undefined,
   collateralAsset: string | undefined,
@@ -41,6 +44,7 @@ export const createVault = (
   collateralAmount: string | BigNumber | number | undefined,
 ): vault => {
   return {
+    marginPool: marginPool ? marginPool : '',
     shortOtokens: shortOtoken ? [shortOtoken] : [],
     longOtokens: longOtoken ? [longOtoken] : [],
     collateralAssets: collateralAsset ? [collateralAsset] : [],
@@ -183,12 +187,7 @@ export const expectedLiqudidationPrice = (
   }
 
   const price = startingPrice
-    .plus(
-      endingPrice
-        .minus(startingPrice)
-        .multipliedBy(auctionElapsedTime)
-        .dividedBy(3600),
-    )
+    .plus(endingPrice.minus(startingPrice).multipliedBy(auctionElapsedTime).dividedBy(3600))
     .multipliedBy(10 ** collateralDecimals)
 
   if (price.isGreaterThan(endingPrice.multipliedBy(10 ** collateralDecimals)))

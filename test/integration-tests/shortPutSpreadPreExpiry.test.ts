@@ -7,12 +7,13 @@ import {
   ControllerInstance,
   WhitelistInstance,
   MarginPoolInstance,
+  MarginPoolV2Instance,
   OtokenFactoryInstance,
 } from '../../build/types/truffle-types'
-import {createTokenAmount, createValidExpiry} from '../utils'
+import { createTokenAmount, createValidExpiry } from '../utils'
 import BigNumber from 'bignumber.js'
 
-const {expectRevert, time} = require('@openzeppelin/test-helpers')
+const { expectRevert, time } = require('@openzeppelin/test-helpers')
 const AddressBook = artifacts.require('AddressBook.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 const Otoken = artifacts.require('Otoken.sol')
@@ -20,6 +21,7 @@ const MockERC20 = artifacts.require('MockERC20.sol')
 const MarginCalculator = artifacts.require('MarginCalculator.sol')
 const Whitelist = artifacts.require('Whitelist.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
+const MarginPoolV2 = artifacts.require('MarginPoolV2.sol')
 const Controller = artifacts.require('Controller.sol')
 const MarginVault = artifacts.require('MarginVault.sol')
 const OTokenFactory = artifacts.require('OtokenFactory.sol')
@@ -46,6 +48,7 @@ contract('Short Put Spread Option closed before expiry flow', ([accountOwner1, n
   let controllerProxy: ControllerInstance
   let controllerImplementation: ControllerInstance
   let marginPool: MarginPoolInstance
+  let marginPoolV2: MarginPoolInstance
   let whitelist: WhitelistInstance
   let otokenImplementation: OtokenInstance
   let otokenFactory: OtokenFactoryInstance
@@ -82,6 +85,8 @@ contract('Short Put Spread Option closed before expiry flow', ([accountOwner1, n
     addressBook = await AddressBook.new()
     // setup margin pool
     marginPool = await MarginPool.new(addressBook.address)
+    // setup margin pool v2
+    marginPoolV2 = await MarginPoolV2.new(addressBook.address)
     // setup margin vault
     const lib = await MarginVault.new()
     // setup controllerProxy module
@@ -113,6 +118,8 @@ contract('Short Put Spread Option closed before expiry flow', ([accountOwner1, n
 
     const controllerProxyAddress = await addressBook.getController()
     controllerProxy = await Controller.at(controllerProxyAddress)
+
+    await controllerProxy.setMarginPoolV2(marginPoolV2.address, { from: accountOwner1 })
 
     await otokenFactory.createOtoken(
       weth.address,
@@ -164,8 +171,8 @@ contract('Short Put Spread Option closed before expiry flow', ([accountOwner1, n
     await usdc.mint(nakedBuyer, nakedBuyerUsdc)
 
     // have the user approve all the usdc transfers
-    await usdc.approve(marginPool.address, accountOwner1Usdc, {from: accountOwner1})
-    await usdc.approve(marginPool.address, accountOwner2Usdc, {from: accountOwner2})
+    await usdc.approve(marginPool.address, accountOwner1Usdc, { from: accountOwner1 })
+    await usdc.approve(marginPool.address, accountOwner2Usdc, { from: accountOwner2 })
 
     const vaultCounter1Before = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
     vaultCounter1 = vaultCounter1Before.toNumber() + 1
@@ -213,10 +220,10 @@ contract('Short Put Spread Option closed before expiry flow', ([accountOwner1, n
         },
       ]
 
-      await controllerProxy.operate(actionArgs, {from: accountOwner2})
+      await controllerProxy.operate(actionArgs, { from: accountOwner2 })
 
       // accountOwner2 transfers their lower strike put option to accountOwner1
-      await lowerStrikePut.transfer(accountOwner1, scaledOptionsAmount, {from: accountOwner2})
+      await lowerStrikePut.transfer(accountOwner1, scaledOptionsAmount, { from: accountOwner2 })
     })
     it('accountOwner1 should be able to open a short put spread', async () => {
       // Keep track of balances before
@@ -296,8 +303,8 @@ contract('Short Put Spread Option closed before expiry flow', ([accountOwner1, n
         },
       ]
 
-      await lowerStrikePut.approve(marginPool.address, scaledOptionsAmount, {from: accountOwner1})
-      await controllerProxy.operate(actionArgs, {from: accountOwner1})
+      await lowerStrikePut.approve(marginPool.address, scaledOptionsAmount, { from: accountOwner1 })
+      await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
       // keep track of balances after
       const ownerUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
@@ -425,7 +432,7 @@ contract('Short Put Spread Option closed before expiry flow', ([accountOwner1, n
         },
       ]
 
-      await controllerProxy.operate(actionArgs, {from: accountOwner1})
+      await controllerProxy.operate(actionArgs, { from: accountOwner1 })
 
       // keep track of balances after
       const ownerUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner1))
@@ -498,7 +505,7 @@ contract('Short Put Spread Option closed before expiry flow', ([accountOwner1, n
       const collateralAmount = lowerStrike * optionsAmount
       const scaledCollateralAmount = createTokenAmount(collateralAmount, usdcDecimals)
 
-      await lowerStrikePut.transfer(accountOwner2, scaledOptionsAmount, {from: accountOwner1})
+      await lowerStrikePut.transfer(accountOwner2, scaledOptionsAmount, { from: accountOwner1 })
       // Keep track of balances before
       const ownerUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(accountOwner2))
       const marginPoolUsdcBalanceBefore = new BigNumber(await usdc.balanceOf(marginPool.address))
@@ -534,7 +541,7 @@ contract('Short Put Spread Option closed before expiry flow', ([accountOwner1, n
         },
       ]
 
-      await controllerProxy.operate(actionArgs, {from: accountOwner2})
+      await controllerProxy.operate(actionArgs, { from: accountOwner2 })
 
       // keep track of balances after
       const ownerUsdcBalanceAfter = new BigNumber(await usdc.balanceOf(accountOwner2))
