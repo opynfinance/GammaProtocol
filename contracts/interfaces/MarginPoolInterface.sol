@@ -9,6 +9,10 @@ interface MarginPoolInterface {
 
     function getStoredBalance(address _asset) external view returns (uint256);
 
+    function whitelistedOTokenBuyer(address _buyer) external view returns (bool);
+
+    function whitelistedRibbonVault(address _ribbonVault) external view returns (bool);
+
     /* Admin-only functions */
     function setFarmer(address _farmer) external;
 
