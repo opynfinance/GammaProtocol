@@ -6,14 +6,14 @@ import {
 } from '../../build/types/truffle-types'
 
 import BigNumber from 'bignumber.js'
-import {createTokenAmount} from '../utils'
+import { createTokenAmount } from '../utils'
 
-const {BN, constants, expectEvent, expectRevert, time} = require('@openzeppelin/test-helpers')
-const {fromRpcSig} = require('ethereumjs-util')
+const { BN, constants, expectEvent, expectRevert, time } = require('@openzeppelin/test-helpers')
+const { fromRpcSig } = require('ethereumjs-util')
 const ethSigUtil = require('eth-sig-util')
 const Wallet = require('ethereumjs-wallet').default
 
-const {EIP712Domain, domainSeparator} = require('../eip712')
+const { EIP712Domain, domainSeparator } = require('../eip712')
 
 const AddressBook = artifacts.require('AddressBook.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')
@@ -21,11 +21,11 @@ const MockOtoken = artifacts.require('MockOtoken.sol')
 const PermitCallee = artifacts.require('PermitCallee.sol')
 
 const Permit = [
-  {name: 'owner', type: 'address'},
-  {name: 'spender', type: 'address'},
-  {name: 'value', type: 'uint256'},
-  {name: 'nonce', type: 'uint256'},
-  {name: 'deadline', type: 'uint256'},
+  { name: 'owner', type: 'address' },
+  { name: 'spender', type: 'address' },
+  { name: 'value', type: 'uint256' },
+  { name: 'nonce', type: 'uint256' },
+  { name: 'deadline', type: 'uint256' },
 ]
 
 contract('PermitCallee', ([controllerProxy, spender]) => {
@@ -78,14 +78,14 @@ contract('PermitCallee', ([controllerProxy, spender]) => {
 
       const buildData = (chainId: number, verifyingContract: string, deadline = maxDeadline) => ({
         primaryType: 'Permit',
-        types: {EIP712Domain, Permit},
-        domain: {name, version, chainId, verifyingContract},
-        message: {owner, spender, value, nonce, deadline},
+        types: { EIP712Domain, Permit },
+        domain: { name, version, chainId, verifyingContract },
+        message: { owner, spender, value, nonce, deadline },
       })
 
       const data = buildData((await otoken.getChainId()).toNumber(), otoken.address)
-      const signature = ethSigUtil.signTypedMessage(wallet.getPrivateKey(), {data})
-      const {v, r, s} = fromRpcSig(signature)
+      const signature = ethSigUtil.signTypedMessage(wallet.getPrivateKey(), { data })
+      const { v, r, s } = fromRpcSig(signature)
 
       const spenderAllowanceBefore = new BigNumber(await otoken.allowance(owner, spender))
 
@@ -94,7 +94,7 @@ contract('PermitCallee', ([controllerProxy, spender]) => {
         [otoken.address, owner, spender, value.toString(), maxDeadline, v, r, s],
       )
 
-      await permitCallee.callFunction(owner, callData, {from: controllerProxy})
+      await permitCallee.callFunction(owner, callData, { from: controllerProxy })
 
       const spenderAllowanceAfter = new BigNumber(await otoken.allowance(owner, spender))
 

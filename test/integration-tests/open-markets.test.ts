@@ -85,6 +85,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
     otokenFactory = await OTokenFactory.new(addressBook.address, { from: owner })
     marginPool = await MarginPool.new(addressBook.address)
     marginPoolV2 = await MarginPoolV2.new(addressBook.address)
+    
     const calculator = await Calculator.new(addressBook.address, { from: owner })
 
     // setup addressBook

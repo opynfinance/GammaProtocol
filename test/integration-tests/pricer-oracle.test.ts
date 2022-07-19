@@ -7,8 +7,8 @@ import {
   CompoundPricerInstance,
 } from '../../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
-import {underlyingPriceToCtokenPrice, changeAmountScaled, createTokenAmount} from '../utils'
-const {expectRevert, time} = require('@openzeppelin/test-helpers')
+import { underlyingPriceToCtokenPrice, changeAmountScaled, createTokenAmount } from '../utils'
+const { expectRevert, time } = require('@openzeppelin/test-helpers')
 
 const ChainlinkPricer = artifacts.require('ChainLinkPricer.sol')
 const CompoundPricer = artifacts.require('CompoundPricer.sol')
@@ -34,7 +34,7 @@ contract('Pricer + Oracle', ([owner, bot, disputer, random]) => {
 
   before('Deploy Pricer', async () => {
     // deploy mock contracts
-    oracle = await Oracle.new({from: owner})
+    oracle = await Oracle.new({ from: owner })
     wethAggregator = await MockChainlinkAggregator.new()
     weth = await MockERC20.new('WETH', 'WETH', 18)
     ceth = await MockCToken.new('cETH', 'cETH')
@@ -149,7 +149,7 @@ contract('Pricer + Oracle', ([owner, bot, disputer, random]) => {
       }
       const roundId = 1
       await expectRevert(
-        wethPricer.setExpiryPriceInOracle(expiryTimestamp, roundId, {from: bot}),
+        wethPricer.setExpiryPriceInOracle(expiryTimestamp, roundId, { from: bot }),
         'Oracle: locking period is not over yet',
       )
     })
@@ -162,18 +162,6 @@ contract('Pricer + Oracle', ([owner, bot, disputer, random]) => {
       )
     })
 
-    it('should revert set weth price if sender is not bot address', async () => {
-      const expiryTimestamp = (t0 + t1) / 2 // between t0 and t1
-      if ((await time.latest()) < expiryTimestamp + lockingPeriod) {
-        await time.increaseTo(expiryTimestamp + lockingPeriod + 10)
-      }
-      const roundId = 1
-      await expectRevert(
-        wethPricer.setExpiryPriceInOracle(expiryTimestamp, roundId, {from: random}),
-        'ChainLinkPricer: unauthorized sender',
-      )
-    })
-
     it('should set weth price when sender is bot address', async () => {
       const expiryTimestamp = (t0 + t1) / 2 // between t0 and t1
       if ((await time.latest()) < expiryTimestamp + lockingPeriod) {
@@ -181,7 +169,7 @@ contract('Pricer + Oracle', ([owner, bot, disputer, random]) => {
       }
       const roundId = 1
 
-      await wethPricer.setExpiryPriceInOracle(expiryTimestamp, roundId, {from: bot})
+      await wethPricer.setExpiryPriceInOracle(expiryTimestamp, roundId, { from: bot })
 
       const [priceFromOracle, isFinalized] = await oracle.getExpiryPrice(weth.address, expiryTimestamp)
       assert.equal(p1.toString(), priceFromOracle.toString())
@@ -213,7 +201,7 @@ contract('Pricer + Oracle', ([owner, bot, disputer, random]) => {
       const expiryTimestamp = (t0 + t1) / 2 // between t0 and t1
       const roundId = 1
       await expectRevert(
-        wethPricer.setExpiryPriceInOracle(expiryTimestamp, roundId, {from: bot}),
+        wethPricer.setExpiryPriceInOracle(expiryTimestamp, roundId, { from: bot }),
         'Oracle: dispute period started',
       )
       const priceFromOracle = await oracle.getExpiryPrice(weth.address, expiryTimestamp)
@@ -231,7 +219,7 @@ contract('Pricer + Oracle', ([owner, bot, disputer, random]) => {
     it('should be able to dispute weth price during dispute period', async () => {
       await oracle.setDisputer(disputer)
       const expiryTimestamp = (t0 + t1) / 2 // between t0 and t1
-      await oracle.disputeExpiryPrice(weth.address, expiryTimestamp, disputePrice1e18, {from: disputer})
+      await oracle.disputeExpiryPrice(weth.address, expiryTimestamp, disputePrice1e18, { from: disputer })
     })
 
     it('should revert if dispute period is over', async () => {
@@ -241,7 +229,7 @@ contract('Pricer + Oracle', ([owner, bot, disputer, random]) => {
       }
       const randomPrice = createTokenAmount(453, 8)
       await expectRevert(
-        oracle.disputeExpiryPrice(weth.address, expiryTimestamp, randomPrice, {from: disputer}),
+        oracle.disputeExpiryPrice(weth.address, expiryTimestamp, randomPrice, { from: disputer }),
         'Oracle: dispute period over',
       )
     })

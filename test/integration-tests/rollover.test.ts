@@ -528,7 +528,6 @@ contract('Rollover Naked Put Option flow', ([accountOwner1, accountOperator1, bu
       ]
 
       await usdc.approve(marginPool.address, scaledCollateralAmount2, { from: accountOperator1 })
-
       await controllerProxy.operate(actionArgs, { from: accountOperator1 })
 
       // keep track of balances after
