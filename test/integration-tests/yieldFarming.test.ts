@@ -7,7 +7,7 @@ import {
   ControllerInstance,
   WhitelistInstance,
   MarginPoolInstance,
-  MarginPoolV2Instance,
+  BorrowableMarginPoolInstance,
   OtokenFactoryInstance,
   MockPricerInstance,
   MockCTokenInstance,
@@ -24,7 +24,7 @@ const MockERC20 = artifacts.require('MockERC20.sol')
 const MarginCalculator = artifacts.require('MarginCalculator.sol')
 const Whitelist = artifacts.require('Whitelist.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
-const MarginPoolV2 = artifacts.require('MarginPoolV2.sol')
+const BorrowableMarginPool = artifacts.require('BorrowableMarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
 const MarginVault = artifacts.require('MarginVault.sol')
 const OTokenFactory = artifacts.require('OtokenFactory.sol')
@@ -54,7 +54,7 @@ contract('Yield Farming: Naked Put Option closed before expiry flow', ([admin, a
   let controllerImplementation: ControllerInstance
   let controllerProxy: ControllerInstance
   let marginPool: MarginPoolInstance
-  let marginPoolV2: MarginPoolInstance
+  let borrowableMarginPool: MarginPoolInstance
   let whitelist: WhitelistInstance
   let otokenImplementation: OtokenInstance
   let otokenFactory: OtokenFactoryInstance
@@ -88,7 +88,7 @@ contract('Yield Farming: Naked Put Option closed before expiry flow', ([admin, a
     // setup margin pool
     marginPool = await MarginPool.new(addressBook.address)
     // setup margin pool v2
-    marginPoolV2 = await MarginPoolV2.new(addressBook.address)
+    borrowableMarginPool = await BorrowableMarginPool.new(addressBook.address)
     // setup margin account
     const lib = await MarginVault.new()
     // setup controller module
@@ -121,7 +121,7 @@ contract('Yield Farming: Naked Put Option closed before expiry flow', ([admin, a
     const controllerProxyAddress = await addressBook.getController()
     controllerProxy = await Controller.at(controllerProxyAddress)
 
-    await controllerProxy.setMarginPoolV2(marginPoolV2.address, { from: admin })
+    await controllerProxy.setBorrowableMarginPool(borrowableMarginPool.address, { from: admin })
 
     await otokenFactory.createOtoken(
       weth.address,

@@ -5,7 +5,6 @@ const util = require('@0x/protocol-utils')
 const ethSigUtil = require('eth-sig-util')
 
 export type vault = {
-  marginPool: string
   shortAmounts: (BigNumber | string | number)[]
   longAmounts: (BigNumber | string | number)[]
   collateralAmounts: (BigNumber | string | number)[]
@@ -26,7 +25,6 @@ export const createValidExpiry = (now: number, days: number) => {
 
 /**
  * Create a vault for testing
- * @param marginPool
  * @param shortOtoken
  * @param longOtoken
  * @param collateralAsset
@@ -35,7 +33,6 @@ export const createValidExpiry = (now: number, days: number) => {
  * @param collateralAmount
  */
 export const createVault = (
-  marginPool: string | undefined,
   shortOtoken: string | undefined,
   longOtoken: string | undefined,
   collateralAsset: string | undefined,
@@ -44,7 +41,6 @@ export const createVault = (
   collateralAmount: string | BigNumber | number | undefined,
 ): vault => {
   return {
-    marginPool: marginPool ? marginPool : '',
     shortOtokens: shortOtoken ? [shortOtoken] : [],
     longOtokens: longOtoken ? [longOtoken] : [],
     collateralAssets: collateralAsset ? [collateralAsset] : [],

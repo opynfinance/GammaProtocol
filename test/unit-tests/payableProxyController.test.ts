@@ -6,7 +6,7 @@ import {
   MockWhitelistModuleInstance,
   MarginCalculatorInstance,
   MarginPoolInstance,
-  MarginPoolV2Instance,
+  BorrowableMarginPoolInstance,
   ControllerInstance,
   AddressBookInstance,
   OwnedUpgradeabilityProxyInstance,
@@ -27,7 +27,7 @@ const MarginCalculator = artifacts.require('MarginCalculator.sol')
 const MockWhitelistModule = artifacts.require('MockWhitelistModule.sol')
 const AddressBook = artifacts.require('AddressBook.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
-const MarginPoolV2 = artifacts.require('MarginPoolV2.sol')
+const BorrowableMarginPool = artifacts.require('BorrowableMarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
 const MarginVault = artifacts.require('MarginVault.sol')
 const CalleeAllowanceTester = artifacts.require('CalleeAllowanceTester.sol')
@@ -62,7 +62,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
   // margin pool module
   let marginPool: MarginPoolInstance
   // margin pool v2 module
-  let marginPoolV2: MarginPoolV2Instance
+  let borrowableMarginPool: BorrowableMarginPoolInstance
   // whitelist module mock
   let whitelist: MockWhitelistModuleInstance
   // addressbook module mock
@@ -89,7 +89,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
     // margin pool deployment
     marginPool = await MarginPool.new(addressBook.address)
     // margin pool v2 deployment
-    marginPoolV2 = await MarginPoolV2.new(addressBook.address)
+    borrowableMarginPool = await BorrowableMarginPool.new(addressBook.address)
     // whitelist module
     whitelist = await MockWhitelistModule.new()
     // callee allowance tester
@@ -121,7 +121,9 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
 
     payableProxyController = await PayableProxyController.new(controllerProxy.address, marginPool.address, weth.address)
 
-    await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), marginPoolV2.address, { from: owner })
+    await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), borrowableMarginPool.address, {
+      from: owner,
+    })
 
     // make everyone rich
     await usdc.mint(accountOwner1, createTokenAmount(10000, usdcDecimals))
@@ -160,8 +162,8 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
         },
       ]
 
-      const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
-        ? marginPoolV2.address
+      const finalMarginPool = (await borrowableMarginPool.whitelistedRibbonVault(accountOwner1))
+        ? borrowableMarginPool.address
         : marginPool.address
 
       const marginPoolBalanceBefore = new BigNumber(await weth.balanceOf(finalMarginPool))
@@ -220,8 +222,8 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
         },
       ]
 
-      const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
-        ? marginPoolV2.address
+      const finalMarginPool = (await borrowableMarginPool.whitelistedRibbonVault(accountOwner1))
+        ? borrowableMarginPool.address
         : marginPool.address
 
       const marginPoolBalanceBefore = new BigNumber(await weth.balanceOf(finalMarginPool))
@@ -445,8 +447,8 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
         },
       ]
 
-      const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
-        ? marginPoolV2.address
+      const finalMarginPool = (await borrowableMarginPool.whitelistedRibbonVault(accountOwner1))
+        ? borrowableMarginPool.address
         : marginPool.address
 
       await usdc.approve(finalMarginPool, collateralToDeposit, { from: accountOwner1 })

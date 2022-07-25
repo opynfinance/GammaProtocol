@@ -642,15 +642,7 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
         true,
       )
 
-      const vault = createVault(
-        ZERO_ADDR,
-        shortOtoken.address,
-        longOtoken.address,
-        undefined,
-        scaleNum(1),
-        scaleNum(1),
-        undefined,
-      )
+      const vault = createVault(shortOtoken.address, longOtoken.address, undefined, scaleNum(1), scaleNum(1), undefined)
 
       await expectRevert(
         calculator.getExcessCollateral(vault, vaultType),
@@ -675,15 +667,7 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
         true,
       )
       const collateralAmount = scaleNum(10, usdcDecimals)
-      const vault = createVault(
-        ZERO_ADDR,
-        shortOtoken.address,
-        undefined,
-        usdc.address,
-        scaleNum(1),
-        undefined,
-        collateralAmount,
-      )
+      const vault = createVault(shortOtoken.address, undefined, usdc.address, scaleNum(1), undefined, collateralAmount)
 
       await expectRevert(
         calculator.getExcessCollateral(vault, vaultType),
@@ -740,15 +724,7 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
       await oracle.setRealTimePrice(weth.address, scaledUnderlyingPrice)
 
       const collateralAmount = scaleNum(expectedRequiredNakedMargin, usdcDecimals)
-      const vault = createVault(
-        ZERO_ADDR,
-        shortOtoken.address,
-        undefined,
-        usdc.address,
-        scaleNum(1),
-        undefined,
-        collateralAmount,
-      )
+      const vault = createVault(shortOtoken.address, undefined, usdc.address, scaleNum(1), undefined, collateralAmount)
 
       const getExcessCollateralResult = await calculator.getExcessCollateral(vault, vaultType)
 
@@ -801,15 +777,7 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
       await oracle.setRealTimePrice(weth.address, scaledUnderlyingPrice)
 
       const collateralAmount = scaleNum(30, usdcDecimals)
-      const vault = createVault(
-        ZERO_ADDR,
-        shortOtoken.address,
-        undefined,
-        usdc.address,
-        scaleNum(1),
-        undefined,
-        collateralAmount,
-      )
+      const vault = createVault(shortOtoken.address, undefined, usdc.address, scaleNum(1), undefined, collateralAmount)
 
       const getExcessCollateralResult = await calculator.getExcessCollateral(vault, vaultType)
 
@@ -866,15 +834,7 @@ contract('MarginCalculator: partial collateralization', ([owner, random]) => {
       await oracle.setRealTimePrice(weth.address, scaledUnderlyingPrice)
 
       const collateralAmount = scaleNum(expectedRequiredNakedMargin - 0.1, wethDecimals)
-      const vault = createVault(
-        ZERO_ADDR,
-        shortOtoken.address,
-        undefined,
-        weth.address,
-        scaleNum(1),
-        undefined,
-        collateralAmount,
-      )
+      const vault = createVault(shortOtoken.address, undefined, weth.address, scaleNum(1), undefined, collateralAmount)
 
       const getExcessCollateralResult = await calculator.getExcessCollateral(vault, vaultType)
 

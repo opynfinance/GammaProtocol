@@ -7,7 +7,7 @@ import {
   ControllerInstance,
   WhitelistInstance,
   MarginPoolInstance,
-  MarginPoolV2Instance,
+  BorrowableMarginPoolInstance,
   OtokenFactoryInstance,
 } from '../../build/types/truffle-types'
 import {
@@ -28,7 +28,7 @@ const MockERC20 = artifacts.require('MockERC20.sol')
 const MarginCalculator = artifacts.require('MarginCalculator.sol')
 const Whitelist = artifacts.require('Whitelist.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
-const MarginPoolV2 = artifacts.require('MarginPoolV2.sol')
+const BorrowableMarginPool = artifacts.require('BorrowableMarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
 const MarginVault = artifacts.require('MarginVault.sol')
 const OTokenFactory = artifacts.require('OtokenFactory.sol')
@@ -78,7 +78,7 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
   let controllerProxy: ControllerInstance
   let controllerImplementation: ControllerInstance
   let marginPool: MarginPoolInstance
-  let marginPoolV2: MarginPoolInstance
+  let borrowableMarginPool: MarginPoolInstance
   let whitelist: WhitelistInstance
   let otokenImplementation: OtokenInstance
   let otokenFactory: OtokenFactoryInstance
@@ -99,7 +99,7 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
     // setup margin pool
     marginPool = await MarginPool.new(addressBook.address)
     // setup margin pool v2
-    marginPoolV2 = await MarginPoolV2.new(addressBook.address)
+    borrowableMarginPool = await BorrowableMarginPool.new(addressBook.address)
     // setup margin vault
     const lib = await MarginVault.new()
     // setup controllerProxy module
@@ -133,7 +133,9 @@ contract('Naked margin: call position pre expiry', ([owner, accountOwner1, liqui
     const controllerProxyAddress = await addressBook.getController()
     controllerProxy = await Controller.at(controllerProxyAddress)
 
-    await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), marginPoolV2.address, { from: owner })
+    await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), borrowableMarginPool.address, {
+      from: owner,
+    })
 
     // configure controller
     await controllerProxy.setNakedCap(weth.address, wethCap, { from: owner })

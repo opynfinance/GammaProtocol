@@ -4,7 +4,7 @@ import {
   MockWhitelistModuleInstance,
   WETH9Instance,
   MarginPoolInstance,
-  MarginPoolV2Instance,
+  BorrowableMarginPoolInstance,
   MockDumbERC20Instance,
   OtokenInstance,
 } from '../../build/types/truffle-types'
@@ -19,7 +19,7 @@ const MockDumbERC20 = artifacts.require('MockDumbERC20.sol')
 const MockAddressBook = artifacts.require('MockAddressBook.sol')
 const MockWhitelist = artifacts.require('MockWhitelistModule.sol')
 const WETH9 = artifacts.require('WETH9.sol')
-const MarginPool = artifacts.require('MarginPoolV2.sol')
+const MarginPool = artifacts.require('BorrowableMarginPool.sol')
 const Otoken = artifacts.require('Otoken.sol')
 
 // address(0)
@@ -46,7 +46,7 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
   // whitelist module mock
   let whitelist: MockWhitelistModuleInstance
   // margin pool
-  let marginPool: MarginPoolV2Instance
+  let marginPool: BorrowableMarginPoolInstance
   // mock oToken
   let otoken: OtokenInstance
 

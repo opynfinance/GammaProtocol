@@ -5,7 +5,7 @@ import {
   AddressBookInstance,
   MockERC20Instance,
   MarginPoolInstance,
-  MarginPoolV2Instance,
+  BorrowableMarginPoolInstance,
   ControllerInstance,
   WhitelistInstance,
   MockOracleInstance,
@@ -25,7 +25,7 @@ const AddressBook = artifacts.require('AddressBook.sol')
 const Whitelist = artifacts.require('Whitelist.sol')
 const Calculator = artifacts.require('MarginCalculator.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
-const MarginPoolV2 = artifacts.require('MarginPoolV2.sol')
+const BorrowableMarginPool = artifacts.require('BorrowableMarginPool.sol')
 const MarginVault = artifacts.require('MarginVault.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 
@@ -55,7 +55,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
   let otokenFactory: OtokenFactoryInstance
   let whitelist: WhitelistInstance
   let marginPool: MarginPoolInstance
-  let marginPoolV2: MarginPoolInstance
+  let borrowableMarginPool: MarginPoolInstance
   let oracle: MockOracleInstance
 
   let usdc: MockERC20Instance
@@ -84,7 +84,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
     whitelist = await Whitelist.new(addressBook.address, { from: owner })
     otokenFactory = await OTokenFactory.new(addressBook.address, { from: owner })
     marginPool = await MarginPool.new(addressBook.address)
-    marginPoolV2 = await MarginPoolV2.new(addressBook.address)
+    borrowableMarginPool = await BorrowableMarginPool.new(addressBook.address)
 
     const calculator = await Calculator.new(addressBook.address, { from: owner })
 
@@ -106,7 +106,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
     await addressBook.setController(controller.address)
     controller = await Controller.at(await addressBook.getController())
 
-    await controller.setMarginPoolV2(marginPoolV2.address, { from: owner })
+    await controller.setBorrowableMarginPool(borrowableMarginPool.address, { from: owner })
   })
 
   describe('Otoken Creation before whitelisting', () => {
