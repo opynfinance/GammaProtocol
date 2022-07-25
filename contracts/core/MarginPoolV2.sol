@@ -25,13 +25,15 @@ contract MarginPoolV2 is MarginPool {
     /// @dev mapping between collateral asset and borrow PCT
     mapping(address => uint256) public borrowPCT;
     /// @dev mapping between address and whitelist status of borrower
-    mapping(address => bool) public whitelistedBorrower;
+    mapping(address => bool) internal whitelistedBorrower;
     /// @dev mapping between address and whitelist status of otoken buyer
     /// This is the whitelist for all the holders of oTokens that have a claim to
     /// collateral in this pool
-    mapping(address => bool) public whitelistedOTokenBuyer;
-    /// @dev mapping between address and whitelist status of ribbon vault
-    mapping(address => bool) public whitelistedRibbonVault;
+    mapping(address => bool) internal whitelistedOTokenBuyer;
+    /// @dev mapping between address and whitelist status of options vault
+    /// This denotes whether an options vault can create a margin vault with
+    /// collateral custodied in this borrowable vault
+    mapping(address => bool) internal whitelistedOptionsVault;
     /// @dev mapping between (borrower, asset) and outstanding borrower amount
     mapping(address => mapping(address => uint256)) public borrowed;
 
@@ -44,9 +46,9 @@ contract MarginPoolV2 is MarginPool {
     /// @notice emit event when a borrower is whitelisted / blacklisted
     event SetBorrowWhitelist(address indexed borrower, bool whitelisted);
     /// @notice emit event when a oToken buyer is whitelisted / blacklisted
-    event SetOTokenBuyerWhitelist(address indexed buyer, bool whitelisted);
-    /// @notice emit event when a ribbon vault is whitelisted / blacklisted
-    event SetRibbonVaultWhitelist(address indexed ribbonVault, bool whitelisted);
+    event SetOTokenBuyerWhitelist(address indexed oTokenBuyer, bool whitelisted);
+    /// @notice emit event when a options vault is whitelisted / blacklisted
+    event SetOptionVaultWhitelist(address indexed optionsVault, bool whitelisted);
     /// @notice emit event when borrowing percent has been changed
     event SetBorrowPCT(address indexed collateralAsset, uint256 borrowPCT);
     /// @notice emit event when a borrower borrows an asset
@@ -70,6 +72,33 @@ contract MarginPoolV2 is MarginPool {
     }
 
     /**
+     * @notice check if a borrower is whitelisted
+     * @param _borrower address of the borrower
+     * @return boolean, True if the borrower is whitelisted
+     */
+    function isWhitelistedBorrower(address _borrower) external view returns (bool) {
+        return whitelistedBorrower[_borrower];
+    }
+
+    /**
+     * @notice check if a oToken buyer is whitelisted
+     * @param _oTokenBuyer address of the oToken buyer
+     * @return boolean, True if the oToken buyer is whitelisted
+     */
+    function isWhitelistedOTokenBuyer(address _oTokenBuyer) external view returns (bool) {
+        return whitelistedOTokenBuyer[_oTokenBuyer];
+    }
+
+    /**
+     * @notice check if a options vault is whitelisted
+     * @param _optionsVault address of the options vault
+     * @return boolean, True if the options vault is whitelisted
+     */
+    function isWhitelistedOptionsVault(address _optionsVault) external view returns (bool) {
+        return whitelistedOptionsVault[_optionsVault];
+    }
+
+    /**
      * @notice Set borrower whitelist status
      * @param _borrower address of the borrower (100% of the time verified market makers)
      * @param _whitelisted bool of whether it is whitelisted or blacklisted
@@ -82,23 +111,23 @@ contract MarginPoolV2 is MarginPool {
     }
 
     /**
-     * @notice Set ribbon vault whitelist status
-     * @param _ribbonVault address of the ribbon vault
+     * @notice Set options vault whitelist status
+     * @param _optionsVault address of the options vault
      * @param _whitelisted bool of whether it is whitelisted or blacklisted
      */
-    function setRibbonVaultWhitelistedStatus(address _ribbonVault, bool _whitelisted) external onlyOwner {
-        require(_ribbonVault != address(0), "!_ribbonVault");
+    function setOptionsVaultWhitelistedStatus(address _optionsVault, bool _whitelisted) external onlyOwner {
+        require(_optionsVault != address(0), "!_optionsVault");
 
-        whitelistedRibbonVault[_ribbonVault] = _whitelisted;
-        emit SetRibbonVaultWhitelist(_ribbonVault, _whitelisted);
+        whitelistedOptionsVault[_optionsVault] = _whitelisted;
+        emit SetOptionsVaultWhitelist(_optionsVault, _whitelisted);
     }
 
     /**
-     * @notice Set buyer whitelist status
-     * @param _buyer address of the oToken buyer
+     * @notice Set oToken buyer whitelist status
+     * @param _oTokenBuyer address of the oToken buyer
      * @param _whitelisted bool of whether it is whitelisted or blacklisted
      */
-    function setBuyerWhitelistedStatus(address _buyer, bool _whitelisted) external onlyOwner {
+    function setOTokenBuyerWhitelistedStatus(address _oTokenBuyer, bool _whitelisted) external onlyOwner {
         require(_buyer != address(0), "!_buyer");
 
         whitelistedOTokenBuyer[_buyer] = _whitelisted;

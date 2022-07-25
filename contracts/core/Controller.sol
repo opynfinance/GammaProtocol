@@ -698,7 +698,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         // store new vault
         accountVaultCounter[_args.owner] = vaultId;
-        vaultType[_args.owner][vaultId] = borrowablePool.whitelistedRibbonVault(_args.owner) ? 2 : _args.vaultType;
+        vaultType[_args.owner][vaultId] = borrowablePool.isWhitelistedOptionsVault(_args.owner) ? 2 : _args.vaultType;
 
         emit VaultOpened(_args.owner, vaultId, _args.vaultType);
     }
@@ -906,7 +906,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         otoken.burnOtoken(msg.sender, _args.amount);
 
-        MarginPoolInterface _pool = (!borrowablePool.whitelistedOTokenBuyer(msg.sender) ||
+        MarginPoolInterface _pool = (!borrowablePool.isWhitelistedOTokenBuyer(msg.sender) ||
             ERC20Interface(collateral).balanceOf(address(borrowablePool)) < payout)
             ? pool
             : borrowablePool;

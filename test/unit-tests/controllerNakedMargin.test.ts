@@ -195,7 +195,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
 
       // open position
       const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
-      const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+      const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
         ? marginPoolV2.address
         : marginPool.address
 
@@ -315,7 +315,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
 
       // open position
       vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
-      const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+      const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
         ? marginPoolV2.address
         : marginPool.address
 
@@ -535,7 +535,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
 
       // open position
       vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
-      const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+      const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
         ? marginPoolV2.address
         : marginPool.address
 
@@ -756,7 +756,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
 
       // open position
       vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
-      const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+      const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
         ? marginPoolV2.address
         : marginPool.address
 
@@ -1000,7 +1000,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
     it('should revert depositing collateral in vault that that hit naked cap', async () => {
       const vaultType = web3.eth.abi.encodeParameter('uint256', 1)
       const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
-      const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+      const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
         ? marginPoolV2.address
         : marginPool.address
 

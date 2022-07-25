@@ -381,7 +381,7 @@ contract(
       describe('deposit long otoken', () => {
         it('should revert depositing a non-whitelisted long otoken into vault', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+          const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
             ? marginPoolV2.address
             : marginPool.address
           const longToDeposit = createTokenAmount(20)
@@ -408,7 +408,7 @@ contract(
 
           const vaultCounter = new BigNumber('100')
 
-          const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+          const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
             ? marginPoolV2.address
             : marginPool.address
 
@@ -432,7 +432,7 @@ contract(
 
         it('should revert depositing long from an address that is not the msg.sender nor the owner account address', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+          const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
             ? marginPoolV2.address
             : marginPool.address
           const longToDeposit = createTokenAmount(20)
@@ -457,7 +457,7 @@ contract(
         it('should deposit long otoken into vault from account owner', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
 
-          const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+          const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
             ? marginPoolV2.address
             : marginPool.address
           const longToDeposit = createTokenAmount(20)
@@ -515,7 +515,7 @@ contract(
 
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
 
-          const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+          const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
             ? marginPoolV2.address
             : marginPool.address
           const longToDeposit = createTokenAmount(20)
@@ -568,7 +568,7 @@ contract(
         it('should execute depositing long otoken into vault in multiple actions', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
 
-          const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+          const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
             ? marginPoolV2.address
             : marginPool.address
           const longToDeposit = new BigNumber(createTokenAmount(20))
@@ -632,7 +632,7 @@ contract(
 
         it('should revert depositing long otoken with amount equal to zero', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+          const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
             ? marginPoolV2.address
             : marginPool.address
           const longToDeposit = createTokenAmount(20)
@@ -673,7 +673,7 @@ contract(
 
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
 
-          const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+          const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
             ? marginPoolV2.address
             : marginPool.address
           const longToDeposit = createTokenAmount(20)
@@ -714,7 +714,7 @@ contract(
           await whitelist.whitelistOtoken(secondLongOtoken.address)
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
 
-          const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+          const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
             ? marginPoolV2.address
             : marginPool.address
           const actionArgs = [
@@ -764,7 +764,7 @@ contract(
             },
           ]
 
-          const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+          const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
             ? marginPoolV2.address
             : marginPool.address
           await longOtoken.approve(finalMarginPool, longToDeposit, { from: accountOwner1 })
@@ -867,7 +867,7 @@ contract(
 
         it('should withdraw long otoken to any random address where msg.sender is account owner', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+          const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
             ? marginPoolV2.address
             : marginPool.address
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
@@ -921,7 +921,7 @@ contract(
           )
 
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+          const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
             ? marginPoolV2.address
             : marginPool.address
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
@@ -969,7 +969,7 @@ contract(
 
         it('should execute withdrawing long otoken in mutliple actions', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+          const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
             ? marginPoolV2.address
             : marginPool.address
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
@@ -1027,7 +1027,7 @@ contract(
 
         it('should remove otoken address from otoken array if amount is equal to zero after withdrawing', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+          const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
             ? marginPoolV2.address
             : marginPool.address
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
@@ -1099,7 +1099,7 @@ contract(
             // deposit long otoken into vault
             const vaultId = new BigNumber('1')
 
-            const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+            const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
               ? marginPoolV2.address
               : marginPool.address
 
@@ -1169,7 +1169,7 @@ contract(
           // whitelist usdc
           await whitelist.whitelistCollateral(usdc.address)
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+          const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
             ? marginPoolV2.address
             : marginPool.address
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
@@ -1223,7 +1223,7 @@ contract(
 
         it('should deposit a whitelisted collateral asset from account operator', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+          const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
             ? marginPoolV2.address
             : marginPool.address
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
@@ -1295,7 +1295,7 @@ contract(
             },
           ]
 
-          const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+          const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
             ? marginPoolV2.address
             : marginPool.address
 
@@ -1305,7 +1305,7 @@ contract(
 
         it('should revert depositing long from an address that is not the msg.sender nor the owner account address', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+          const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
             ? marginPoolV2.address
             : marginPool.address
           const collateralToDeposit = createTokenAmount(10, usdcDecimals)
@@ -1329,7 +1329,7 @@ contract(
 
         it('should revert depositing a collateral asset with amount equal to zero', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+          const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
             ? marginPoolV2.address
             : marginPool.address
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
@@ -1354,7 +1354,7 @@ contract(
 
         it('should execute depositing collateral into vault in multiple actions', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+          const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
             ? marginPoolV2.address
             : marginPool.address
           const collateralToDeposit = new BigNumber(createTokenAmount(20, usdcDecimals))
@@ -1423,7 +1423,7 @@ contract(
             await trx.mint(accountOwner1, new BigNumber('1000'))
 
             const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-            const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+            const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
               ? marginPoolV2.address
               : marginPool.address
             assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
@@ -1454,7 +1454,7 @@ contract(
           await weth.mint(accountOwner1, collateralToDeposit)
 
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+          const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
             ? marginPoolV2.address
             : marginPool.address
           const actionArgs = [
@@ -1548,7 +1548,7 @@ contract(
 
         it('should withdraw collateral to any random address where msg.sender is account owner', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+          const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
             ? marginPoolV2.address
             : marginPool.address
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
@@ -1605,7 +1605,7 @@ contract(
 
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
 
-          const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+          const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
             ? marginPoolV2.address
             : marginPool.address
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
@@ -1655,7 +1655,7 @@ contract(
 
         it('should execute withdrawing collateral asset in mutliple actions', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+          const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
             ? marginPoolV2.address
             : marginPool.address
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
@@ -1715,7 +1715,7 @@ contract(
 
         it('should remove collateral asset address from collateral array if amount is equal to zero after withdrawing', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+          const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
             ? marginPoolV2.address
             : marginPool.address
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
@@ -1835,7 +1835,7 @@ contract(
 
         it('should revert minting using un-marginable collateral asset', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+          const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
             ? marginPoolV2.address
             : marginPool.address
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
@@ -1897,7 +1897,7 @@ contract(
 
         it('mint naked short otoken from owner', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+          const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
             ? marginPoolV2.address
             : marginPool.address
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
@@ -1983,7 +1983,7 @@ contract(
 
         it('mint naked short otoken from operator', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+          const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
             ? marginPoolV2.address
             : marginPool.address
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
@@ -2100,7 +2100,7 @@ contract(
 
         it('should withdraw exceeded collateral from naked short position when net value > 0 ', async () => {
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+          const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
             ? marginPoolV2.address
             : marginPool.address
           assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
@@ -2250,7 +2250,7 @@ contract(
               },
             ]
 
-            const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+            const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
               ? marginPoolV2.address
               : marginPool.address
 
@@ -2652,7 +2652,7 @@ contract(
               },
             ]
 
-            const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+            const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
               ? marginPoolV2.address
               : marginPool.address
 
@@ -2707,7 +2707,7 @@ contract(
 
           it('should revert minting an expired short otoken', async () => {
             const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-            const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+            const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
               ? marginPoolV2.address
               : marginPool.address
             assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')
@@ -3400,7 +3400,7 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-        const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+        const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
           ? marginPoolV2.address
           : marginPool.address
         await usdc.approve(finalMarginPool, collateralToDespoit, { from: accountOwner1 })
@@ -3522,7 +3522,7 @@ contract(
         await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(150), true)
         await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1), true)
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-        const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+        const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
           ? marginPoolV2.address
           : marginPool.address
 
@@ -3582,7 +3582,7 @@ contract(
 
         // mint some long otokens, (so we can put it as long)
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
-        const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+        const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
           ? marginPoolV2.address
           : marginPool.address
 
@@ -3718,7 +3718,7 @@ contract(
           let collateralToDespoit = createTokenAmount(200, usdcDecimals)
           let amountToMint = createTokenAmount(1)
           let vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
-          const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+          const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
             ? marginPoolV2.address
             : marginPool.address
 
@@ -3820,7 +3820,7 @@ contract(
           await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry2, createTokenAmount(200), true)
           await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry2, createTokenAmount(1), true)
           const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-          const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+          const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
             ? marginPoolV2.address
             : marginPool.address
           const actionArgs = [
@@ -4120,7 +4120,7 @@ contract(
         // open new vault, mint naked short, sell it to holder 1
         const collateralToDespoit = new BigNumber(await shortOtokenV1.strikePrice()).dividedBy(100)
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
-        const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+        const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
           ? marginPoolV2.address
           : marginPool.address
 
@@ -4172,7 +4172,7 @@ contract(
         await oracle.setExpiryPriceFinalizedAllPeiodOver(weth.address, expiry, createTokenAmount(150), true)
         await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1), true)
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-        const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+        const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
           ? marginPoolV2.address
           : marginPool.address
         const actionArgs = [
@@ -4291,7 +4291,7 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-        const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+        const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
           ? marginPoolV2.address
           : marginPool.address
 
@@ -4344,7 +4344,7 @@ contract(
 
       it('should revert depositing collateral when system is partially paused', async () => {
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-        const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+        const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
           ? marginPoolV2.address
           : marginPool.address
         const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e8)
@@ -4366,7 +4366,7 @@ contract(
 
       it('should revert minting short otoken when system is partially paused', async () => {
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-        const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+        const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
           ? marginPoolV2.address
           : marginPool.address
         const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e8)
@@ -4441,7 +4441,7 @@ contract(
         await oracle.setExpiryPriceFinalizedAllPeiodOver(usdc.address, expiry, createTokenAmount(1), true)
 
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-        const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+        const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
           ? marginPoolV2.address
           : marginPool.address
         const actionArgs = [
@@ -4483,7 +4483,7 @@ contract(
         // transfer to holder
         await shortOtoken.transfer(holder1, amountToRedeem, { from: accountOwner1 })
 
-        const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+        const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
           ? marginPoolV2.address
           : marginPool.address
 
@@ -4589,7 +4589,7 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-        const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+        const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
           ? marginPoolV2.address
           : marginPool.address
 
@@ -4642,7 +4642,7 @@ contract(
 
       it('should revert depositing collateral when system is in full pause state', async () => {
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-        const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+        const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
           ? marginPoolV2.address
           : marginPool.address
         const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e8)
@@ -4664,7 +4664,7 @@ contract(
 
       it('should revert minting short otoken when system is in full pause state', async () => {
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-        const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+        const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
           ? marginPoolV2.address
           : marginPool.address
         const collateralToDeposit = new BigNumber(await shortOtoken.strikePrice()).dividedBy(1e8)
@@ -4859,7 +4859,7 @@ contract(
     describe('Execute an invalid action', () => {
       it('Should execute transaction with no state updates', async () => {
         const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
-        const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
+        const finalMarginPool = (await marginPoolV2.isWhitelistedRibbonVault(accountOwner1))
           ? marginPoolV2.address
           : marginPool.address
         assert.isAbove(vaultCounter.toNumber(), 0, 'Account owner have no vault')

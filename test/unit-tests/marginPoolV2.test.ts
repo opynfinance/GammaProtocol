@@ -106,17 +106,17 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
     it('should set whitelist status to true when called from owner', async () => {
       await marginPool.setBorrowerWhitelistedStatus(random, true, { from: owner })
 
-      assert.equal(await marginPool.whitelistedBorrower(random), true, 'whitelist status mismatch')
+      assert.equal(await marginPool.isWhitelistedBorrower(random), true, 'whitelist status mismatch')
     })
 
     it('should set whitelist status to false when called from owner', async () => {
       await marginPool.setBorrowerWhitelistedStatus(random, true, { from: owner })
 
-      assert.equal(await marginPool.whitelistedBorrower(random), true, 'whitelist status mismatch')
+      assert.equal(await marginPool.isWhitelistedBorrower(random), true, 'whitelist status mismatch')
 
       await marginPool.setBorrowerWhitelistedStatus(random, false, { from: owner })
 
-      assert.equal(await marginPool.whitelistedBorrower(random), false, 'whitelist status mismatch')
+      assert.equal(await marginPool.isWhitelistedBorrower(random), false, 'whitelist status mismatch')
     })
   })
 
@@ -131,42 +131,42 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
     it('should set whitelist status to true when called from owner', async () => {
       await marginPool.setBuyerWhitelistedStatus(random, true, { from: owner })
 
-      assert.equal(await marginPool.whitelistedOTokenBuyer(random), true, 'whitelist status mismatch')
+      assert.equal(await marginPool.isWhitelistedOTokenBuyer(random), true, 'whitelist status mismatch')
     })
 
     it('should set whitelist status to false when called from owner', async () => {
       await marginPool.setBuyerWhitelistedStatus(random, true, { from: owner })
 
-      assert.equal(await marginPool.whitelistedOTokenBuyer(random), true, 'whitelist status mismatch')
+      assert.equal(await marginPool.isWhitelistedOTokenBuyer(random), true, 'whitelist status mismatch')
 
       await marginPool.setBuyerWhitelistedStatus(random, false, { from: owner })
 
-      assert.equal(await marginPool.whitelistedOTokenBuyer(random), false, 'whitelist status mismatch')
+      assert.equal(await marginPool.isWhitelistedOTokenBuyer(random), false, 'whitelist status mismatch')
     })
   })
 
-  describe('Set Ribbon Vault Whitelist', () => {
-    it('should revert calling setRibbonVaultWhitelistedStatus from non-owner', async () => {
+  describe('Set Options Vault Whitelist', () => {
+    it('should revert calling setOptionsVaultWhitelistedStatus from non-owner', async () => {
       await expectRevert(
-        marginPool.setRibbonVaultWhitelistedStatus(random, true, { from: random }),
+        marginPool.setOptionsVaultWhitelistedStatus(random, true, { from: random }),
         'Ownable: caller is not the owner',
       )
     })
 
     it('should set whitelist status to true when called from owner', async () => {
-      await marginPool.setRibbonVaultWhitelistedStatus(random, true, { from: owner })
+      await marginPool.setOptionsVaultWhitelistedStatus(random, true, { from: owner })
 
-      assert.equal(await marginPool.whitelistedRibbonVault(random), true, 'whitelist status mismatch')
+      assert.equal(await marginPool.isWhitelistedOptionsVault(random), true, 'whitelist status mismatch')
     })
 
     it('should set whitelist status to false when called from owner', async () => {
-      await marginPool.setRibbonVaultWhitelistedStatus(random, true, { from: owner })
+      await marginPool.setOptionsVaultWhitelistedStatus(random, true, { from: owner })
 
-      assert.equal(await marginPool.whitelistedRibbonVault(random), true, 'whitelist status mismatch')
+      assert.equal(await marginPool.isWhitelistedOptionsVault(random), true, 'whitelist status mismatch')
 
-      await marginPool.setRibbonVaultWhitelistedStatus(random, false, { from: owner })
+      await marginPool.setOptionsVaultWhitelistedStatus(random, false, { from: owner })
 
-      assert.equal(await marginPool.whitelistedRibbonVault(random), false, 'whitelist status mismatch')
+      assert.equal(await marginPool.isWhitelistedOptionsVault(random), false, 'whitelist status mismatch')
     })
   })
 
