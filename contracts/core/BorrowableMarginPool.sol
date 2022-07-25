@@ -48,7 +48,7 @@ contract BorrowableMarginPool is MarginPool {
     /// @notice emit event when a oToken buyer is whitelisted / blacklisted
     event SetOTokenBuyerWhitelist(address indexed oTokenBuyer, bool whitelisted);
     /// @notice emit event when a options vault is whitelisted / blacklisted
-    event SetOptionVaultWhitelist(address indexed optionsVault, bool whitelisted);
+    event SetOptionsVaultWhitelist(address indexed optionsVault, bool whitelisted);
     /// @notice emit event when borrowing percent has been changed
     event SetBorrowPCT(address indexed collateralAsset, uint256 borrowPCT);
     /// @notice emit event when a borrower borrows an asset
@@ -128,10 +128,10 @@ contract BorrowableMarginPool is MarginPool {
      * @param _whitelisted bool of whether it is whitelisted or blacklisted
      */
     function setOTokenBuyerWhitelistedStatus(address _oTokenBuyer, bool _whitelisted) external onlyOwner {
-        require(_buyer != address(0), "!_buyer");
+        require(_oTokenBuyer != address(0), "!_buyer");
 
-        whitelistedOTokenBuyer[_buyer] = _whitelisted;
-        emit SetOTokenBuyerWhitelist(_buyer, _whitelisted);
+        whitelistedOTokenBuyer[_oTokenBuyer] = _whitelisted;
+        emit SetOTokenBuyerWhitelist(_oTokenBuyer, _whitelisted);
     }
 
     /**
