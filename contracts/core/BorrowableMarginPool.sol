@@ -16,7 +16,7 @@ import {MarginPool} from "./MarginPool.sol";
  * @title MarginPoolV2
  * @notice Contract that holds all protocol funds AND allows collateral borrows
  */
-contract MarginPoolV2 is MarginPool {
+contract BorrowableMarginPool is MarginPool {
     using SafeMath for uint256;
     using SafeERC20 for ERC20Interface;
 
