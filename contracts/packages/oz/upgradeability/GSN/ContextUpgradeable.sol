@@ -22,11 +22,11 @@ abstract contract ContextUpgradeable is Initializable {
 
     function __Context_init_unchained() internal initializer {}
 
-    function _msgSender() internal virtual view returns (address payable) {
+    function _msgSender() internal view virtual returns (address payable) {
         return msg.sender;
     }
 
-    function _msgData() internal virtual view returns (bytes memory) {
+    function _msgData() internal view virtual returns (bytes memory) {
         this; // silence state mutability warning without generating bytecode - see https://github.com/ethereum/solidity/issues/2691
         return msg.data;
     }

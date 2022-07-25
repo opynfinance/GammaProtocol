@@ -444,11 +444,13 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
           data: ZERO_ADDR,
         },
       ]
+
       const finalMarginPool = (await marginPoolV2.whitelistedRibbonVault(accountOwner1))
         ? marginPoolV2.address
         : marginPool.address
 
       await usdc.approve(finalMarginPool, collateralToDeposit, { from: accountOwner1 })
+
       await payableProxyController.operate(actionArgs, accountOwner1, { from: accountOwner1 })
       // transfer minted short otoken to hodler`
       await shortOtoken.transfer(holder1, amountToMint.toString(), { from: accountOwner1 })

@@ -101,7 +101,7 @@ contract('FlashUnwrap', ([owner, accountOwner1]) => {
 
   describe('Unwrap ETH', () => {
     before(async () => {
-      weth.deposit({ value: web3.utils.toWei('5', 'ether'), from: accountOwner1 })
+      await weth.deposit({ value: web3.utils.toWei('5', 'ether'), from: accountOwner1 })
 
       assert.equal(await weth.balanceOf(accountOwner1), web3.utils.toWei('5', 'ether'), 'WETH balance mismatch')
 
