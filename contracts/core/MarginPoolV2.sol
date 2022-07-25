@@ -172,14 +172,13 @@ contract MarginPoolV2 is MarginPool {
 
         uint256 collateralAssetDecimals = ERC20Interface(collateralAsset).decimals();
 
+        uint256 oTokenBalance = ERC20Interface(_oToken).balanceOf(msg.sender);
+
         // Each oToken represents 1:1 of collateral token
         // So a market maker can borrow at most our oToken balance in the collateral asset
-        uint256 collateralAllocatedToMM = ERC20Interface(_oToken).balanceOf(msg.sender);
-        if (collateralAssetDecimals >= 8) {
-            collateralAllocatedToMM = collateralAllocatedToMM.mul(10**(collateralAssetDecimals.sub(8)));
-        } else {
-            collateralAllocatedToMM = collateralAllocatedToMM.div(10**(uint256(8).sub(collateralAssetDecimals)));
-        }
+        uint256 collateralAllocatedToMM = collateralAssetDecimals >= 8
+            ? oTokenBalance.mul(10**(collateralAssetDecimals.sub(8)))
+            : oTokenBalance.div(10**(uint256(8).sub(collateralAssetDecimals)));
 
         require(
             _amount <=
@@ -189,7 +188,13 @@ contract MarginPoolV2 is MarginPool {
 
         borrowed[msg.sender][collateralAsset] = outstandingAssetBorrow.add(_amount);
 
-        // transfer _asset _amount from pool to borrower
+        // transfer (oTokenBalance * _amount / collateralAllocatedToMM) of oToken from borrower to _pool
+        ERC20Interface(_oToken).safeTransferFrom(
+            msg.sender,
+            address(this),
+            oTokenBalance.mul(_amount).div(collateralAllocatedToMM)
+        );
+        // transfer _amount of collateralAsset from pool to borrower
         ERC20Interface(collateralAsset).safeTransfer(msg.sender, _amount);
         emit Borrow(_oToken, collateralAsset, _amount, msg.sender);
     }
@@ -268,8 +273,16 @@ contract MarginPoolV2 is MarginPool {
 
         borrowed[_borrower][collateralAsset] = borrowed[_borrower][collateralAsset].sub(_amount);
 
-        // transfer _asset _amount from pool to borrower
+        uint256 collateralAssetDecimals = ERC20Interface(collateralAsset).decimals();
+
+        uint256 oTokensToRedeem = collateralAssetDecimals >= 8
+            ? _amount.div(10**(collateralAssetDecimals.sub(8)))
+            : _amount.mul(10**(uint256(8).sub(collateralAssetDecimals)));
+
+        // transfer _amount of collateralAsset from borrower to pool
         ERC20Interface(collateralAsset).safeTransferFrom(_repayer, address(this), _amount);
+        // transfer oTokensToRedeem of oToken from pool to _borrower
+        ERC20Interface(_oToken).safeTransfer(_borrower, oTokensToRedeem);
         emit Repay(_oToken, collateralAsset, _amount, _borrower, _repayer);
     }
 }
