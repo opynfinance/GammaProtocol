@@ -155,14 +155,14 @@ contract MarginPoolV2 is MarginPool {
             "MarginPool: oToken is not whitelisted"
         );
 
+        require(_amount > 0, "MarginPool: Cannot borrow 0 of underlying");
+
         OtokenInterface oToken = OtokenInterface(_oToken);
 
         address collateralAsset = oToken.collateralAsset();
         uint256 outstandingAssetBorrow = borrowed[msg.sender][collateralAsset];
 
         require(!oToken.isPut(), "MarginPool: oToken is not a call option");
-
-        require(borrowPCT[collateralAsset] > 0, "MarginPool: Borrowing is paused for collateral asset");
 
         // Make sure borrow does not attempt to borrow with an expired oToken
         require(
@@ -259,6 +259,8 @@ contract MarginPoolV2 is MarginPool {
         address _borrower,
         address _repayer
     ) internal {
+        require(_amount > 0, "MarginPool: Cannot repay 0 of underlying");
+
         address collateralAsset = OtokenInterface(_oToken).collateralAsset();
         uint256 outstandingAssetBorrow = borrowed[_borrower][collateralAsset];
 

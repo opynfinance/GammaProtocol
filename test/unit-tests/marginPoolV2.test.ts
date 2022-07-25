@@ -219,6 +219,13 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
       )
     })
 
+    it('should revert borrowing if borrowing 0 of underlying', async () => {
+      await expectRevert(
+        marginPool.borrow(otoken.address, 0, { from: random }),
+        'MarginPool: Cannot borrow 0 of underlying',
+      )
+    })
+
     it('should revert borrowing if borrowPCT = 0', async () => {
       await marginPool.setBorrowPCT(await otoken.collateralAsset(), 0, { from: owner })
 
@@ -230,7 +237,7 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
 
       await expectRevert(
         marginPool.borrow(otoken.address, 1, { from: random }),
-        'MarginPool: Borrowing is paused for collateral asset',
+        'MarginPool: Borrowing more than allocated',
       )
     })
 
@@ -445,6 +452,13 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
       await whitelist.whitelistOtoken(otoken.address)
     })
 
+    it('should revert borrowing if repaying 0 of underlying', async () => {
+      await expectRevert(
+        marginPool.repay(otoken.address, 0, { from: user1 }),
+        'MarginPool: Cannot repay 0 of underlying',
+      )
+    })
+
     it('should revert if repaying more than outstanding borrow', async () => {
       const oTokenToUnderlying = new BigNumber(await otoken.balanceOf(user1)).times(
         new BigNumber(10).exponentiatedBy(10),
@@ -519,6 +533,13 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
 
       await usdc.approve(marginPool.address, oTokenToUnderlying, { from: user1 })
       await marginPool.repay(otoken.address, oTokenToUnderlying, { from: user1 })
+    })
+
+    it('should revert borrowing if repaying 0 of underlying', async () => {
+      await expectRevert(
+        marginPool.repay(otoken.address, 0, { from: user1 }),
+        'MarginPool: Cannot repay 0 of underlying',
+      )
     })
 
     it('should revert if repaying more than outstanding borrow', async () => {
