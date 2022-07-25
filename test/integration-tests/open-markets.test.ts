@@ -106,7 +106,9 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
     await addressBook.setController(controller.address)
     controller = await Controller.at(await addressBook.getController())
 
-    await controller.setBorrowableMarginPool(borrowableMarginPool.address, { from: owner })
+    await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), borrowableMarginPool.address, {
+      from: accountOwner1,
+    })
   })
 
   describe('Otoken Creation before whitelisting', () => {

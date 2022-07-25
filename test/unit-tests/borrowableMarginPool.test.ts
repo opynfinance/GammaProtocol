@@ -121,25 +121,25 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
   })
 
   describe('Set oToken Buyer Whitelist', () => {
-    it('should revert calling setBuyerWhitelistedStatus from non-owner', async () => {
+    it('should revert calling setOTokenBuyerWhitelistedStatus from non-owner', async () => {
       await expectRevert(
-        marginPool.setBuyerWhitelistedStatus(random, true, { from: random }),
+        marginPool.setOTokenBuyerWhitelistedStatus(random, true, { from: random }),
         'Ownable: caller is not the owner',
       )
     })
 
     it('should set whitelist status to true when called from owner', async () => {
-      await marginPool.setBuyerWhitelistedStatus(random, true, { from: owner })
+      await marginPool.setOTokenBuyerWhitelistedStatus(random, true, { from: owner })
 
       assert.equal(await marginPool.isWhitelistedOTokenBuyer(random), true, 'whitelist status mismatch')
     })
 
     it('should set whitelist status to false when called from owner', async () => {
-      await marginPool.setBuyerWhitelistedStatus(random, true, { from: owner })
+      await marginPool.setOTokenBuyerWhitelistedStatus(random, true, { from: owner })
 
       assert.equal(await marginPool.isWhitelistedOTokenBuyer(random), true, 'whitelist status mismatch')
 
-      await marginPool.setBuyerWhitelistedStatus(random, false, { from: owner })
+      await marginPool.setOTokenBuyerWhitelistedStatus(random, false, { from: owner })
 
       assert.equal(await marginPool.isWhitelistedOTokenBuyer(random), false, 'whitelist status mismatch')
     })
