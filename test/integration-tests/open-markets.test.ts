@@ -107,7 +107,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
     controller = await Controller.at(await addressBook.getController())
 
     await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), borrowableMarginPool.address, {
-      from: accountOwner1,
+      from: owner,
     })
   })
 
