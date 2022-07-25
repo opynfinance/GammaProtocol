@@ -102,7 +102,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
     /******************************************************************** V2.0.0 storage upgrade ******************************************************/
 
-    /// @dev mapping to map vault by each vault type, naked margin vault should be set to 1, spread/max loss vault should be set to 0
+    /// @dev mapping to map vault by each vault type
+    /// borrowable pool margin vault should be set to 2, naked margin vault should be set to 1, spread/max loss vault should be set to 0
     mapping(address => mapping(uint256 => uint256)) internal vaultType;
     /// @dev mapping to store the timestamp at which the vault was last updated, will be updated in every action that changes the vault state or when calling sync()
     mapping(address => mapping(uint256 => uint256)) internal vaultLatestUpdate;
@@ -697,10 +698,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         // store new vault
         accountVaultCounter[_args.owner] = vaultId;
-        vaultType[_args.owner][vaultId] = _args.vaultType;
-        vaults[_args.owner][vaultId].setMarginPool(
-            borrowablePool.whitelistedRibbonVault(_args.owner) ? address(borrowablePool) : address(pool)
-        );
+        vaultType[_args.owner][vaultId] = borrowablePool.whitelistedRibbonVault(_args.owner) ? 2 : _args.vaultType;
 
         emit VaultOpened(_args.owner, vaultId, _args.vaultType);
     }
@@ -727,7 +725,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         vaults[_args.owner][_args.vaultId].addLong(_args.asset, _args.amount, _args.index);
 
-        MarginPoolInterface(vaults[_args.owner][_args.vaultId].marginPool).transferToPool(
+        MarginPoolInterface(_getPool(vaultType[_args.owner][_args.vaultId])).transferToPool(
             _args.asset,
             _args.from,
             _args.amount
@@ -754,7 +752,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         vaults[_args.owner][_args.vaultId].removeLong(_args.asset, _args.amount, _args.index);
 
-        MarginPoolInterface(vaults[_args.owner][_args.vaultId].marginPool).transferToUser(
+        MarginPoolInterface(_getPool(vaultType[_args.owner][_args.vaultId])).transferToUser(
             _args.asset,
             _args.to,
             _args.amount
@@ -779,7 +777,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         require(whitelist.isWhitelistedCollateral(_args.asset), "C21");
 
-        (MarginVault.Vault memory vault, uint256 typeVault, ) = getVaultWithDetails(_args.owner, _args.vaultId);
+        (, uint256 typeVault, ) = getVaultWithDetails(_args.owner, _args.vaultId);
 
         if (typeVault == 1) {
             nakedPoolBalance[_args.asset] = nakedPoolBalance[_args.asset].add(_args.amount);
@@ -789,7 +787,11 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         vaults[_args.owner][_args.vaultId].addCollateral(_args.asset, _args.amount, _args.index);
 
-        MarginPoolInterface(vault.marginPool).transferToPool(_args.asset, _args.from, _args.amount);
+        MarginPoolInterface(_getPool(vaultType[_args.owner][_args.vaultId])).transferToPool(
+            _args.asset,
+            _args.from,
+            _args.amount
+        );
 
         emit CollateralAssetDeposited(_args.asset, _args.owner, _args.from, _args.vaultId, _args.amount);
     }
@@ -820,7 +822,11 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         vaults[_args.owner][_args.vaultId].removeCollateral(_args.asset, _args.amount, _args.index);
 
-        MarginPoolInterface(vault.marginPool).transferToUser(_args.asset, _args.to, _args.amount);
+        MarginPoolInterface(_getPool(vaultType[_args.owner][_args.vaultId])).transferToUser(
+            _args.asset,
+            _args.to,
+            _args.amount
+        );
 
         emit CollateralAssetWithdrawed(_args.asset, _args.owner, _args.to, _args.vaultId, _args.amount);
     }
@@ -938,7 +944,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             if (hasLong) {
                 OtokenInterface longOtoken = OtokenInterface(vault.longOtokens[0]);
 
-                longOtoken.burnOtoken(vault.marginPool, vault.longAmounts[0]);
+                longOtoken.burnOtoken(_getPool(vaultType[_args.owner][_args.vaultId]), vault.longAmounts[0]);
             }
         }
 
@@ -960,9 +966,11 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             nakedPoolBalance[collateral] = nakedPoolBalance[collateral].sub(payout);
         }
 
-        vaults[_args.owner][_args.vaultId].setMarginPool(vault.marginPool);
-
-        MarginPoolInterface(vault.marginPool).transferToUser(collateral, _args.to, payout);
+        MarginPoolInterface(_getPool(vaultType[_args.owner][_args.vaultId])).transferToUser(
+            collateral,
+            _args.to,
+            payout
+        );
 
         uint256 vaultId = _args.vaultId;
         address payoutRecipient = _args.to;
@@ -1011,7 +1019,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         // decrease internal naked margin collateral amount
         nakedPoolBalance[vault.collateralAssets[0]] = nakedPoolBalance[vault.collateralAssets[0]].sub(collateralToSell);
 
-        MarginPoolInterface(vault.marginPool).transferToUser(
+        MarginPoolInterface(_getPool(vaultType[_args.owner][_args.vaultId])).transferToUser(
             vault.collateralAssets[0],
             _args.receiver,
             collateralToSell
@@ -1152,5 +1160,14 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         calculator = MarginCalculatorInterface(addressbook.getMarginCalculator());
         pool = MarginPoolInterface(addressbook.getMarginPool());
         borrowablePool = MarginPoolInterface(addressbook.getAddress(keccak256("BORROWABLE_POOL")));
+    }
+
+    /**
+     * @dev checks correct pool for vault type. type 0 or 1: non-borrowable pool, type 2: borrowable pool
+     * @param _vaultType type of the vault
+     * @return margin pool corresponding to the vault
+     */
+    function _getPool(uint256 _vaultType) internal view returns (address) {
+        return _vaultType < 2 ? address(pool) : address(borrowablePool);
     }
 }

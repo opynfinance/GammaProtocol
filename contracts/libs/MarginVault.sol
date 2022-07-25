@@ -31,8 +31,6 @@ library MarginVault {
 
     // vault is a struct of 6 arrays that describe a position a user has, a user can have multiple vaults.
     struct Vault {
-        // address of the margin pool for vault
-        address marginPool;
         // addresses of oTokens a user has shorted (i.e. written) against this vault
         address[] shortOtokens;
         // addresses of oTokens a user has bought and deposited in this vault
@@ -47,15 +45,6 @@ library MarginVault {
         uint256[] longAmounts;
         // quantity of ERC-20 deposited as collateral in the vault for each ERC-20 address in collateralAssets
         uint256[] collateralAmounts;
-    }
-
-    /**
-     * @dev increase the short oToken balance in a vault when a new oToken is minted
-     * @param _vault vault to set margin pool for
-     * @param _marginPool address to set margin pool to
-     */
-    function setMarginPool(Vault storage _vault, address _marginPool) external {
-        _vault.marginPool = _marginPool;
     }
 
     /**
