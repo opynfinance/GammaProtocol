@@ -115,7 +115,9 @@ contract('Naked Call Option closed before expiry flow', ([accountOwner1]) => {
     const controllerProxyAddress = await addressBook.getController()
     controllerProxy = await Controller.at(controllerProxyAddress)
 
-    await controllerProxy.setMarginPoolV2(marginPoolV2.address, { from: accountOwner1 })
+    await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), marginPoolV2.address, {
+      from: accountOwner1,
+    })
 
     await otokenFactory.createOtoken(
       weth.address,

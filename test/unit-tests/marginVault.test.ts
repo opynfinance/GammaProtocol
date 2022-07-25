@@ -4,10 +4,10 @@ import {
   OtokenInstance,
   MockAddressBookInstance,
 } from '../../build/types/truffle-types'
-import {BigNumber} from 'bignumber.js'
-import {createTokenAmount} from '../utils'
+import { BigNumber } from 'bignumber.js'
+import { createTokenAmount } from '../utils'
 
-const {expectRevert} = require('@openzeppelin/test-helpers')
+const { expectRevert } = require('@openzeppelin/test-helpers')
 
 const Otoken = artifacts.require('Otoken.sol')
 const MockERC20 = artifacts.require('MockERC20.sol')

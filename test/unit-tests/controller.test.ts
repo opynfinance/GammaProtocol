@@ -116,7 +116,7 @@ contract(
       assert.equal(await controllerProxy.owner(), owner, 'Controller owner address mismatch')
       assert.equal(await controllerProxy.systemPartiallyPaused(), false, 'system is partially paused')
 
-      await controllerProxy.setMarginPoolV2(marginPoolV2.address, { from: owner })
+      await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), marginPoolV2.address, { from: owner })
 
       // make everyone rich
       await usdc.mint(accountOwner1, createTokenAmount(10000, usdcDecimals))
@@ -143,23 +143,6 @@ contract(
         const controllerImplementation = await Controller.new()
 
         await expectRevert(controllerImplementation.initialize(addressBook.address, ZERO_ADDR), 'C8')
-      })
-    })
-
-    describe('Margin Pool', () => {
-      it('should revert setting margin pool v2 from non-owner', async () => {
-        await expectRevert(
-          controllerProxy.setMarginPoolV2(marginPool.address, { from: random }),
-          'Ownable: caller is not the owner',
-        )
-      })
-
-      it('should set margin pool v2', async () => {
-        await controllerProxy.setMarginPoolV2(marginPool.address, { from: owner })
-
-        assert.equal(await controllerProxy.poolV2(), marginPool.address, 'Margin pool v2 address mismatch')
-
-        await controllerProxy.setMarginPoolV2(marginPoolV2.address, { from: owner })
       })
     })
 
@@ -748,7 +731,6 @@ contract(
 
         it('should revert deposting long from controller implementation contract instead of the controller proxy', async () => {
           await controllerImplementation.initialize(addressBook.address, owner)
-          await controllerImplementation.setMarginPoolV2(marginPoolV2.address, { from: owner })
 
           const longToDeposit = createTokenAmount(20)
           const actionArgs = [

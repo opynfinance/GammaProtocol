@@ -72,7 +72,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     OracleInterface public oracle;
     MarginCalculatorInterface public calculator;
     MarginPoolInterface public pool;
-    MarginPoolInterface public poolV2;
+    MarginPoolInterface public borrowablePool;
 
     ///@dev scale used in MarginCalculator
     uint256 internal constant BASE = 8;
@@ -330,7 +330,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _amount amount to donate to pool
      */
     function donateV2(address _asset, uint256 _amount) external {
-        poolV2.transferToPool(_asset, msg.sender, _amount);
+        borrowablePool.transferToPool(_asset, msg.sender, _amount);
 
         emit Donated(msg.sender, _asset, _amount);
     }
@@ -420,15 +420,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         nakedCap[_collateral] = _cap;
 
         emit NakedCapUpdated(_collateral, _cap);
-    }
-
-    /**
-     * @notice Sets margin pool v2
-     * @dev can only be called by the owner
-     * @param _marginPoolV2 margin pool v2 address
-     */
-    function setMarginPoolV2(address _marginPoolV2) external onlyOwner {
-        poolV2 = MarginPoolInterface(_marginPoolV2);
     }
 
     /**
@@ -708,7 +699,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         accountVaultCounter[_args.owner] = vaultId;
         vaultType[_args.owner][vaultId] = _args.vaultType;
         vaults[_args.owner][vaultId].setMarginPool(
-            poolV2.whitelistedRibbonVault(_args.owner) ? address(poolV2) : address(pool)
+            borrowablePool.whitelistedRibbonVault(_args.owner) ? address(borrowablePool) : address(pool)
         );
 
         emit VaultOpened(_args.owner, vaultId, _args.vaultType);
@@ -909,10 +900,10 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         otoken.burnOtoken(msg.sender, _args.amount);
 
-        MarginPoolInterface _pool = (!poolV2.whitelistedOTokenBuyer(msg.sender) ||
-            ERC20Interface(collateral).balanceOf(address(poolV2)) < payout)
+        MarginPoolInterface _pool = (!borrowablePool.whitelistedOTokenBuyer(msg.sender) ||
+            ERC20Interface(collateral).balanceOf(address(borrowablePool)) < payout)
             ? pool
-            : poolV2;
+            : borrowablePool;
 
         _pool.transferToUser(collateral, _args.receiver, payout);
 
@@ -1160,5 +1151,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         oracle = OracleInterface(addressbook.getOracle());
         calculator = MarginCalculatorInterface(addressbook.getMarginCalculator());
         pool = MarginPoolInterface(addressbook.getMarginPool());
+        borrowablePool = MarginPoolInterface(addressbook.getAddress(keccak256("BORROWABLE_POOL")));
     }
 }

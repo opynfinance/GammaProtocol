@@ -119,7 +119,9 @@ contract('Short Put Spread Option expires Otm flow', ([accountOwner1, nakedBuyer
     const controllerProxyAddress = await addressBook.getController()
     controllerProxy = await Controller.at(controllerProxyAddress)
 
-    await controllerProxy.setMarginPoolV2(marginPoolV2.address, { from: accountOwner1 })
+    await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), marginPoolV2.address, {
+      from: accountOwner1,
+    })
 
     await otokenFactory.createOtoken(
       weth.address,

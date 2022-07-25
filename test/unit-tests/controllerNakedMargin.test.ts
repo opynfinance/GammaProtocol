@@ -142,8 +142,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
     await controllerProxy.setNakedCap(usdc.address, usdcCap, { from: owner })
     await controllerProxy.setNakedCap(weth.address, wethCap, { from: owner })
 
-    await controllerProxy.setMarginPoolV2(marginPoolV2.address, { from: owner })
-
+    await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), marginPoolV2.address, { from: owner })
     // make everyone rich
     await usdc.mint(accountOwner1, createTokenAmount(10000000, usdcDecimals))
     await weth.mint(accountOwner1, createTokenAmount(10000, wethDecimals))

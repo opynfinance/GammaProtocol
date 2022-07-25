@@ -121,7 +121,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
 
     payableProxyController = await PayableProxyController.new(controllerProxy.address, marginPool.address, weth.address)
 
-    await controllerProxy.setMarginPoolV2(marginPoolV2.address, { from: owner })
+    await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), marginPoolV2.address, { from: owner })
 
     // make everyone rich
     await usdc.mint(accountOwner1, createTokenAmount(10000, usdcDecimals))

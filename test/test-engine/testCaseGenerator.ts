@@ -213,10 +213,7 @@ export function callMarginRequiredBeforeExpiry(strikePrices: StrikePrices, amoun
   const longAmount = new BigNumber(amounts.longAmount)
 
   const netValue = BigNumber.max(
-    longStrike
-      .minus(shortStrike)
-      .times(shortAmount)
-      .dividedBy(longStrike),
+    longStrike.minus(shortStrike).times(shortAmount).dividedBy(longStrike),
     BigNumber.max(shortAmount.minus(longAmount), 0),
   )
   return round(netValue, wethDecimals)

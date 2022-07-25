@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js'
-import {ActionTesterInstance} from '../../build/types/truffle-types'
+import { ActionTesterInstance } from '../../build/types/truffle-types'
 
-const {BN, expectRevert} = require('@openzeppelin/test-helpers')
+const { BN, expectRevert } = require('@openzeppelin/test-helpers')
 
 const ActionTester = artifacts.require('ActionTester.sol')
 
@@ -24,7 +24,7 @@ contract('Actions', ([owner, random, random2, random3, liquidator]) => {
   const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
   before('Deployment', async () => {
-    actionTester = await ActionTester.new({from: owner})
+    actionTester = await ActionTester.new({ from: owner })
   })
 
   describe('Parse Deposit Arguments', () => {
