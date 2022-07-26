@@ -162,7 +162,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
         },
       ]
 
-      const finalMarginPool = (await borrowableMarginPool.whitelistedRibbonVault(accountOwner1))
+      const finalMarginPool = (await borrowableMarginPool.isWhitelistedOTokenBuyer(accountOwner1))
         ? borrowableMarginPool.address
         : marginPool.address
 
@@ -222,7 +222,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
         },
       ]
 
-      const finalMarginPool = (await borrowableMarginPool.whitelistedRibbonVault(accountOwner1))
+      const finalMarginPool = (await borrowableMarginPool.isWhitelistedOTokenBuyer(accountOwner1))
         ? borrowableMarginPool.address
         : marginPool.address
 
@@ -447,7 +447,7 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
         },
       ]
 
-      const finalMarginPool = (await borrowableMarginPool.whitelistedRibbonVault(accountOwner1))
+      const finalMarginPool = (await borrowableMarginPool.isWhitelistedOTokenBuyer(accountOwner1))
         ? borrowableMarginPool.address
         : marginPool.address
 
