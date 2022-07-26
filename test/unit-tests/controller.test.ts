@@ -4811,13 +4811,13 @@ contract(
       })
     })
 
-    describe('Donate to pool v2', () => {
+    describe('Donate to borrowable pool', () => {
       it('it should donate to margin pool v2', async () => {
         const amountToDonate = createTokenAmount(10, usdcDecimals)
         const storedBalanceBefore = new BigNumber(await borrowableMarginPool.getStoredBalance(usdc.address))
 
         await usdc.approve(borrowableMarginPool.address, amountToDonate, { from: donor })
-        await controllerProxy.donateV2(usdc.address, amountToDonate, { from: donor })
+        await controllerProxy.donateBorrowablePool(usdc.address, amountToDonate, { from: donor })
 
         const storedBalanceAfter = new BigNumber(await borrowableMarginPool.getStoredBalance(usdc.address))
 

@@ -330,7 +330,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _asset asset address
      * @param _amount amount to donate to pool
      */
-    function donateV2(address _asset, uint256 _amount) external {
+    function donateBorrowablePool(address _asset, uint256 _amount) external {
         borrowablePool.transferToPool(_asset, msg.sender, _amount);
 
         emit Donated(msg.sender, _asset, _amount);

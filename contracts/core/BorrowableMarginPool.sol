@@ -32,7 +32,7 @@ contract BorrowableMarginPool is MarginPool {
     mapping(address => bool) internal whitelistedOTokenBuyer;
     /// @dev mapping between address and whitelist status of options vault
     /// This denotes whether an options vault can create a margin vault with
-    /// collateral custodied in this borrowable vault
+    /// collateral custodied in this borrowable pool
     mapping(address => bool) internal whitelistedOptionsVault;
     /// @dev mapping between (borrower, asset) and outstanding borrower amount
     mapping(address => mapping(address => uint256)) public borrowed;
@@ -147,15 +147,15 @@ contract BorrowableMarginPool is MarginPool {
     /**
      * @notice Lends out asset to market maker
      * @param _oToken address of the oToken laying claim to the collateral assets
-     * @param _amount amount of the asset to lend to borrower
+     * @param _oTokenAmount amount of the oToken to post as collateral in exchange
      */
-    function borrow(address _oToken, uint256 _amount) public onlyWhitelistedBorrower {
+    function borrow(address _oToken, uint256 _oTokenAmount) public onlyWhitelistedBorrower {
         require(
             WhitelistInterface(AddressBookInterface(addressBook).getWhitelist()).isWhitelistedOtoken(_oToken),
             "MarginPool: oToken is not whitelisted"
         );
 
-        require(_amount > 0, "MarginPool: Cannot borrow 0 of underlying");
+        require(_oTokenAmount > 0, "MarginPool: Cannot borrow 0 of underlying");
 
         OtokenInterface oToken = OtokenInterface(_oToken);
 
@@ -170,33 +170,29 @@ contract BorrowableMarginPool is MarginPool {
             "MarginPool: Cannot borrow collateral asset of expired oToken"
         );
 
-        uint256 collateralAssetDecimals = ERC20Interface(collateralAsset).decimals();
-
         uint256 oTokenBalance = ERC20Interface(_oToken).balanceOf(msg.sender);
 
         // Each oToken represents 1:1 of collateral token
         // So a market maker can borrow at most our oToken balance in the collateral asset
-        uint256 collateralAllocatedToMM = collateralAssetDecimals >= 8
-            ? oTokenBalance.mul(10**(collateralAssetDecimals.sub(8)))
-            : oTokenBalance.div(10**(uint256(8).sub(collateralAssetDecimals)));
+        uint256 oTokenAmountCustodied = _collateralAssetToOTokenAmount(collateralAsset, outstandingAssetBorrow);
 
         require(
-            _amount <=
-                collateralAllocatedToMM.mul(borrowPCT[collateralAsset]).div(TOTAL_PCT).sub(outstandingAssetBorrow),
+            _oTokenAmount <=
+                oTokenBalance.add(oTokenAmountCustodied).mul(borrowPCT[collateralAsset]).div(TOTAL_PCT).sub(
+                    oTokenAmountCustodied
+                ),
             "MarginPool: Borrowing more than allocated"
         );
 
-        borrowed[msg.sender][collateralAsset] = outstandingAssetBorrow.add(_amount);
+        uint256 collateralAssetAmount = _oTokenToCollateralAssetAmount(collateralAsset, _oTokenAmount);
 
-        // transfer (oTokenBalance * _amount / collateralAllocatedToMM) of oToken from borrower to _pool
-        ERC20Interface(_oToken).safeTransferFrom(
-            msg.sender,
-            address(this),
-            oTokenBalance.mul(_amount).div(collateralAllocatedToMM)
-        );
-        // transfer _amount of collateralAsset from pool to borrower
-        ERC20Interface(collateralAsset).safeTransfer(msg.sender, _amount);
-        emit Borrow(_oToken, collateralAsset, _amount, msg.sender);
+        borrowed[msg.sender][collateralAsset] = outstandingAssetBorrow.add(collateralAssetAmount);
+
+        // transfer _oTokenAmount of oToken from borrower to _pool
+        ERC20Interface(_oToken).safeTransferFrom(msg.sender, address(this), _oTokenAmount);
+        // transfer collateralAssetAmount of collateralAsset from pool to borrower
+        ERC20Interface(collateralAsset).safeTransfer(msg.sender, collateralAssetAmount);
+        emit Borrow(_oToken, collateralAsset, collateralAssetAmount, msg.sender);
     }
 
     /**
@@ -208,81 +204,111 @@ contract BorrowableMarginPool is MarginPool {
         OtokenInterface oToken = OtokenInterface(_oToken);
         address collateralAsset = oToken.collateralAsset();
 
-        uint256 collateralAssetDecimals = ERC20Interface(collateralAsset).decimals();
+        uint256 outstandingAssetBorrow = borrowed[_borrower][collateralAsset];
 
-        uint256 collateralAllocatedToMM = ERC20Interface(_oToken).balanceOf(_borrower);
-        if (collateralAssetDecimals >= 8) {
-            collateralAllocatedToMM = collateralAllocatedToMM.mul(10**(collateralAssetDecimals.sub(8)));
-        } else {
-            collateralAllocatedToMM = collateralAllocatedToMM.div(10**(uint256(8).sub(collateralAssetDecimals)));
-        }
+        uint256 collateralAllocatedToBorrower = _oTokenToCollateralAssetAmount(
+            collateralAsset,
+            ERC20Interface(_oToken).balanceOf(_borrower)
+        );
 
-        uint256 modifiedBal = collateralAllocatedToMM.mul(borrowPCT[collateralAsset]).div(TOTAL_PCT);
+        uint256 modifiedBal = collateralAllocatedToBorrower
+            .add(outstandingAssetBorrow)
+            .mul(borrowPCT[collateralAsset])
+            .div(TOTAL_PCT);
         return
             whitelistedBorrower[_borrower] &&
                 !oToken.isPut() &&
                 oToken.expiryTimestamp() > block.timestamp &&
-                modifiedBal > borrowed[_borrower][collateralAsset]
-                ? modifiedBal.sub(borrowed[_borrower][collateralAsset])
+                modifiedBal > outstandingAssetBorrow
+                ? modifiedBal.sub(outstandingAssetBorrow)
                 : 0;
     }
 
     /**
      * @notice Repays asset back to pool before oToken expiry
      * @param _oToken address of the oToken laying claim to the collateral assets
-     * @param _amount amount of the asset to repay
+     * @param _collateralAmount amount of the asset to repay
      */
-    function repay(address _oToken, uint256 _amount) public {
-        _repay(_oToken, _amount, msg.sender, msg.sender);
+    function repay(address _oToken, uint256 _collateralAmount) public {
+        _repay(_oToken, _collateralAmount, msg.sender, msg.sender);
     }
 
     /**
      * @notice Repays asset back to pool for another borrower before oToken expiry
      * @param _oToken address of the oToken laying claim to the collateral assets
-     * @param _amount amount of the asset to repay
+     * @param _collateralAmount amount of the asset to repay
      * @param _borrower address of the borrower to repay for
      */
     function repayFor(
         address _oToken,
-        uint256 _amount,
+        uint256 _collateralAmount,
         address _borrower
     ) public {
         require(_borrower != address(0), "MarginPool: Borrower cannot be zero address");
-        _repay(_oToken, _amount, _borrower, msg.sender);
+        _repay(_oToken, _collateralAmount, _borrower, msg.sender);
     }
 
     /**
      * @notice Repays asset back to pool for another borrower before oToken expiry
      * @param _oToken address of the oToken laying claim to the collateral assets
-     * @param _amount amount of the asset to repay
+     * @param _collateralAmount amount of the asset to repay
      * @param _borrower address of the borrower to repay for
      * @param _repayer address of the repayer of the loan
      */
     function _repay(
         address _oToken,
-        uint256 _amount,
+        uint256 _collateralAmount,
         address _borrower,
         address _repayer
     ) internal {
-        require(_amount > 0, "MarginPool: Cannot repay 0 of underlying");
+        require(_collateralAmount > 0, "MarginPool: Cannot repay 0 of underlying");
 
         address collateralAsset = OtokenInterface(_oToken).collateralAsset();
         uint256 outstandingAssetBorrow = borrowed[_borrower][collateralAsset];
 
-        require(_amount <= outstandingAssetBorrow, "MarginPool: Repaying more than outstanding borrow amount");
+        require(
+            _collateralAmount <= outstandingAssetBorrow,
+            "MarginPool: Repaying more than outstanding borrow amount"
+        );
 
-        borrowed[_borrower][collateralAsset] = borrowed[_borrower][collateralAsset].sub(_amount);
+        borrowed[_borrower][collateralAsset] = borrowed[_borrower][collateralAsset].sub(_collateralAmount);
 
-        uint256 collateralAssetDecimals = ERC20Interface(collateralAsset).decimals();
-
-        uint256 oTokensToRedeem = collateralAssetDecimals >= 8
-            ? _amount.div(10**(collateralAssetDecimals.sub(8)))
-            : _amount.mul(10**(uint256(8).sub(collateralAssetDecimals)));
+        uint256 oTokensToRedeem = _collateralAssetToOTokenAmount(collateralAsset, _collateralAmount);
 
         // transfer _amount of collateralAsset from borrower to pool
-        ERC20Interface(collateralAsset).safeTransferFrom(_repayer, address(this), _amount);
+        ERC20Interface(collateralAsset).safeTransferFrom(_repayer, address(this), _collateralAmount);
         // transfer oTokensToRedeem of oToken from pool to _borrower
         ERC20Interface(_oToken).safeTransfer(_borrower, oTokensToRedeem);
-        emit Repay(_oToken, collateralAsset, _amount, _borrower, _repayer);
+        emit Repay(_oToken, collateralAsset, _collateralAmount, _borrower, _repayer);
+    }
+
+    /**
+     * @notice Returns the equivalent in collateral asset amount (scale to `collateralAsset` decimals)
+     * @param _collateralAsset address of the collateral asset
+     * @param _amount amount to convert
+     */
+    function _oTokenToCollateralAssetAmount(address _collateralAsset, uint256 _amount) internal view returns (uint256) {
+        uint256 collateralAssetDecimals = ERC20Interface(_collateralAsset).decimals();
+        // If collateral asset has more decimals than oToken decimals (8), we scale up
+        // otherwise we scale down
+        return
+            collateralAssetDecimals >= 8
+                ? _amount.mul(10**(collateralAssetDecimals.sub(8)))
+                : _amount.div(10**(uint256(8).sub(collateralAssetDecimals)));
+    }
+
+    /**
+     * @notice Returns the equivalent in oToken amount (scale to 8 decimals)
+     * @param _collateralAsset address of the collateral asset
+     * @param _amount amount to convert
+     */
+    function _collateralAssetToOTokenAmount(address _collateralAsset, uint256 _amount) internal view returns (uint256) {
+        uint256 collateralAssetDecimals = ERC20Interface(_collateralAsset).decimals();
+        // If otoken has more decimals than collateral asset decimals, we scale down
+        // otherwise we scale up
+        return
+            collateralAssetDecimals >= 8
+                ? _amount.div(10**(collateralAssetDecimals.sub(8)))
+                : _amount.mul(10**(uint256(8).sub(collateralAssetDecimals)));
     }
 }
