@@ -400,7 +400,7 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
 
       assert.equal(
         new BigNumber('0').toString(),
-        new BigNumber(oTokenBalanceBefore).minus(oTokenBalanceAfter).toString(),
+        new BigNumber(oTokenBalanceAfter).toString(),
         'oToken amount mismatch',
       )
 
@@ -595,7 +595,7 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
       const amtBorrowableAfter = await marginPool.borrowable(user1, otoken.address)
       const marginPoolBalanceAfter = new BigNumber(await usdc.balanceOf(marginPool.address))
 
-      assert.equal(oTokenBalanceBefore.toString(), oTokenBalanceAfter.toString(), 'oToken amount mismatch')
+      assert.equal(oTokenBalanceAfter.toString(), oTokenAmount.toString(), 'oToken amount mismatch')
 
       assert.equal(
         new BigNumber(oTokenToUnderlying).toString(),

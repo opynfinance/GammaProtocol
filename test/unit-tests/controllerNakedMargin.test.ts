@@ -115,6 +115,10 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
     whitelist = await MockWhitelistModule.new()
     // set margin pool in addressbook
     await addressBook.setMarginPool(marginPool.address)
+    // set borrowable margin pool in addressbook
+    await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), borrowableMarginPool.address, {
+      from: owner,
+    })
     // set calculator in addressbook
     await addressBook.setMarginCalculator(calculator.address)
     // set oracle in AddressBook
@@ -128,10 +132,6 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
 
     // set controller address in AddressBook
     await addressBook.setController(controllerImplementation.address, { from: owner })
-
-    await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), borrowableMarginPool.address, {
-      from: owner,
-    })
 
     // check controller deployment
     const controllerProxyAddress = await addressBook.getController()

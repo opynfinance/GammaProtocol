@@ -96,6 +96,10 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
     testerCallee = await CalleeAllowanceTester.new(weth.address)
     // set margin pool in addressbook
     await addressBook.setMarginPool(marginPool.address)
+    // set borrowable margin pool in addressbook
+    await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), borrowableMarginPool.address, {
+      from: owner,
+    })
     // set calculator in addressbook
     await addressBook.setMarginCalculator(calculator.address)
     // set oracle in AddressBook
@@ -109,10 +113,6 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
 
     // set controller address in AddressBook
     await addressBook.setController(controllerImplementation.address, { from: owner })
-
-    await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), borrowableMarginPool.address, {
-      from: owner,
-    })
 
     // check controller deployment
     const controllerProxyAddress = await addressBook.getController()
