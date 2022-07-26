@@ -1102,9 +1102,10 @@ contract(
             // deposit long otoken into vault
             const vaultId = new BigNumber('1')
 
-            const finalMarginPool = (await borrowableMarginPool.isWhitelistedOptionsVault(accountOwner1))
-              ? borrowableMarginPool.address
-              : marginPool.address
+            const finalMarginPool =
+              (await controllerProxy.getVaultWithDetails(accountOwner1, vaultId))[1].toNumber() < 2
+                ? marginPool.address
+                : borrowableMarginPool.address
 
             const actionArgs = [
               {

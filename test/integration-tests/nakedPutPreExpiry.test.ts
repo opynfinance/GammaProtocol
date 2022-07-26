@@ -111,7 +111,7 @@ contract('Naked Put Option closed before expiry flow', ([accountOwner1]) => {
     await addressBook.setOtokenFactory(otokenFactory.address)
     await addressBook.setOtokenImpl(otokenImplementation.address)
     await addressBook.setController(controllerImplementation.address)
-    await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), borrowableMarginPool.address, {
+    await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), marginPool.address, {
       from: accountOwner1,
     })
 
