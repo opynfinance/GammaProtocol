@@ -110,6 +110,10 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
     // set controller address in AddressBook
     await addressBook.setController(controllerImplementation.address, { from: owner })
 
+    await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), borrowableMarginPool.address, {
+      from: owner,
+    })
+
     // check controller deployment
     const controllerProxyAddress = await addressBook.getController()
     controllerProxy = await Controller.at(controllerProxyAddress)
@@ -120,10 +124,6 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
     assert.equal(await controllerProxy.systemPartiallyPaused(), false, 'system is partially paused')
 
     payableProxyController = await PayableProxyController.new(controllerProxy.address, marginPool.address, weth.address)
-
-    await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), borrowableMarginPool.address, {
-      from: owner,
-    })
 
     // make everyone rich
     await usdc.mint(accountOwner1, createTokenAmount(10000, usdcDecimals))

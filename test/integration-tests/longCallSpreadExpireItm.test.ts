@@ -89,6 +89,7 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
     borrowableMarginPool = await BorrowableMarginPool.new(addressBook.address)
     // setup margin vault
     const lib = await MarginVault.new()
+
     // setup controllerProxy module
     await Controller.link('MarginVault', lib.address)
     controllerImplementation = await Controller.new(addressBook.address)
@@ -115,13 +116,12 @@ contract('Long Call Spread Option expires Itm flow', ([accountOwner1, nakedBuyer
     await addressBook.setOtokenFactory(otokenFactory.address)
     await addressBook.setOtokenImpl(otokenImplementation.address)
     await addressBook.setController(controllerImplementation.address)
-
-    const controllerProxyAddress = await addressBook.getController()
-    controllerProxy = await Controller.at(controllerProxyAddress)
-
     await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), borrowableMarginPool.address, {
       from: accountOwner1,
     })
+
+    const controllerProxyAddress = await addressBook.getController()
+    controllerProxy = await Controller.at(controllerProxyAddress)
 
     await otokenFactory.createOtoken(
       weth.address,

@@ -394,6 +394,7 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
         new BigNumber(10).exponentiatedBy(10),
       )
 
+      await otoken.approve(marginPool.address, await otoken.balanceOf(user1), { from: user1 })
       await marginPool.borrow(otoken.address, oTokenToUnderlying, { from: user1 })
 
       const borrowerBalanceAfter = new BigNumber(await usdc.balanceOf(user1))
@@ -428,6 +429,8 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
       const oTokenToUnderlying = new BigNumber(await otoken.balanceOf(user1)).times(
         new BigNumber(10).exponentiatedBy(10),
       )
+
+      await otoken.approve(marginPool.address, await otoken.balanceOf(user1), { from: user1 })
 
       await marginPool.borrow(otoken.address, oTokenToUnderlying.div(4), { from: user1 })
 
@@ -482,6 +485,7 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
         new BigNumber(10).exponentiatedBy(10),
       )
 
+      await otoken.approve(marginPool.address, await otoken.balanceOf(user1), { from: user1 })
       await marginPool.borrow(otoken.address, oTokenToUnderlying, { from: user1 })
       await expectRevert(
         marginPool.repay(otoken.address, oTokenToUnderlying.plus(1), { from: user1 }),
@@ -497,6 +501,7 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
         new BigNumber(10).exponentiatedBy(10),
       )
 
+      await otoken.approve(marginPool.address, await otoken.balanceOf(user1), { from: user1 })
       await marginPool.borrow(otoken.address, oTokenToUnderlying, { from: user1 })
 
       const oTokenBalanceBefore = await otoken.balanceOf(user1)
@@ -545,6 +550,7 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
         new BigNumber(10).exponentiatedBy(10),
       )
 
+      await otoken.approve(marginPool.address, await otoken.balanceOf(user1), { from: user1 })
       await marginPool.borrow(otoken.address, oTokenToUnderlying, { from: user1 })
       await expectRevert(
         marginPool.repayFor(otoken.address, oTokenToUnderlying.plus(1), ZERO_ADDR, { from: random }),
@@ -567,6 +573,7 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
         new BigNumber(10).exponentiatedBy(10),
       )
 
+      await otoken.approve(marginPool.address, await otoken.balanceOf(user1), { from: user1 })
       await marginPool.borrow(otoken.address, oTokenToUnderlying, { from: user1 })
       await expectRevert(
         marginPool.repayFor(otoken.address, oTokenToUnderlying.plus(1), user1, { from: random }),
@@ -582,6 +589,7 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
         new BigNumber(10).exponentiatedBy(10),
       )
 
+      await otoken.approve(marginPool.address, await otoken.balanceOf(user1), { from: user1 })
       await marginPool.borrow(otoken.address, oTokenToUnderlying, { from: user1 })
 
       const oTokenBalanceBefore = await otoken.balanceOf(user1)

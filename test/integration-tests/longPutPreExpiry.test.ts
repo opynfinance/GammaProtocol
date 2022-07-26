@@ -115,13 +115,12 @@ contract('Long Put Spread Option closed before expiry flow', ([accountOwner1, bu
     await addressBook.setOtokenFactory(otokenFactory.address)
     await addressBook.setOtokenImpl(otokenImplementation.address)
     await addressBook.setController(controllerImplementation.address)
-
-    const controllerProxyAddress = await addressBook.getController()
-    controllerProxy = await Controller.at(controllerProxyAddress)
-
     await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), borrowableMarginPool.address, {
       from: accountOwner1,
     })
+
+    const controllerProxyAddress = await addressBook.getController()
+    controllerProxy = await Controller.at(controllerProxyAddress)
 
     await otokenFactory.createOtoken(
       weth.address,

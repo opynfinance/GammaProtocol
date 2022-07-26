@@ -107,6 +107,10 @@ contract(
       // set controller address in AddressBook
       await addressBook.setController(controllerImplementation.address, { from: owner })
 
+      await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), borrowableMarginPool.address, {
+        from: owner,
+      })
+
       // check controller deployment
       const controllerProxyAddress = await addressBook.getController()
       controllerProxy = await Controller.at(controllerProxyAddress)
@@ -115,10 +119,6 @@ contract(
       assert.equal(await proxy.proxyOwner(), addressBook.address, 'Proxy owner address mismatch')
       assert.equal(await controllerProxy.owner(), owner, 'Controller owner address mismatch')
       assert.equal(await controllerProxy.systemPartiallyPaused(), false, 'system is partially paused')
-
-      await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), borrowableMarginPool.address, {
-        from: owner,
-      })
 
       // make everyone rich
       await usdc.mint(accountOwner1, createTokenAmount(10000, usdcDecimals))

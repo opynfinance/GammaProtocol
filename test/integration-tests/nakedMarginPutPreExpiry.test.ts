@@ -129,13 +129,12 @@ contract('Naked margin: put position pre expiry', ([owner, accountOwner1, buyer1
     await addressBook.setOtokenFactory(otokenFactory.address)
     await addressBook.setOtokenImpl(otokenImplementation.address)
     await addressBook.setController(controllerImplementation.address)
-
-    const controllerProxyAddress = await addressBook.getController()
-    controllerProxy = await Controller.at(controllerProxyAddress)
-
     await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), borrowableMarginPool.address, {
       from: owner,
     })
+
+    const controllerProxyAddress = await addressBook.getController()
+    controllerProxy = await Controller.at(controllerProxyAddress)
 
     // configure controller
     await controllerProxy.setNakedCap(usdc.address, usdcCap, { from: owner })

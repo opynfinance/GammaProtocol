@@ -95,7 +95,9 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
     await addressBook.setMarginCalculator(calculator.address, { from: owner })
     await addressBook.setMarginPool(marginPool.address, { from: owner })
     await addressBook.setOracle(oracle.address, { from: owner })
-
+    await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), borrowableMarginPool.address, {
+      from: owner,
+    })
     // deploy the controller instance
     const lib = await MarginVault.new()
     await Controller.link('MarginVault', lib.address)
@@ -105,10 +107,6 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
     // set the controller as controller (so it has access to minting tokens)
     await addressBook.setController(controller.address)
     controller = await Controller.at(await addressBook.getController())
-
-    await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), borrowableMarginPool.address, {
-      from: owner,
-    })
   })
 
   describe('Otoken Creation before whitelisting', () => {
