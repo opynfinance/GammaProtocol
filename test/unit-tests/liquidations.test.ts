@@ -116,7 +116,7 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
     })
 
     it('should not be able to liquidate vault with type equal to 0', async () => {
-      const vault = createVault(ZERO_ADDR, shortOtoken.address, undefined, undefined, scaleNum(1), undefined, undefined)
+      const vault = createVault(shortOtoken.address, undefined, undefined, scaleNum(1), undefined, undefined)
       const randomVaultLatestUpdate = '11111111'
       const randomRoundId = '1'
       const vaultType = '0'
@@ -128,7 +128,7 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
     })
 
     it('should not be able to liquidate vault with an auction start timestamp less than latest vault update timestamp', async () => {
-      const vault = createVault(ZERO_ADDR, shortOtoken.address, undefined, undefined, scaleNum(1), undefined, undefined)
+      const vault = createVault(shortOtoken.address, undefined, undefined, scaleNum(1), undefined, undefined)
       const randomVaultLatestUpdate = '11111111'
       const randomRoundId = '1'
 
@@ -139,7 +139,7 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
     })
 
     it('should return not liquidatable with 0 value for dust and price amount when vault have no short Otoken', async () => {
-      const vault = createVault(ZERO_ADDR, undefined, undefined, undefined, scaleNum(0), undefined, undefined)
+      const vault = createVault(undefined, undefined, undefined, scaleNum(0), undefined, undefined)
       const randomVaultLatestUpdate = '0'
       const randomRoundId = '1'
 
@@ -154,7 +154,7 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
       // advance time to after option expiry
       await time.increaseTo(optionExpiry.toNumber() + 10)
 
-      const vault = createVault(ZERO_ADDR, shortOtoken.address, undefined, undefined, scaleNum(1), undefined, undefined)
+      const vault = createVault(shortOtoken.address, undefined, undefined, scaleNum(1), undefined, undefined)
       const randomVaultLatestUpdate = '0'
       const randomRoundId = '1'
 
@@ -188,7 +188,6 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
         ),
       )
       const vault = createVault(
-        ZERO_ADDR,
         shortOtoken.address,
         undefined,
         usdc.address,
@@ -227,7 +226,6 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
       )
 
       const vault = createVault(
-        ZERO_ADDR,
         shortOtoken.address,
         undefined,
         usdc.address,
@@ -289,7 +287,6 @@ contract('MarginCalculator: liquidation', ([owner, random]) => {
       await time.increase(3600)
 
       const vault = createVault(
-        ZERO_ADDR,
         shortOtoken.address,
         undefined,
         usdc.address,
