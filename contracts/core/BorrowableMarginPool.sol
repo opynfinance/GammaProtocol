@@ -175,18 +175,23 @@ contract BorrowableMarginPool is MarginPool {
         // Each oToken represents 1:1 of collateral token
         // So a market maker can borrow at most our oToken balance in the collateral asset
         uint256 oTokenAmountCustodied = _collateralAssetToOTokenAmount(collateralAsset, outstandingAssetBorrow);
+        uint256 totalBorrowable = oTokenBalance.add(oTokenAmountCustodied).mul(borrowPCT[collateralAsset]).div(
+            TOTAL_PCT
+        );
 
         require(
-            _oTokenAmount <=
-                oTokenBalance.add(oTokenAmountCustodied).mul(borrowPCT[collateralAsset]).div(TOTAL_PCT).sub(
-                    oTokenAmountCustodied
-                ),
+            _oTokenAmount <= (totalBorrowable > oTokenAmountCustodied ? totalBorrowable.sub(oTokenAmountCustodied) : 0),
             "MarginPool: Borrowing more than allocated"
         );
 
         uint256 collateralAssetAmount = _oTokenToCollateralAssetAmount(collateralAsset, _oTokenAmount);
 
         borrowed[msg.sender][collateralAsset] = outstandingAssetBorrow.add(collateralAssetAmount);
+
+        // Decrease pool asset balance of collateralAsset
+        if (assetBalance[collateralAsset] > collateralAssetAmount) {
+            assetBalance[collateralAsset] = assetBalance[collateralAsset].sub(collateralAssetAmount);
+        }
 
         // transfer _oTokenAmount of oToken from borrower to _pool
         ERC20Interface(_oToken).safeTransferFrom(msg.sender, address(this), _oTokenAmount);
@@ -274,6 +279,9 @@ contract BorrowableMarginPool is MarginPool {
         borrowed[_borrower][collateralAsset] = borrowed[_borrower][collateralAsset].sub(_collateralAmount);
 
         uint256 oTokensToRedeem = _collateralAssetToOTokenAmount(collateralAsset, _collateralAmount);
+
+        // Increase pool asset balance of collateralAsset
+        assetBalance[collateralAsset] = assetBalance[collateralAsset].add(_collateralAmount);
 
         // transfer _amount of collateralAsset from borrower to pool
         ERC20Interface(collateralAsset).safeTransferFrom(_repayer, address(this), _collateralAmount);

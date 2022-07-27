@@ -27,7 +27,7 @@ const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
 contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
   const usdcToMint = ether('1000')
-  const wethToMint = ether('100')
+  const wethToMint = ether('50')
   const otokenAmount = createTokenAmount(10)
 
   const strikePrice = createTokenAmount(200)
