@@ -94,10 +94,11 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
     await addressBook.setOtokenFactory(otokenFactory.address, { from: owner })
     await addressBook.setMarginCalculator(calculator.address, { from: owner })
     await addressBook.setMarginPool(marginPool.address, { from: owner })
-    await addressBook.setOracle(oracle.address, { from: owner })
-    await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), marginPool.address, {
+    await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), borrowableMarginPool.address, {
       from: owner,
     })
+    await addressBook.setOracle(oracle.address, { from: owner })
+
     // deploy the controller instance
     const lib = await MarginVault.new()
     await Controller.link('MarginVault', lib.address)

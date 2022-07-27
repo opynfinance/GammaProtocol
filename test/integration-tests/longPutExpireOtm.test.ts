@@ -112,12 +112,12 @@ contract('Long Put Spread Option expires Otm flow', ([accountOwner1, nakedBuyer,
     await addressBook.setMarginCalculator(calculator.address)
     await addressBook.setWhitelist(whitelist.address)
     await addressBook.setMarginPool(marginPool.address)
+    await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), borrowableMarginPool.address, {
+      from: accountOwner1,
+    })
     await addressBook.setOtokenFactory(otokenFactory.address)
     await addressBook.setOtokenImpl(otokenImplementation.address)
     await addressBook.setController(controllerImplementation.address)
-    await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), marginPool.address, {
-      from: accountOwner1,
-    })
 
     const controllerProxyAddress = await addressBook.getController()
     controllerProxy = await Controller.at(controllerProxyAddress)
