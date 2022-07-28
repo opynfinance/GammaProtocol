@@ -103,6 +103,13 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
       )
     })
 
+    it('should revert calling setBorrowerWhitelistedStatus on zero address', async () => {
+      await expectRevert(
+        marginPool.setBorrowerWhitelistedStatus(ZERO_ADDR, true, { from: owner }),
+        'MarginPool: Invalid Borrower',
+      )
+    })
+
     it('should set whitelist status to true when called from owner', async () => {
       await marginPool.setBorrowerWhitelistedStatus(random, true, { from: owner })
 
@@ -125,6 +132,13 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
       await expectRevert(
         marginPool.setOTokenBuyerWhitelistedStatus(random, true, { from: random }),
         'Ownable: caller is not the owner',
+      )
+    })
+
+    it('should revert calling setOTokenBuyerWhitelistedStatus on zero address', async () => {
+      await expectRevert(
+        marginPool.setOTokenBuyerWhitelistedStatus(ZERO_ADDR, true, { from: owner }),
+        'MarginPool: Invalid oToken Buyer',
       )
     })
 
@@ -153,6 +167,22 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
       )
     })
 
+    it('should revert calling setOptionsVaultWhitelistedStatus on zero address', async () => {
+      await expectRevert(
+        marginPool.setOptionsVaultWhitelistedStatus(ZERO_ADDR, true, { from: owner }),
+        'MarginPool: Invalid Options Vault',
+      )
+    })
+
+    it('should revert calling setOptionsVaultWhitelistedStatus on retail vault', async () => {
+      await marginPool.setOptionsVaultToRetailStatus([farmer])
+
+      await expectRevert(
+        marginPool.setOptionsVaultWhitelistedStatus(farmer, true, { from: owner }),
+        'MarginPool: Cannot whitelist a retail vault',
+      )
+    })
+
     it('should set whitelist status to true when called from owner', async () => {
       await marginPool.setOptionsVaultWhitelistedStatus(random, true, { from: owner })
 
@@ -167,6 +197,29 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
       await marginPool.setOptionsVaultWhitelistedStatus(random, false, { from: owner })
 
       assert.equal(await marginPool.isWhitelistedOptionsVault(random), false, 'whitelist status mismatch')
+    })
+  })
+
+  describe('Set Options Vault to Retail', () => {
+    it('should revert calling setIsRetailVault from non-owner', async () => {
+      await expectRevert(
+        marginPool.setOptionsVaultToRetailStatus([random], { from: random }),
+        'Ownable: caller is not the owner',
+      )
+    })
+
+    it('should set option vault retail vault status to true when called from owner', async () => {
+      await marginPool.setOptionsVaultToRetailStatus([random], { from: owner })
+
+      assert.equal(await marginPool.isRetailOptionsVault(random), true, 'whitelist status mismatch')
+    })
+
+    it('should set multiple option vaults retail vault status to true when called from owner', async () => {
+      await marginPool.setOptionsVaultToRetailStatus([random, ZERO_ADDR, owner, controllerAddress], { from: owner })
+
+      assert.equal(await marginPool.isRetailOptionsVault(random), true, 'whitelist status mismatch')
+      assert.equal(await marginPool.isRetailOptionsVault(owner), true, 'whitelist status mismatch')
+      assert.equal(await marginPool.isRetailOptionsVault(controllerAddress), true, 'whitelist status mismatch')
     })
   })
 

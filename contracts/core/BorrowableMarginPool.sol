@@ -34,6 +34,8 @@ contract BorrowableMarginPool is MarginPool {
     /// This denotes whether an options vault can create a margin vault with
     /// collateral custodied in this borrowable pool
     mapping(address => bool) internal whitelistedOptionsVault;
+    /// @dev mapping between address and whether vault is a retail vault
+    mapping(address => bool) internal retailVaultStatus;
     /// @dev mapping between (borrower, asset) and outstanding borrower amount
     mapping(address => mapping(address => uint256)) public borrowed;
 
@@ -49,6 +51,8 @@ contract BorrowableMarginPool is MarginPool {
     event SetOTokenBuyerWhitelist(address indexed oTokenBuyer, bool whitelisted);
     /// @notice emit event when a options vault is whitelisted / blacklisted
     event SetOptionsVaultWhitelist(address indexed optionsVault, bool whitelisted);
+    /// @notice emit event when a options vault is set to retail status
+    event SetOptionsVaultToRetailStatus(address indexed optionsVault);
     /// @notice emit event when borrowing percent has been changed
     event SetBorrowPCT(address indexed collateralAsset, uint256 borrowPCT);
     /// @notice emit event when a borrower borrows an asset
@@ -99,27 +103,24 @@ contract BorrowableMarginPool is MarginPool {
     }
 
     /**
+     * @notice check if a options vault is retail vault
+     * @param _optionsVault address of the options vault
+     * @return boolean, True if the options vault is a retail vault
+     */
+    function isRetailOptionsVault(address _optionsVault) external view returns (bool) {
+        return retailVaultStatus[_optionsVault];
+    }
+
+    /**
      * @notice Set borrower whitelist status
      * @param _borrower address of the borrower (100% of the time verified market makers)
      * @param _whitelisted bool of whether it is whitelisted or blacklisted
      */
     function setBorrowerWhitelistedStatus(address _borrower, bool _whitelisted) external onlyOwner {
-        require(_borrower != address(0), "!_borrower");
+        require(_borrower != address(0), "MarginPool: Invalid Borrower");
 
         whitelistedBorrower[_borrower] = _whitelisted;
         emit SetBorrowWhitelist(_borrower, _whitelisted);
-    }
-
-    /**
-     * @notice Set options vault whitelist status
-     * @param _optionsVault address of the options vault
-     * @param _whitelisted bool of whether it is whitelisted or blacklisted
-     */
-    function setOptionsVaultWhitelistedStatus(address _optionsVault, bool _whitelisted) external onlyOwner {
-        require(_optionsVault != address(0), "!_optionsVault");
-
-        whitelistedOptionsVault[_optionsVault] = _whitelisted;
-        emit SetOptionsVaultWhitelist(_optionsVault, _whitelisted);
     }
 
     /**
@@ -128,10 +129,41 @@ contract BorrowableMarginPool is MarginPool {
      * @param _whitelisted bool of whether it is whitelisted or blacklisted
      */
     function setOTokenBuyerWhitelistedStatus(address _oTokenBuyer, bool _whitelisted) external onlyOwner {
-        require(_oTokenBuyer != address(0), "!_buyer");
+        require(_oTokenBuyer != address(0), "MarginPool: Invalid oToken Buyer");
 
         whitelistedOTokenBuyer[_oTokenBuyer] = _whitelisted;
         emit SetOTokenBuyerWhitelist(_oTokenBuyer, _whitelisted);
+    }
+
+    /**
+     * @notice Set options vault whitelist status
+     * @param _optionsVault address of the options vault
+     * @param _whitelisted bool of whether it is whitelisted or blacklisted
+     */
+    function setOptionsVaultWhitelistedStatus(address _optionsVault, bool _whitelisted) external onlyOwner {
+        require(_optionsVault != address(0), "MarginPool: Invalid Options Vault");
+        // Prevent whitelist of retail vault
+        require(!retailVaultStatus[_optionsVault], "MarginPool: Cannot whitelist a retail vault");
+
+        whitelistedOptionsVault[_optionsVault] = _whitelisted;
+        emit SetOptionsVaultWhitelist(_optionsVault, _whitelisted);
+    }
+
+    /**
+     * @notice Set whether vault is a retail vault
+     * @param _optionsVaults address of the options vault
+     */
+    function setOptionsVaultToRetailStatus(address[] calldata _optionsVaults) external onlyOwner {
+        for (uint256 i = 0; i < _optionsVaults.length; i++) {
+            if (_optionsVaults[i] == address(0) || retailVaultStatus[_optionsVaults[i]]) {
+                continue;
+            }
+
+            // Prevents setting to false to avoid multisig risk of
+            // redirecting retail funds to borrowable margin pool
+            retailVaultStatus[_optionsVaults[i]] = true;
+            emit SetOptionsVaultToRetailStatus(_optionsVaults[i]);
+        }
     }
 
     /**
