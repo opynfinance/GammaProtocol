@@ -78,15 +78,19 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
     // mint usdc
     await usdc.mint(user1, usdcToMint)
     // mint usdc
-    await usdc.mint(marginPool.address, usdcToMint)
+    await usdc.mint(controllerAddress, usdcToMint)
     // wrap ETH in Controller module level
     await weth.deposit({ from: controllerAddress, value: wethToMint })
 
     // controller approving infinite amount of WETH to pool
     await weth.approve(marginPool.address, wethToMint, { from: controllerAddress })
+    // controller approving infinite amount of USDC to pool
+    await usdc.approve(marginPool.address, usdcToMint, { from: controllerAddress })
 
     // transfer to pool
     await marginPool.transferToPool(weth.address, controllerAddress, ether('25'), { from: controllerAddress })
+    // transfer to pool
+    await marginPool.transferToPool(usdc.address, controllerAddress, usdcToMint, { from: controllerAddress })
   })
 
   describe('MarginPool initialization', () => {
@@ -97,7 +101,7 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
 
   describe('Transfer to pool', () => {
     const usdcToTransfer = ether('250')
-    const wethToTransfer = ether('25')
+    const wethToTransfer = ether('10')
 
     it('should revert transfering to pool from caller other than controller address', async () => {
       // user approve USDC transfer
@@ -124,7 +128,9 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
       await usdc.approve(marginPool.address, usdcToTransfer, { from: user1 })
 
       await expectRevert(
-        marginPool.transferToPool(usdc.address, marginPool.address, ether('1'), { from: controllerAddress }),
+        marginPool.transferToPool(usdc.address, marginPool.address, new BigNumber(usdcToMint).plus(1), {
+          from: controllerAddress,
+        }),
         'ERC20: transfer amount exceeds balance',
       )
     })
@@ -186,7 +192,7 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
 
   describe('Transfer to user', () => {
     const usdcToTransfer = ether('250')
-    const wethToTransfer = ether('25')
+    const wethToTransfer = ether('10')
 
     it('should revert transfering to user from caller other than controller address', async () => {
       await expectRevert(
@@ -267,7 +273,7 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
 
   describe('Transfer multiple assets to pool', () => {
     const usdcToTransfer = ether('250')
-    const wethToTransfer = ether('25')
+    const wethToTransfer = ether('10')
 
     it('should revert transfering an array to pool from caller other than controller address', async () => {
       // user approve USDC and WETH transfer
@@ -388,7 +394,7 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
       await marginPool.batchTransferToUser(
         [usdc.address, weth.address],
         [user1, controllerAddress],
-        [poolUsdcBalanceBefore, poolWethBalanceBefore],
+        [usdcToTransfer, poolWethBalanceBefore],
         { from: controllerAddress },
       )
 
@@ -398,13 +404,13 @@ contract('MarginPool', ([owner, controllerAddress, farmer, user1, random]) => {
       const poolWethBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
 
       assert.equal(
-        poolUsdcBalanceBefore.toString(),
+        usdcToTransfer.toString(),
         userUsdcBalanceAfter.minus(userUsdcBalanceBefore).toString(),
         'USDC value transfered to user mismatch',
       )
 
       assert.equal(
-        poolUsdcBalanceBefore.toString(),
+        usdcToTransfer.toString(),
         poolUsdcBalanceBefore.minus(poolUsdcBalanceAfter).toString(),
         'USDC value transfered from pool mismatch',
       )
