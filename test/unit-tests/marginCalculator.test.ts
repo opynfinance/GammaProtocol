@@ -224,7 +224,6 @@ contract('MarginCalculator', () => {
     describe('Vault prerequisites checks.', () => {
       it('Should revert when vault contain more than 1 short', async () => {
         const vault = {
-          marginPool: ZERO_ADDR,
           shortOtokens: [eth250Call.address, eth250Put.address],
           longOtokens: [],
           collateralAssets: [],
@@ -239,7 +238,6 @@ contract('MarginCalculator', () => {
       })
       it('Should revert when vault contain more than 1 long asset', async () => {
         const vault = {
-          marginPool: ZERO_ADDR,
           shortOtokens: [],
           longOtokens: [eth250Call.address, eth250Put.address],
           collateralAssets: [],
@@ -254,7 +252,6 @@ contract('MarginCalculator', () => {
       })
       it('Should revert when vault contain more than 1 collateral asset', async () => {
         const vault = {
-          marginPool: ZERO_ADDR,
           shortOtokens: [],
           longOtokens: [],
           collateralAssets: [usdc.address, dai.address],
