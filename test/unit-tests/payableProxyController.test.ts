@@ -6,6 +6,7 @@ import {
   MockWhitelistModuleInstance,
   MarginCalculatorInstance,
   MarginPoolInstance,
+  BorrowableMarginPoolInstance,
   ControllerInstance,
   AddressBookInstance,
   OwnedUpgradeabilityProxyInstance,
@@ -26,6 +27,7 @@ const MarginCalculator = artifacts.require('MarginCalculator.sol')
 const MockWhitelistModule = artifacts.require('MockWhitelistModule.sol')
 const AddressBook = artifacts.require('AddressBook.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
+const BorrowableMarginPool = artifacts.require('BorrowableMarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
 const MarginVault = artifacts.require('MarginVault.sol')
 const CalleeAllowanceTester = artifacts.require('CalleeAllowanceTester.sol')
@@ -59,6 +61,8 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
   let calculator: MarginCalculatorInstance
   // margin pool module
   let marginPool: MarginPoolInstance
+  // margin pool v2 module
+  let borrowableMarginPool: BorrowableMarginPoolInstance
   // whitelist module mock
   let whitelist: MockWhitelistModuleInstance
   // addressbook module mock
@@ -84,12 +88,18 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
     calculator = await MarginCalculator.new(oracle.address)
     // margin pool deployment
     marginPool = await MarginPool.new(addressBook.address)
+    // margin pool v2 deployment
+    borrowableMarginPool = await BorrowableMarginPool.new(addressBook.address)
     // whitelist module
     whitelist = await MockWhitelistModule.new()
     // callee allowance tester
     testerCallee = await CalleeAllowanceTester.new(weth.address)
     // set margin pool in addressbook
     await addressBook.setMarginPool(marginPool.address)
+    // set borrowable margin pool in addressbook
+    await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), borrowableMarginPool.address, {
+      from: owner,
+    })
     // set calculator in addressbook
     await addressBook.setMarginCalculator(calculator.address)
     // set oracle in AddressBook
@@ -152,14 +162,18 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
         },
       ]
 
-      const marginPoolBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
+      const finalMarginPool = (await borrowableMarginPool.isWhitelistedOTokenBuyer(accountOwner1))
+        ? borrowableMarginPool.address
+        : marginPool.address
+
+      const marginPoolBalanceBefore = new BigNumber(await weth.balanceOf(finalMarginPool))
 
       await payableProxyController.operate(actionArgs, accountOwner1, {
         from: accountOwner1,
         value: collateralToDeposit.toString(),
       })
 
-      const marginPoolBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
+      const marginPoolBalanceAfter = new BigNumber(await weth.balanceOf(finalMarginPool))
       const vaultAfter = (await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter))[0]
 
       assert.equal(
@@ -208,14 +222,18 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
         },
       ]
 
-      const marginPoolBalanceBefore = new BigNumber(await weth.balanceOf(marginPool.address))
+      const finalMarginPool = (await borrowableMarginPool.isWhitelistedOTokenBuyer(accountOwner1))
+        ? borrowableMarginPool.address
+        : marginPool.address
+
+      const marginPoolBalanceBefore = new BigNumber(await weth.balanceOf(finalMarginPool))
 
       await payableProxyController.operate(actionArgs, accountOwner1, {
         from: accountOwner1,
         value: ethToSend.toString(),
       })
 
-      const marginPoolBalanceAfter = new BigNumber(await weth.balanceOf(marginPool.address))
+      const marginPoolBalanceAfter = new BigNumber(await weth.balanceOf(finalMarginPool))
       const vaultAfter = (await controllerProxy.getVaultWithDetails(accountOwner1, vaultCounter))[0]
 
       assert.equal(
@@ -428,7 +446,13 @@ contract('PayableProxyController', ([owner, accountOwner1, holder1, random]) => 
           data: ZERO_ADDR,
         },
       ]
-      await usdc.approve(marginPool.address, collateralToDeposit, { from: accountOwner1 })
+
+      const finalMarginPool = (await borrowableMarginPool.isWhitelistedOTokenBuyer(accountOwner1))
+        ? borrowableMarginPool.address
+        : marginPool.address
+
+      await usdc.approve(finalMarginPool, collateralToDeposit, { from: accountOwner1 })
+
       await payableProxyController.operate(actionArgs, accountOwner1, { from: accountOwner1 })
       // transfer minted short otoken to hodler`
       await shortOtoken.transfer(holder1, amountToMint.toString(), { from: accountOwner1 })
