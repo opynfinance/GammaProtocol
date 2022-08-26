@@ -38,6 +38,26 @@ Transaction hash: 0xebf12fc6603ee857bcabe1c0c6194XX82639a9888776f7ff6e83a409XXXX
 Deployed contract address: 0x669cC97687c792fc5369d7bdd38cXXXXXXXXXX
 ```
 
+
+## ChainlinkTwoStep Pricer Deployment
+
+To deploy a new `ChainlinkTwoStepPricer.sol`, it is recommended to use the `deployChainlinkTwoStepPricer` truffle script inside the `scripts` folder.
+
+**Input**
+
+```sh
+truffle exec scripts/deployChainlinkTwoStepPricer.js --network mainnet --bot 0xfacb407914655562d6619b0048a612B1795dF783 --asset 0xaaaebe6fe48e54f431b0c390cfaf0b017d09d42d --weth 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2 --aggregator 0x75FbD83b4bd51dEe765b2a01e8D3aa1B020F9d33 --oracle 0x789cD7AB3742e23Ce0952F6Bc3Eb3A73A0E08833 --gasPrice 100000000000
+```
+
+**Output**
+
+```sh
+Deploying chainlink two step pricer contract on mainnet 🍕
+Chainlink two step pricer deployed! 🎉
+Transaction hash: 0x274331e13761c79a6afb53697637e3ffe866746ed57ca71f4ac9XXXXXXXXXX
+Deployed contract address: 0x1F89774f01A2786bccCFbA9AFXXXXXXXXXX
+```
+
 ## Permit Callee Deployment
 
 The `PermitCallee.sol` contract allow user to call `permit()` function through the Controller Call action.

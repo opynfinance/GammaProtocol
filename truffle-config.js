@@ -64,7 +64,11 @@ module.exports = {
     },
     avax: {
       provider: () => new HDWalletProvider(mnemonic, 'https://api.avax.network/ext/bc/C/rpc'),
+      chain_id: 43114,
       network_id: 1,
+      timeoutBlocks: 50,
+      skipDryRun: false,
+      gasPrice: 25000000000
     },
     fuji: {
       provider: () => new HDWalletProvider(mnemonic, 'https://api.avax-test.network/ext/bc/C/rpc'),
@@ -89,7 +93,8 @@ module.exports = {
   plugins: ['solidity-coverage', 'truffle-contract-size', 'truffle-plugin-verify'],
 
   api_keys: {
-    etherscan: process.env.ETHERSCAN_API,
+     etherscan: process.env.ETHERSCAN_API,
+     snowtrace: process.env.SNOWTRACE_API,
   },
 
   compilers: {
