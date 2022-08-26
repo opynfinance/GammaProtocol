@@ -16,3 +16,4 @@ specs/.certora_verify
 .certora_build.json
 .coverage_contracts/
 .coverage_artifacts/
+*.DS_Store
