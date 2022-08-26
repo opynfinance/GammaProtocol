@@ -4,6 +4,7 @@ import {
   MockOracleInstance,
   MockWhitelistModuleInstance,
   MarginPoolInstance,
+  BorrowableMarginPoolInstance,
   ControllerInstance,
   AddressBookInstance,
   OwnedUpgradeabilityProxyInstance,
@@ -29,6 +30,7 @@ const MarginCalculator = artifacts.require('MarginCalculator.sol')
 const MockWhitelistModule = artifacts.require('MockWhitelistModule.sol')
 const AddressBook = artifacts.require('AddressBook.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
+const BorrowableMarginPool = artifacts.require('BorrowableMarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
 const MarginVault = artifacts.require('MarginVault.sol')
 
@@ -61,6 +63,8 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
   let calculator: MarginCalculatorInstance
   // margin pool module
   let marginPool: MarginPoolInstance
+  // margin pool module v2
+  let borrowableMarginPool: BorrowableMarginPoolInstance
   // whitelist module mock
   let whitelist: MockWhitelistModuleInstance
   // addressbook module mock
@@ -105,10 +109,16 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
     calculator = await MarginCalculator.new(oracle.address)
     // margin pool deployment
     marginPool = await MarginPool.new(addressBook.address)
+    // margin pool v2 deployment
+    borrowableMarginPool = await BorrowableMarginPool.new(addressBook.address)
     // whitelist module
     whitelist = await MockWhitelistModule.new()
     // set margin pool in addressbook
     await addressBook.setMarginPool(marginPool.address)
+    // set borrowable margin pool in addressbook
+    await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), borrowableMarginPool.address, {
+      from: owner,
+    })
     // set calculator in addressbook
     await addressBook.setMarginCalculator(calculator.address)
     // set oracle in AddressBook
@@ -188,6 +198,10 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
 
       // open position
       const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
+      const finalMarginPool = (await borrowableMarginPool.isWhitelistedOTokenBuyer(accountOwner1))
+        ? borrowableMarginPool.address
+        : marginPool.address
+
       const vaultType = web3.eth.abi.encodeParameter('uint256', 1)
       // const collateralAmount = createTokenAmount(shortStrike, usdcDecimals)
       const collateralAmount = await calculator.getNakedMarginRequired(
@@ -234,7 +248,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
           data: ZERO_ADDR,
         },
       ]
-      await usdc.approve(marginPool.address, collateralAmount.toString(), { from: accountOwner1 })
+      await usdc.approve(finalMarginPool, collateralAmount.toString(), { from: accountOwner1 })
       await controllerProxy.operate(mintArgs, { from: accountOwner1 })
 
       const nakedMarginPool = new BigNumber(await controllerProxy.getNakedPoolBalance(usdc.address))
@@ -304,6 +318,10 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
 
       // open position
       vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
+      const finalMarginPool = (await borrowableMarginPool.isWhitelistedOTokenBuyer(accountOwner1))
+        ? borrowableMarginPool.address
+        : marginPool.address
+
       const vaultType = web3.eth.abi.encodeParameter('uint256', 1)
       requiredMargin = new BigNumber(
         await calculator.getNakedMarginRequired(
@@ -354,7 +372,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
 
       const nakedMarginPoolBefore = new BigNumber(await controllerProxy.getNakedPoolBalance(usdc.address))
 
-      await usdc.approve(marginPool.address, requiredMargin.toString(), { from: accountOwner1 })
+      await usdc.approve(finalMarginPool, requiredMargin.toString(), { from: accountOwner1 })
       await controllerProxy.operate(mintArgs, { from: accountOwner1 })
 
       const nakedMarginPoolAfter = new BigNumber(await controllerProxy.getNakedPoolBalance(usdc.address))
@@ -520,6 +538,10 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
 
       // open position
       vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
+      const finalMarginPool = (await borrowableMarginPool.isWhitelistedOTokenBuyer(accountOwner1))
+        ? borrowableMarginPool.address
+        : marginPool.address
+
       const vaultType = web3.eth.abi.encodeParameter('uint256', 1)
       requiredMargin = new BigNumber(
         await calculator.getNakedMarginRequired(
@@ -570,7 +592,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
 
       const nakedMarginPoolBefore = new BigNumber(await controllerProxy.getNakedPoolBalance(weth.address))
 
-      await weth.approve(marginPool.address, requiredMargin.toString(), { from: accountOwner1 })
+      await weth.approve(finalMarginPool, requiredMargin.toString(), { from: accountOwner1 })
       await controllerProxy.operate(mintArgs, { from: accountOwner1 })
 
       const nakedMarginPoolAfter = new BigNumber(await controllerProxy.getNakedPoolBalance(weth.address))
@@ -737,6 +759,10 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
 
       // open position
       vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
+      const finalMarginPool = (await borrowableMarginPool.isWhitelistedOTokenBuyer(accountOwner1))
+        ? borrowableMarginPool.address
+        : marginPool.address
+
       const vaultType = web3.eth.abi.encodeParameter('uint256', 1)
       requiredMargin = new BigNumber(
         await calculator.getNakedMarginRequired(
@@ -784,7 +810,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
           data: ZERO_ADDR,
         },
       ]
-      await usdc.approve(marginPool.address, requiredMargin.toString(), { from: accountOwner1 })
+      await usdc.approve(finalMarginPool, requiredMargin.toString(), { from: accountOwner1 })
       await controllerProxy.operate(mintArgs, { from: accountOwner1 })
 
       const latestVaultUpdateTimestamp = new BigNumber(
@@ -977,6 +1003,10 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
     it('should revert depositing collateral in vault that that hit naked cap', async () => {
       const vaultType = web3.eth.abi.encodeParameter('uint256', 1)
       const vaultCounter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1)).plus(1)
+      const finalMarginPool = (await borrowableMarginPool.isWhitelistedOTokenBuyer(accountOwner1))
+        ? borrowableMarginPool.address
+        : marginPool.address
+
       const capAmount = new BigNumber(await controllerProxy.getNakedCap(usdc.address))
 
       const mintArgs = [
@@ -1001,7 +1031,7 @@ contract('Controller: naked margin', ([owner, accountOwner1, liquidator, random]
           data: ZERO_ADDR,
         },
       ]
-      await usdc.approve(marginPool.address, capAmount.toString(), { from: accountOwner1 })
+      await usdc.approve(finalMarginPool, capAmount.toString(), { from: accountOwner1 })
       await expectRevert(controllerProxy.operate(mintArgs, { from: accountOwner1 }), 'C37')
     })
   })

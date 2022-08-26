@@ -7,6 +7,7 @@ import {
   ControllerInstance,
   WhitelistInstance,
   MarginPoolInstance,
+  BorrowableMarginPoolInstance,
   OtokenFactoryInstance,
 } from '../../build/types/truffle-types'
 import { createTokenAmount, createValidExpiry } from '../utils'
@@ -20,6 +21,7 @@ const MockERC20 = artifacts.require('MockERC20.sol')
 const MarginCalculator = artifacts.require('MarginCalculator.sol')
 const Whitelist = artifacts.require('Whitelist.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
+const BorrowableMarginPool = artifacts.require('BorrowableMarginPool.sol')
 const Controller = artifacts.require('Controller.sol')
 const MarginVault = artifacts.require('MarginVault.sol')
 const OTokenFactory = artifacts.require('OtokenFactory.sol')
@@ -46,6 +48,7 @@ contract('Naked Put Option expires Itm flow', ([accountOwner1, buyer]) => {
   let controllerImplementation: ControllerInstance
   let controllerProxy: ControllerInstance
   let marginPool: MarginPoolInstance
+  let borrowableMarginPool: MarginPoolInstance
   let whitelist: WhitelistInstance
   let otokenImplementation: OtokenInstance
   let otokenFactory: OtokenFactoryInstance
@@ -78,6 +81,8 @@ contract('Naked Put Option expires Itm flow', ([accountOwner1, buyer]) => {
     addressBook = await AddressBook.new()
     // setup margin pool
     marginPool = await MarginPool.new(addressBook.address)
+    // setup margin pool v2
+    borrowableMarginPool = await BorrowableMarginPool.new(addressBook.address)
     // setup margin vault
     const lib = await MarginVault.new()
     // setup controller module
@@ -103,6 +108,9 @@ contract('Naked Put Option expires Itm flow', ([accountOwner1, buyer]) => {
     await addressBook.setMarginCalculator(calculator.address)
     await addressBook.setWhitelist(whitelist.address)
     await addressBook.setMarginPool(marginPool.address)
+    await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), borrowableMarginPool.address, {
+      from: accountOwner1,
+    })
     await addressBook.setOtokenFactory(otokenFactory.address)
     await addressBook.setOtokenImpl(otokenImplementation.address)
     await addressBook.setController(controllerImplementation.address)

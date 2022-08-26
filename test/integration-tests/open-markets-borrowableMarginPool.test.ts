@@ -55,7 +55,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
   let otokenFactory: OtokenFactoryInstance
   let whitelist: WhitelistInstance
   let marginPool: MarginPoolInstance
-  let borrowableMarginPool: MarginPoolInstance
+  let borrowableMarginPool: BorrowableMarginPoolInstance
   let oracle: MockOracleInstance
 
   let usdc: MockERC20Instance
@@ -108,6 +108,8 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
     // set the controller as controller (so it has access to minting tokens)
     await addressBook.setController(controller.address)
     controller = await Controller.at(await addressBook.getController())
+
+    await borrowableMarginPool.setOptionsVaultWhitelistedStatus(user1, true, { from: owner })
   })
 
   describe('Otoken Creation before whitelisting', () => {
@@ -241,7 +243,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
       const vaultCounter = 1
       const amountCollateral = createTokenAmount(2000, 6)
       await usdc.mint(user1, amountCollateral)
-      await usdc.approve(marginPool.address, amountCollateral, { from: user1 })
+      await usdc.approve(borrowableMarginPool.address, amountCollateral, { from: user1 })
       const actionArgs = [
         {
           actionType: ActionType.OpenVault,
@@ -290,7 +292,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
     it('should be able to burn tokens from controller', async () => {
       const vaultCounter = 1
       const amountCollateral = createTokenAmount(2000, 6)
-      await otoken1.approve(marginPool.address, amountToMint, { from: user1 })
+      await otoken1.approve(borrowableMarginPool.address, amountToMint, { from: user1 })
 
       const actionArgs = [
         {
@@ -333,7 +335,7 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
       const vaultCounter = 1
       const amountCollateral = createTokenAmount(2000, 6)
       await usdc.mint(user1, amountCollateral)
-      await usdc.approve(marginPool.address, amountCollateral, { from: user1 })
+      await usdc.approve(borrowableMarginPool.address, amountCollateral, { from: user1 })
       const actionArgs = [
         {
           actionType: ActionType.MintShortOption,

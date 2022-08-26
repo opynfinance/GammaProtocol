@@ -323,7 +323,7 @@ contract(
       })
 
       it('should open vault from account operator', async () => {
-        await borrowableMarginPool.setOptionsVaultWhitelistedStatus(accountOwner1, false, { from: owner })
+        await borrowableMarginPool.setOptionsVaultWhitelistedStatus(accountOwner1, true, { from: owner })
         await controllerProxy.setOperator(accountOperator1, true, { from: accountOwner1 })
 
         const finalMarginPool = (await borrowableMarginPool.isWhitelistedOptionsVault(accountOwner1))
@@ -354,7 +354,7 @@ contract(
 
         const vaultCounterAfter = new BigNumber(await controllerProxy.getAccountVaultCounter(accountOwner1))
         assert.equal(vaultCounterAfter.minus(vaultCounterBefore).toString(), '1', 'vault counter after mismatch')
-        assert.equal(finalMarginPool, marginPool.address, 'vault margin pool mismatch')
+        assert.equal(finalMarginPool, borrowableMarginPool.address, 'vault margin pool mismatch')
       })
     })
 
@@ -2838,7 +2838,7 @@ contract(
             data: ZERO_ADDR,
           },
         ]
-
+        await borrowableMarginPool.setOTokenBuyerWhitelistedStatus(holder1, true, { from: owner })
         finalMarginPool =
           !(await borrowableMarginPool.isWhitelistedOTokenBuyer(holder1)) ||
           new BigNumber(await usdc.balanceOf(borrowableMarginPool.address)).isLessThan(collateralToDeposit)
