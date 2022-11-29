@@ -34,10 +34,7 @@ contract('ManualPricer', ([owner, bot, random]) => {
       assert.equal(oracleModule, oracle.address)
     })
     it('should revert if initializing oracle with 0 address', async () => {
-      await expectRevert(
-        ManualPricer.new(bot, weth.address, oracle.address),
-        'ManualPricer: Cannot set 0 address as oracle',
-      )
+      await expectRevert(ManualPricer.new(bot, weth.address, ZERO_ADDR), 'ManualPricer: Cannot set 0 address as oracle')
     })
     it('should revert if initializing bot with 0 address', async () => {
       await expectRevert(
