@@ -72,10 +72,10 @@ contract('ManualPricer', ([owner, bot, random]) => {
 
       await pricer.setExpiryPriceInOracle(expiryTimestamp, p1, { from: bot })
       const priceFromOracle = await oracle.getExpiryPrice(weth.address, expiryTimestamp)
-      const lastExpiryTimestamp = await oracle.lastExpiryTimestamp()
+      const lastExpiryTimestamp = await pricer.lastExpiryTimestamp()
       assert.equal(p1.toString(), priceFromOracle[0].toString())
       assert.equal(lastExpiryTimestamp, expiryTimestamp)
-      assert.equal(await oracle.historicalPrice(lastExpiryTimestamp), p1)
+      assert.equal(await pricer.historicalPrice(lastExpiryTimestamp), p1)
     })
 
     it('should revert if sender is not bot address', async () => {
@@ -97,14 +97,12 @@ contract('ManualPricer', ([owner, bot, random]) => {
       await pricer.setExpiryPriceInOracle(0, p0, { from: bot })
       const roundData = await pricer.historicalPrice(0)
 
-      assert.equal(roundData[0].toString(), p0, 'Historical round price mismatch')
-
-      assert.equal(roundData[1].toNumber(), t0, 'Historical round timestamp mismatch')
+      assert.equal(roundData.toString(), p0, 'Historical round price mismatch')
     })
 
     it('should revert when no data round available', async () => {
       const invalidRoundId = 2
-      assert.equal(pricer.historicalPrice(2), '0', 'Historical round timestamp mismatch')
+      assert.equal(pricer.historicalPrice(2).toString(), '0', 'Historical round timestamp mismatch')
     })
   })
 })
