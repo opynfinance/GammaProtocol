@@ -74,8 +74,8 @@ contract('ManualPricer', ([owner, bot, random]) => {
       const priceFromOracle = await oracle.getExpiryPrice(weth.address, expiryTimestamp)
       const lastExpiryTimestamp = await pricer.lastExpiryTimestamp()
       assert.equal(p1.toString(), priceFromOracle[0].toString())
-      assert.equal(lastExpiryTimestamp, expiryTimestamp)
-      assert.equal(await pricer.historicalPrice(lastExpiryTimestamp), p1)
+      assert.equal(lastExpiryTimestamp.toString(), expiryTimestamp.toString())
+      assert.equal((await pricer.historicalPrice(lastExpiryTimestamp)).toString(), p1.toString())
     })
 
     it('should revert if sender is not bot address', async () => {
