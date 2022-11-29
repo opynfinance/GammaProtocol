@@ -17,7 +17,7 @@ module.exports = async function(callback) {
 
     console.log(`Deploying manual pricer contract on ${options.network} 🍕`)
 
-    const tx = await ManualPricer.new(options.bot, options.asset, options.aggregator, options.oracle, {
+    const tx = await ManualPricer.new(options.bot, options.asset, options.oracle, {
       gasPrice: options.gasPrice,
       gas: options.gasLimit,
     })
