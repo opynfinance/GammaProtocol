@@ -12,6 +12,7 @@ import {SafeMath} from "../packages/oz/SafeMath.sol";
 import {MarginVault} from "../libs/MarginVault.sol";
 import {Actions} from "../libs/Actions.sol";
 import {AddressBookInterface} from "../interfaces/AddressBookInterface.sol";
+import {ERC20Interface} from "../interfaces/ERC20Interface.sol";
 import {OtokenInterface} from "../interfaces/OtokenInterface.sol";
 import {MarginCalculatorInterface} from "../interfaces/MarginCalculatorInterface.sol";
 import {OracleInterface} from "../interfaces/OracleInterface.sol";
@@ -29,9 +30,6 @@ import {CalleeInterface} from "../interfaces/CalleeInterface.sol";
  * C6: msg.sender is not authorized to run action
  * C7: invalid addressbook address
  * C8: invalid owner address
- * C9: invalid input
- * C10: fullPauser cannot be set to address zero
- * C11: partialPauser cannot be set to address zero
  * C12: can not run actions for different owners
  * C13: can not run actions on different vaults
  * C14: invalid final vault state
@@ -74,6 +72,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     OracleInterface public oracle;
     MarginCalculatorInterface public calculator;
     MarginPoolInterface public pool;
+    MarginPoolInterface public borrowablePool;
 
     ///@dev scale used in MarginCalculator
     uint256 internal constant BASE = 8;
@@ -103,7 +102,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
     /******************************************************************** V2.0.0 storage upgrade ******************************************************/
 
-    /// @dev mapping to map vault by each vault type, naked margin vault should be set to 1, spread/max loss vault should be set to 0
+    /// @dev mapping to map vault by each vault type
+    /// borrowable pool margin vault should be set to 2, naked margin vault should be set to 1, spread/max loss vault should be set to 0
     mapping(address => mapping(uint256 => uint256)) internal vaultType;
     /// @dev mapping to store the timestamp at which the vault was last updated, will be updated in every action that changes the vault state or when calling sync()
     mapping(address => mapping(uint256 => uint256)) internal vaultLatestUpdate;
@@ -215,7 +215,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /**
      * @notice modifier to check if the system is not partially paused, where only redeem and settleVault is allowed
      */
-    modifier notPartiallyPaused {
+    modifier notPartiallyPaused() {
         _isNotPartiallyPaused();
 
         _;
@@ -224,7 +224,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /**
      * @notice modifier to check if the system is not fully paused, where no functionality is allowed
      */
-    modifier notFullyPaused {
+    modifier notFullyPaused() {
         _isNotFullyPaused();
 
         _;
@@ -233,7 +233,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /**
      * @notice modifier to check if sender is the fullPauser address
      */
-    modifier onlyFullPauser {
+    modifier onlyFullPauser() {
         require(msg.sender == fullPauser, "C1");
 
         _;
@@ -242,7 +242,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     /**
      * @notice modifier to check if the sender is the partialPauser address
      */
-    modifier onlyPartialPauser {
+    modifier onlyPartialPauser() {
         require(msg.sender == partialPauser, "C2");
 
         _;
@@ -325,13 +325,23 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
+     * @notice send asset amount to margin pool v2
+     * @dev use donate() instead of direct transfer() to store the balance in assetBalance
+     * @param _asset asset address
+     * @param _amount amount to donate to pool
+     */
+    function donateBorrowablePool(address _asset, uint256 _amount) external {
+        borrowablePool.transferToPool(_asset, msg.sender, _amount);
+
+        emit Donated(msg.sender, _asset, _amount);
+    }
+
+    /**
      * @notice allows the partialPauser to toggle the systemPartiallyPaused variable and partially pause or partially unpause the system
      * @dev can only be called by the partialPauser
      * @param _partiallyPaused new boolean value to set systemPartiallyPaused to
      */
     function setSystemPartiallyPaused(bool _partiallyPaused) external onlyPartialPauser {
-        require(systemPartiallyPaused != _partiallyPaused, "C9");
-
         systemPartiallyPaused = _partiallyPaused;
 
         emit SystemPartiallyPaused(systemPartiallyPaused);
@@ -343,8 +353,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _fullyPaused new boolean value to set systemFullyPaused to
      */
     function setSystemFullyPaused(bool _fullyPaused) external onlyFullPauser {
-        require(systemFullyPaused != _fullyPaused, "C9");
-
         systemFullyPaused = _fullyPaused;
 
         emit SystemFullyPaused(systemFullyPaused);
@@ -356,8 +364,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _fullPauser new fullPauser address
      */
     function setFullPauser(address _fullPauser) external onlyOwner {
-        require(_fullPauser != address(0), "C10");
-        require(fullPauser != _fullPauser, "C9");
         emit FullPauserUpdated(fullPauser, _fullPauser);
         fullPauser = _fullPauser;
     }
@@ -368,8 +374,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _partialPauser new partialPauser address
      */
     function setPartialPauser(address _partialPauser) external onlyOwner {
-        require(_partialPauser != address(0), "C11");
-        require(partialPauser != _partialPauser, "C9");
         emit PartialPauserUpdated(partialPauser, _partialPauser);
         partialPauser = _partialPauser;
     }
@@ -381,8 +385,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _isRestricted new call restriction state
      */
     function setCallRestriction(bool _isRestricted) external onlyOwner {
-        require(callRestricted != _isRestricted, "C9");
-
         callRestricted = _isRestricted;
 
         emit CallRestricted(callRestricted);
@@ -395,8 +397,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      * @param _isOperator new boolean value that expresses if the sender is giving or revoking privileges for _operator
      */
     function setOperator(address _operator, bool _isOperator) external {
-        require(operators[msg.sender][_operator] != _isOperator, "C9");
-
         operators[msg.sender][_operator] = _isOperator;
 
         emit AccountOperatorUpdated(msg.sender, _operator, _isOperator);
@@ -456,26 +456,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
      */
     function isOperator(address _owner, address _operator) external view returns (bool) {
         return operators[_owner][_operator];
-    }
-
-    /**
-     * @notice returns the current controller configuration
-     * @return whitelist, the address of the whitelist module
-     * @return oracle, the address of the oracle module
-     * @return calculator, the address of the calculator module
-     * @return pool, the address of the pool module
-     */
-    function getConfiguration()
-        external
-        view
-        returns (
-            address,
-            address,
-            address,
-            address
-        )
-    {
-        return (address(whitelist), address(oracle), address(calculator), address(pool));
     }
 
     /**
@@ -718,7 +698,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         // store new vault
         accountVaultCounter[_args.owner] = vaultId;
-        vaultType[_args.owner][vaultId] = _args.vaultType;
+        vaultType[_args.owner][vaultId] = borrowablePool.isWhitelistedOptionsVault(_args.owner) ? 2 : _args.vaultType;
 
         emit VaultOpened(_args.owner, vaultId, _args.vaultType);
     }
@@ -745,7 +725,11 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         vaults[_args.owner][_args.vaultId].addLong(_args.asset, _args.amount, _args.index);
 
-        pool.transferToPool(_args.asset, _args.from, _args.amount);
+        MarginPoolInterface(_getPool(vaultType[_args.owner][_args.vaultId])).transferToPool(
+            _args.asset,
+            _args.from,
+            _args.amount
+        );
 
         emit LongOtokenDeposited(_args.asset, _args.owner, _args.from, _args.vaultId, _args.amount);
     }
@@ -768,7 +752,11 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         vaults[_args.owner][_args.vaultId].removeLong(_args.asset, _args.amount, _args.index);
 
-        pool.transferToUser(_args.asset, _args.to, _args.amount);
+        MarginPoolInterface(_getPool(vaultType[_args.owner][_args.vaultId])).transferToUser(
+            _args.asset,
+            _args.to,
+            _args.amount
+        );
 
         emit LongOtokenWithdrawed(_args.asset, _args.owner, _args.to, _args.vaultId, _args.amount);
     }
@@ -799,7 +787,11 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         vaults[_args.owner][_args.vaultId].addCollateral(_args.asset, _args.amount, _args.index);
 
-        pool.transferToPool(_args.asset, _args.from, _args.amount);
+        MarginPoolInterface(_getPool(vaultType[_args.owner][_args.vaultId])).transferToPool(
+            _args.asset,
+            _args.from,
+            _args.amount
+        );
 
         emit CollateralAssetDeposited(_args.asset, _args.owner, _args.from, _args.vaultId, _args.amount);
     }
@@ -830,7 +822,11 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         vaults[_args.owner][_args.vaultId].removeCollateral(_args.asset, _args.amount, _args.index);
 
-        pool.transferToUser(_args.asset, _args.to, _args.amount);
+        MarginPoolInterface(_getPool(vaultType[_args.owner][_args.vaultId])).transferToUser(
+            _args.asset,
+            _args.to,
+            _args.amount
+        );
 
         emit CollateralAssetWithdrawed(_args.asset, _args.owner, _args.to, _args.vaultId, _args.amount);
     }
@@ -910,7 +906,12 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         otoken.burnOtoken(msg.sender, _args.amount);
 
-        pool.transferToUser(collateral, _args.receiver, payout);
+        MarginPoolInterface _pool = (!borrowablePool.isWhitelistedOTokenBuyer(msg.sender) ||
+            ERC20Interface(collateral).balanceOf(address(borrowablePool)) < payout)
+            ? pool
+            : borrowablePool;
+
+        _pool.transferToUser(collateral, _args.receiver, payout);
 
         emit Redeem(_args.otoken, msg.sender, _args.receiver, collateral, _args.amount, payout);
     }
@@ -943,7 +944,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             if (hasLong) {
                 OtokenInterface longOtoken = OtokenInterface(vault.longOtokens[0]);
 
-                longOtoken.burnOtoken(address(pool), vault.longAmounts[0]);
+                longOtoken.burnOtoken(_getPool(vaultType[_args.owner][_args.vaultId]), vault.longAmounts[0]);
             }
         }
 
@@ -965,7 +966,11 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             nakedPoolBalance[collateral] = nakedPoolBalance[collateral].sub(payout);
         }
 
-        pool.transferToUser(collateral, _args.to, payout);
+        MarginPoolInterface(_getPool(vaultType[_args.owner][_args.vaultId])).transferToUser(
+            collateral,
+            _args.to,
+            payout
+        );
 
         uint256 vaultId = _args.vaultId;
         address payoutRecipient = _args.to;
@@ -1014,7 +1019,11 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         // decrease internal naked margin collateral amount
         nakedPoolBalance[vault.collateralAssets[0]] = nakedPoolBalance[vault.collateralAssets[0]].sub(collateralToSell);
 
-        pool.transferToUser(vault.collateralAssets[0], _args.receiver, collateralToSell);
+        MarginPoolInterface(_getPool(vaultType[_args.owner][_args.vaultId])).transferToUser(
+            vault.collateralAssets[0],
+            _args.receiver,
+            collateralToSell
+        );
 
         emit VaultLiquidated(
             msg.sender,
@@ -1150,5 +1159,15 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         oracle = OracleInterface(addressbook.getOracle());
         calculator = MarginCalculatorInterface(addressbook.getMarginCalculator());
         pool = MarginPoolInterface(addressbook.getMarginPool());
+        borrowablePool = MarginPoolInterface(addressbook.getAddress(keccak256("BORROWABLE_POOL")));
+    }
+
+    /**
+     * @dev checks correct pool for vault type. type 0 or 1: non-borrowable pool, type 2: borrowable pool
+     * @param _vaultType type of the vault
+     * @return margin pool corresponding to the vault
+     */
+    function _getPool(uint256 _vaultType) internal view returns (address) {
+        return _vaultType < 2 ? address(pool) : address(borrowablePool);
     }
 }

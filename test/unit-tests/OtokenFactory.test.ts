@@ -6,9 +6,9 @@ import {
   MockERC20Instance,
 } from '../../build/types/truffle-types'
 import BigNumber from 'bignumber.js'
-import {assert} from 'chai'
-import {createValidExpiry, createTokenAmount} from '../utils'
-const {expectEvent, expectRevert, time} = require('@openzeppelin/test-helpers')
+import { assert } from 'chai'
+import { createValidExpiry, createTokenAmount } from '../utils'
+const { expectEvent, expectRevert, time } = require('@openzeppelin/test-helpers')
 const OTokenFactory = artifacts.require('OtokenFactory.sol')
 const MockAddressBook = artifacts.require('MockAddressBook.sol')
 const MockWhitelist = artifacts.require('MockWhitelistModule.sol')
@@ -133,7 +133,7 @@ contract('OTokenFactory', ([user1, user2, controller]) => {
           strikePrice,
           lastTimeStamp.toString(),
           isPut,
-          {from: user1},
+          { from: user1 },
         ),
         "OtokenFactory: Can't create expired option",
       )
@@ -193,7 +193,7 @@ contract('OTokenFactory', ([user1, user2, controller]) => {
         strikePrice,
         expiry,
         isPut,
-        {from: user1},
+        { from: user1 },
       )
       expectEvent(txResponse, 'OtokenCreated', {
         creator: user1,
@@ -230,7 +230,7 @@ contract('OTokenFactory', ([user1, user2, controller]) => {
         _strikePrice,
         expiry,
         isPut,
-        {from: user2},
+        { from: user2 },
       )
       expectEvent(txResponse, 'OtokenCreated', {
         creator: user2,
