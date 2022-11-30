@@ -48,7 +48,7 @@ contract('ManualPricer', ([owner, bot, random]) => {
     it('should return the new price after resetting answer', async () => {
       const newPrice = createTokenAmount(400, 8)
       await pricer.setExpiryPriceInOracle(1, newPrice, { from: bot })
-      const price = await pricer.getPrice()
+      const price = await pricer.getPrice(oracle.address)
       const expectedResult = createTokenAmount(400, 8)
       assert.equal(price.toString(), expectedResult.toString())
     })

@@ -68,7 +68,7 @@ contract ManualPricer is OpynPricerInterface {
      * @dev overides the getPrice function in OpynPricerInterface
      * @return price of the asset in USD, scaled by 1e8
      */
-    function getPrice() external view override returns (uint256) {
+    function getPrice(address) external view override returns (uint256) {
         return historicalPrice[lastExpiryTimestamp];
     }
 
