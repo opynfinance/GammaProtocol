@@ -5,7 +5,6 @@ import {
   AddressBookInstance,
   MockERC20Instance,
   MarginPoolInstance,
-  BorrowableMarginPoolInstance,
   ControllerInstance,
   WhitelistInstance,
   MockOracleInstance,
@@ -25,7 +24,6 @@ const AddressBook = artifacts.require('AddressBook.sol')
 const Whitelist = artifacts.require('Whitelist.sol')
 const Calculator = artifacts.require('MarginCalculator.sol')
 const MarginPool = artifacts.require('MarginPool.sol')
-const BorrowableMarginPool = artifacts.require('BorrowableMarginPool.sol')
 const MarginVault = artifacts.require('MarginVault.sol')
 const MockOracle = artifacts.require('MockOracle.sol')
 
@@ -55,7 +53,6 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
   let otokenFactory: OtokenFactoryInstance
   let whitelist: WhitelistInstance
   let marginPool: MarginPoolInstance
-  let borrowableMarginPool: MarginPoolInstance
   let oracle: MockOracleInstance
 
   let usdc: MockERC20Instance
@@ -84,8 +81,6 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
     whitelist = await Whitelist.new(addressBook.address, { from: owner })
     otokenFactory = await OTokenFactory.new(addressBook.address, { from: owner })
     marginPool = await MarginPool.new(addressBook.address)
-    borrowableMarginPool = await BorrowableMarginPool.new(addressBook.address)
-
     const calculator = await Calculator.new(addressBook.address, { from: owner })
 
     // setup addressBook
@@ -94,9 +89,6 @@ contract('OTokenFactory + Otoken: Cloning of real otoken instances.', ([owner, u
     await addressBook.setOtokenFactory(otokenFactory.address, { from: owner })
     await addressBook.setMarginCalculator(calculator.address, { from: owner })
     await addressBook.setMarginPool(marginPool.address, { from: owner })
-    await addressBook.setAddress(web3.utils.soliditySha3('BORROWABLE_POOL'), borrowableMarginPool.address, {
-      from: owner,
-    })
     await addressBook.setOracle(oracle.address, { from: owner })
 
     // deploy the controller instance

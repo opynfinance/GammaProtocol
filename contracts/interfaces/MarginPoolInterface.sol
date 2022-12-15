@@ -9,10 +9,6 @@ interface MarginPoolInterface {
 
     function getStoredBalance(address _asset) external view returns (uint256);
 
-    function isWhitelistedOTokenBuyer(address _oTokenBuyer) external view returns (bool);
-
-    function isWhitelistedOptionsVault(address _optionsVault) external view returns (bool);
-
     /* Admin-only functions */
     function setFarmer(address _farmer) external;
 
