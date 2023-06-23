@@ -63,7 +63,7 @@ module.exports = {
       gasPrice: 25000000000,
     },
     avax: {
-      provider: () => new HDWalletProvider(mnemonic, 'https://api.avax.network/ext/bc/C/rpc'),
+      provider: () => new HDWalletProvider(mnemonic, `https://avalanche-mainnet.infura.io/v3/${key}`),
       network_id: 1,
     },
     fuji: {
@@ -72,7 +72,15 @@ module.exports = {
       gas: 8000000,
       gasPrice: 250000000000,
       skipDryRun: true,
-    }
+    },
+    matic: {
+      provider: () => new HDWalletProvider(mnemonic, `https://polygon-mainnet.infura.io/v3/${key}`),
+      network_id: 137,
+      confirmations: 2,
+      timeoutBlocks: 200,
+      skipDryRun: true
+    },
+
   },
 
   mocha: {
