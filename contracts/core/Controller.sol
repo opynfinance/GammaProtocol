@@ -644,18 +644,14 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
             if (actionType == Actions.ActionType.OpenVault) {
                 _openVault(Actions._parseOpenVaultArgs(action));
-            } else if (actionType == Actions.ActionType.DepositLongOption) {
-                _depositLong(Actions._parseDepositArgs(action));
-            } else if (actionType == Actions.ActionType.WithdrawLongOption) {
-                _withdrawLong(Actions._parseWithdrawArgs(action));
+            } else if (actionType == Actions.ActionType.MintForward) {
+                _mintForward(Actions._parseMintForwardArgs(action));
+            } else if (actionType == Actions.ActionType.BurnForward) {
+                _withdrawLong(Actions._parseBurnForwardArgs(action));
             } else if (actionType == Actions.ActionType.DepositCollateral) {
                 _depositCollateral(Actions._parseDepositArgs(action));
             } else if (actionType == Actions.ActionType.WithdrawCollateral) {
                 _withdrawCollateral(Actions._parseWithdrawArgs(action));
-            } else if (actionType == Actions.ActionType.MintShortOption) {
-                _mintOtoken(Actions._parseMintArgs(action));
-            } else if (actionType == Actions.ActionType.BurnShortOption) {
-                _burnOtoken(Actions._parseBurnArgs(action));
             } else if (actionType == Actions.ActionType.Redeem) {
                 _redeem(Actions._parseRedeemArgs(action));
             } else if (actionType == Actions.ActionType.SettleVault) {
@@ -703,18 +699,19 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         emit VaultOpened(_args.owner, vaultId, _args.vaultType);
     }
 
-    /**
-     * @notice deposit a long oToken into a vault
-     * @dev only the account owner or operator can deposit a long oToken, cannot be called when system is partiallyPaused or fullyPaused
+    /** 
+     * @notice mint a forward into the vault by deposit a longOtoken and Minting a short option
+     * @dev only the account owner or operater can deposit a long forward, cannot be called when system is partiallyPaused or fullyPaused
      * @param _args DepositArgs structure
-     */
-    function _depositLong(Actions.DepositArgs memory _args)
+     *
+    **/
+    function _mintForward(Actions.depositForwardArgs memory _args)
         internal
         notPartiallyPaused
         onlyAuthorized(msg.sender, _args.owner)
     {
         require(_checkVaultId(_args.owner, _args.vaultId), "C35");
-        // only allow vault owner or vault operator to deposit long otoken
+        // only allow vault owner or vault operator to deposit long oToken
         require((_args.from == msg.sender) || (_args.from == _args.owner), "C16");
 
         require(whitelist.isWhitelistedOtoken(_args.asset), "C17");
@@ -723,7 +720,10 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         require(now < otoken.expiryTimestamp(), "C18");
 
-        vaults[_args.owner][_args.vaultId].addLong(_args.asset, _args.amount, _args.index);
+        vaults[_args.owner][_args.vaultId].addForward(_args.asset, _args.amount, _args.index);
+
+        // mints the short leg
+        otoken.mintOtoken(_args.to, _args.amount);
 
         MarginPoolInterface(_getPool(vaultType[_args.owner][_args.vaultId])).transferToPool(
             _args.asset,
@@ -731,34 +731,11 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             _args.amount
         );
 
+        // emit that both long a short were minted.
         emit LongOtokenDeposited(_args.asset, _args.owner, _args.from, _args.vaultId, _args.amount);
-    }
+        emit ShortOtokenMinted(_args.otoken, _args.owner, _args.to, _args.vaultId, _args.amount);
 
-    /**
-     * @notice withdraw a long oToken from a vault
-     * @dev only the account owner or operator can withdraw a long oToken, cannot be called when system is partiallyPaused or fullyPaused
-     * @param _args WithdrawArgs structure
-     */
-    function _withdrawLong(Actions.WithdrawArgs memory _args)
-        internal
-        notPartiallyPaused
-        onlyAuthorized(msg.sender, _args.owner)
-    {
-        require(_checkVaultId(_args.owner, _args.vaultId), "C35");
-
-        OtokenInterface otoken = OtokenInterface(_args.asset);
-
-        require(now < otoken.expiryTimestamp(), "C19");
-
-        vaults[_args.owner][_args.vaultId].removeLong(_args.asset, _args.amount, _args.index);
-
-        MarginPoolInterface(_getPool(vaultType[_args.owner][_args.vaultId])).transferToUser(
-            _args.asset,
-            _args.to,
-            _args.amount
-        );
-
-        emit LongOtokenWithdrawed(_args.asset, _args.owner, _args.to, _args.vaultId, _args.amount);
+        _mintOtoken(_args);
     }
 
     /**
@@ -832,35 +809,11 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
-     * @notice mint short oTokens from a vault which creates an obligation that is recorded in the vault
-     * @dev only the account owner or operator can mint an oToken, cannot be called when system is partiallyPaused or fullyPaused
-     * @param _args MintArgs structure
-     */
-    function _mintOtoken(Actions.MintArgs memory _args)
-        internal
-        notPartiallyPaused
-        onlyAuthorized(msg.sender, _args.owner)
-    {
-        require(_checkVaultId(_args.owner, _args.vaultId), "C35");
-        require(whitelist.isWhitelistedOtoken(_args.otoken), "C23");
-
-        OtokenInterface otoken = OtokenInterface(_args.otoken);
-
-        require(now < otoken.expiryTimestamp(), "C24");
-
-        vaults[_args.owner][_args.vaultId].addShort(_args.otoken, _args.amount, _args.index);
-
-        otoken.mintOtoken(_args.to, _args.amount);
-
-        emit ShortOtokenMinted(_args.otoken, _args.owner, _args.to, _args.vaultId, _args.amount);
-    }
-
-    /**
-     * @notice burn oTokens to reduce or remove the minted oToken obligation recorded in a vault
-     * @dev only the account owner or operator can burn an oToken, cannot be called when system is partiallyPaused or fullyPaused
-     * @param _args MintArgs structure
-     */
-    function _burnOtoken(Actions.BurnArgs memory _args)
+    * @notice burn forwards to reduce or remove the minted oToken obligation and long recorded in a vault
+    * @dev only the account owner or operator can burn an oToken, cannot be called when system is partiallyPaused or fullyPaused
+    * @param _args MintArgs structure
+    */
+    function _burnForward(Actions.BurnForwardArgs memory _args)
         internal
         notPartiallyPaused
         onlyAuthorized(msg.sender, _args.owner)
@@ -868,20 +821,32 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         // check that vault id is valid for this vault owner
         require(_checkVaultId(_args.owner, _args.vaultId), "C35");
         // only allow vault owner or vault operator to burn otoken
-        require((_args.from == msg.sender) || (_args.from == _args.owner), "C25");
+        require((_args.from == msg.sender) || (_args.from == _args.owner), "C23");
 
-        OtokenInterface otoken = OtokenInterface(_args.otoken);
+        OtokenInterface longOtoken = OtokenInterface(_args.asset);
+        OtokenInterface shortOtoken = OtokenInterface(_args.otoken);
 
         // do not allow burning expired otoken
-        require(now < otoken.expiryTimestamp(), "C26");
+        require(now < longOtoken.expiryTimestamp(), "C19");
+        require(now < shortOtoken.expiryTimestamp(), "C24");
 
         // remove otoken from vault
-        vaults[_args.owner][_args.vaultId].removeShort(_args.otoken, _args.amount, _args.index);
+        vaults[_args.owner][_args.vaultId].removeLong(_args.otoken, _args.amount, _args.index);
+
+        // remove long otoken from vault
+        vaults[_args.owner][_args.vaultId].removeLong(_args.asset, _args.amount, _args.index);
 
         // burn otoken
         otoken.burnOtoken(_args.from, _args.amount);
 
         emit ShortOtokenBurned(_args.otoken, _args.owner, _args.from, _args.vaultId, _args.amount);
+        emit LongOtokenWithdrawed(_args.asset, _args.owner, _args.to, _args.vaultId, _args.amount);
+
+        MarginPoolInterface(_getPool(vaultType[_args.owner][_args.vaultId])).transferToUser(
+            _args.asset,
+            _args.to,
+            _args.amount
+        );
     }
 
     /**
