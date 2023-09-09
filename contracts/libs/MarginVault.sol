@@ -45,15 +45,6 @@ library MarginVault {
         uint256[] longAmounts;
         // quantity of ERC-20 deposited as collateral in the vault for each ERC-20 address in collateralAssets
         uint256[] collateralAmounts;
-
-        // owner of the vault
-        address owner;
-    }
-
-    // modfier that checks function call is vault owner
-    modifier onlyVaultOwner(Vault storage _vault) {
-        require(msg.sender == _vault.owner, "MarginVault: not owner");
-        _;
     }
 
     /**
