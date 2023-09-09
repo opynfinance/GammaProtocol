@@ -127,6 +127,23 @@ library Actions {
         uint256 amount;
     }
 
+    struct depositForwardArgs {
+        // address of the account owner
+        address owner;
+        // index of the vault to which the asset will be added
+        uint256 vaultId;
+        // address from which we transfer the asset
+        address from;
+        // oToken that is to be minted for the short leg
+        address to;
+        // asset that is to be deposited
+        address asset;
+        // amount of asset that is to be deposited
+        uint256 amount;
+        // left in for legacy compat
+        uint256 index;
+    }
+
     struct RedeemArgs {
         // address to which we pay out the oToken proceeds
         address receiver;
@@ -150,6 +167,25 @@ library Actions {
         uint256 index;
         // amount of asset that is to be withdrawn
         uint256 amount;
+    }
+
+    struct BurnForwardArgs {
+        // address of the account owner
+        address owner;
+        // index of the vault from which the oToken will be burned
+        uint256 vaultId;
+        // address from which we transfer the oTokens
+        address from;
+        // adddress to withdraw the longOtoken to
+        address to;
+        // asset that is to be withdrawn
+        address asset;
+        // oToken that is to be withdrawn from the short leg
+        address otoken;
+        // amount of oTokens that is to be burned
+        uint256 amount;
+        // left in for legacy compat
+        uint256 index;
     }
 
     struct SettleVaultArgs {
