@@ -329,9 +329,7 @@ contract Oracle is Ownable {
      * @return True if dispute period is over, False if not
      */
     function isDisputePeriodOver(address _asset, uint256 _expiryTimestamp) public view returns (bool) {
-        uint256 price = stablePrice[_asset];
-
-        if (price == 0) {
+        if (stablePrice[_asset] == 0) {
             // check if the pricer has a price for this expiry timestamp
             Price memory price = storedPrice[_asset][_expiryTimestamp];
             if (price.timestamp == 0) {
