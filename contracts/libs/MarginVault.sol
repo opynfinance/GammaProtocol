@@ -54,12 +54,12 @@ library MarginVault {
      * @param _amount number of _shortOtoken being minted from the user's vault
      * @param _index index of _shortOtoken in the user's vault.shortOtokens array
      */
-    function addShort(
+    function _addShort(
         Vault storage _vault,
         address _shortOtoken,
         uint256 _amount,
         uint256 _index
-    ) external {
+    ) internal {
         require(_amount > 0, "V1");
 
         // valid indexes in any array are between 0 and array.length - 1.
@@ -75,6 +75,22 @@ library MarginVault {
             _vault.shortAmounts[_index] = _vault.shortAmounts[_index].add(_amount);
             _vault.shortOtokens[_index] = _shortOtoken;
         }
+    }
+
+    /**
+     * @dev increase the short oToken balance in a vault when a new oToken is minted
+     * @param _vault vault to add or increase the short position in
+     * @param _shortOtoken address of the _shortOtoken being minted from the user's vault
+     * @param _amount number of _shortOtoken being minted from the user's vault
+     * @param _index index of _shortOtoken in the user's vault.shortOtokens array
+     */
+    function addShort(
+        Vault storage _vault,
+        address _shortOtoken,
+        uint256 _amount,
+        uint256 _index
+    ) external {
+        _addShort(_vault, _shortOtoken, _amount, _index);
     }
 
     /**
@@ -109,12 +125,12 @@ library MarginVault {
      * @param _amount number of _longOtoken the protocol is adding to the user's vault
      * @param _index index of _longOtoken in the user's vault.longOtokens array
      */
-    function addLong(
+    function _addLong(
         Vault storage _vault,
         address _longOtoken,
         uint256 _amount,
         uint256 _index
-    ) external {
+    ) internal {
         require(_amount > 0, "V4");
 
         // valid indexes in any array are between 0 and array.length - 1.
@@ -130,6 +146,22 @@ library MarginVault {
             _vault.longAmounts[_index] = _vault.longAmounts[_index].add(_amount);
             _vault.longOtokens[_index] = _longOtoken;
         }
+    }
+
+    /**
+     * @dev increase the long oToken balance in a vault when an oToken is deposited
+     * @param _vault vault to add a long position to
+     * @param _longOtoken address of the _longOtoken being added to the user's vault
+     * @param _amount number of _longOtoken the protocol is adding to the user's vault
+     * @param _index index of _longOtoken in the user's vault.longOtokens array
+     */
+    function addLong(
+        Vault storage _vault,
+        address _longOtoken,
+        uint256 _amount,
+        uint256 _index
+    ) external {
+        _addLong(_vault, _longOtoken, _amount, _index);
     }
 
     /**
@@ -220,7 +252,7 @@ library MarginVault {
         address _shortOtoken,
         uint256 _amount,
     ) external {
-        addLong(_vault, _longOtoken, _amount, _vault.longOtokens.length);
-        addShort(_vault, _shortOtoken, _amount, _vault.shortOtokens.length);
+        _addLong(_vault, _longOtoken, _amount, _vault.longOtokens.length);
+        _addShort(_vault, _shortOtoken, _amount, _vault.shortOtokens.length);
     }
 }
