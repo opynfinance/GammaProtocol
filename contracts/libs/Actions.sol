@@ -38,10 +38,8 @@ library Actions {
     // possible actions that can be performed
     enum ActionType {
         OpenVault,
-        MintShortOption,
-        BurnShortOption,
-        DepositLongOption,
-        WithdrawLongOption,
+        MintForward,
+        BurnForward,
         DepositCollateral,
         WithdrawCollateral,
         SettleVault,
@@ -304,6 +302,27 @@ library Actions {
     }
 
     /**
+    * @notice parses the pass in action args to get the arguments for a mint forward action
+    * @param _args general action arguments structure
+    * @return arguments for a deposit forward action
+    */
+    function _parseMintForwardArgs(ActionArgs memory _args) internal pure returns (depositForwardArgs memory) {
+        require(_args.actionType == ActionType.MintForward, "A8");
+        require(_args.owner != address(0), "A9");
+
+        return
+            depositForwardArgs({
+                owner: _args.owner,
+                vaultId: _args.vaultId,
+                from: _args.secondAddress,
+                to: _args.asset,
+                asset: _args.asset,
+                amount: _args.amount,
+                index: _args.index
+            });
+    }
+
+    /**
      * @notice parses the passed in action arguments to get the arguments for a withdraw action
      * @param _args general action arguments structure
      * @return arguments for a withdraw action
@@ -326,6 +345,28 @@ library Actions {
                 amount: _args.amount
             });
     }
+
+    /**
+     * @notice parses the passed in action arguments to get the arguments for a burn forward action
+     * @param _args general action arguments structure
+     * @return arguments for a burn forward action
+     */
+    function _parseBurnForwardArgs(ActionArgs memory _args) internal pure returns (BurnForwardArgs memory) {
+        require(_args.actionType == ActionType.BurnForward, "A10");
+        require(_args.owner != address(0), "A11");
+        require(_args.secondAddress != address(0), "A12");
+
+        return
+            BurnForwardArgs({
+                owner: _args.owner,
+                vaultId: _args.vaultId,
+                from: _args.secondAddress,
+                to: _args.secondAddress,
+                asset: _args.asset,
+                otoken: _args.asset,
+                amount: _args.amount,
+                index: _args.index
+            });
 
     /**
      * @notice parses the passed in action arguments to get the arguments for an redeem action
