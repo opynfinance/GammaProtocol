@@ -45,6 +45,15 @@ library MarginVault {
         uint256[] longAmounts;
         // quantity of ERC-20 deposited as collateral in the vault for each ERC-20 address in collateralAssets
         uint256[] collateralAmounts;
+
+        // owner of the vault
+        address owner;
+    }
+
+    // modfier that checks function call is vault owner
+    modifier onlyVaultOwner(Vault storage _vault) {
+        require(msg.sender == _vault.owner, "MarginVault: not owner");
+        _;
     }
 
     /**
@@ -59,7 +68,7 @@ library MarginVault {
         address _shortOtoken,
         uint256 _amount,
         uint256 _index
-    ) external {
+    ) external onlyVaultOwner(_vault) {
         require(_amount > 0, "V1");
 
         // valid indexes in any array are between 0 and array.length - 1.
@@ -89,7 +98,7 @@ library MarginVault {
         address _shortOtoken,
         uint256 _amount,
         uint256 _index
-    ) external {
+    ) external onlyVaultOwner(_vault) {
         // check that the removed short oToken exists in the vault at the specified index
         require(_index < _vault.shortOtokens.length, "V2");
         require(_vault.shortOtokens[_index] == _shortOtoken, "V3");
@@ -114,7 +123,7 @@ library MarginVault {
         address _longOtoken,
         uint256 _amount,
         uint256 _index
-    ) external {
+    ) external onlyVaultOwner(_vault) {
         require(_amount > 0, "V4");
 
         // valid indexes in any array are between 0 and array.length - 1.
@@ -144,7 +153,7 @@ library MarginVault {
         address _longOtoken,
         uint256 _amount,
         uint256 _index
-    ) external {
+    ) external onlyVaultOwner(_vault) {
         // check that the removed long oToken exists in the vault at the specified index
         require(_index < _vault.longOtokens.length, "V5");
         require(_vault.longOtokens[_index] == _longOtoken, "V6");
@@ -169,7 +178,7 @@ library MarginVault {
         address _collateralAsset,
         uint256 _amount,
         uint256 _index
-    ) external {
+    ) external onlyVaultOwner(_vault){
         require(_amount > 0, "V7");
 
         // valid indexes in any array are between 0 and array.length - 1.
@@ -199,7 +208,7 @@ library MarginVault {
         address _collateralAsset,
         uint256 _amount,
         uint256 _index
-    ) external {
+    ) external onlyVaultOwner(_vault) {
         // check that the removed collateral exists in the vault at the specified index
         require(_index < _vault.collateralAssets.length, "V8");
         require(_vault.collateralAssets[_index] == _collateralAsset, "V9");
@@ -210,5 +219,17 @@ library MarginVault {
             delete _vault.collateralAssets[_index];
         }
         _vault.collateralAmounts[_index] = newCollateralAmount;
+    }
+
+    // below is a function that adds both a long and a short oToken to a vault in one transaction
+    // this represents a long forward
+    function addForward(
+        Vault storage _vault,
+        address _longOtoken,
+        address _shortOtoken,
+        uint256 _amount,
+    ) external onlyVaultOwner(_vault) {
+        addLong(_vault, _longOtoken, _amount, _vault.longOtokens.length);
+        addShort(_vault, _shortOtoken, _amount, _vault.shortOtokens.length);
     }
 }
