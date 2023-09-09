@@ -675,6 +675,13 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         (MarginVault.Vault memory vault, uint256 typeVault, ) = getVaultWithDetails(_owner, _vaultId);
         (, bool isValidVault) = calculator.getExcessCollateral(vault, typeVault);
 
+        // vault can only have maximum of 1 long oToken 1 short otoken
+        // and the amounts of both must be identical
+        require(vault.longAmounts.length <= 1, "C14");
+        require(vault.shortAmounts.length <= 1, "C14");
+        require(vault.longAmounts.length == vault.shortAmounts.length, "C14");
+        require(vault.longAmounts[0] == vault.shortAmounts[0], "C14");
+
         require(isValidVault, "C14");
     }
 
