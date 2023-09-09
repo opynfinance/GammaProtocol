@@ -723,14 +723,20 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
         require(whitelist.isWhitelistedOtoken(_args.asset), "C17");
 
-        OtokenInterface otoken = OtokenInterface(_args.asset);
+        OtokenInterface shortOtoken = OtokenInterface(_args.otoken);
+        OtokenInterface longOtoken = OtokenInterface(_args.asset);
 
-        require(now < otoken.expiryTimestamp(), "C18");
+        // verify expiry timestamp and strike are identical
+        require(shortOtoken.expiryTimestamp() == longOtoken.expiryTimestamp(), "C18");
+        require(shortOtoken.strikePrice() == longOtoken.strikePrice(), "C18");
+
+        require(now < shortOtokentoken.expiryTimestamp(), "C18");
+        require(now < longOtokentoken.expiryTimestamp(), "C18");
 
         vaults[_args.owner][_args.vaultId].addForward(_args.asset, _args.amount, _args.index);
 
         // mints the short leg
-        otoken.mintOtoken(_args.to, _args.amount);
+        shortOtoken.mintOtoken(_args.to, _args.amount);
 
         MarginPoolInterface(_getPool(vaultType[_args.owner][_args.vaultId])).transferToPool(
             _args.asset,
