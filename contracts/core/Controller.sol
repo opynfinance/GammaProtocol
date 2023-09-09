@@ -647,7 +647,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
             } else if (actionType == Actions.ActionType.MintForward) {
                 _mintForward(Actions._parseMintForwardArgs(action));
             } else if (actionType == Actions.ActionType.BurnForward) {
-                _withdrawLong(Actions._parseBurnForwardArgs(action));
+                _burnForward(Actions._parseBurnForwardArgs(action));
             } else if (actionType == Actions.ActionType.DepositCollateral) {
                 _depositCollateral(Actions._parseDepositArgs(action));
             } else if (actionType == Actions.ActionType.WithdrawCollateral) {
@@ -730,8 +730,8 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         require(shortOtoken.expiryTimestamp() == longOtoken.expiryTimestamp(), "C18");
         require(shortOtoken.strikePrice() == longOtoken.strikePrice(), "C18");
 
-        require(now < shortOtokentoken.expiryTimestamp(), "C18");
-        require(now < longOtokentoken.expiryTimestamp(), "C18");
+        require(now < shortOtoken.expiryTimestamp(), "C18");
+        require(now < longOtoken.expiryTimestamp(), "C18");
 
         vaults[_args.owner][_args.vaultId].addForward(_args.asset, _args.amount, _args.index);
 
@@ -747,8 +747,6 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         // emit that both long a short were minted.
         emit LongOtokenDeposited(_args.asset, _args.owner, _args.from, _args.vaultId, _args.amount);
         emit ShortOtokenMinted(_args.otoken, _args.owner, _args.to, _args.vaultId, _args.amount);
-
-        _mintOtoken(_args);
     }
 
     /**
