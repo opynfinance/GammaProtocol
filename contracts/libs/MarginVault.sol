@@ -59,7 +59,7 @@ library MarginVault {
         address _shortOtoken,
         uint256 _amount,
         uint256 _index
-    ) external onlyVaultOwner(_vault) {
+    ) external {
         require(_amount > 0, "V1");
 
         // valid indexes in any array are between 0 and array.length - 1.
@@ -89,7 +89,7 @@ library MarginVault {
         address _shortOtoken,
         uint256 _amount,
         uint256 _index
-    ) external onlyVaultOwner(_vault) {
+    ) external {
         // check that the removed short oToken exists in the vault at the specified index
         require(_index < _vault.shortOtokens.length, "V2");
         require(_vault.shortOtokens[_index] == _shortOtoken, "V3");
@@ -114,7 +114,7 @@ library MarginVault {
         address _longOtoken,
         uint256 _amount,
         uint256 _index
-    ) external onlyVaultOwner(_vault) {
+    ) external {
         require(_amount > 0, "V4");
 
         // valid indexes in any array are between 0 and array.length - 1.
@@ -144,7 +144,7 @@ library MarginVault {
         address _longOtoken,
         uint256 _amount,
         uint256 _index
-    ) external onlyVaultOwner(_vault) {
+    ) external {
         // check that the removed long oToken exists in the vault at the specified index
         require(_index < _vault.longOtokens.length, "V5");
         require(_vault.longOtokens[_index] == _longOtoken, "V6");
@@ -169,7 +169,7 @@ library MarginVault {
         address _collateralAsset,
         uint256 _amount,
         uint256 _index
-    ) external onlyVaultOwner(_vault){
+    ) external {
         require(_amount > 0, "V7");
 
         // valid indexes in any array are between 0 and array.length - 1.
@@ -199,7 +199,7 @@ library MarginVault {
         address _collateralAsset,
         uint256 _amount,
         uint256 _index
-    ) external onlyVaultOwner(_vault) {
+    ) external {
         // check that the removed collateral exists in the vault at the specified index
         require(_index < _vault.collateralAssets.length, "V8");
         require(_vault.collateralAssets[_index] == _collateralAsset, "V9");
@@ -219,7 +219,7 @@ library MarginVault {
         address _longOtoken,
         address _shortOtoken,
         uint256 _amount,
-    ) external onlyVaultOwner(_vault) {
+    ) external {
         addLong(_vault, _longOtoken, _amount, _vault.longOtokens.length);
         addShort(_vault, _shortOtoken, _amount, _vault.shortOtokens.length);
     }
