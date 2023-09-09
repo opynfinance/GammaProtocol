@@ -302,10 +302,10 @@ library Actions {
     }
 
     /**
-    * @notice parses the pass in action args to get the arguments for a mint forward action
-    * @param _args general action arguments structure
-    * @return arguments for a deposit forward action
-    */
+     * @notice parses the pass in action args to get the arguments for a mint forward action
+     * @param _args general action arguments structure
+     * @return arguments for a deposit forward action
+     */
     function _parseMintForwardArgs(ActionArgs memory _args) internal pure returns (depositForwardArgs memory) {
         require(_args.actionType == ActionType.MintForward, "A8");
         require(_args.owner != address(0), "A9");
@@ -367,6 +367,7 @@ library Actions {
                 amount: _args.amount,
                 index: _args.index
             });
+    }
 
     /**
      * @notice parses the passed in action arguments to get the arguments for an redeem action

@@ -250,7 +250,7 @@ library MarginVault {
         Vault storage _vault,
         address _longOtoken,
         address _shortOtoken,
-        uint256 _amount,
+        uint256 _amount
     ) external {
         _addLong(_vault, _longOtoken, _amount, _vault.longOtokens.length);
         _addShort(_vault, _shortOtoken, _amount, _vault.shortOtokens.length);

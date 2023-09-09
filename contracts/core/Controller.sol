@@ -706,12 +706,12 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         emit VaultOpened(_args.owner, vaultId, _args.vaultType);
     }
 
-    /** 
+    /**
      * @notice mint a forward into the vault by deposit a longOtoken and Minting a short option
      * @dev only the account owner or operater can deposit a long forward, cannot be called when system is partiallyPaused or fullyPaused
      * @param _args DepositArgs structure
      *
-    **/
+     **/
     function _mintForward(Actions.depositForwardArgs memory _args)
         internal
         notPartiallyPaused
@@ -822,10 +822,10 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
     }
 
     /**
-    * @notice burn forwards to reduce or remove the minted oToken obligation and long recorded in a vault
-    * @dev only the account owner or operator can burn an oToken, cannot be called when system is partiallyPaused or fullyPaused
-    * @param _args MintArgs structure
-    */
+     * @notice burn forwards to reduce or remove the minted oToken obligation and long recorded in a vault
+     * @dev only the account owner or operator can burn an oToken, cannot be called when system is partiallyPaused or fullyPaused
+     * @param _args MintArgs structure
+     */
     function _burnForward(Actions.BurnForwardArgs memory _args)
         internal
         notPartiallyPaused
@@ -850,7 +850,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         vaults[_args.owner][_args.vaultId].removeLong(_args.asset, _args.amount, _args.index);
 
         // burn otoken
-        otoken.burnOtoken(_args.from, _args.amount);
+        shortOtoken.burnOtoken(_args.from, _args.amount);
 
         emit ShortOtokenBurned(_args.otoken, _args.owner, _args.from, _args.vaultId, _args.amount);
         emit LongOtokenWithdrawed(_args.asset, _args.owner, _args.to, _args.vaultId, _args.amount);
