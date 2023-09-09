@@ -56,7 +56,8 @@ library Actions {
         // address which we move assets from or to (depending on the action type)
         address secondAddress;
         // asset that is to be transfered
-        address asset;
+        address asset; // long otoken
+        address shortAsset; // short otoken
         // index of the vault that is to be modified (if any)
         uint256 vaultId;
         // amount of asset that is to be transfered
@@ -136,6 +137,8 @@ library Actions {
         address to;
         // asset that is to be deposited
         address asset;
+        // oToken that is to be deposited for the short leg
+        address otoken;
         // amount of asset that is to be deposited
         uint256 amount;
         // left in for legacy compat
@@ -244,7 +247,7 @@ library Actions {
      * @return arguments for a mint action
      */
     function _parseMintArgs(ActionArgs memory _args) internal pure returns (MintArgs memory) {
-        require(_args.actionType == ActionType.MintShortOption, "A4");
+        require(_args.actionType == ActionType.MintForward, "A4");
         require(_args.owner != address(0), "A5");
 
         return
@@ -264,7 +267,7 @@ library Actions {
      * @return arguments for a burn action
      */
     function _parseBurnArgs(ActionArgs memory _args) internal pure returns (BurnArgs memory) {
-        require(_args.actionType == ActionType.BurnShortOption, "A6");
+        require(_args.actionType == ActionType.BurnForward, "A6");
         require(_args.owner != address(0), "A7");
 
         return
@@ -284,10 +287,7 @@ library Actions {
      * @return arguments for a deposit action
      */
     function _parseDepositArgs(ActionArgs memory _args) internal pure returns (DepositArgs memory) {
-        require(
-            (_args.actionType == ActionType.DepositLongOption) || (_args.actionType == ActionType.DepositCollateral),
-            "A8"
-        );
+        require((_args.actionType == ActionType.DepositCollateral), "A8");
         require(_args.owner != address(0), "A9");
 
         return
@@ -317,6 +317,7 @@ library Actions {
                 from: _args.secondAddress,
                 to: _args.asset,
                 asset: _args.asset,
+                otoken: _args.shortAsset,
                 amount: _args.amount,
                 index: _args.index
             });
@@ -328,10 +329,7 @@ library Actions {
      * @return arguments for a withdraw action
      */
     function _parseWithdrawArgs(ActionArgs memory _args) internal pure returns (WithdrawArgs memory) {
-        require(
-            (_args.actionType == ActionType.WithdrawLongOption) || (_args.actionType == ActionType.WithdrawCollateral),
-            "A10"
-        );
+        require((_args.actionType == ActionType.WithdrawCollateral), "A10");
         require(_args.owner != address(0), "A11");
         require(_args.secondAddress != address(0), "A12");
 

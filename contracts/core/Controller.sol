@@ -733,7 +733,7 @@ contract Controller is Initializable, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         require(now < shortOtoken.expiryTimestamp(), "C18");
         require(now < longOtoken.expiryTimestamp(), "C18");
 
-        vaults[_args.owner][_args.vaultId].addForward(_args.asset, _args.amount, _args.index);
+        vaults[_args.owner][_args.vaultId].addForward(_args.asset, _args.otoken, _args.amount);
 
         // mints the short leg
         shortOtoken.mintOtoken(_args.to, _args.amount);
