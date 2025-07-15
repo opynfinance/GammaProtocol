@@ -61,7 +61,7 @@
         {
             "indexed": true,
             "internalType": "uint256",
-            "name": "expirtyTimestamp",
+            "name": "expiryTimestamp",
             "type": "uint256"
         },
         {
